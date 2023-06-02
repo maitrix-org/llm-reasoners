@@ -2,78 +2,81 @@ from typing import Generic, TypeVar, Any, overload
 from typing_extensions import Literal
 from abc import ABC, abstractmethod
 
-S = TypeVar("S")
-A = TypeVar("A")
+State = TypeVar("State")
+Action = TypeVar("Action")
+Example = TypeVar("Example")
 
-class WorldModel(ABC, Generic[S, A]):
+class WorldModel(ABC, Generic[State, Action]):
     @abstractmethod
-    def step(self, state: S, action: A) -> S:
+    def init_state(self) -> State:
         return NotImplemented
     
     @abstractmethod
-    def is_terminal(self, state: S) -> bool:
+    def step(self, state: State, action: Action) -> State:
         return NotImplemented
     
     @abstractmethod
-    def get_actions(self, state: S) -> list[A]:
+    def is_terminal(self, state: State) -> bool:
         return NotImplemented
+    
+    def update_example(self, example: Example) -> None:
+        self.example = example
 
-class RewardModel(ABC, Generic[S, A]):
-    # shibo: Maybe if an user wants to use both prior_reward and reward, he/she should instantiate two RewardModel objects?
+class RewardModel(ABC, Generic[State, Action]):
+
     @abstractmethod
-    def prior_reward(self, state: S, action: A) -> float:
+    def prior_reward(self, state: State, action: Action) -> float:
         return NotImplemented
 
-    def reward(self, state: S, action: A, next_state: S) -> float:
+    def reward(self, state: State, action: Action, next_state: State = None, next_states: list[State] = None) -> float:
         return self.prior_reward(state, action)
 
+    def update_example(self, example: Example) -> None:
+        self.example = example
 
-class SearchAlgorithm(ABC, Generic[S]):
-    # shibo: should allow user to specify the return_dict, e.g. reward, action, state, etc.
+class SearchAlgorithm(ABC, Generic[State]):
+    # shibo: maybe allow user to specify the return_dict, e.g. reward, action, state, etc.
     @overload
-    def __call__(self, init_state: S, output_trace: Literal[False] = ...) -> S: ...
+    def __call__(self, init_state: State, output_trace: Literal[False] = ...) -> State: ...
 
     @overload
-    def __call__(self, init_state: S, output_trace: Literal[True]) -> list[tuple[A | None, S]]: ...
+    def __call__(self, init_state: State, output_trace: Literal[True]) -> list[tuple[Action | None, State]]: ...
 
     @abstractmethod
-    def __call__(self, init_state: S, output_trace: bool = False) -> S | list[tuple[A | None, S]]:
+    def __call__(self, init_state: State, output_trace: bool = False) -> State | list[tuple[Action | None, State]]:
         return NotImplemented
+    
+    def update_example(self, example: Example) -> None:
+        self.example = example
 
 
 class LanguageModel(ABC):
-    def query(self, query: str) -> float:
+    def query(self, query: str) -> str:
         return NotImplemented
 
 
-class Agent(ABC, Generic[S, A]):
-    def __init__(self, algorithm: SearchAlgorithm[S]):
-        self.algorithm = algorithm
-
-    def rap():
-
-
+class AgentModel(ABC, Generic[State, Action]):
     @abstractmethod
-    def preprocess(self, example) -> S:
+    def get_actions(self, state: State) -> list[Action]:
+        pass
+    
+    def update_example(self, example: Example) -> None:
         return NotImplemented
 
-    @abstractmethod
-    def postprocess(self, example, output_state: S) -> Any:
-        return NotImplemented
 
-    def __call__(self, example) -> Any:
-        init_state = self.preprocess(example)
-        output_state = self.algorithm(init_state)
-        output = self.postprocess(example, output_state)
-        return output
+class RAP():
+    def __init__(self, agent, world, reward, search) -> None:
+        self.agent = agent
+        self.world = world
+        self.reward = reward
+        self.search = search
+    
+    def __call__(self, example, output_trace=False) -> Any:
+        self.world.update_example(example)
+        return self.search(output_trace)
 
-if __name__ == '__main__':
-    class MyWorldModel(WorldModel[str, str]): ...
-    class MyRewardModel(RewardModel[str, str]): ...
-    from .algorithms.mcts import MCTS
-    world_model = MyWorldModel()
-    reward_model = MyRewardModel()
-    mcts = MCTS(world_model, reward_model)
-    class MyRAP(RAP[str, str]): ...
-    rap = MyRAP(mcts)
-    rap("123")
+    def update_example(self, example) -> None:
+        self.world.update_example(example)
+        self.search.update_example(example)
+        self.agent.update_example(example)
+        self.reward.update_example(example)
