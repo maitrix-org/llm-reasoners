@@ -1,7 +1,6 @@
 from typing import Generic
 
-from .rap import SearchAlgorithm, WorldModel, RewardModel, S, A
-
+from ..rap import SearchAlgorithm, WorldModel, RewardModel, S, A
 
 class MCTSNode(Generic[S, A]):
     def __init__(self):

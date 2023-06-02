@@ -1,1 +1,1 @@
-from .rap import WorldModel, RewardModel, SearchAlgorithm, MyRAP
+from .rap import WorldModel, RewardModel, SearchAlgorithm, RAP

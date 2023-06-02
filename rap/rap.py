@@ -2,18 +2,24 @@ from typing import Generic, TypeVar, Any, overload
 from typing_extensions import Literal
 from abc import ABC, abstractmethod
 
-
 S = TypeVar("S")
 A = TypeVar("A")
-
 
 class WorldModel(ABC, Generic[S, A]):
     @abstractmethod
     def step(self, state: S, action: A) -> S:
         return NotImplemented
-
+    
+    @abstractmethod
+    def is_terminal(self, state: S) -> bool:
+        return NotImplemented
+    
+    @abstractmethod
+    def get_actions(self, state: S) -> list[A]:
+        return NotImplemented
 
 class RewardModel(ABC, Generic[S, A]):
+    # shibo: Maybe if an user wants to use both prior_reward and reward, he/she should instantiate two RewardModel objects?
     @abstractmethod
     def prior_reward(self, state: S, action: A) -> float:
         return NotImplemented
@@ -23,6 +29,7 @@ class RewardModel(ABC, Generic[S, A]):
 
 
 class SearchAlgorithm(ABC, Generic[S]):
+    # shibo: should allow user to specify the return_dict, e.g. reward, action, state, etc.
     @overload
     def __call__(self, init_state: S, output_trace: Literal[False] = ...) -> S: ...
 
@@ -34,9 +41,17 @@ class SearchAlgorithm(ABC, Generic[S]):
         return NotImplemented
 
 
-class RAP(ABC, Generic[S, A]):
+class LanguageModel(ABC):
+    def query(self, query: str) -> float:
+        return NotImplemented
+
+
+class Agent(ABC, Generic[S, A]):
     def __init__(self, algorithm: SearchAlgorithm[S]):
         self.algorithm = algorithm
+
+    def rap():
+
 
     @abstractmethod
     def preprocess(self, example) -> S:
@@ -52,11 +67,10 @@ class RAP(ABC, Generic[S, A]):
         output = self.postprocess(example, output_state)
         return output
 
-
 if __name__ == '__main__':
     class MyWorldModel(WorldModel[str, str]): ...
     class MyRewardModel(RewardModel[str, str]): ...
-    from .mcts import MCTS
+    from .algorithms.mcts import MCTS
     world_model = MyWorldModel()
     reward_model = MyRewardModel()
     mcts = MCTS(world_model, reward_model)
