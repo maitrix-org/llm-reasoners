@@ -1,1 +1,2 @@
-from .models_from_hf import *
+from .hf_model import *
+from .llama_model import *
