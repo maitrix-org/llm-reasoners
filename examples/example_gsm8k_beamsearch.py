@@ -90,7 +90,6 @@ class GSMConfig(SearchConfig):
             outputs += self.base_model([input] * n_samples, end_token="\n", hide_input=True)["text"]
 
         return_actions = [output.strip() for output in outputs]
-        print("actions:", return_actions)
         return return_actions
 
     def prior_policy(self, state: list, action: str) -> float:

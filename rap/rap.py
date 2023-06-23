@@ -10,6 +10,8 @@ class LanguageModel(ABC):
     def __call__(self, inputs: list[str], **kwargs) -> dict: ...
 
 class WorldModel(ABC, Generic[State, Action]):
+    def __init__(self) -> None:
+        self.example = None
     @abstractmethod
     def init_state(self) -> State: ...
     @abstractmethod
@@ -20,6 +22,8 @@ class WorldModel(ABC, Generic[State, Action]):
         self.example = example
 
 class SearchConfig(ABC, Generic[State, Action]):
+    def __init__(self) -> None:
+        self.example = None
     @abstractmethod
     def get_actions(self, state: State) -> list[Action]: ...
     @abstractmethod
