@@ -2,6 +2,7 @@ from typing import Generic
 
 from ..rap import SearchAlgorithm, WorldModel, RAPAgent, SearchConfig, State, Action
 
+
 class MCTSNode(Generic[State, Action]):
     def __init__(self, prior=0):
         self.sum_Q = 0

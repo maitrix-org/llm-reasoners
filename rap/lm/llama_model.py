@@ -59,7 +59,7 @@ class LLaMAModel(LanguageModel):
         max_gen_len: int = 2048,
         temperature: float = 0.8,
         top_p: float = 0.95,
-        end_token: str = "",  #TODO: change this to a function
+        end_token: str = "",  # TODO: change this to a function
         return_probs: bool = False,
         hide_input: bool = False,
     ) -> dict:
@@ -174,7 +174,8 @@ class LLaMAModel(LanguageModel):
                 if tokens[j, i] != self.tokenizer.pad_id:
                     acc_probs[j] += torch.log(probs[j, tokens[j, i]])
         
-        return acc_probs.cpu().numpy()# , concat_h
+        return acc_probs.cpu().numpy()
+
 
 def sample_top_p(probs, p):
     probs_sort, probs_idx = torch.sort(probs, dim=-1, descending=True)

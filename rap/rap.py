@@ -5,37 +5,50 @@ State = TypeVar("State")
 Action = TypeVar("Action")
 Example = TypeVar("Example")
 
+
 class LanguageModel(ABC):
     @abstractmethod
     def __call__(self, inputs: list[str], **kwargs) -> dict: ...
 
+
 class WorldModel(ABC, Generic[State, Action]):
     def __init__(self) -> None:
         self.example = None
+
     @abstractmethod
     def init_state(self) -> State: ...
+
     @abstractmethod
     def step(self, state: State, action: Action) -> State: ...
+
     @abstractmethod
     def is_terminal(self, state: State) -> bool: ...
+
     def update_example(self, example: Example) -> None:
         self.example = example
+
 
 class SearchConfig(ABC, Generic[State, Action]):
     def __init__(self) -> None:
         self.example = None
+
     @abstractmethod
     def get_actions(self, state: State) -> list[Action]: ...
+
     @abstractmethod
     def fast_reward(self, state: State, action: Action) -> float: ...
+
     @abstractmethod
     def reward(self, state, action, **kwargs) -> float: ...
+
     def update_example(self, example: Example) -> None:
         self.example = example
+
 
 class SearchAlgorithm(ABC):
     @abstractmethod
     def __call__(self, world_model: WorldModel, search_config: SearchConfig, **kwargs) -> dict: ...
+
 
 class RAPAgent(ABC):
     def __init__(self, world_model, search_config, search_algo) -> None:
