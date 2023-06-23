@@ -7,7 +7,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         self.beam_size = beam_size
         self.max_depth = max_depth
 
-    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action], output_trace: bool = False) -> State | list[tuple[Action, State]]:
+    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action], output_trace: bool = False):
         init_state = world.init_state()
         cur_beam = [([(None, init_state)], 0)]  # (trace, reward)
         terminal_beam = []

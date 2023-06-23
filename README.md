@@ -2,6 +2,7 @@
 
 ## To-do
 - [ ] Update algorithm interface (allows for more return values as a dict)
+- [ ] In algorithms, move the returned keys in `__init__`
 - [x] Add a language model
 - [x] Implement GSM beam search
 
