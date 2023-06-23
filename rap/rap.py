@@ -35,7 +35,7 @@ class SearchConfig(ABC, Generic[State, Action]):
 
 class SearchAlgorithm(ABC):
     @abstractmethod
-    def __call__(self, example, world_model: WorldModel, search_config: SearchConfig, **kwargs) -> dict: ...
+    def __call__(self, world_model: WorldModel, search_config: SearchConfig, **kwargs) -> dict: ...
 
 class RAPAgent(ABC):
     def __init__(self, world_model, search_config, search_algo) -> None:

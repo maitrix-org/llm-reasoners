@@ -10,8 +10,8 @@ import fire
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from rap import WorldModel, SearchConfig, RAPAgent
-from rap.algorithms import BeamSearch
-from rap.models import LLaMAModel
+from rap.algorithm import BeamSearch
+from rap.lm import LLaMAModel
 
 class GSMWorldModel(WorldModel):
     """GSM World Model
