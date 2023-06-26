@@ -14,9 +14,9 @@ class GSM8kConfig(SearchConfig):
                  n_actions=4,
                  batch_size=2,
                  reward_alpha=0.5,
-                 force_terminating_on_depth_limit=True,
-                 r_conf_default=0.8,
-                 depth_limit=None) -> None:
+                 reward_confidence_default=0.8,
+                 depth_limit=5,
+                 force_terminating_on_depth_limit=True) -> None:
         super().__init__()
         self.base_model = base_model
         self.example = None
@@ -25,11 +25,9 @@ class GSM8kConfig(SearchConfig):
         self.batch_size = batch_size
         self.n_actions = n_actions
         self.force_terminating_on_depth_limit = force_terminating_on_depth_limit
-        if force_terminating_on_depth_limit:
-            assert depth_limit is not None, 'depth_limit must be specified if force_terminating_on_depth_limit'
-            self.depth_limit = depth_limit
+        self.depth_limit = depth_limit
         self.reward_alpha = reward_alpha
-        self.r_conf_default = r_conf_default
+        self.reward_confidence_default = reward_confidence_default
 
     def get_actions(self, state: GSM8kState) -> list[GSM8kAction]:
         with io.StringIO() as f:
@@ -57,7 +55,7 @@ class GSM8kConfig(SearchConfig):
             f.write(self.useful_prompt["question_prefix"] + self.example + "\n")
             for idx, (q, _, _) in enumerate(state):
                 f.write(self.useful_prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
-            f.write(self.useful_prompt["new_subquestion_prefix"].format(idx + 1) + " " + action + "\n")
+            f.write(self.useful_prompt["new_subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
             f.write(self.useful_prompt["useful_prefix"])
             model_input = f.getvalue()
 
@@ -67,7 +65,7 @@ class GSM8kConfig(SearchConfig):
 
     def calculate_reward(self, r_useful, r_conf=None):
         if r_conf is None:
-            r_conf = self.r_conf_default
+            r_conf = self.reward_confidence_default
         return r_useful ** self.reward_alpha * r_conf ** (1 - self.reward_alpha)
 
     def reward(self, state: GSM8kState, action: GSM8kAction,

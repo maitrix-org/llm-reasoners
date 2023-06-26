@@ -6,6 +6,7 @@ import numpy as np
 State = TypeVar("State")
 Action = TypeVar("Action")
 Example = TypeVar("Example")
+Trace = tuple[list[State], list[Action]]
 
 
 class GenerateOutput(NamedTuple):
@@ -102,7 +103,7 @@ class SearchAlgorithm(ABC):
 
 
 class RAPAgent(ABC):
-    def __init__(self, world_model, search_config, search_algo) -> None:
+    def __init__(self, world_model: WorldModel, search_config: SearchConfig, search_algo: SearchAlgorithm) -> None:
         self.world_model = world_model
         self.search_config = search_config
         self.search_algo = search_algo

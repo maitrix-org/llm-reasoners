@@ -1,6 +1,6 @@
 from typing import Generic
 from collections import defaultdict
-from ..rap import SearchAlgorithm, WorldModel, RAPAgent, SearchConfig, State, Action
+from .. import SearchAlgorithm, WorldModel, RAPAgent, SearchConfig, State, Action
 
 
 class BeamSearch(SearchAlgorithm, Generic[State, Action]):

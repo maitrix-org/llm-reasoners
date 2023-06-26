@@ -12,7 +12,7 @@ import torch.distributed
 from fairscale.nn.model_parallel.initialize import initialize_model_parallel
 from llama import ModelArgs, Transformer, Tokenizer
 
-from ..rap import LanguageModel, GenerateOutput
+from .. import LanguageModel, GenerateOutput
 
 
 def setup_model_parallel() -> Tuple[int, int]:
@@ -146,7 +146,7 @@ class LLaMAModel(LanguageModel):
                 token = self.tokenizer.encode(cand, bos=False, eos=False)
                 if len(token) != 1:
                     warnings.warn(f'candidate {cand} corresponds to {len(token)} instead of 1')
-                cand_tokens[-1].append(token)
+                cand_tokens[-1].append(token[0])
 
         bsz = len(prompt)
         params = self.model.params
