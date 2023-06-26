@@ -1,0 +1,11 @@
+tqdm
+fire
+numpy
+torch
+
+# hf
+transformers
+
+# llama
+git+https://github.com/facebookresearch/llama
+fairscale

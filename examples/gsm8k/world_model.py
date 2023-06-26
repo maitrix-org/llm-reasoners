@@ -1,80 +1,98 @@
-import re
 import io
+from typing import NamedTuple
 from collections import defaultdict
-from rap import WorldModel
+from rap import WorldModel, LanguageModel
+from . import utils
 
 
-class GSMWorldModel(WorldModel[list[tuple[str, str, float]], str]):
-    """ GSM8k World Model
+class SubResult(NamedTuple):
+    sub_question: str
+    sub_answer: str
+    confidence: float
+
+
+GSM8kState = list[SubResult]
+GSM8kAction = str
+
+
+class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
+    """
+    GSM8k World Model
     State: [[sub_question_1, sub_answer_1, confidence_1], [sub_question_2, sub_answer_2, confidence_2], ...]
     Action: sub_question
     """
 
     def __init__(self,
-                 base_model,
-                 prompt,
+                 base_model: LanguageModel,
+                 prompt: dict,
                  n_confidence=8,
                  batch_size=2,
-                 early_stop_with_confidence=None) -> None:
+                 early_stop_base=None,
+                 early_stop_threshold=1.) -> None:
         super().__init__()
         self.base_model = base_model
         self.prompt = prompt
         self.batch_size = batch_size
         self.n_confidence = n_confidence
-        # Confidence threshold for early stop ; confidence cannot exceed 1.0, so 1.1 means no early stop
-        self.early_stop_conf = early_stop_with_confidence if early_stop_with_confidence is not None else 1.1
+        self.early_stop_base = early_stop_base if early_stop_base is not None else n_confidence
+        self.early_stop_threshold = early_stop_threshold
 
     def init_state(self) -> list:
         return []
 
-    def step(self, state: list, action: str) -> list:
+    def step(self, state: GSM8kState, action: GSM8kAction) -> tuple[GSM8kState, dict]:
         state = state.copy()
 
         with io.StringIO() as f:
             f.write(self.prompt["input"])
-            f.write(self.prompt["question_prefix"])
-            f.write(self.example + "\n")
-            for idx, (q, a, c) in enumerate(state):
+            f.write(self.prompt["question_prefix"] + self.example + "\n")
+            for idx, (q, a, _) in enumerate(state):
                 f.write(self.prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
                 f.write(self.prompt["answer_prefix"].format(idx + 1) + " " + a + "\n")
             f.write(self.prompt["subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
             f.write(self.prompt["answer_prefix"].format(len(state) + 1))
             model_input = f.getvalue()
 
-        answer_dict = defaultdict(list) # map from answer to list of thoughts
-        for idx in range(0, self.n_confidence, self.batch_size):
-            n_samples = min(self.n_confidence - idx, self.batch_size)
-            outputs = self.base_model([model_input] * n_samples, end_token="\n", hide_input=True)["text"]
-            for output in outputs:
-                result = output.strip()
-                match = re.match(r'.*The answer is .*?([ $.0-9,\-]+).*\.$', result)
-                if match is None:
-                    continue
-                sub_answer = match[1].replace(',', '').replace('$', '').replace(' ', '')
-                answer_dict[sub_answer].append(output)
-                answer_list.append(sub_answer)
-            if len(answer_dict) == 0:
+        answer_dict = defaultdict(list)  # map from answer to list of thoughts
+        for start1 in range(0, self.n_confidence, self.early_stop_base):
+            stop1 = min(start1 + self.early_stop_base, self.n_confidence)
+
+            for start in range(start1, stop1, self.batch_size):
+                stop = min(start + self.batch_size, stop1)
+                num = stop - start
+
+                outputs = self.base_model.generate([model_input] * num, end_token="\n", hide_input=True).text
+                for output in outputs:
+                    result = output.strip()
+                    answer = utils.retrieve_answer(result)
+                    answer_dict[answer].append(result)
+
+            # Early stop if confidence is high enough
+            if len(answer_dict) == 0:  # no answer yet
                 continue
             sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
             max_len = len(sorted_answer_dict[0][1])
-            if max_len < 2:
-                continue
-            if len(sorted_answer_dict) < 2:
-                break
-            second_max_len = len(sorted_answer_dict[1][1])
-            if max_len >= len(answer_dict) / 2 and max_len > second_max_len:
-                break
+            if max_len / stop1 >= self.early_stop_threshold:
+                if len(sorted_answer_dict) >= 2 and max_len == len(sorted_answer_dict[1][1]):
+                    pass  # Tie with the second best answer
+                else:
+                    break
 
         if len(answer_dict) == 0:
             confidence, answer = 0, ""
         else:
-            answer = sorted_answer_dict[0][1][0]  # [0]: maximum; [1]: list of outputs; [0]: first output in the list
-            confidence = max_len / len(answer_list)
+            sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
+            max_answer = sorted_answer_dict[0]
+            max_answer_output_list = max_answer[1]
+            max_len = len(max_answer_output_list)
+            answer = max_answer_output_list[0]  # Here we simply choose the first appearance of the answer
+            confidence = max_len / sum(len(v) for v in answer_dict.values())
 
-        state.append((action, answer, confidence))
-        return state
+        state.append(SubResult(action, answer, confidence))
+        aux = {'confidence': confidence}
+        return state, aux
 
-    def is_terminal(self, state: list) -> bool:
+    def is_terminal(self, state: GSM8kState) -> bool:
         if len(state) > 0 and "Now we can answer" in state[-1][0]:
             return True
         else:

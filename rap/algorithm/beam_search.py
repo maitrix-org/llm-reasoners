@@ -2,12 +2,14 @@ from typing import Generic
 from collections import defaultdict
 from ..rap import SearchAlgorithm, WorldModel, RAPAgent, SearchConfig, State, Action
 
+
 class BeamSearch(SearchAlgorithm, Generic[State, Action]):
     def __init__(self, beam_size: int, max_depth: int):
         self.beam_size = beam_size
         self.max_depth = max_depth
 
-    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action], output_trace: bool = False):
+    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action],
+                 output_trace: bool = False):
         init_state = world.init_state()
         cur_beam = [([(None, init_state)], 0)]  # (trace, reward)
         terminal_beam = []

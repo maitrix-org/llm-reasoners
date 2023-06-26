@@ -1,14 +1,65 @@
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Union, NamedTuple
 from abc import ABC, abstractmethod
+
+import numpy as np
 
 State = TypeVar("State")
 Action = TypeVar("Action")
 Example = TypeVar("Example")
 
 
+class GenerateOutput(NamedTuple):
+    text: list[str]
+    log_prob: np.ndarray
+
+
 class LanguageModel(ABC):
     @abstractmethod
-    def __call__(self, inputs: list[str], **kwargs) -> dict: ...
+    def generate(self,
+                 inputs: list[str],
+                 max_gen_len: int = ...,
+                 temperature: float = ...,
+                 top_p: float = ...,
+                 end_token: str = ...,
+                 hide_input: bool = ...,
+                 **kwargs) -> GenerateOutput:
+        """Generate text from a list of prompts.
+
+        :param inputs: List of prompts.
+        :param max_gen_len: Maximum length of generated text.
+        :param temperature: Temperature for sampling. 0 for greedy decoding.
+        :param top_p: Top-p for sampling.
+        :param end_token: Token id for end of sentence.
+        :param return_probs: If set true, returns in the dict the log_prob of each output.
+        :param hide_input: If set true, decode only the generated part.
+        :return: A dict of output, dict["text"]: str ; dict["log_prob"]: np.ndarray
+        """
+        ...
+
+    @abstractmethod
+    def get_next_token_logits(self,
+                              prompt: Union[str, list[str]],
+                              candidates: Union[list[str], list[list[str]]],
+                              **kwargs) -> list[np.ndarray]:
+        """ TODO: doc
+
+        :param prompt:
+        :param candidates:
+        :return:
+        """
+        ...
+
+    @abstractmethod
+    def get_ll(self,
+               prefix: str,
+               contents: list[str],
+               **kwargs) -> np.ndarray:
+        """Get the log likelihood of the contents given the prefix.
+
+        :param prefix: The prefix to be excluded from the log likelihood.
+        :param contents: The contents to evaluate (must include the prefix).
+        """
+        ...
 
 
 class WorldModel(ABC, Generic[State, Action]):

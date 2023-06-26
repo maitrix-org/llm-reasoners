@@ -1,18 +1,17 @@
-from typing import Generic
+from typing import Generic, Optional, NamedTuple
 
-from ..rap import SearchAlgorithm, WorldModel, RAPAgent, SearchConfig, State, Action
+from ..rap import SearchAlgorithm, WorldModel, SearchConfig, State, Action
 
 
 class MCTSNode(Generic[State, Action]):
-    def __init__(self, prior=0):
+    def __init__(self, prior: float = 0.):
         self.sum_Q = 0
         self.N = 0
-        # prior is an approximation of reward
-        self.prior = prior
-        self.action: Action = None
-        self.state: State = None
-        self.parent: "MCTSNode" = None
-    
+        self.prior = self.reward = prior  # an estimation of the reward of the last step
+        self.action: Optional[Action] = None  # the action of the last step
+        self.state: State = None  # the current state
+        self.parent: "Optional[MCTSNode]" = None  # None if root of the tree
+
     @property
     def Q(self):
         if self.N == 0:
@@ -20,13 +19,11 @@ class MCTSNode(Generic[State, Action]):
         else:
             return self.sum_Q / self.N
 
-    @property
-    def reward(self):
-        if self._r0 < 0 or self._r1 < 0:
-            return min(self._r0, self._r1)
-        print("# in @property reward: r0, r1, aggr", self._r0, self._r1, self._r0 ** self._r_alpha * self._r1 ** (1 - self._r_alpha))
-        
-        return self._r0 ** self._r_alpha * self._r1 ** (1 - self._r_alpha)
+
+class MCTSResult(NamedTuple, Generic[State, Action]):
+    last_state: State
+    trace: list[tuple[State, Optional[Action]]] = None
+
 
 class MCTS(SearchAlgorithm, Generic[State, Action]):
     def __init__(self, output_trace: bool = False, output_aggregation: bool = False):
@@ -38,7 +35,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         # TODO: generate init_state with world_model
         # TODO: implement MCTS
         raise NotImplementedError
-    
+
     def iterate(self, node: MCTSNode):
         path = self._select(node)
         self._expand(path[-1])
@@ -56,7 +53,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                     path.append(child)
                     return path
             node = self._uct_select(node)
-    
+
     def _back_propagate(self, path: list[MCTSNode], reward=0.):
         coeff = 1
         for node in reversed(path):
@@ -73,8 +70,12 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
             self.N[node] += 1
             self.M[node] = max(self.M[node], c_reward)
 
-    def __call__(self, init_state: State, output_trace: bool = False):
-        root, chosen_leaf = self.mcts_search(init_state=init_state)
+    def __call__(self,
+                 world_model: WorldModel,
+                 search_config: SearchConfig,
+                 output_trace=False,
+                 retrieve_ans=None):
+        root, chosen_leaf = self.mcts_search(init_state=world_model.init_state())
         if output_trace:
             ret = []
             cur = chosen_leaf
