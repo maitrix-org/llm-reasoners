@@ -1,11 +1,19 @@
-from ..rap import LanguageModel
-import time, json, os, sys
+import json
+import os
+import sys
+import time
+import warnings
 from pathlib import Path
-from typing import Tuple
-import torch
-from llama import ModelArgs, Transformer, Tokenizer, LLaMA
-from fairscale.nn.model_parallel.initialize import initialize_model_parallel
+from typing import Tuple, Union
+
 import numpy as np
+import torch
+import torch.distributed
+from fairscale.nn.model_parallel.initialize import initialize_model_parallel
+from llama import ModelArgs, Transformer, Tokenizer
+
+from .. import LanguageModel, GenerateOutput
+
 
 def setup_model_parallel() -> Tuple[int, int]:
     local_rank = int(os.environ.get("LOCAL_RANK", -1))
@@ -19,18 +27,17 @@ def setup_model_parallel() -> Tuple[int, int]:
 
 
 class LLaMAModel(LanguageModel):
-
     def __init__(self, path, size, max_batch_size=1, max_seq_len=2048, local_rank=-1, world_size=-1):
         super().__init__()
         if local_rank == -1 or world_size == -1:
             local_rank, world_size = setup_model_parallel()
-        self.tokenizer, self.model = self.load(os.path.join(path, size), os.path.join(path, "tokenizer.model"), local_rank, world_size, max_batch_size=max_batch_size, max_seq_len=max_seq_len)
-    
-    #  self.tokenizer, self.model = self.load(os.path.join(path, size), os.path.join(size, "tokenizer.model"), local_rank, world_size, max_batch_size=max_batch_size, max_seq_len=max_seq_len)                                                               
-    # TypeError: LLaMAModel.load() got multiple values for argument 'max_batch_size'
+        self.tokenizer, self.model = self.load(os.path.join(path, size), os.path.join(path, "tokenizer.model"),
+                                               local_rank, world_size, max_batch_size=max_batch_size,
+                                               max_seq_len=max_seq_len)
 
-
-    def load(self, ckpt_dir: str, tokenizer_path: str, local_rank: int, world_size: int, max_batch_size: int, max_seq_len: int) -> Tuple[Tokenizer, Transformer]:
+    @staticmethod
+    def load(ckpt_dir: str, tokenizer_path: str, local_rank: int, world_size: int, max_batch_size: int,
+             max_seq_len: int) -> Tuple[Tokenizer, Transformer]:
         start_time = time.time()
         checkpoints = sorted(Path(ckpt_dir).glob("*.pth"))
         assert (
@@ -53,25 +60,15 @@ class LLaMAModel(LanguageModel):
         return tokenizer, model
 
     @torch.no_grad()
-    def __call__(
-        self,
-        inputs: list[str],
-        max_gen_len: int = 2048,
-        temperature: float = 0.8,
-        top_p: float = 0.95,
-        end_token: str = "",  #TODO: change this to a function
-        return_probs: bool = False,
-        hide_input: bool = False,
-    ) -> dict:
-        """Generate text from a list of prompts.
-        
-        Args:
-            inputs (list[str]): List of prompts.
-            max_gen_len (int): Maximum length of generated text.
-            temperature (float, optional): Temperature for sampling. 0 for greedy decoding. Defaults to 0.8.
-            top_p (float, optional): Top-p for sampling. Defaults to 0.5.
-            eos_token_id (int, optional): Token id for end of sentence. Defaults to -100.
-        """
+    def generate(
+            self,
+            inputs: list[str],
+            max_gen_len: int = 2048,
+            temperature: float = 0.8,
+            top_p: float = 0.95,
+            end_token: str = "",  # TODO: change this to a function
+            hide_input: bool = False,
+    ) -> GenerateOutput:
         if end_token == "":
             eos_token_id = -100
         else:
@@ -98,7 +95,7 @@ class LLaMAModel(LanguageModel):
             logits = self.model.forward(tokens[:, prev_pos:cur_pos], prev_pos)
             if temperature > 0:
                 probs = torch.softmax(logits / temperature, dim=-1)
-                next_token = sample_top_p(probs, top_p)
+                next_token = self.sample_top_p(probs, top_p)
             else:
                 next_token = torch.argmax(logits, dim=-1)
             next_token = next_token.reshape(-1)
@@ -114,40 +111,65 @@ class LLaMAModel(LanguageModel):
                     end_pos[idx] = cur_pos
             if (eos_cnt >= 1).all():
                 break
-        seq_probs = torch.stack(seq_probs, dim=1) 
+        seq_probs = torch.stack(seq_probs, dim=1)
         decoded = []
         log_prob = torch.log(seq_probs)
-        
+
         mask = torch.zeros_like(log_prob)
-        for i, t in enumerate(tokens.tolist()):
+        for i, (t, input_t) in enumerate(zip(tokens.tolist(), prompt_tokens)):
             t = t[:params.max_seq_len]
-            t = t[: len(prompt_tokens[i]) + max_gen_len]
+            if hide_input:
+                t = t[len(input_t):len(input_t) + max_gen_len]
+            else:
+                t = t[:len(prompt_tokens[i]) + max_gen_len]
             t = [x if x != self.tokenizer.pad_id else self.tokenizer.eos_id for x in t]
             if end_pos[i].item() != -1:
                 t = t[: end_pos[i]]
             decoded.append(self.tokenizer.decode(t))
         log_prob = log_prob * mask
-        if hide_input:
-            decoded = [x[len(inputs[i]):] for i, x in enumerate(decoded)]
-        return_dict = {"text": decoded}
-        if return_probs:
-            return_dict["log_prob"] = log_prob
-        
-        return return_dict
+
+        return GenerateOutput(decoded, log_prob.cpu().numpy())
+
+    @torch.no_grad()
+    def get_next_token_logits(self,
+                              prompt: Union[str, list[str]],
+                              candidates: Union[list[str], list[list[str]]]) -> list[np.ndarray]:
+        if isinstance(prompt, str):
+            prompt = [prompt]
+        if isinstance(candidates[0], str):
+            candidates = [candidates] * len(prompt)
+
+        cand_tokens = []
+        for candidate in candidates:
+            cand_tokens.append([])
+            for cand in candidate:
+                token = self.tokenizer.encode(cand, bos=False, eos=False)
+                if len(token) != 1:
+                    warnings.warn(f'candidate {cand} corresponds to {len(token)} instead of 1')
+                cand_tokens[-1].append(token[0])
+
+        bsz = len(prompt)
+        params = self.model.params
+        assert bsz <= params.max_batch_size, (bsz, params.max_batch_size)
+
+        prompts_tokens = [self.tokenizer.encode(p, bos=True, eos=False) for p in prompt]
+        max_prompt_size = max(len(t) for t in prompts_tokens)
+        tokens = torch.full((bsz, max_prompt_size), self.tokenizer.pad_id).cuda().long()
+        for k, t in enumerate(prompts_tokens):
+            tokens[k, :len(t)] = torch.tensor(t)[:params.max_seq_len].long()
+
+        all_logits = self.model.forward(tokens, 0)
+        logits = []
+        for case_logits, cand in zip(all_logits, cand_tokens):
+            logits.append(case_logits[cand].cpu().numpy())
+        return logits
 
     @torch.no_grad()
     def get_ll(
-        self,
-        prefix: str,
-        contents: list[str],
+            self,
+            prefix: str,
+            contents: list[str],
     ) -> np.ndarray:
-        """Get the log likelihood of the contents given the prefix.
-        
-        Args:
-            prefix (str): The prefix to be excluded from the log likelihood.
-            contents (list[str]): The contents to evaluate (must include the prefix).
-        """
-
         params = self.model.params
         bsz = len(contents)
         assert bsz <= params.max_batch_size, (bsz, params.max_batch_size)
@@ -173,15 +195,16 @@ class LLaMAModel(LanguageModel):
             for j in range(bsz):
                 if tokens[j, i] != self.tokenizer.pad_id:
                     acc_probs[j] += torch.log(probs[j, tokens[j, i]])
-        
-        return acc_probs.cpu().numpy()# , concat_h
 
-def sample_top_p(probs, p):
-    probs_sort, probs_idx = torch.sort(probs, dim=-1, descending=True)
-    probs_sum = torch.cumsum(probs_sort, dim=-1)
-    mask = probs_sum - probs_sort > p
-    probs_sort[mask] = 0.0
-    probs_sort.div_(probs_sort.sum(dim=-1, keepdim=True))
-    next_token = torch.multinomial(probs_sort, num_samples=1)
-    next_token = torch.gather(probs_idx, -1, next_token)
-    return next_token
+        return acc_probs.cpu().numpy()
+
+    @staticmethod
+    def sample_top_p(probs, p):
+        probs_sort, probs_idx = torch.sort(probs, dim=-1, descending=True)
+        probs_sum = torch.cumsum(probs_sort, dim=-1)
+        mask = probs_sum - probs_sort > p
+        probs_sort[mask] = 0.0
+        probs_sort.div_(probs_sort.sum(dim=-1, keepdim=True))
+        next_token = torch.multinomial(probs_sort, num_samples=1)
+        next_token = torch.gather(probs_idx, -1, next_token)
+        return next_token
