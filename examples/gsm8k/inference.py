@@ -15,10 +15,7 @@ def rap_gsm8k(base_model: LanguageModel,
               interactive_prompt: dict,
               useful_prompt: dict,
               search_algo: Type[SearchAlgorithm] = MCTS,
-              search_algo_params: dict = {
-                'cum_reward': np.mean,
-                'calc_q': max,
-              },
+              search_algo_params: dict = None,
               n_action: int = 4,
               n_confidence: int = 8,
               depth_limit: int = 5,
@@ -28,6 +25,11 @@ def rap_gsm8k(base_model: LanguageModel,
               early_stop_threshold: float = 0.5,
               reward_alpha: float = 0.5,
               reward_confidence_default: float = 0.8):
+    if search_algo_params is None:
+        search_algo_params = {
+            'cum_reward': np.mean,
+            'calc_q': max,
+        }
     world_model = GSM8kWorldModel(base_model=base_model, prompt=interactive_prompt,
                                   n_confidence=n_confidence, batch_size=batch_size,
                                   early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
@@ -41,7 +43,7 @@ def rap_gsm8k(base_model: LanguageModel,
     dataset = load_dataset("gsm8k", "main")["test"]
     for example in dataset:
         output = agent(example["question"])
-        output = utils.retrieve_answer(output)
+        output = utils.retrieve_answer(output.terminal_state[-1].sub_answer)
         answer = utils.retrieve_answer_from_dataset(example["answer"])
         correct = utils.judge_answer(output, answer)
         print(correct, output, answer)
@@ -63,7 +65,9 @@ if __name__ == '__main__':
     torch.backends.cudnn.deterministic = True
 
     llama_ckpts = os.environ["LLAMA_CKPTS"]
-    def main(llama_ckpts: str = llama_ckpts,
+
+
+    def main(llama_ckpt: str = llama_ckpts,
              llama_size: str = '13B',
              batch_size: int = 2,
              interactive_prompt: str = 'examples/gsm8k/prompts/interactive_examples.json',
@@ -73,9 +77,11 @@ if __name__ == '__main__':
             interactive_prompt = json.load(f)
         with open(useful_prompt) as f:
             useful_prompt = json.load(f)
-        llama_model = LLaMAModel(llama_ckpts, llama_size, max_batch_size=batch_size)
+        llama_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
         rap_gsm8k(base_model=llama_model,
                   interactive_prompt=interactive_prompt,
                   useful_prompt=useful_prompt,
                   batch_size=batch_size, **kwargs)
+
+
     fire.Fire(main)
