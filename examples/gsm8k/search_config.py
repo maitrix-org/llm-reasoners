@@ -60,8 +60,9 @@ class GSM8kConfig(SearchConfig):
             model_input = f.getvalue()
 
         logits = self.base_model.get_next_token_logits(model_input, ["Yes", "No"])
-        prob = np.exp(logits) / np.sum(np.exp(logits))
-        return self.calculate_reward(prob), {'r_useful': prob}
+        probs = np.exp(logits) / np.sum(np.exp(logits))
+        useful_prob = probs[0]
+        return self.calculate_reward(useful_prob), {'r_useful': useful_prob}
 
     def calculate_reward(self, r_useful, r_conf=None):
         if r_conf is None:
