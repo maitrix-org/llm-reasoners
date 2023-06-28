@@ -59,7 +59,7 @@ class GSM8kConfig(SearchConfig):
             f.write(self.useful_prompt["useful_prefix"])
             model_input = f.getvalue()
 
-        logits = self.base_model.get_next_token_logits(model_input, ["Yes", "No"])
+        logits = self.base_model.get_next_token_logits(model_input, ["Yes", "No"])[0]
         probs = np.exp(logits) / np.sum(np.exp(logits))
         useful_prob = probs[0]
         return self.calculate_reward(useful_prob), {'r_useful': useful_prob}

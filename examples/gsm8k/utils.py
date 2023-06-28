@@ -13,7 +13,7 @@ def retrieve_answer(output: str) -> Optional[str]:
 
 
 def retrieve_answer_from_dataset(answer: str) -> str:
-    return re.match(r'.*#### (.*)$', answer)[1]
+    return re.match(r'[\S\s]*#### (.*)$', answer)[1]
 
 
 def judge_answer(output: Optional[str], answer: str) -> bool:
