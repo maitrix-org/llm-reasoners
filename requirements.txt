@@ -5,6 +5,7 @@ torch
 
 # hf
 transformers
+datasets
 
 # llama
 git+https://github.com/facebookresearch/llama
