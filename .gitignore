@@ -3,3 +3,4 @@ notebooks/
 __pycache__/
 *.log
 .env
+.run/

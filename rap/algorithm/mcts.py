@@ -141,7 +141,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
             node = self._uct_select(node)
 
     def _uct(self, node: MCTSNode) -> float:
-        return node.reward + self.w_exp * np.sqrt(np.log(len(node.parent.cum_rewards)) / max(1, len(node.cum_rewards)))
+        return node.Q + self.w_exp * np.sqrt(np.log(len(node.parent.cum_rewards)) / max(1, len(node.cum_rewards)))
 
     def _uct_select(self, node: MCTSNode) -> MCTSNode:
         if self.uct_with_fast_reward:
@@ -173,6 +173,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                 return
             fast_rewards = [child.fast_reward for child in node.children]
             node = node.children[self.simulate_choice(fast_rewards)]
+            path.append(node)
 
     def _back_propagate(self, path: list[MCTSNode]):
         rewards = []
