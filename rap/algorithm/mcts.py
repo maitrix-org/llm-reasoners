@@ -65,7 +65,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                  cum_reward: Callable[[list[float]], float] = sum,
                  calc_q: Callable[[list[float]], float] = np.mean,
                  simulate_strategy: str | Callable[[list[float]], int] = 'max',
-                 output_strategy: str = 'max_cum_reward',
+                 output_strategy: str = 'max_reward',
                  uct_with_fast_reward: bool = True):
         """
         MCTS algorithm
@@ -73,12 +73,11 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         :param output_trace_in_each_iter: whether to output the trace of the chosen trajectory in each iteration ; the trace is *deepcopy*-ed
                                           will also output *tree_state_after_each_iter*, which is the *deepcopy*-ed root
         :param w_exp: the weight of exploration in UCT
-        :param cum_reward: the way to calculate the cumulative reward from each step.
-                           The rewards are in *reverse* order, i.e., reward of the last step comes first. Defaults: sum
+        :param cum_reward: the way to calculate the cumulative reward from each step. Defaults: sum
         :param calc_q: the way to calculate the Q value from histories. Defaults: np.mean
         :param simulate_strategy: simulate strategy. Options: 'max', 'sample', 'random', or use a custom function
         :param output_strategy: the way to output the result. The nodes are not *deepcopy*-ed, so the information is after all iterations
-                                Options: 'max_cum_reward': dfs on the final tree to find a trajectory with max reward using :param cum_reward:
+                                Options: 'max_reward': dfs on the final tree to find a trajectory with max reward using :param cum_reward:
                                          'follow_max': starting from root, choose the maximum reward child at each step. May output a non-terminal node if dead end
                                          'max_visit': the terminal node with maximum number of visits
                                          'max_iter': the trajectory with a terminal node and max reward among those in each iteration
@@ -104,7 +103,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         }
         self.simulate_choice: Callable[[list[float]], int] = default_simulate_strategies.get(simulate_strategy,
                                                                                              simulate_strategy)
-        assert output_strategy in ['max_cum_reward', 'follow_max', 'max_visit', 'max_iter', 'last_iter',
+        assert output_strategy in ['max_reward', 'follow_max', 'max_visit', 'max_iter', 'last_iter',
                                    'last_terminal_iter']
         self.output_strategy = output_strategy
         self.uct_with_fast_reward = uct_with_fast_reward
@@ -168,11 +167,9 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
     def _simulate(self, path: list[MCTSNode]):
         node = path[-1]
         while True:
-            if self._is_terminal_with_depth_limit(node):
-                return
             if node.children is None:
                 self._expand(node)
-            if len(node.children) == 0:
+            if self._is_terminal_with_depth_limit(node) or len(node.children) == 0:
                 return
             fast_rewards = [child.fast_reward for child in node.children]
             node = node.children[self.simulate_choice(fast_rewards)]
@@ -182,17 +179,17 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         cum_reward = -math.inf
         for node in reversed(path):
             rewards.append(node.reward)
-            cum_reward = self.cum_reward(rewards)
+            cum_reward = self.cum_reward(rewards[::-1])
             node.cum_rewards.append(cum_reward)
         return cum_reward
 
     def _dfs_max_reward(self, path: list[MCTSNode]) -> tuple[float, list[MCTSNode]]:
         cur = path[-1]
         if cur.is_terminal:
-            return self.cum_reward([node.reward for node in path[1::-1]]), path
+            return self.cum_reward([node.reward for node in path[1:]]), path
         if cur.children is None:
             return -math.inf, path
-        visited_children = [x for x in cur.children if x.state is not None]
+        visited_children = [x for x in cur.children if x.children is not None]
         if len(visited_children) == 0:
             return -math.inf, path
         return max((self._dfs_max_reward(path + [child]) for child in visited_children), key=lambda x: x[0])

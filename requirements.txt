@@ -2,6 +2,7 @@ tqdm
 fire
 numpy
 torch
+datasets
 
 # hf
 transformers

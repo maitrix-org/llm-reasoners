@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, Callable
 
 import numpy as np
 from datasets import load_dataset
@@ -15,7 +15,6 @@ def rap_gsm8k(base_model: LanguageModel,
               interactive_prompt: dict,
               useful_prompt: dict,
               search_algo: Type[SearchAlgorithm] = MCTS,
-              search_algo_params: dict = None,
               n_action: int = 4,
               n_confidence: int = 8,
               depth_limit: int = 5,
@@ -24,12 +23,11 @@ def rap_gsm8k(base_model: LanguageModel,
               early_stop_base: int = 2,
               early_stop_threshold: float = 0.5,
               reward_alpha: float = 0.5,
-              reward_confidence_default: float = 0.8):
-    if search_algo_params is None:
-        search_algo_params = {
-            'cum_reward': np.mean,
-            'calc_q': max,
-        }
+              reward_confidence_default: float = 0.8,
+              cum_reward: Callable[[list[float]], float] = sum,
+              calc_q: Callable[[list[float]], float] = np.mean,
+              **search_algo_params):
+    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q}
     world_model = GSM8kWorldModel(base_model=base_model, prompt=interactive_prompt,
                                   n_confidence=n_confidence, batch_size=batch_size,
                                   early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
@@ -51,11 +49,26 @@ def rap_gsm8k(base_model: LanguageModel,
 
 if __name__ == '__main__':
     import os
+    import sys
     import json
+    import warnings
     import fire
     from rap.lm import LLaMAModel
+    import random
+    import torch
+    import torch.backends.cudnn
+
+    np.random.seed(0)
+    random.seed(0)
+    torch.manual_seed(0)
+    torch.cuda.manual_seed(0)
+    torch.backends.cudnn.deterministic = True
 
     llama_ckpts = os.environ["LLAMA_CKPTS"]
+    local_rank = int(os.environ["LOCAL_RANK"])
+    if local_rank != 0:
+        sys.stdout = open(os.devnull, 'w')
+        warnings.filterwarnings('ignore')
 
 
     def main(llama_ckpt: str = llama_ckpts,
