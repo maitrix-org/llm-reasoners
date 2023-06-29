@@ -6,9 +6,9 @@ from datasets import load_dataset
 from rap import LanguageModel, RAPAgent, SearchAlgorithm
 from rap.algorithm import MCTS
 
-from .world_model import GSM8kWorldModel
-from .search_config import GSM8kConfig
-from . import utils
+from world_model import GSM8kWorldModel
+from search_config import GSM8kConfig
+import utils
 
 
 def rap_gsm8k(base_model: LanguageModel,
@@ -27,6 +27,7 @@ def rap_gsm8k(base_model: LanguageModel,
               cum_reward: Callable[[list[float]], float] = sum,
               calc_q: Callable[[list[float]], float] = np.mean,
               **search_algo_params):
+    
     search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q}
     world_model = GSM8kWorldModel(base_model=base_model, prompt=interactive_prompt,
                                   n_confidence=n_confidence, batch_size=batch_size,

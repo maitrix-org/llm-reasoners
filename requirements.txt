@@ -9,5 +9,6 @@ transformers
 datasets
 
 # llama
+sentencepiece
 git+https://github.com/facebookresearch/llama
 fairscale

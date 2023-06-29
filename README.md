@@ -16,20 +16,21 @@
 
 ## Results
 
+By Jul. 6
+
 |Methods|GSM8K|AQuA|SVAMP|ASDiv|CommonsenseQA|StrategyQA|
 |-|-|-|-|-|-|-|
 |Direct Prompting||
 |CoT|
 |Least-to-Most|
-|Beam Search|
+|Beam Search|Joshua|-|-|-|-|-|-|
 |ToT|
 |RAP|
 |CoT+SC|
-|Least-to-Most+SC|
+|Least-to-Most+SC|||||||
 |Beam Search - aggr|
 |ToT - aggr|
-|RAP - aggr|
-
+|RAP - aggr|Yi||||||
 
 
 |Methods|Blocksworld|Game of 24|Mini Crosswords|ProntoQA|
@@ -38,10 +39,11 @@
 |CoT|
 |Least-to-Most|
 |Beam Search|
-|ToT|
-|RAP|
-
+|ToT|Shibo|Haodi|Haodi||
+|RAP|Shibo|-|-|Yi|
 
 - explain why GSM is slow
 - explain the trick on code
 - add as many comments as possible
+- make a QAworldmodel
+- propose name
