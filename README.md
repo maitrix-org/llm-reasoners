@@ -7,9 +7,7 @@
 - [x] Implement GSM beam search
 
 ## Commands
-- `torchrun -nproc_per_node 2 -m examples.gsm8k.inference`
-  (plz use `-m` instead of the path for now).
-  If not using LLaMA, use `python -m examples.gsm8k.inference <arguments>`
+- `torchrun -nproc_per_node 2 examples/gsm8k/inference.py`
 - (need update) `python -m torch.distributed.run --nproc_per_node 2 --master-port 1074 examples/example_gsm8k_beamsearch.py --llama_path $LLAMA_CKPTS --llama_size 13B --prompt_path examples/prompts/example_gsm8k_prompt.json`
 
 
