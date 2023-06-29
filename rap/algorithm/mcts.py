@@ -3,6 +3,7 @@ from copy import deepcopy
 from typing import Generic, Optional, NamedTuple, Callable
 
 import numpy as np
+from tqdm import trange
 
 from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action, Trace
 
@@ -66,7 +67,8 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                  calc_q: Callable[[list[float]], float] = np.mean,
                  simulate_strategy: str | Callable[[list[float]], int] = 'max',
                  output_strategy: str = 'max_reward',
-                 uct_with_fast_reward: bool = True):
+                 uct_with_fast_reward: bool = True,
+                 use_tqdm: bool = True):
         """
         MCTS algorithm
 
@@ -111,6 +113,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         self._output_cum_reward = -math.inf
         self.trace_in_each_iter: list[list[MCTSNode]] = None
         self.root: Optional[MCTSNode] = None
+        self.use_tqdm = use_tqdm
 
     def iterate(self, node: MCTSNode) -> list[MCTSNode]:
         path = self._select(node)
@@ -202,7 +205,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         if self.output_trace_in_each_iter:
             self.trace_in_each_iter = []
 
-        for _ in range(self.n_iter):
+        for _ in trange(self.n_iter, disable=not self.use_tqdm, desc='MCTS iteration', leave=False):
             path = self.iterate(self.root)
             if self.output_trace_in_each_iter:
                 self.trace_in_each_iter.append(deepcopy(path))
