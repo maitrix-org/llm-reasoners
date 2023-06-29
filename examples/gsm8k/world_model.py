@@ -2,7 +2,7 @@ import io
 from typing import NamedTuple
 from collections import defaultdict
 from rap import WorldModel, LanguageModel
-from . import utils
+import utils
 
 
 class SubResult(NamedTuple):

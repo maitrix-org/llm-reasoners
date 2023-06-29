@@ -6,9 +6,9 @@ from datasets import load_dataset
 from rap import LanguageModel, RAPAgent, SearchAlgorithm
 from rap.algorithm import MCTS
 
-from .world_model import GSM8kWorldModel
-from .search_config import GSM8kConfig
-from . import utils
+from world_model import GSM8kWorldModel
+from search_config import GSM8kConfig
+import utils
 
 
 def rap_gsm8k(base_model: LanguageModel,
