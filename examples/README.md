@@ -1,8 +1,11 @@
 # Experiments
 ## GSM8K
 Running RAP on GSM8K [1]
-## Commands
-### Tree-of-thoughts
+### RAP
+
+## Blocksworld
+### Preparation
+1. Download the validator from [here](
 
 ### PAL + Guided Beam Search
 ```bash
