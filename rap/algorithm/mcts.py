@@ -156,6 +156,9 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
     def _expand(self, node: MCTSNode):
         if node.state is None:
             node.state, aux = self.world_model.step(node.parent.state, node.action)
+            # reward is calculated after the state is updated, so that the
+            # information can be cached and passed from the world model
+            # to the reward function with **aux
             node.reward = self.search_config.reward(node.state, node.action, **node.fast_reward_aux, **aux)
             node.is_terminal = self.world_model.is_terminal(node.state)
         children = []

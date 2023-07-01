@@ -11,13 +11,14 @@ class BWState(NamedTuple):
     See the docstring of BlocksWorldModel for more details.
     """
     step_idx: int
+    last_blocks_state: str
     blocks_state: str
     buffered_action: BWAction
 
 
 class BlocksWorldModel(WorldModel[BWState, BWAction]):
     """Blocks World World Model
-    State: (step_idx, block state, buffered action)
+    State: (step_idx, last_blocks_state, blocks_state, buffered_action)
     Action: e.g. "put the red block on the green block"
     Special note about the state:
         the block state is updated every two actions. When there is a block in hand, 
@@ -39,7 +40,7 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
 
         :return: the initial state
         """
-        return BWState(step_idx=0, blocks_state=utils.
+        return BWState(step_idx=0, last_blocks_state="", blocks_state=utils.
                        extract_init_state(self.example), buffered_action="")
 
     def step(self, state: BWState, action: BWAction) -> tuple[BWState, dict]:
@@ -50,18 +51,19 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
         :return: the next state and an empty dict (placeholder)
         """
         state = state.copy()
-        if state[1] == "":
-            # if no action buffered, simply buffer the action
-            state = state.copy()
-            state[1] = action
-            return state, {}
-
         buffered_action = state["buffered_action"]
         blocks_state = state["blocks_state"]
         step_idx = state["step_idx"]
         blocks_state = self.update_blocks(blocks_state, buffered_action)
-        blocks_state = self.update_blocks(state, action)
-        state = BWState(step_idx=step_idx+1, blocks_state=blocks_state, buffered_action="")
+        if state["buffered_action"] == "":
+            # if no action buffered, buffer the action
+            new_buffered_action = action
+        else:
+            # if action buffered, clear the buffer
+            new_buffered_action = ""
+
+        state = BWState(step_idx=step_idx+1, last_blocks_state=state["blocks_state"],
+                        blocks_state=blocks_state, buffered_action=new_buffered_action)
         return state, {}
 
     def update_blocks(self, block_states: str, action: BWAction) -> str:

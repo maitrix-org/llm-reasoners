@@ -152,7 +152,7 @@ def extract_goals(example):
     :param example: example
     """
     goal_statement = example["question"].split("[STATEMENT]")[-1]\
-        .split("My goal is to ")[1].split("[PLAN]")[0]
+        .split("My goal is to ")[1].split("[PLAN]")[0].strip()
     goals = re.findall("the [a-z]{0,10} block is on top of the [a-z]{0,10} block", goal_statement)
     return goals
 

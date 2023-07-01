@@ -1,7 +1,8 @@
 import numpy as np
 
-from rap import SearchConfig, LanguageModel
+import utils
 from world_model import BWState, BWAction
+from rap import SearchConfig, LanguageModel
 
 class BWConfig(SearchConfig):
     def __init__(self,
@@ -9,7 +10,9 @@ class BWConfig(SearchConfig):
                  prompt: dict,
                  batch_size=2,
                  reward_alpha=0.5,
-                 depth_limit=5) -> None:
+                 depth_limit=5,
+                 goal_reward_default=0.,
+                 goal_reached_reward=100) -> None:
         super().__init__()
         self.base_model = base_model
         self.example = None
@@ -17,50 +20,28 @@ class BWConfig(SearchConfig):
         self.batch_size = batch_size
         self.depth_limit = depth_limit
         self.reward_alpha = reward_alpha
+        self.goal_reward_default = goal_reward_default
+        self.goal_reached_reward = goal_reached_reward
 
     def get_actions(self, state: BWState) -> list[BWAction]:
-        with io.StringIO() as f:
-            f.write(self.prompt["input"])
-            f.write(self.prompt["question_prefix"] + self.example + "\n")
-            for idx, (q, a, _) in enumerate(state):
-                f.write(self.prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
-                f.write(self.prompt["answer_prefix"].format(idx + 1) + " " + a + "\n")
-            f.write(self.prompt["subquestion_prefix"].format(len(state) + 1))
-            if self.force_terminating_on_depth_limit and len(state) + 1 >= self.depth_limit:
-                f.write(" " + self.prompt["overall_question_prefix"])
-            model_input = f.getvalue()
+        blocks_state = state["blocks_state"]
+        return utils.generate_all_actions(blocks_state)
 
-        outputs = []
-        for idx in range(0, self.n_actions, self.batch_size):
-            n_samples = min(self.n_actions - idx, self.batch_size)
-            outputs += self.base_model.generate([model_input] * n_samples, end_token="\n", hide_input=True).text
+    def fast_reward(self, state: BWState, action: BWAction) -> tuple[float, dict]:
+        pass
 
-        return_actions = [output.strip() for output in outputs]
-        return return_actions
+        return self.calculate_reward(intuition), {'intuition': intuition}
 
-    def fast_reward(self, state: GSM8kState, action: GSM8kAction) -> tuple[float, dict]:
-        with io.StringIO() as f:
-            f.write(self.useful_prompt["input"])
-            f.write(self.useful_prompt["question_prefix"] + self.example + "\n")
-            for idx, (q, _, _) in enumerate(state):
-                f.write(self.useful_prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
-            f.write(self.useful_prompt["new_subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
-            f.write(self.useful_prompt["useful_prefix"])
-            model_input = f.getvalue()
-
-        logits = self.base_model.get_next_token_logits(model_input, ["Yes", "No"])[0]
-        probs = np.exp(logits) / np.sum(np.exp(logits))
-        useful_prob = probs[0]
-        return self.calculate_reward(useful_prob), {'r_useful': useful_prob}
-
-    def calculate_reward(self, r_useful, r_conf=None):
-        if r_conf is None:
-            r_conf = self.reward_confidence_default
-        return r_useful ** self.reward_alpha * r_conf ** (1 - self.reward_alpha)
+    def calculate_reward(self, intuition, goal_reached=None):
+        if goal_reached is None:
+            goal_reached = self.goal_reward_default
+        elif goal_reached[0]:
+            goal_reached = self.goal_reached_reward
+        return intuition * self.reward_alpha + goal_reached * (1 - self.reward_alpha)
 
     def reward(self, state: GSM8kState, action: GSM8kAction,
-               r_useful: float = None,
-               confidence: float = None) -> float:
-        assert r_useful is not None, "useful_reward is required to calculate reward in this search config, consider passing it in fast_reward"
-        assert confidence is not None, "confidence is required to calculate reward in this search config, consider passing it in world model's step"
-        return self.calculate_reward(r_useful, confidence)
+               intuition: float = None,
+               goal_reached: tuple[bool, float] = None) -> float:
+        assert intuition is not None, "intuition is required to calculate reward in this search config, consider passing it in fast_reward"
+        assert goal_reached is not None, "goal_reached is required to calculate reward in this search config, consider passing it in world model's step"
+        return self.calculate_reward(intuition, goal_reached)
