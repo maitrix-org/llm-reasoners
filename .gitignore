@@ -1,4 +1,9 @@
 .idea/
 notebooks/
 __pycache__/
+*.egg-info/
 *.log
+*.egg-info/
+.env
+.run/
+logs/

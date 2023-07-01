@@ -7,26 +7,28 @@
 - [x] Implement GSM beam search
 
 ## Commands
-- `python -m torch.distributed.run --nproc_per_node 2 --master-port 1074 examples/example_gsm8k_beamsearch.py --llama_path $LLAMA_CKPTS --llama_size 13B --prompt_path examples/prompts/example_gsm8k_prompt.json`
+- `torchrun -nproc_per_node 2 examples/gsm8k/inference.py`
+- (need update) `python -m torch.distributed.run --nproc_per_node 2 --master-port 1074 examples/example_gsm8k_beamsearch.py --llama_path $LLAMA_CKPTS --llama_size 13B --prompt_path examples/prompts/example_gsm8k_prompt.json`
 
 
 
 ## Results
+
+By Jul. 6
 
 |Methods|GSM8K|AQuA|SVAMP|ASDiv|CommonsenseQA|StrategyQA|
 |-|-|-|-|-|-|-|
 |Direct Prompting||
 |CoT|
 |Least-to-Most|
-|Beam Search|
+|Beam Search|Joshua|-|-|-|-|-|-|
 |ToT|
 |RAP|
 |CoT+SC|
-|Least-to-Most+SC|
+|Least-to-Most+SC|||||||
 |Beam Search - aggr|
 |ToT - aggr|
-|RAP - aggr|
-
+|RAP - aggr|Yi||||||
 
 
 |Methods|Blocksworld|Game of 24|Mini Crosswords|ProntoQA|
@@ -35,10 +37,11 @@
 |CoT|
 |Least-to-Most|
 |Beam Search|
-|ToT|
-|RAP|
-
+|ToT|Shibo|Haodi|Haodi||
+|RAP|Shibo|-|-|Yi|
 
 - explain why GSM is slow
 - explain the trick on code
 - add as many comments as possible
+- make a QAworldmodel
+- propose name

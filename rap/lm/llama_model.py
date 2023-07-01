@@ -118,13 +118,12 @@ class LLaMAModel(LanguageModel):
         mask = torch.zeros_like(log_prob)
         for i, (t, input_t) in enumerate(zip(tokens.tolist(), prompt_tokens)):
             t = t[:params.max_seq_len]
-            if hide_input:
-                t = t[len(input_t):len(input_t) + max_gen_len]
-            else:
-                t = t[:len(prompt_tokens[i]) + max_gen_len]
+            t = t[:len(prompt_tokens[i]) + max_gen_len]
             t = [x if x != self.tokenizer.pad_id else self.tokenizer.eos_id for x in t]
             if end_pos[i].item() != -1:
-                t = t[: end_pos[i]]
+                t = t[:end_pos[i]]
+            if hide_input:
+                t = t[len(input_t):]
             decoded.append(self.tokenizer.decode(t))
         log_prob = log_prob * mask
 

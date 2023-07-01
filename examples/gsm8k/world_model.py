@@ -2,7 +2,7 @@ import io
 from typing import NamedTuple
 from collections import defaultdict
 from rap import WorldModel, LanguageModel
-from . import utils
+import utils
 
 
 class SubResult(NamedTuple):
@@ -93,7 +93,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
         return state, aux
 
     def is_terminal(self, state: GSM8kState) -> bool:
-        if len(state) > 0 and "Now we can answer" in state[-1][0]:
+        if len(state) > 0 and "Now we can answer" in state[-1].sub_question:
             return True
         else:
             return False
