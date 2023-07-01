@@ -1,34 +1,24 @@
-import io
 import numpy as np
 
-from world_model import GSM8kState, GSM8kAction
 from rap import SearchConfig, LanguageModel
+from world_model import BWState, BWAction
 
-
-class GSM8kConfig(SearchConfig):
+class BWConfig(SearchConfig):
     def __init__(self,
                  base_model: LanguageModel,
                  prompt: dict,
-                 useful_prompt: dict,
-                 n_actions=4,
                  batch_size=2,
                  reward_alpha=0.5,
-                 reward_confidence_default=0.8,
-                 depth_limit=5,
-                 force_terminating_on_depth_limit=True) -> None:
+                 depth_limit=5) -> None:
         super().__init__()
         self.base_model = base_model
         self.example = None
         self.prompt = prompt
-        self.useful_prompt = useful_prompt
         self.batch_size = batch_size
-        self.n_actions = n_actions
-        self.force_terminating_on_depth_limit = force_terminating_on_depth_limit
         self.depth_limit = depth_limit
         self.reward_alpha = reward_alpha
-        self.reward_confidence_default = reward_confidence_default
 
-    def get_actions(self, state: GSM8kState) -> list[GSM8kAction]:
+    def get_actions(self, state: BWState) -> list[BWAction]:
         with io.StringIO() as f:
             f.write(self.prompt["input"])
             f.write(self.prompt["question_prefix"] + self.example + "\n")

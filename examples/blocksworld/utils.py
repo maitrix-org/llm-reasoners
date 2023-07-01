@@ -19,8 +19,7 @@ def validate_plan(domain, instance, plan_file):
 
     if "Plan valid" in response:
         return True, response
-    else:
-        return False, response
+    return False, response
 
 
 def generate_all_actions(state):
@@ -57,7 +56,8 @@ def apply_change(change, state):
     if "and the " in state and ", and the" not in state:
         state = state.replace("and the ", ", and the ")
     states = state.split(", ")
-    states = [s.strip()[4:].strip(".") if s.strip().startswith("and ") else s.strip().strip(".") for s in states]
+    states = [s.strip()[4:].strip(".") if s.strip().startswith("and ")\
+               else s.strip().strip(".") for s in states]
     changes = change.lower().strip().strip(".").split(", ")
     for c in changes:
         if c.startswith("and "):
@@ -110,7 +110,6 @@ def apply_change(change, state):
             print(states)
             torch.distributed.barrier()
             raise Exception("ERROR")
-        
     states = [s for s in states if s != ""]
     priority_states = []
     for s in states:
@@ -134,3 +133,34 @@ def apply_change(change, state):
     sorted_states = [x.strip() for _, x in sorted(zip(priority_states, states))]
     sorted_states[-1] = "and " + sorted_states[-1]
     return ", ".join(sorted_states) + "."
+
+
+def goal_check(goals, blocks_state):
+    """Check if the goals are met and return the percentage of goals met
+
+    :param goals: goals
+    :param blocks_state: current blocks state
+    """
+    meetings = [g in blocks_state for g in goals]
+    if sum(meetings) == len(meetings):
+        return True, 1.0
+    return False, sum(meetings) / len(meetings)
+
+def extract_goals(example):
+    """Extract the goals from the example
+    
+    :param example: example
+    """
+    goal_statement = example["question"].split("[STATEMENT]")[-1]\
+        .split("My goal is to ")[1].split("[PLAN]")[0]
+    goals = re.findall("the [a-z]{0,10} block is on top of the [a-z]{0,10} block", goal_statement)
+    return goals
+
+def extract_init_state(example):
+    """Extract the initial state from the example
+    
+    :param example: example
+    """
+    init_statement = example["question"].split("[STATEMENT]\nAs initial conditions ")[1]\
+        .split("my goal")[0].strip()
+    return init_statement
