@@ -29,11 +29,13 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
     def __init__(self,
                  base_model: LanguageModel,
                  prompt: dict,
-                 batch_size=2) -> None:
+                 batch_size=2,
+                 depth_limit=8) -> None:
         super().__init__()
         self.base_model = base_model
         self.prompt = prompt
         self.batch_size = batch_size
+        self.depth_limit = depth_limit
 
     def init_state(self) -> list:
         """Initialize the world model.
@@ -64,7 +66,7 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
 
         state = BWState(step_idx=step_idx+1, last_blocks_state=state["blocks_state"],
                         blocks_state=blocks_state, buffered_action=new_buffered_action)
-        return state, {}
+        return state, {"goal_reached": self.is_terminal(state)}
 
     def update_blocks(self, block_states: str, action: BWAction) -> str:
         """Update the block states with the action.
@@ -90,5 +92,7 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
 
     def is_terminal(self, state: BWState) -> bool:
         if utils.goal_check(utils.extract_goals(self.example), state["blocks_state"])[0]:
+            return True
+        if state["step_idx"] >= self.depth_limit:
             return True
         return False

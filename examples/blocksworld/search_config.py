@@ -28,8 +28,14 @@ class BWConfig(SearchConfig):
         return utils.generate_all_actions(blocks_state)
 
     def fast_reward(self, state: BWState, action: BWAction) -> tuple[float, dict]:
-        pass
-
+        if state["buffered_action"] == "":
+            # if no action buffered
+            current_blocks_state = state["blocks_state"]
+        else:
+            # if action buffered
+            current_blocks_state = state["last_blocks_state"]
+        inputs = self.prompt["demonstrations"].replace("<init_state>", current_blocks_state).replace("<goal>", self.example["goal"]).replace("<action>", action + "\n")
+        intuition = self.base_model.get_ll(inputs, [inputs + action])[0]
         return self.calculate_reward(intuition), {'intuition': intuition}
 
     def calculate_reward(self, intuition, goal_reached=None):
@@ -39,7 +45,7 @@ class BWConfig(SearchConfig):
             goal_reached = self.goal_reached_reward
         return intuition * self.reward_alpha + goal_reached * (1 - self.reward_alpha)
 
-    def reward(self, state: GSM8kState, action: GSM8kAction,
+    def reward(self, state: BWState, action: BWAction,
                intuition: float = None,
                goal_reached: tuple[bool, float] = None) -> float:
         assert intuition is not None, "intuition is required to calculate reward in this search config, consider passing it in fast_reward"
