@@ -7,10 +7,10 @@
 - [x] Implement GSM beam search
 
 ## Commands
-- `torchrun -nproc_per_node 2 examples/gsm8k/inference.py`
+- `pip install -r requirements.txt`
+- `pip install -e .`
+- `python -m torch.distributed.run --nproc_per_node 2 --master-port 1074 examples/gsm8k/inference.py`
 - (need update) `python -m torch.distributed.run --nproc_per_node 2 --master-port 1074 examples/example_gsm8k_beamsearch.py --llama_path $LLAMA_CKPTS --llama_size 13B --prompt_path examples/prompts/example_gsm8k_prompt.json`
-
-
 
 ## Results
 

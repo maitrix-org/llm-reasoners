@@ -1,16 +1,137 @@
 import re
 import os
 import torch
+import json
+import yaml
+import random
 
-def validate_plan(domain, instance, plan_file):
+try:
+    from tarski.io import PDDLReader
+except:
+    raise ImportError("To run experiments on blocksworld, please install Tarski.")
+
+# helper functions from https://github.com/karthikv792/LLMs-Planning
+
+def instance_to_text_blocksworld(problem, get_plan, data, shuffle=False):
+    """Function to make a blocksworld instance into human-readable format
+    
+    :param get_plan: Flag to return the plan as text as well
+    """
+
+    OBJS = data['encoded_objects']
+
+    # ----------- PARSE THE PROBLEM ----------- #
+    INIT, GOAL = parse_problem(problem, data, shuffle)
+
+    # ----------- PLAN TO TEXT ----------- #
+    PLAN = ""
+    plan_file = "sas_plan"
+    if get_plan:
+        PLAN = "\n"
+        with open(plan_file) as f:
+            plan = [line.rstrip() for line in f][:-1]
+
+        for action in plan:
+            action = action.strip("(").strip(")")
+            act_name, objs = action.split(" ")[0], action.split(" ")[1:]
+            objs = [OBJS[obj] for obj in objs]
+            PLAN += data['actions'][act_name].format(*objs) + "\n"
+        PLAN += "[PLAN END]\n"
+
+    return INIT, GOAL, PLAN
+
+def parse_problem(problem, data, shuffle):
+    def get_sorted(init_atoms):
+        return sorted(init_atoms, key=lambda x: x.symbol.name+" "+\
+                      " ".join([subterm.name for subterm in x.subterms]))
+
+    def parse(init_goal_preds, OBJS):
+        TEXT = ""
+        predicates = []
+
+        init_goal_preds = list(init_goal_preds)
+        for atom in init_goal_preds:
+            objs = []
+            for subterm in atom.subterms:
+                objs.append(OBJS[subterm.name])
+            predicates.append(data['predicates'][atom.symbol.name].format(*objs))
+        if len(predicates) > 1:
+            TEXT += ", ".join(predicates[:-1]) + f" and {predicates[-1]}"
+        else:
+            TEXT += predicates[0]
+        return TEXT
+    
+    OBJS = data['encoded_objects']
+
+    init_atoms = get_sorted(problem.init.as_atoms())
+    goal_preds = get_sorted(problem.goal.subformulas) if hasattr(problem.goal, 'subformulas') else [problem.goal]
+
+    if shuffle:
+        random.shuffle(init_atoms)
+        random.shuffle(goal_preds)
+
+    # ----------- INIT STATE TO TEXT ----------- #
+    INIT = parse(init_atoms, OBJS)
+
+    # ----------- GOAL TO TEXT ----------- #
+    GOAL = parse(goal_preds, OBJS)
+
+    return INIT, GOAL
+
+def fill_template(INIT, GOAL, PLAN):
+    text = ""
+    if INIT != "":
+        text += "\n[STATEMENT]\n"
+        text += f"As initial conditions I have that, {INIT.strip()}."
+    if GOAL != "":
+        text += f"\nMy goal is to have that {GOAL}."
+    text += f"\n\nMy plan is as follows:\n\n[PLAN]{PLAN}"
+
+    # TODO: Add this replacement to the yml file -- Use "Translations" dict in yml
+    text = text.replace("-", " ").replace("ontable", "on the table")
+    return text
+
+def read_config(config_file):
+    with open(config_file, 'r') as file:
+        data = yaml.safe_load(file)
+    return data
+
+def get_problem(instance, domain):
+    reader = PDDLReader(raise_on_error=True)
+    reader.parse_domain(domain)
+    return reader.parse_instance(instance)
+
+# defined for RAP
+
+def load_blocksworld(config_file, data_file, prompt):
+    config_data = read_config(config_file)
+    domain_file = config_data["domain_file"]
+    domain_pddl = f'gpt-plan-benchmark/gpt_plan_test/instances/{domain_file}'
+    data_files = json.load(open(data_file, 'r'))
+    data = []
+    for cur_instance in data_files:
+        cur_data = {}
+        problem = get_problem(cur_instance[0], domain_pddl)
+        gt_plan_text = cur_instance[1]
+        INIT, GOAL, PLAN = instance_to_text_blocksworld(problem, False, config_data)
+
+        cur_data["icl"] = prompt["icl"]
+        # gt_plan = self.compute_plan(domain_pddl, cur_instance)
+        cur_data["question"] = fill_template(
+            *instance_to_text_blocksworld(problem, False, config_data)) + "\n"
+        cur_data["instance_file"] = cur_instance[0]
+        data.append(cur_data)
+    return data
+
+def validate_plan(domain, instance, lm_plan_file):
     """Validate the plan using VAL
 
     :param domain: domain file
     :param instance: instance file
-    :param plan_file: plan file (saved earlier)
+    :param lm_plan_file: plan file (saved earlier)
     """
     val_path = os.getenv("VAL")
-    cmd = f"{val_path}/validate {domain} {instance} {plan_file}"
+    cmd = f"{val_path}/validate {domain} {instance} {lm_plan_file}"
     response = os.popen(cmd).read()
 
     print("RESPONSE:::", response)
@@ -146,13 +267,15 @@ def goal_check(goals, blocks_state):
         return True, 1.0
     return False, sum(meetings) / len(meetings)
 
-def extract_goals(example):
+def extract_goals(example, return_raw=False):
     """Extract the goals from the example
     
     :param example: example
     """
     goal_statement = example["question"].split("[STATEMENT]")[-1]\
         .split("My goal is to ")[1].split("[PLAN]")[0].strip()
+    if return_raw:
+        return goal_statement
     goals = re.findall("the [a-z]{0,10} block is on top of the [a-z]{0,10} block", goal_statement)
     return goals
 
@@ -161,6 +284,6 @@ def extract_init_state(example):
     
     :param example: example
     """
-    init_statement = example["question"].split("[STATEMENT]\nAs initial conditions ")[1]\
-        .split("my goal")[0].strip()
+    init_statement = example["question"].split("[STATEMENT]\nAs initial conditions I have that, ")[1]\
+        .split("My goal")[0].strip()
     return init_statement

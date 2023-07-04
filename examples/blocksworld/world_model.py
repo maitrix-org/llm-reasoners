@@ -3,6 +3,7 @@
 from typing import NamedTuple
 import utils
 from rap import WorldModel, LanguageModel
+import copy
 
 BWAction = str
 class BWState(NamedTuple):
@@ -37,7 +38,7 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
         self.batch_size = batch_size
         self.depth_limit = depth_limit
 
-    def init_state(self) -> list:
+    def init_state(self) -> BWState:
         """Initialize the world model.
 
         :return: the initial state
@@ -52,19 +53,19 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
         :param action: the action to take
         :return: the next state and an empty dict (placeholder)
         """
-        state = state.copy()
-        buffered_action = state["buffered_action"]
-        blocks_state = state["blocks_state"]
-        step_idx = state["step_idx"]
-        blocks_state = self.update_blocks(blocks_state, buffered_action)
-        if state["buffered_action"] == "":
+        state = copy.deepcopy(state)
+        buffered_action = state.buffered_action
+        blocks_state = state.blocks_state
+        step_idx = state.step_idx
+        blocks_state = self.update_blocks(blocks_state, action)
+        if state.buffered_action == "":
             # if no action buffered, buffer the action
             new_buffered_action = action
         else:
             # if action buffered, clear the buffer
             new_buffered_action = ""
 
-        state = BWState(step_idx=step_idx+1, last_blocks_state=state["blocks_state"],
+        state = BWState(step_idx=step_idx+1, last_blocks_state=state.blocks_state,
                         blocks_state=blocks_state, buffered_action=new_buffered_action)
         return state, {"goal_reached": self.is_terminal(state)}
 
@@ -75,6 +76,9 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
         :param action: the action to take
         :return: the updated block states
         """
+
+        print("state", block_states)
+        print("action", action)
         if "Pick" in action:
             world_update_prompt = self.prompt["world_update_pickup"].format(block_states, action)
         elif "Unstack" in action:
@@ -84,15 +88,15 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
         elif "Stack" in action:
             world_update_prompt = self.prompt["world_update_stack"].format(block_states, action)
 
-        world_output = self.base_model.generate([world_update_prompt], num_return_sequences=1,
-                                    eos_token="\n", hide_input=True).text[0]
+        world_output = self.base_model.generate([world_update_prompt],
+                                    end_token="\n", hide_input=True).text[0]
         world_change = world_output.split("[CHANGE]")[-1]
         new_state = utils.apply_change(world_change, block_states)
         return new_state
 
     def is_terminal(self, state: BWState) -> bool:
-        if utils.goal_check(utils.extract_goals(self.example), state["blocks_state"])[0]:
+        if utils.goal_check(utils.extract_goals(self.example), state.blocks_state)[0]:
             return True
-        if state["step_idx"] >= self.depth_limit:
+        if state.step_idx >= self.depth_limit:
             return True
         return False

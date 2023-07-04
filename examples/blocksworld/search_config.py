@@ -24,17 +24,20 @@ class BWConfig(SearchConfig):
         self.goal_reached_reward = goal_reached_reward
 
     def get_actions(self, state: BWState) -> list[BWAction]:
-        blocks_state = state["blocks_state"]
+        print("state: ", state)
+        print("type: ", type(state))
+        blocks_state = state.blocks_state
         return utils.generate_all_actions(blocks_state)
 
     def fast_reward(self, state: BWState, action: BWAction) -> tuple[float, dict]:
-        if state["buffered_action"] == "":
+        if state.buffered_action == "":
             # if no action buffered
-            current_blocks_state = state["blocks_state"]
+            current_blocks_state = state.blocks_state
         else:
             # if action buffered
-            current_blocks_state = state["last_blocks_state"]
-        inputs = self.prompt["demonstrations"].replace("<init_state>", current_blocks_state).replace("<goal>", self.example["goal"]).replace("<action>", action + "\n")
+            current_blocks_state = state.last_blocks_state
+        inputs = self.prompt["icl"].replace("<init_state>", current_blocks_state)\
+            .replace("<goal>", utils.extract_goals(self.example, return_raw=True)).replace("<action>", action + "\n")
         intuition = self.base_model.get_ll(inputs, [inputs + action])[0]
         return self.calculate_reward(intuition), {'intuition': intuition}
 

@@ -27,7 +27,8 @@ def setup_model_parallel() -> Tuple[int, int]:
 
 
 class LLaMAModel(LanguageModel):
-    def __init__(self, path, size, max_batch_size=1, max_seq_len=2048, local_rank=-1, world_size=-1):
+    def __init__(self, path, size, max_batch_size=1, max_seq_len=2048,
+                 local_rank=-1, world_size=-1):
         super().__init__()
         if local_rank == -1 or world_size == -1:
             local_rank, world_size = setup_model_parallel()
@@ -163,6 +164,25 @@ class LLaMAModel(LanguageModel):
             logits.append(case_logits[cand].cpu().numpy())
         return logits
 
+
+    @torch.inference_mode()
+    def encode(self, tokens: torch.Tensor, start_pos: int):
+        _bsz, seqlen = tokens.shape
+        h = self.model.tok_embeddings(tokens)
+        self.model.freqs_cis = self.model.freqs_cis.to(h.device)
+        freqs_cis = self.model.freqs_cis[start_pos : start_pos + seqlen]
+
+        mask = None
+        if seqlen > 1:
+            mask = torch.full((1, 1, seqlen, seqlen), float("-inf"), device=tokens.device)
+            mask = torch.triu(mask, diagonal=start_pos + 1).type_as(h)
+
+        for layer in self.model.layers:
+            h = layer(h, start_pos, freqs_cis, mask)
+        h = self.model.norm(h)
+        output = self.model.output(h[:, -1, :])  # only compute last logits
+        return output.float(), h
+
     @torch.no_grad()
     def get_ll(
             self,
@@ -186,7 +206,7 @@ class LLaMAModel(LanguageModel):
         for k, t in enumerate(prompts_tokens):
             tokens[k, : len(t)] = torch.tensor(t)[:params.max_seq_len].long()
 
-        _, h = self.model.forward(tokens[:, :], 0)
+        _, h = self.encode(tokens[:, :], 0)
         logits = self.model.output(h)
         acc_probs = torch.zeros(bsz).cuda()
         for i in range(len(prefix_tokens), max_prompt_size):
@@ -207,3 +227,34 @@ class LLaMAModel(LanguageModel):
         next_token = torch.multinomial(probs_sort, num_samples=1)
         next_token = torch.gather(probs_idx, -1, next_token)
         return next_token
+
+class DummyLLaMAModel(LanguageModel):
+    def __init__(self, path, size, max_batch_size=1, max_seq_len=2048,
+                 local_rank=-1, world_size=-1):
+        super().__init__()
+
+    @torch.no_grad()
+    def generate(
+            self,
+            inputs: list[str],
+            max_gen_len: int = 2048,
+            temperature: float = 0.8,
+            top_p: float = 0.95,
+            end_token: str = "",  # TODO: change this to a function
+            hide_input: bool = False,
+    ) -> GenerateOutput:
+        return GenerateOutput(inputs, np.zeros(len(inputs)))
+
+    @torch.no_grad()
+    def get_ll(
+            self,
+            prefix: str,
+            contents: list[str],
+    ) -> np.ndarray:
+        return np.zeros(len(contents))
+
+    @torch.no_grad()
+    def get_next_token_logits(self,
+                              prompt: Union[str, list[str]],
+                              candidates: Union[list[str], list[list[str]]]) -> list[np.ndarray]:
+        return [np.zeros(len(cand)) for cand in candidates]

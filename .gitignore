@@ -8,3 +8,4 @@ __pycache__/
 .run/
 logs/
 data/
+gpt-plan-benchmark/
