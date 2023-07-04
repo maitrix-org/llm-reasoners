@@ -20,6 +20,7 @@ def rap_game24(base_model: LanguageModel,
               resume: int = 0,
               n_action: int = 4,
               n_confidence: int = 8,
+              n_select_sample: int = 5,
               n_eval_sample: int = 3,
               depth_limit: int = 5,
               force_terminating_on_depth_limit: bool = True,
@@ -39,7 +40,7 @@ def rap_game24(base_model: LanguageModel,
 
     ## keep the best 5 candidates, need at most 4 steps to solve
     ## following ToT, eval step will consider number of times to prompt for state evaluation
-    search_algo_params |= {'beam_size': 1, 'max_depth': depth_limit}
+    search_algo_params |= {'beam_size': n_select_sample, 'max_depth': depth_limit}
     world_model = game24WorldModel(base_model=base_model, prompt=prompts,
                                   n_confidence=n_confidence, batch_size=batch_size)
     config = game24Config(base_model=base_model, prompt=prompts,
