@@ -98,6 +98,9 @@ class GSMConfig(SearchConfig):
 
     def reward(self, state: list, action: str, **kwargs) -> float:
         return kwargs["next_state"][-1][2]
+    
+    def fast_reward(self, state: list, action: str, **kwargs) -> float:
+        return kwargs["next_state"][-1][2]
 
 
 def main(llama_path, llama_size, prompt_path):

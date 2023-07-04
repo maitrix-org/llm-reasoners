@@ -7,3 +7,5 @@ __pycache__/
 .env
 .run/
 logs/
+*data/
+scripts/

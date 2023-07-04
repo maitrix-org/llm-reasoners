@@ -5,7 +5,6 @@ import torch
 import numpy as np
 import re
 from collections import defaultdict
-from datasets import load_dataset
 import fire
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -107,7 +106,7 @@ def main(llama_path, llama_size, prompt_path):
     
     game24_dataset = read_data(file='./game24/24.csv')
     for question in game24_dataset:
-        print(agent(question["question"], output_trace=True))
+        print(agent(question, output_trace=True))
 
 if __name__ == "__main__":
     fire.Fire(main)
