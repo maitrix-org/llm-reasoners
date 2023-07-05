@@ -154,17 +154,17 @@ def generate_all_actions(state):
         block_color = [re.search("the ([a-z]{0,10}) block is clear", b).group(1) for b in block]
         for c in block_color:
             if f"the {c} block is on the table" in state:
-                return_list.append(f"Pick up the {c} block")
+                return_list.append(f"pick up the {c} block")
             else:
                 c_ = re.search(f"the {c} block" + " is on top of the ([a-z]{0,10}) block", state).group(1)
-                return_list.append(f"Unstack the {c} block from on top of the {c_} block")
+                return_list.append(f"unstack the {c} block from on top of the {c_} block")
     else:
         c = re.search("is holding the ([a-z]{0,10}) block", state).group(1)
         block = re.findall("the [a-z]{0,10} block is clear", state)
         clear_color = [re.search("the ([a-z]{0,10}) block is clear", b).group(1) for b in block]
         for c_ in clear_color:
-            return_list.append(f"Stack the {c} block on top of the {c_} block")
-        return_list.append(f"Put down the {c} block")
+            return_list.append(f"stack the {c} block on top of the {c_} block")
+        return_list.append(f"put down the {c} block")
     return return_list
 
 
@@ -273,7 +273,7 @@ def extract_goals(example, return_raw=False):
     :param example: example
     """
     goal_statement = example["question"].split("[STATEMENT]")[-1]\
-        .split("My goal is to ")[1].split("[PLAN]")[0].strip()
+        .split("My goal is to ")[1].split("My plan is as follows")[0].strip()
     if return_raw:
         return goal_statement
     goals = re.findall("the [a-z]{0,10} block is on top of the [a-z]{0,10} block", goal_statement)

@@ -98,6 +98,7 @@ class LLaMAModel(LanguageModel):
                 probs = torch.softmax(logits / temperature, dim=-1)
                 next_token = self.sample_top_p(probs, top_p)
             else:
+                probs = torch.softmax(logits, dim=-1)
                 next_token = torch.argmax(logits, dim=-1)
             next_token = next_token.reshape(-1)
             next_token = torch.where(
@@ -123,9 +124,10 @@ class LLaMAModel(LanguageModel):
             t = [x if x != self.tokenizer.pad_id else self.tokenizer.eos_id for x in t]
             if end_pos[i].item() != -1:
                 t = t[:end_pos[i]]
+            decoded_tokens = self.tokenizer.decode(t)
             if hide_input:
-                t = t[len(input_t):]
-            decoded.append(self.tokenizer.decode(t))
+                decoded_tokens = decoded_tokens[len(inputs[i]) :]
+            decoded.append(decoded_tokens)
         log_prob = log_prob * mask
 
         return GenerateOutput(decoded, log_prob.cpu().numpy())
@@ -184,7 +186,7 @@ class LLaMAModel(LanguageModel):
         return output.float(), h
 
     @torch.no_grad()
-    def get_ll(
+    def get_loglikelihood(
             self,
             prefix: str,
             contents: list[str],
@@ -246,7 +248,7 @@ class DummyLLaMAModel(LanguageModel):
         return GenerateOutput(inputs, np.zeros(len(inputs)))
 
     @torch.no_grad()
-    def get_ll(
+    def get_loglikelihood(
             self,
             prefix: str,
             contents: list[str],

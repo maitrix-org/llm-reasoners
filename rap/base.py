@@ -50,7 +50,7 @@ class LanguageModel(ABC):
         ...
 
     @abstractmethod
-    def get_ll(self,
+    def get_loglikelihood(self,
                prefix: str,
                contents: list[str],
                **kwargs) -> np.ndarray:
@@ -90,7 +90,7 @@ class SearchConfig(ABC, Generic[State, Action]):
     def fast_reward(self, state: State, action: Action) -> float: ...
 
     @abstractmethod
-    def reward(self, state, action, **kwargs) -> float: ...
+    def reward(self, state, action, **kwargs) -> tuple[float, dict]: ...
 
     def update_example(self, example: Example) -> None:
         self.example = example

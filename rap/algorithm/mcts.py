@@ -1,6 +1,7 @@
 import math
 from copy import deepcopy
 from typing import Generic, Optional, NamedTuple, Callable
+import itertools
 
 import numpy as np
 from tqdm import trange
@@ -9,8 +10,9 @@ from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action, Trace
 
 
 class MCTSNode(Generic[State, Action]):
+    id_iter = itertools.count()
     def __init__(self, state: Optional[State], action: Optional[Action], parent: "Optional[MCTSNode]" = None,
-                 fast_reward: float = 0., fast_reward_aux=None,
+                 fast_reward: float = 0., fast_reward_details=None,
                  is_terminal: bool = False, calc_q: Callable[[list[float]], float] = np.mean):
         """
         A node in the MCTS search tree
@@ -22,11 +24,12 @@ class MCTSNode(Generic[State, Action]):
         :param is_terminal: whether the current state is a terminal state
         :param calc_q: the way to calculate the Q value from histories. Defaults: np.mean
         """
-        if fast_reward_aux is None:
-            fast_reward_aux = {}
+        self.id = next(MCTSNode.id_iter)
+        if fast_reward_details is None:
+            fast_reward_details = {}
         self.cum_rewards: list[float] = []
         self.fast_reward = self.reward = fast_reward
-        self.fast_reward_aux = fast_reward_aux
+        self.fast_reward_details = fast_reward_details
         self.is_terminal = is_terminal
         self.action = action
         self.state = state
@@ -158,16 +161,19 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
             node.state, aux = self.world_model.step(node.parent.state, node.action)
             # reward is calculated after the state is updated, so that the
             # information can be cached and passed from the world model
-            # to the reward function with **aux
-            node.reward = self.search_config.reward(node.state, node.action, **node.fast_reward_aux, **aux)
+            # to the reward function with **aux without repetitive computation
+            node.reward, node.reward_details = self.search_config.\
+                reward(node.state, node.action, **node.fast_reward_details, **aux)
             node.is_terminal = self.world_model.is_terminal(node.state)
+
         children = []
         actions = self.search_config.get_actions(node.state)
         for action in actions:
-            fast_reward, fast_reward_aux = self.search_config.fast_reward(node.state, action)
+            fast_reward, fast_reward_details = self.search_config.fast_reward(node.state, action)
             child = MCTSNode(state=None, action=action, parent=node,
-                             fast_reward=fast_reward, fast_reward_aux=fast_reward_aux, calc_q=self.calc_q)
+                             fast_reward=fast_reward, fast_reward_details=fast_reward_details, calc_q=self.calc_q)
             children.append(child)
+
         node.children = children
 
     def _simulate(self, path: list[MCTSNode]):

@@ -66,7 +66,7 @@ class GSM8kConfig(SearchConfig):
     def calculate_reward(self, r_useful, r_conf=None):
         if r_conf is None:
             r_conf = self.reward_confidence_default
-        return r_useful ** self.reward_alpha * r_conf ** (1 - self.reward_alpha)
+        return r_useful ** self.reward_alpha * r_conf ** (1 - self.reward_alpha), {'r_useful': r_useful, 'r_conf': r_conf}
 
     def reward(self, state: GSM8kState, action: GSM8kAction,
                r_useful: float = None,

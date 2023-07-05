@@ -67,7 +67,7 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
 
         state = BWState(step_idx=step_idx+1, last_blocks_state=state.blocks_state,
                         blocks_state=blocks_state, buffered_action=new_buffered_action)
-        return state, {"goal_reached": self.is_terminal(state)}
+        return state, {"goal_reached": utils.goal_check(utils.extract_goals(self.example), blocks_state)}
 
     def update_blocks(self, block_states: str, action: BWAction) -> str:
         """Update the block states with the action.
@@ -77,21 +77,25 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
         :return: the updated block states
         """
 
-        print("state", block_states)
-        print("action", action)
-        if "Pick" in action:
-            world_update_prompt = self.prompt["world_update_pickup"].format(block_states, action)
-        elif "Unstack" in action:
-            world_update_prompt = self.prompt["world_update_unstack"].format(block_states, action)
-        elif "Put" in action:
-            world_update_prompt = self.prompt["world_update_putdown"].format(block_states, action)
-        elif "Stack" in action:
-            world_update_prompt = self.prompt["world_update_stack"].format(block_states, action)
-
+        # print("state", block_states)
+        # print("action", action)
+        if "pick" in action:
+            key = "world_update_pickup"
+        elif "unstack" in action:
+            key = "world_update_unstack"
+        elif "put" in action:
+            key = "world_update_putdown"
+        elif "stack" in action:
+            key = "world_update_stack"
+        else:
+            raise ValueError("Invalid action")
+        world_update_prompt = self.prompt[key].format(block_states, action.capitalize() + ".")
+        # print("world update prompt:", f"'{world_update_prompt}'")
         world_output = self.base_model.generate([world_update_prompt],
-                                    end_token="\n", hide_input=True).text[0]
-        world_change = world_output.split("[CHANGE]")[-1]
-        new_state = utils.apply_change(world_change, block_states)
+                                    end_token="\n", hide_input=True, temperature=0).text[0].strip()
+        # print("output:", f"'{world_output}'")
+        # print("world change:", world_output)
+        new_state = utils.apply_change(world_output, block_states)
         return new_state
 
     def is_terminal(self, state: BWState) -> bool:

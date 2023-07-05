@@ -77,10 +77,10 @@ if __name__ == '__main__':
     import torch.backends.cudnn
     from rap.lm import LLaMAModel
 
-    np.random.seed(0)
-    random.seed(0)
-    torch.manual_seed(0)
-    torch.cuda.manual_seed(0)
+    np.random.seed(1)
+    random.seed(1)
+    torch.manual_seed(1)
+    torch.cuda.manual_seed(1)
     torch.backends.cudnn.deterministic = True
     local_rank = int(os.environ["LOCAL_RANK"])
     llama_ckpts = os.environ["LLAMA_CKPTS"]
@@ -91,7 +91,8 @@ if __name__ == '__main__':
              data_path: str = 'examples/blocksworld/data/step_4.json',
              disable_log: bool = False,
              config_file: str = "examples/blocksworld/data/bw_config.yaml",
-             lm_plan_file: str = 'lm_plan.tmp'):
+             lm_plan_file: str = 'lm_plan.tmp',
+             **kwargs):
 
         with open(prompt_path) as f:
             prompt = json.load(f)
@@ -101,5 +102,5 @@ if __name__ == '__main__':
                disable_log=disable_log or local_rank != 0,
                data_path=data_path,
                config_file=config_file,
-               lm_plan_file=lm_plan_file)
+               lm_plan_file=lm_plan_file, **kwargs)
     fire.Fire(main)
