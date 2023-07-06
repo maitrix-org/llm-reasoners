@@ -14,6 +14,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         cur_beam = [([(None, init_state)], 0)]  # (trace, reward)
         terminal_beam = []
         for _ in range(self.max_depth):
+            print(f"\n----new level----")
             new_beam = []
             for trace, reward in cur_beam:
                 state = trace[-1][-1]
@@ -28,6 +29,6 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             cur_beam = new_beam[:self.beam_size]
 
         if output_trace:
-            return terminal_beam[0][0]
+            return terminal_beam#[0][0]
         else:
-            return terminal_beam[0][0][-1][-1]
+            return terminal_beam#[0][0][-1][-1]
