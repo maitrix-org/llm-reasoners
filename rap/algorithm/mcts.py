@@ -11,6 +11,11 @@ from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action, Trace
 
 class MCTSNode(Generic[State, Action]):
     id_iter = itertools.count()
+
+    @classmethod
+    def reset_id(cls):
+        cls.id_iter = itertools.count()
+
     def __init__(self, state: Optional[State], action: Optional[Action], parent: "Optional[MCTSNode]" = None,
                  fast_reward: float = 0., fast_reward_details=None,
                  is_terminal: bool = False, calc_q: Callable[[list[float]], float] = np.mean):
@@ -240,6 +245,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                  world_model: WorldModel[State, Action],
                  search_config: SearchConfig[State, Action],
                  **kwargs) -> MCTSResult:
+        MCTSNode.reset_id()
         self.world_model = world_model
         self.search_config = search_config
 
