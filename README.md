@@ -1,48 +1,46 @@
-# LLM-search
+# 🤔Reasoners
+Reasoners is a toolkit to support advanced reasoning with LLMs, especially tree-structured reasoning (e.g., [RAP](https://arxiv.org/abs/2305.14992), [ToT](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633), etc.). With Reasoners, it's easy to apply state-of-the-art LLMs (Open-sourced models or OpenAI API) to any problems you want to solve with any reasoning algorithms. The reasoning tree can be visualized with a line of code.
 
-## To-do
-- [ ] Update algorithm interface (allows for more return values as a dict)
-- [ ] In algorithms, move the returned keys in `__init__`
-- [x] Add a language model
-- [x] Implement GSM beam search
-
-## Commands
-- `pip install -r requirements.txt`
-- `pip install -e .`
-- `python -m torch.distributed.run --nproc_per_node 2 --master-port 1074 examples/gsm8k/inference.py`
-- `python -m torch.distributed.run --nproc_per_node 4 examples/blocksworld/inference.py --llama_size 30B --output_trace_in_each_iter | tee log.log`
-- (need update) `python -m torch.distributed.run --nproc_per_node 2 --master-port 1074 examples/example_gsm8k_beamsearch.py --llama_path $LLAMA_CKPTS --llama_size 13B --prompt_path examples/prompts/example_gsm8k_prompt.json`
-
-## Results
-
-By Jul. 6
-
-|Methods|GSM8K|AQuA|SVAMP|ASDiv|CommonsenseQA|StrategyQA|
-|-|-|-|-|-|-|-|
-|Direct Prompting||
-|CoT|
-|Least-to-Most|
-|Beam Search|Joshua|-|-|-|-|-|-|
-|ToT|
-|RAP|
-|CoT+SC|
-|Least-to-Most+SC|||||||
-|Beam Search - aggr|
-|ToT - aggr|
-|RAP - aggr|Yi||||||
+## Why Reasoners?
+- **Unified Formulation**: We regard reasoning problems as decision making problems with certian action/state definitions. This formulation covers most popular reasoning algorithms and enable a unified interface for all of them. Users only need to define the state transition and some search configurations to work on a new domain.
+- **Visualization**: We provide visualization tools to help users understand the reasoning process. Even for the most complicated reasoning algorithms, e.g. Monte-Carlo Tree Search, users can easily diagnose what happened.
+- **LLaMA Integration**: We integrate the state-of-the-art open-sourced LLM: LLaMA, and implement many helper functions, making it as versatile as HuggingFace while as fast as the official implementation.
 
 
-|Methods|Blocksworld|Game of 24|Mini Crosswords|ProntoQA|
-|-|-|-|-|-|
-|Direct Prompting|
-|CoT|
-|Least-to-Most|
-|Beam Search|
-|ToT|Shibo|Haodi|Haodi||
-|RAP|Shibo|-|-|Yi|
+## Online Demo
+> TBA
 
-- explain why GSM is slow
-- explain the trick on code
-- add as many comments as possible
-- make a QAworldmodel
-- propose name
+## Quick Tour
+> We need a very short example here, perhaps game of 24?
+
+## Installation
+```bash
+git clone https://github.com/Ber666/LLM-search
+cd LLM-search
+pip install -r requirements.txt
+pip install -e .
+```
+Note some optional modules (e.g. local visualization) may need other dependencies. Please refer to the error message for details.
+
+## Benchmarks
+We tested different reasoning algorithms on first 100 examples of the following benchmarks (To be updated). Superscripted rows indicate the reported results in the original paper.
+
+|Methods|Base LLM|GSM8K|AQuA|SVAMP|ASDiv|CommonsenseQA|StrategyQA|
+|-|-|-|-|-|-|-|-|
+|CoT|-|-|-|-|-|-|-|
+|CoT+SC|-|-|-|-|-|-|-|
+|Least-to-Most+SC|-|-|-|-|-|-|-|
+|Guided Decoding<sup>[[1]](https://arxiv.org/abs/2305.00633)</sup>|CodeX (PAL)|-|-|-|-|-|-|
+|Guided Decoding|LLaMA-65B (PAL)|-|-|-|-|-|-|
+|RAP - BeamSearch|-|-|-|-|-|-|-|
+|RAP - MCTS|-|-|-|-|-|-|-|
+|RAP - MCTS - aggr|
+
+
+|Methods|Base LLM|Blocksworld|Game of 24|Mini Crosswords|ProntoQA|
+|-|-|-|-|-|-|
+|CoT|-|-|-|-|-|
+|ToT<sup>[[2]](https://arxiv.org/abs/2305.10601)<sup>|-|-|-|-|-|
+|ToT|-|-|-|-|-|
+|RAP|LLaMA-33B|-|-|-|-|
+

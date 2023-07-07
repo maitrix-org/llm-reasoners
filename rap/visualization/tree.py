@@ -9,6 +9,11 @@ class Tree():
     def __init__(self,
                  nodes: list[dict],
                  edges: list[tuple[int, int, dict]]) -> None:
+        """Tree data structure for visualization
+
+        :param nodes: list of nodes, each node is a dictionary of information you want to show
+        :param edges: list of edges, each edge is a tuple of (parent_id, child_id, edge_info). edge_info is a dictionary of information you want to show
+        """
         self.nodes = nodes
         self.edges = edges
         self.n_nodes = len(nodes)
@@ -108,7 +113,7 @@ class Tree():
                         opacity=0.8
                         ))
 
-        axis = dict(showline=False, # hide axis line, grid, ticklabels and  title
+        axis = dict(showline=False,
                     zeroline=False,
                     showgrid=False,
                     showticklabels=False,
@@ -129,7 +134,13 @@ class Tree():
 
 
 class TreeLog():
+
     def __init__(self, tree_snapshots: list[Tree]) -> None:
+        """Data structure to store tree snapshots as the log
+
+        :param tree_snapshots: list of tree snapshots. The index of the list is the time step. Note that the node with the same id in different time steps should be the same. This will enable the dynamic visualization of the tree in the frontend (to be available).
+        """
+
         self.tree_snapshots = tree_snapshots
 
     def get_tree(self, time_step: int) -> Tree:
@@ -143,8 +154,8 @@ class TreeLog():
         '''load tree log from MCTSResults
         
         :param path: path to MCTSResults
-        :param node_translator: function to translate MCTSNode to dictionary to be stored in TreeLog
-        :param edge_translator: function to translate the incoming edge to a MCTSNode to a dictionary to be stored in TreeLog'''
+        :param node_translator: function to translate a `MCTSNode` to a dictionary to be stored in the Tree
+        :param edge_translator: function to translate the incoming edge to a `MCTSNode` to a dictionary to be stored in TreeLog'''
         snapshots = []
         def get_all_nodes(node, edges, nodes):
             # print(int(node.id))
