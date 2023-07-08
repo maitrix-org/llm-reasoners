@@ -1,6 +1,7 @@
 tqdm
 fire
 numpy
+scipy
 torch
 datasets
 
