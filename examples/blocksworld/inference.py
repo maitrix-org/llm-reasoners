@@ -17,7 +17,7 @@ def rap_bw(base_model: LanguageModel,
            search_algo: Type[SearchAlgorithm] = MCTS,
            data_path: str = 'data',
            resume: int = 0,
-           depth_limit: int = 5,
+           depth_limit: int = 6,
            reward_alpha: float = 0.5,
            batch_size = 1,
            goal_reached_reward = 100,
@@ -38,11 +38,10 @@ def rap_bw(base_model: LanguageModel,
         with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
             print(sys.argv, file=f)
 
-    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q}
-    world_model = BlocksWorldModel(base_model=base_model, prompt=prompt, batch_size=batch_size,
-                                   depth_limit=depth_limit)
+    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, "depth_limit": depth_limit}
+    world_model = BlocksWorldModel(base_model=base_model, prompt=prompt, batch_size=batch_size)
     config = BWConfig(base_model=base_model, prompt=prompt, batch_size=batch_size,
-                      reward_alpha=reward_alpha,depth_limit=depth_limit, goal_reached_reward=goal_reached_reward,
+                      reward_alpha=reward_alpha, goal_reached_reward=goal_reached_reward,
                       goal_reward_default=goal_reward_default)
     search_algo = search_algo(**search_algo_params)
     agent = RAPAgent(world_model=world_model, search_config=config, search_algo=search_algo)
@@ -92,6 +91,7 @@ if __name__ == '__main__':
              disable_log: bool = False,
              config_file: str = "examples/blocksworld/data/bw_config.yaml",
              lm_plan_file: str = 'lm_plan.tmp',
+             depth_limit: int = 6,
              **kwargs):
 
         with open(prompt_path) as f:
@@ -102,5 +102,6 @@ if __name__ == '__main__':
                disable_log=disable_log or local_rank != 0,
                data_path=data_path,
                config_file=config_file,
+               depth_limit=depth_limit,
                lm_plan_file=lm_plan_file, **kwargs)
     fire.Fire(main)

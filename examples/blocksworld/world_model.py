@@ -21,7 +21,7 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
     """Blocks World World Model
     State: (step_idx, last_blocks_state, blocks_state, buffered_action)
     Action: e.g. "put the red block on the green block"
-    Special note about the state:
+    Additional notes about the state:
         the block state is updated every two actions. When there is a block in hand, 
         the block state is not updated, but the action is buffered. With the next action, 
         the block state is updated and the buffer is cleared.
@@ -30,13 +30,11 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
     def __init__(self,
                  base_model: LanguageModel,
                  prompt: dict,
-                 batch_size=2,
-                 depth_limit=8) -> None:
+                 batch_size=2) -> None:
         super().__init__()
         self.base_model = base_model
         self.prompt = prompt
         self.batch_size = batch_size
-        self.depth_limit = depth_limit
 
     def init_state(self) -> BWState:
         """Initialize the world model.
@@ -49,7 +47,7 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
     def step(self, state: BWState, action: BWAction) -> tuple[BWState, dict]:
         """Take a step in the world model.
         
-        :param state: the current state
+        :param state: the current state (see the docstring of BlocksWorldModel)
         :param action: the action to take
         :return: the next state and an empty dict (placeholder)
         """
@@ -72,13 +70,11 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
     def update_blocks(self, block_states: str, action: BWAction) -> str:
         """Update the block states with the action.
 
-        :param block_states: the current block states
+        :param block_states: the current block states. Note that this argument is a string,
+            and it's only a part of 'BWState'
         :param action: the action to take
         :return: the updated block states
         """
-
-        # print("state", block_states)
-        # print("action", action)
         if "pick" in action:
             key = "world_update_pickup"
         elif "unstack" in action:
@@ -90,11 +86,8 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
         else:
             raise ValueError("Invalid action")
         world_update_prompt = self.prompt[key].format(block_states, action.capitalize() + ".")
-        # print("world update prompt:", f"'{world_update_prompt}'")
         world_output = self.base_model.generate([world_update_prompt],
                                     end_token="\n", hide_input=True, temperature=0).text[0].strip()
-        # print("output:", f"'{world_output}'")
-        # print("world change:", world_output)
         new_state = utils.apply_change(world_output, block_states)
         world_output = self.base_model.generate([world_update_prompt], hide_input=True, num_return_sequences=1,
                                                 eos_token="\n").text[0]
@@ -104,7 +97,5 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
 
     def is_terminal(self, state: BWState) -> bool:
         if utils.goal_check(utils.extract_goals(self.example), state.blocks_state)[0]:
-            return True
-        if state.step_idx >= self.depth_limit:
             return True
         return False

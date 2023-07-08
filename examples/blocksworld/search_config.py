@@ -10,7 +10,6 @@ class BWConfig(SearchConfig):
                  prompt: dict,
                  batch_size=2,
                  reward_alpha=0.5,
-                 depth_limit=5,
                  goal_reward_default=0.,
                  goal_reached_reward=100) -> None:
         super().__init__()
@@ -18,7 +17,6 @@ class BWConfig(SearchConfig):
         self.example = None
         self.prompt = prompt
         self.batch_size = batch_size
-        self.depth_limit = depth_limit
         self.reward_alpha = reward_alpha
         self.goal_reward_default = goal_reward_default
         self.goal_reached_reward = goal_reached_reward
@@ -39,10 +37,10 @@ class BWConfig(SearchConfig):
         previous_action = state.buffered_action + "\n" if state.buffered_action != "" else ""
         inputs = self.prompt["icl"].replace("<init_state>", current_blocks_state)\
             .replace("<goals>", utils.extract_goals(self.example, return_raw=True)).replace("<action>", previous_action)
-        print("inputs:", inputs)
-        print("actions:", [inputs + action])
+        # print("inputs:", inputs)
+        # print("actions:", [inputs + action])
         intuition = self.base_model.get_loglikelihood(inputs, [inputs + action])[0]
-        print("intuition:", intuition)
+        # print("intuition:", intuition)
         return self.calculate_reward(intuition), {'intuition': intuition}
 
     def calculate_reward(self, intuition, goal_reached=None):
@@ -63,4 +61,4 @@ class BWConfig(SearchConfig):
 
     def update_example(self, example) -> None:
         super().update_example(example)
-        print("goal", utils.extract_goals(example, return_raw=True))
+        # print("goal", utils.extract_goals(example, return_raw=True))
