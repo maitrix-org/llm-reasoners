@@ -29,9 +29,6 @@ if api_base != "":
     print("Warning: OPENAI_API_BASE is set to {}".format(api_base))
     openai.api_base = api_base
 
-@backoff.on_exception(backoff.expo, openai.error.OpenAIError)
-def completions_with_backoff(**kwargs):
-    return openai.ChatCompletion.create(**kwargs)
 
 
 class GPTModel(LanguageModel):
@@ -41,23 +38,26 @@ class GPTModel(LanguageModel):
         self.max_seq_len = max_seq_len
 
     @torch.no_grad()
-    def generate(self, prompt, temperature=0.8, max_tokens=1000, generation_num=1, end_token=None) -> list:
+    def generate(self, prompt, temperature=0.7, max_tokens=1000, generation_num=1, end_token=None) -> list:
         messages = [{"role": "user", "content": prompt}]
         return self.chatgpt(messages, temperature=temperature, max_tokens=max_tokens, generation_num=generation_num, end_token=end_token)
 
-    @torch.no_grad()
-    def chatgpt(self, messages, temperature=0.8, max_tokens=1000, generation_num=1, end_token=None) -> list:
+    def chatgpt(self, messages, temperature=0.7, max_tokens=1000, generation_num=1, end_token=None) -> list:
         global completion_tokens, prompt_tokens
         outputs = []
         while generation_num > 0:
             cnt = min(generation_num, 20)
             generation_num -= cnt
-            res = completions_with_backoff(model=self.model, messages=messages, temperature=temperature, max_tokens=max_tokens, n=cnt, stop=end_token)
+            res = self.completions_with_backoff(model=self.model, messages=messages, temperature=temperature, max_tokens=max_tokens, n=cnt, stop=end_token)
             outputs.extend([choice["message"]["content"] for choice in res["choices"]])
             # log completion tokens
             completion_tokens += res["usage"]["completion_tokens"]
             prompt_tokens += res["usage"]["prompt_tokens"]
         return outputs
+    
+    @backoff.on_exception(backoff.expo, openai.error.OpenAIError)
+    def completions_with_backoff(self, **kwargs):
+        return openai.ChatCompletion.create(**kwargs)
     
 
     

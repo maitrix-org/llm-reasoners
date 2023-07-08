@@ -13,18 +13,27 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         init_state = world.init_state()
         cur_beam = [([(None, init_state)], 0)]  # (trace, reward)
         terminal_beam = []
-        for _ in range(self.max_depth):
-            print(f"\n----new level----")
+        for i in range(self.max_depth):
+            print(f"\n----new step {i}----")
             new_beam = []
+            new_actions = []
             for trace, reward in cur_beam:
                 state = trace[-1][-1]
                 if world.is_terminal(state) or len(trace) == self.max_depth:
                     terminal_beam.append((trace, reward))
                 else:
-                    for action in config.get_actions(state):
-                        next_state = world.step(state, action)
-                        next_reward = config.reward(state, action, next_state=next_state)
-                        new_beam.append((trace + [(action, next_state)], reward + next_reward))
+                    new_actions += [(state, action) for action in config.get_actions(state)]
+                    # for action in config.get_actions(state):
+                    #     next_state = world.step(state, action)
+                    #     next_reward = config.reward(state, action, next_state=next_state)
+                    #     new_beam.append((trace + [(action, next_state)], next_reward))
+                    #     # customize reward inside reward function (e.g. the reward of the trace)
+                    #     # new_beam.append((trace + [(action, next_state)], reward + next_reward))
+            for state, action in new_actions:
+                next_state = world.step(state, action)
+                next_reward = config.reward(state, action, next_state=next_state)
+                new_beam.append((trace + [(action, next_state)], next_reward))
+
             new_beam.sort(key=lambda x: x[1], reverse=True)
             cur_beam = new_beam[:self.beam_size]
 

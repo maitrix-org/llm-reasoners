@@ -3,6 +3,7 @@ import os
 import re
 import torch as th
 import pandas as pd
+from collections import Counter
 import sympy
 
 """
@@ -28,10 +29,10 @@ def read_data(file='24.csv'):
 def get_input(self, idx: int) -> str:
     return self.data[idx]
 
-def test_output(data, idx: int, output: str):
+def test_output(question: str, output: str):
     expression = output.strip().split('\n')[-1].lower().replace('answer: ', '').split('=')[0]
     numbers = re.findall(r'\d+', expression)
-    problem_numbers = re.findall(r'\d+', data[idx])
+    problem_numbers = re.findall(r'\d+', question)
     if sorted(numbers) != sorted(problem_numbers):
         return {'r': 0}
     try:
@@ -45,11 +46,35 @@ def get_current_numbers(y: str) -> str:
     last_line = y.strip().split('\n')[-1]
     return last_line.split('left: ')[-1].split(')')[0]
 
+def correct_left_numbers(x: str, y: str, action: str) -> str:
+    ## find the actual left numbers
+    original_nums = get_current_numbers(y if y else x).split(' ')
+    # print(original_nums)
+    original_cnt = Counter(original_nums)
+    action = action.strip().lower().split(' (left')[0]
+    if ' = ' in action:
+        expression, new_num = action.split(' = ')[0], action.strip().lower().split(' = ')[1]
+        used_nums = re.findall(r'\d+', expression)
+        left_nums = [new_num]
+        for num in used_nums:
+            if num in original_cnt:
+                original_cnt[num] -= 1
+        for num in original_cnt:
+            if original_cnt[num] > 0:
+                for _ in range(original_cnt[num]):
+                    left_nums.append(num)
+    else:
+        print(f'no equation in action: {action}')
+        left_nums = re.findall(r'\d+', action)
+    correct_action = action + ' (left: ' + ' '.join(left_nums) + ')'
+    return correct_action
+
+
 def propose_prompt_wrap(x: str, y: str='', all_prompt: dict={}) -> str:
         current_numbers = get_current_numbers(y if y else x)
         if current_numbers == '24':
             prompt = all_prompt['cot_prompt'].format(input=x) + 'Steps:' + y
-            # print([prompt])
+            # print(f"Final propose: {prompt}")
         else:
             prompt = all_prompt['propose_prompt'].format(input=current_numbers)
         return prompt

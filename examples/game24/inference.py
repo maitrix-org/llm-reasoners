@@ -2,7 +2,7 @@ import pickle
 from typing import Type, Callable, Optional
 
 import numpy as np
-from datasets import load_dataset
+# from datasets import load_dataset
 from tqdm import tqdm
 from datetime import datetime
 
@@ -33,7 +33,7 @@ def rap_game24(base_model: LanguageModel,
     if not disable_log:
         if log_dir is None:
             log_dir = f'logs/game24_{search_algo.__name__}/{datetime.now().strftime("%m%d%Y-%H%M%S")}'
-        os.makedirs(log_dir, exist_ok=resume > 0)
+        os.makedirs(log_dir, exist_ok=resume >= 0)
         os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
         with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
             print(sys.argv, file=f)
@@ -49,14 +49,27 @@ def rap_game24(base_model: LanguageModel,
     search_algo = search_algo(**search_algo_params)
     agent = RAPAgent(world_model=world_model, search_config=config, search_algo=search_algo)
 
-    dataset = utils.read_data(file='./examples/game24/data/24.csv')[:2]
+    ## test from 900-999
+    dataset = utils.read_data(file='./examples/game24/data/24.csv')[900:906]
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume, desc='game24')):
+        print(f'\n======== example: {example} ========')
+        agent.world_model = game24WorldModel(base_model=base_model, prompt=prompts,
+                                  n_confidence=n_confidence, batch_size=batch_size)
+        config.value_cache = {}
         algo_output = agent(example)
-        print(f'agent output: {algo_output}')
-        output = utils.test_output(dataset, i, algo_output.sub_answer)
         answer = 24
-        correct = output['r']
+        correct = 0
+        output = ''
+        # print(f'agent output: {algo_output}')
+        ## eval each trace, consider correct if one trace can correctly reach 24
+        for end_state in algo_output:
+            output = end_state[0][-1][-1]
+            print(output.sub_answer.replace('\n', '->'))
+            output_check = utils.test_output(output.sub_question, output.sub_answer)
+            if output_check['r']:
+                correct = output_check['r']
+                break
 
         correct_count += correct
         accuracy = correct_count / (i + 1)
@@ -75,7 +88,7 @@ if __name__ == '__main__':
     import json
     import warnings
     import fire
-    from rap.lm import LLaMAModel
+    from rap.lm import LLaMAModel, GPTModel
     import random
     import torch
     import torch.backends.cudnn
@@ -94,17 +107,20 @@ if __name__ == '__main__':
 
 
     def main(llama_ckpt: str = llama_ckpts,
-             llama_size: str = '30B',
+             llama_size: str = '13B',
              batch_size: int = 2,
              prompts: str = 'examples/game24/prompts/game24.json',
              disable_log: bool = False,
              **kwargs):
         with open(prompts) as f:
             prompts = json.load(f)
-        llama_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
-        rap_game24(base_model=llama_model,
+        # llama_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
+        ## try GPT
+        gpt_model = GPTModel(model='gpt-3.5-turbo')
+        rap_game24(base_model=gpt_model,
                   prompts=prompts,
                   batch_size=batch_size,
+                  n_select_sample=5,
                   disable_log=disable_log or local_rank != 0,
                   **kwargs)
 
