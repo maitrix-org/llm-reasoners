@@ -29,11 +29,18 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                     #     new_beam.append((trace + [(action, next_state)], next_reward))
                     #     # customize reward inside reward function (e.g. the reward of the trace)
                     #     # new_beam.append((trace + [(action, next_state)], reward + next_reward))
+            #### remove duplicates
+            unique_actions = []
+            checked_actions = set()
             for state, action in new_actions:
+                if action not in checked_actions:
+                    unique_actions.append((state, action))
+                    checked_actions.add(action)
+            for state, action in unique_actions:
                 next_state = world.step(state, action)
                 next_reward = config.reward(state, action, next_state=next_state)
                 new_beam.append((trace + [(action, next_state)], next_reward))
-
+            print(f"----generated candidates: {len(new_beam)}----")
             new_beam.sort(key=lambda x: x[1], reverse=True)
             cur_beam = new_beam[:self.beam_size]
 

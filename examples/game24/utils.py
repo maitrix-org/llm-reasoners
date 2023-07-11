@@ -73,7 +73,7 @@ def correct_left_numbers(x: str, y: str, action: str) -> str:
 def propose_prompt_wrap(x: str, y: str='', all_prompt: dict={}) -> str:
         current_numbers = get_current_numbers(y if y else x)
         if current_numbers == '24':
-            prompt = all_prompt['cot_prompt'].format(input=x) + 'Steps:' + y
+            prompt = all_prompt['cot_prompt'].format(input=x) + 'Steps:\n' + y
             # print(f"Final propose: {prompt}")
         else:
             prompt = all_prompt['propose_prompt'].format(input=current_numbers)
@@ -90,6 +90,7 @@ def value_prompt_wrap(x: str, y: str, all_prompt: dict={}) -> str:
     
 def value_outputs_unwrap(x: str, y: str, value_outputs: list) -> float:
     if len(y.strip().split('\n')) == 4 and 'answer' not in y.lower():
+        print("not an answer at step 4")
         return 0
     value_names = [_.split('\n')[-1] for _ in value_outputs]
     value_map = {'impossible': 0.001, 'likely': 1, 'sure': 20}  # TODO: ad hoc

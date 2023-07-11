@@ -26,6 +26,7 @@ class game24Config(SearchConfig):
         self.n_actions = n_actions
         self.n_eval = n_eval
         self.value_cache = {}
+        self.local_cache = {}
         self.depth_limit = depth_limit
         self.reward_confidence_default = reward_confidence_default
 
@@ -35,7 +36,7 @@ class game24Config(SearchConfig):
         #     f.write(utils.propose_prompt_wrap(x, y, self.prompt) + "\n")
         #     f.write(utils.value_prompt_wrap(x, y, self.prompt) + "\n")
         propose_prompt = utils.propose_prompt_wrap(state[0], state[1], self.prompt)
-        # print(f'propose input:{propose_prompt}')
+        print(f'propose prompt:{propose_prompt}')
         
         # outputs = []
         # for idx in range(0, self.n_actions, self.batch_size):
@@ -44,18 +45,16 @@ class game24Config(SearchConfig):
         ## query with llama
         # outputs = self.base_model.generate([model_input] * 1, max_gen_len=256, end_token=")", hide_input=True).text[0]
         ## query with GPT
-        outputs = self.base_model.generate(propose_prompt, generation_num=1, end_token=None)[0]
-        # print(f'original actions: {outputs}')
+        outputs = self.base_model.generate(propose_prompt, generation_num=1, end_token=None)
 
         ######## post process for operation actions
         ## some post-process for llama
-        outputs = outputs.split('Input: ')
+        # outputs = outputs[0].split('Input: ')
         ## post-process for llama and gpt
-        outputs = outputs[0].split('\n')#[:-1]
+        outputs = outputs[0].split('\n')
+        print(f'original actions: {outputs}')
         ## correct the left number status
         # outputs = [utils.correct_left_numbers(x, y, action) if 'left' in action else action for action in outputs]
-        ## remove duplicates
-        outputs = list(set(outputs))
         return_actions = [y + _ + '\n' for _ in outputs]
         # flatten_actions = [action.replace('\n', '->') for action in outputs]
         # flatten_actions = '\n'.join(flatten_actions)
@@ -70,10 +69,12 @@ class game24Config(SearchConfig):
         ## get values (state eval) for each action
         ## impossible, maybe, sure
         x, y = next_state[0], next_state[1]
+        flatten_y = y.strip().replace('\n', '->')
         # print(f"--checking status: {x}, {y}")
         value_prompt = utils.value_prompt_wrap(x, y, self.prompt)
-        # print(f'reward prompt with {y}: {value_prompt}')
+        print(f'reward prompt with {flatten_y}: {value_prompt}')
         if value_prompt in self.value_cache:
+            print(f"-- duplicate state eval: {flatten_y}, \nvalue: {self.value_cache[value_prompt]}")
             return self.value_cache[value_prompt]
         #### query with llama
         # value_outputs = []

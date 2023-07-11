@@ -37,7 +37,6 @@ class GPTModel(LanguageModel):
         self.model = model
         self.max_seq_len = max_seq_len
 
-    @torch.no_grad()
     def generate(self, prompt, temperature=0.7, max_tokens=1000, generation_num=1, end_token=None) -> list:
         messages = [{"role": "user", "content": prompt}]
         return self.chatgpt(messages, temperature=temperature, max_tokens=max_tokens, generation_num=generation_num, end_token=end_token)
@@ -60,15 +59,12 @@ class GPTModel(LanguageModel):
         return openai.ChatCompletion.create(**kwargs)
     
 
-    
-    @torch.no_grad()
     def get_next_token_logits(self,
                               prompt: Union[str, list[str]],
                               candidates: Union[list[str], list[list[str]]]) -> list[np.ndarray]:
         
         return []
 
-    @torch.no_grad()
     def get_ll(
             self,
             prefix: str,
