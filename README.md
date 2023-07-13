@@ -15,10 +15,9 @@ Reasoners is a toolkit to support advanced reasoning with LLMs, especially tree-
 
 ## Installation
 ```bash
-git clone https://github.com/Ber666/LLM-search
-cd LLM-search
-pip install -r requirements.txt
-pip install -e .
+git clone https://github.com/Ber666/Reasoners
+cd Reasoners
+pip install .
 ```
 Note some optional modules (e.g. local visualization) may need other dependencies. Please refer to the error message for details.
 
