@@ -6,22 +6,21 @@ import numpy as np
 import scipy
 from transformers import StoppingCriteriaList
 
-from rap import LanguageModel, GenerateOutput
-
-try:
-    from llama_cpp import Llama
-except ImportError:
-    Llama = None
-    print('You need to install llama-cpp-python if you want to use llama_cpp. '
-          'In most cases, \033[1mpip install llama-cpp-python\033[0m is enough. '
-          'If your build fails or need more details, visit https://github.com/abetlen/llama-cpp-python. '
-          'If you want to use facebookresearch/llama, use llama instead of llama_cpp.')
-    quit()
-
-
 class LlamaCppModel(LanguageModel):
     def __init__(self, path, n_ctx=2048, n_batch=2048):
-        self.llama = Llama(path, n_ctx=n_ctx, n_batch=n_batch, logits_all=True, verbose=False)
+
+        from rap import LanguageModel, GenerateOutput
+        try:
+            from llama_cpp import Llama
+        except ImportError as e:
+            Llama = None
+            raise ImportError('You need to install llama-cpp-python if you want to use llama_cpp. '
+                'In most cases, `pip install llama-cpp-python` is enough. '
+                'If your build fails or need more details, visit https://github.com/abetlen/llama-cpp-python. '
+                'If you want to use facebookresearch/llama, use llama instead of llama_cpp.') from e
+        
+        # put all layers on GPUs
+        self.llama = Llama(path, n_ctx=n_ctx, n_batch=n_batch, logits_all=True, verbose=False, n_gpu_layers=1000)
         self.n_ctx = n_ctx
 
     def generate(self,
@@ -122,8 +121,8 @@ class LlamaCppModel(LanguageModel):
 
 
 if __name__ == '__main__':
-    model = LlamaCppModel(path='/data/yi/llama.cpp/models/30B/ggml-model-q8_0.bin')
+    model = LlamaCppModel(path='/home/shibo/llama.cpp/models/65B/ggml-model-q8_0.bin')
     print(model.get_next_token_logits(['Hello'], candidates=[[',']], postprocess='log_softmax'))
     print(model.get_next_token_logits(['Hello,'], candidates=[[' I']], postprocess='log_softmax'))
     print(model.get_next_token_logits(['Hello, I'], candidates=[[' am']], postprocess='log_softmax'))
-    print(model.generate(['Hello'], max_new_tokens=10, output_log_probs=True))
+    print(model.generate(['Hello'], max_new_tokens=20, output_log_probs=True))
