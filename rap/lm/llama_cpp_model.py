@@ -6,10 +6,11 @@ import numpy as np
 import scipy
 from transformers import StoppingCriteriaList
 
+from rap import LanguageModel, GenerateOutput
+
 class LlamaCppModel(LanguageModel):
     def __init__(self, path, n_ctx=2048, n_batch=2048):
 
-        from rap import LanguageModel, GenerateOutput
         try:
             from llama_cpp import Llama
         except ImportError as e:
