@@ -8,6 +8,7 @@ from transformers import StoppingCriteriaList
 
 from rap import LanguageModel, GenerateOutput
 
+
 class LlamaCppModel(LanguageModel):
     def __init__(self, path, n_ctx=2048, n_batch=2048, n_thread=None):
 
@@ -16,12 +17,17 @@ class LlamaCppModel(LanguageModel):
         except ImportError as e:
             Llama = None
             raise ImportError('You need to install llama-cpp-python if you want to use llama_cpp. '
-                'In most cases, `pip install llama-cpp-python` is enough. '
-                'If your build fails or need more details, visit https://github.com/abetlen/llama-cpp-python. '
-                'If you want to use facebookresearch/llama, use llama instead of llama_cpp.') from e
-        
-        # put all layers on GPUs
-        self.llama = Llama(path, n_ctx=n_ctx, n_batch=n_batch, logits_all=True, verbose=False, n_gpu_layers=1000, n_threads=n_thread)
+                              'In most cases, `pip install llama-cpp-python` is enough. '
+                              'If your build fails or need more details, visit https://github.com/abetlen/llama-cpp-python. '
+                              'If you want to use facebookresearch/llama, use llama instead of llama_cpp.') from e
+
+        self.llama = Llama(path,
+                           n_ctx=n_ctx,
+                           n_batch=n_batch,
+                           n_gpu_layers=1000,  # set to a large number to put all layers on GPUs
+                           logits_all=True,
+                           verbose=False,
+                           n_threads=n_thread)
         self.n_ctx = n_ctx
 
     def generate(self,
@@ -67,9 +73,7 @@ class LlamaCppModel(LanguageModel):
                                 stopping_criteria=stopping_criteria)['choices'][0]
             generated_text.append(output['text'])
             if output_log_probs:
-                tokens = output['logprobs']['tokens']
-                top_logprobs = output['logprobs']['top_logprobs']
-                token_logprobs = [d[t] for d, t in zip(top_logprobs, tokens)]
+                token_logprobs = output['logprobs']['token_logprobs']
                 log_probs.append(np.array(token_logprobs))
 
         print("=" * 80)
@@ -130,7 +134,7 @@ class LlamaCppModel(LanguageModel):
             logits = self.llama.eval_logits
             log_probs = scipy.special.log_softmax(logits, axis=-1)
             content_log_probs = log_probs[np.arange(len(prefix_tokens), len(content_tokens)) - 1,
-                                          content_tokens[len(prefix_tokens):]]
+            content_tokens[len(prefix_tokens):]]
             output.append(sum(content_log_probs))
             print("=" * 80)
         return np.array(output)
@@ -140,7 +144,7 @@ class LlamaCppModel(LanguageModel):
 
 
 if __name__ == '__main__':
-    model = LlamaCppModel(path='/home/shibo/llama.cpp/models/65B/ggml-model-q8_0.bin')
+    model = LlamaCppModel(path='/data/yi/llama.cpp/models/65B/ggml-model-q5_0.bin')
     print(model.get_next_token_logits(['Hello'], candidates=[[',']], postprocess='log_softmax'))
     print(model.get_next_token_logits(['Hello,'], candidates=[[' I']], postprocess='log_softmax'))
     print(model.get_next_token_logits(['Hello, I'], candidates=[[' am']], postprocess='log_softmax'))
