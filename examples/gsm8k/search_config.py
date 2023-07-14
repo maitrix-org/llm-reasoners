@@ -2,7 +2,7 @@ import io
 import numpy as np
 
 from world_model import GSM8kState, GSM8kAction
-from rap import SearchConfig, LanguageModel
+from reasoners import SearchConfig, LanguageModel
 
 
 class GSM8kConfig(SearchConfig):

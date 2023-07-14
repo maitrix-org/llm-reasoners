@@ -6,7 +6,7 @@ import numpy as np
 import scipy
 from transformers import StoppingCriteriaList
 
-from rap import LanguageModel, GenerateOutput
+from reasoners import LanguageModel, GenerateOutput
 
 
 class LlamaCppModel(LanguageModel):
@@ -125,6 +125,7 @@ class LlamaCppModel(LanguageModel):
 
 
 if __name__ == '__main__':
+    from timeit import timeit
     model = LlamaCppModel(path='/data/yi/llama.cpp/models/65B/ggml-model-q5_0.bin')
     print(model.get_next_token_logits(['Hello'], candidates=[[',']], postprocess='log_softmax'))
     print(model.get_next_token_logits(['Hello,'], candidates=[[' I']], postprocess='log_softmax'))

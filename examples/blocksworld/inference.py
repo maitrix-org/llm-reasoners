@@ -5,8 +5,8 @@ import numpy as np
 from tqdm import tqdm
 from datetime import datetime
 
-from rap import LanguageModel, RAPAgent, SearchAlgorithm
-from rap.algorithm import MCTS
+from reasoners import LanguageModel, RAPAgent, SearchAlgorithm
+from reasoners.algorithm import MCTS
 
 from world_model import BlocksWorldModel
 from search_config import BWConfig
@@ -74,7 +74,7 @@ if __name__ == '__main__':
     import random
     import torch
     import torch.backends.cudnn
-    from rap.lm import LLaMAModel
+    from reasoners.lm import LLaMAModel
 
     np.random.seed(1)
     random.seed(1)
