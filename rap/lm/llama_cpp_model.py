@@ -9,7 +9,7 @@ from transformers import StoppingCriteriaList
 from rap import LanguageModel, GenerateOutput
 
 class LlamaCppModel(LanguageModel):
-    def __init__(self, path, n_ctx=2048, n_batch=2048):
+    def __init__(self, path, n_ctx=2048, n_batch=2048, n_thread=None):
 
         try:
             from llama_cpp import Llama
@@ -21,7 +21,7 @@ class LlamaCppModel(LanguageModel):
                 'If you want to use facebookresearch/llama, use llama instead of llama_cpp.') from e
         
         # put all layers on GPUs
-        self.llama = Llama(path, n_ctx=n_ctx, n_batch=n_batch, logits_all=True, verbose=False, n_gpu_layers=1000)
+        self.llama = Llama(path, n_ctx=n_ctx, n_batch=n_batch, logits_all=True, verbose=False, n_gpu_layers=1000, n_threads=n_thread)
         self.n_ctx = n_ctx
 
     def generate(self,
@@ -38,6 +38,11 @@ class LlamaCppModel(LanguageModel):
                  output_log_probs: bool = False,
                  stopping_criteria: Optional[StoppingCriteriaList] = None,
                  **kwargs) -> GenerateOutput:
+
+        print("=" * 80)
+        print("inputs:", inputs)
+        print("=" * 80)
+
         assert hide_input, 'TODO: only supports hide_input=True for llama.cpp now'
         assert max_length is None, 'TODO: does not support max_length for llama.cpp now'
         assert num_return_sequences == 1, 'TODO: does not support multiple return sequences for llama.cpp now'
@@ -66,6 +71,11 @@ class LlamaCppModel(LanguageModel):
                 top_logprobs = output['logprobs']['top_logprobs']
                 token_logprobs = [d[t] for d, t in zip(top_logprobs, tokens)]
                 log_probs.append(np.array(token_logprobs))
+
+        print("=" * 80)
+        print("generated_text:", generated_text)
+        print("=" * 80)
+        
         return GenerateOutput(text=generated_text, log_prob=log_probs)
 
     def get_next_token_logits(self,
@@ -102,9 +112,16 @@ class LlamaCppModel(LanguageModel):
         return output
 
     def get_loglikelihood(self, prefix: str, contents: list[str], **kwargs) -> np.ndarray:
+
+        print("=" * 80)
+        print("prefix:", prefix)
+        # print("contents:", contents)
+        print("=" * 80)
+
         prefix_tokens = self.tokenize(prefix, add_bos=True)
         output = []
         for content in contents:
+            print("content:", content)
             content_tokens = self.tokenize(content, add_bos=True)
             if any(p != c for p, c in zip(prefix_tokens, content_tokens)):
                 warnings.warn(f'prefix {repr(prefix)} does not match content {repr(content)}')
@@ -115,6 +132,7 @@ class LlamaCppModel(LanguageModel):
             content_log_probs = log_probs[np.arange(len(prefix_tokens), len(content_tokens)) - 1,
                                           content_tokens[len(prefix_tokens):]]
             output.append(sum(content_log_probs))
+            print("=" * 80)
         return np.array(output)
 
     def tokenize(self, text: str, add_bos=True):
