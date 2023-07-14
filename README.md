@@ -1,6 +1,6 @@
 ![logo](images/image.png#pic_center)
-
-LLM Reasoners is a toolkit to support advanced reasoning with LLMs, especially tree-structured reasoning (e.g., [RAP](https://arxiv.org/abs/2305.14992), [ToT](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633), etc.). With Reasoners, it's easy to apply state-of-the-art LLMs (Open-sourced models or OpenAI API) to any problems you want to solve with any reasoning algorithms. The reasoning tree can be visualized with a line of code.
+---
+LLM Reasoners is a library to support advanced reasoning with LLMs, especially tree-structured reasoning (e.g., [RAP](https://arxiv.org/abs/2305.14992), [ToT](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633), etc.). With Reasoners, it's easy to apply state-of-the-art LLMs (Open-sourced models or OpenAI API) to any problems you want to solve with any reasoning algorithms. The reasoning tree can be visualized with a line of code.
 
 ## Why Reasoners?
 - **Unified Formulation**: We regard reasoning problems as decision making problems with certian action/state definitions. This formulation covers most popular reasoning algorithms and enable a unified interface for all of them. Users only need to define the state transition and some search configurations to work on a new domain.
