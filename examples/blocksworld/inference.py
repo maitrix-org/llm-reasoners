@@ -51,7 +51,9 @@ def rap_bw(base_model: LanguageModel,
     domain_file = utils.read_config(config_file)["domain_file"]
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume, desc='Blocksworld')):
         algo_output = agent(example)
-        torch.distributed.barrier()
+
+        if torch.distributed.is_initialized():
+            torch.distributed.barrier()
         # to make sure the plan is saved before evaluation in multi-process setting
         correct = utils.validate_plan(domain_file, example["instance_file"], lm_plan_file)[0]
         correct_count += correct
@@ -81,11 +83,8 @@ if __name__ == '__main__':
     torch.manual_seed(1)
     torch.cuda.manual_seed(1)
     torch.backends.cudnn.deterministic = True
-    local_rank = int(os.environ["LOCAL_RANK"])
-    llama_ckpts = os.environ["LLAMA_CKPTS"]
 
-    def main(llama_ckpt: str = llama_ckpts,
-             llama_size: str = '13B',
+    def llama_main(llama_size: str = '13B',
              prompt_path: str = 'examples/blocksworld/prompts/prompt.json',
              data_path: str = 'examples/blocksworld/data/step_4.json',
              disable_log: bool = False,
@@ -94,9 +93,12 @@ if __name__ == '__main__':
              depth_limit: int = 6,
              **kwargs):
 
+        from rap.lm import LLaMAModel
+        local_rank = int(os.environ["LOCAL_RANK"])
+        llama_ckpts = os.environ["LLAMA_CKPTS"]
         with open(prompt_path) as f:
             prompt = json.load(f)
-        llama_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=1)
+        llama_model = LLaMAModel(llama_ckpts, llama_size, max_batch_size=1)
         rap_bw(llama_model,
                prompt,
                disable_log=disable_log or local_rank != 0,
@@ -104,4 +106,28 @@ if __name__ == '__main__':
                config_file=config_file,
                depth_limit=depth_limit,
                lm_plan_file=lm_plan_file, **kwargs)
-    fire.Fire(main)
+
+
+    def llamacpp_main(
+            llama_path = '/home/shibo/llama.cpp/models/65B/ggml-model-q8_0.bin',
+            prompt_path: str = 'examples/blocksworld/prompts/prompt.json',
+            data_path: str = 'examples/blocksworld/data/step_4.json',
+            disable_log: bool = False,
+            config_file: str = "examples/blocksworld/data/bw_config.yaml",
+            lm_plan_file: str = 'lm_plan.tmp',
+            depth_limit: int = 6,
+            **kwargs):
+
+        from reasoners.lm import LlamaCppModel
+        with open(prompt_path) as f:
+            prompt = json.load(f)
+        llama_model = LlamaCppModel(path=llama_path)
+        rap_bw(llama_model,
+               prompt,
+               disable_log=disable_log,
+               data_path=data_path,
+               config_file=config_file,
+               depth_limit=depth_limit,
+               lm_plan_file=lm_plan_file, **kwargs)
+
+    fire.Fire(llama_main)
