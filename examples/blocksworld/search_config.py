@@ -2,7 +2,7 @@ import numpy as np
 
 import utils
 from world_model import BWState, BWAction
-from rap import SearchConfig, LanguageModel
+from reasoners import SearchConfig, LanguageModel
 
 class BWConfig(SearchConfig):
     def __init__(self,

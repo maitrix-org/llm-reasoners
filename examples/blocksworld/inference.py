@@ -5,8 +5,8 @@ import numpy as np
 from tqdm import tqdm
 from datetime import datetime
 
-from rap import LanguageModel, RAPAgent, SearchAlgorithm
-from rap.algorithm import MCTS
+from reasoners import LanguageModel, RAPAgent, SearchAlgorithm
+from reasoners.algorithm import MCTS
 
 from world_model import BlocksWorldModel
 from search_config import BWConfig
@@ -76,6 +76,7 @@ if __name__ == '__main__':
     import random
     import torch
     import torch.backends.cudnn
+    from reasoners.lm import LLaMAModel
 
     np.random.seed(1)
     random.seed(1)
@@ -117,7 +118,7 @@ if __name__ == '__main__':
             depth_limit: int = 6,
             **kwargs):
 
-        from rap.lm import LlamaCppModel
+        from reasoners.lm import LlamaCppModel
         with open(prompt_path) as f:
             prompt = json.load(f)
         llama_model = LlamaCppModel(path=llama_path)

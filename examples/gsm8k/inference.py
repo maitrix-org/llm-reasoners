@@ -6,8 +6,8 @@ from datasets import load_dataset
 from tqdm import tqdm
 from datetime import datetime
 
-from rap import LanguageModel, RAPAgent, SearchAlgorithm
-from rap.algorithm import MCTS
+from reasoners import LanguageModel, RAPAgent, SearchAlgorithm
+from reasoners.algorithm import MCTS
 
 from world_model import GSM8kWorldModel
 from search_config import GSM8kConfig
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     import json
     import warnings
     import fire
-    from rap.lm import LLaMAModel, LlamaCppModel
+    from reasoners.lm import LLaMAModel, LlamaCppModel
     import random
     import torch
     import torch.backends.cudnn
