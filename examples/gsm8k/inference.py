@@ -108,6 +108,9 @@ if __name__ == '__main__':
              disable_log: bool = False,
              disable_tqdm: bool = False,
              **kwargs):
+        # set base_lm = 'llama' and llama_ckpt = '13B/30B/65B' to use llama with torchscale
+        # else set base_lm = 'llama.cpp' and llama_cpp_path the the checkpoint to use llama.cpp
+
         with open(interactive_prompt) as f:
             interactive_prompt = json.load(f)
         with open(useful_prompt) as f:
