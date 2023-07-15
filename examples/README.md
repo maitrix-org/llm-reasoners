@@ -3,7 +3,7 @@
 Running RAP on GSM8K [1]
 ### RAP
 ```bash
-python -m torch.distributed.run --nproc_per_node 2 examples/gsm8k/inference.py --llama_size "30B"
+python -m torch.distributed.run --nproc_per_node 2 examples/gsm8k/inference.py --llama_size "13B"
 ```
 ### PAL + Guided Beam Search
 ```bash

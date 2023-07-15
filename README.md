@@ -21,6 +21,7 @@
 ## Installation
 ```bash
 git clone https://github.com/Ber666/llm-reasoners
+cd llm-reasoners
 pip install .
 ```
 Note that some optional modules may need other dependencies. Please refer to the error message for details.
