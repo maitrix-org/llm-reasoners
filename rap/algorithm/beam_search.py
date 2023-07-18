@@ -17,9 +17,10 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             print(f"\n----new step {i}----")
             new_beam = []
             new_actions = []
+            local_cache = set()
             for trace, reward in cur_beam:
                 state = trace[-1][-1]
-                if world.is_terminal(state) or len(trace) == self.max_depth:
+                if world.is_terminal(state):
                     terminal_beam.append((trace, reward))
                 else:
                     new_actions += [(state, action) for action in config.get_actions(state)]
@@ -29,21 +30,23 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                     #     new_beam.append((trace + [(action, next_state)], next_reward))
                     #     # customize reward inside reward function (e.g. the reward of the trace)
                     #     # new_beam.append((trace + [(action, next_state)], reward + next_reward))
-            #### remove duplicates
-            unique_actions = []
-            checked_actions = set()
             for state, action in new_actions:
-                if action not in checked_actions:
-                    unique_actions.append((state, action))
-                    checked_actions.add(action)
-            for state, action in unique_actions:
-                next_state = world.step(state, action)
-                next_reward = config.reward(state, action, next_state=next_state)
+                #### remove duplicates
+                if action not in local_cache:
+                    next_state = world.step(state, action)
+                    next_reward = config.reward(state, action, next_state=next_state)
+                    local_cache.add(action)
+                else:
+                    flatten_y = action.replace("\n", " -> ")
+                    print(f"duplicate step: {flatten_y}")
+                    next_reward = 0
                 new_beam.append((trace + [(action, next_state)], next_reward))
-            print(f"----generated candidates: {len(new_beam)}----")
             new_beam.sort(key=lambda x: x[1], reverse=True)
             cur_beam = new_beam[:self.beam_size]
+            print(f"----choices: {[(x[0][-1][-1].sub_answer) for x in cur_beam]}----")
+            print(f"----values: {[(x[-1]) for x in cur_beam]}----")
 
+        terminal_beam += cur_beam
         if output_trace:
             return terminal_beam#[0][0]
         else:

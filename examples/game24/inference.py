@@ -22,7 +22,7 @@ def rap_game24(base_model: LanguageModel,
               n_confidence: int = 8,
               n_select_sample: int = 5,
               n_eval_sample: int = 3,
-              depth_limit: int = 5,
+              depth_limit: int = 4,
               force_terminating_on_depth_limit: bool = True,
               batch_size: int = 2,
               reward_confidence_default: float = 0.8,
@@ -50,16 +50,16 @@ def rap_game24(base_model: LanguageModel,
     agent = RAPAgent(world_model=world_model, search_config=config, search_algo=search_algo)
 
     ## test from 900-999
-    dataset = utils.read_data(file='./examples/game24/data/24.csv')[903:904]
+    dataset = utils.read_data(file='./examples/game24/data/24.csv')[900:901]
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=len(dataset), initial=0, desc='game24')):
         print(f'\n======== example {i}: {example} ========')
         base_model = GPTModel(model='gpt-3.5-turbo')
         agent.world_model = game24WorldModel(base_model=base_model, prompt=prompts,
                                   n_confidence=n_confidence, batch_size=batch_size)
-        agent.search_config.value_cache = {}
+        # agent.search_config.value_cache = {}
         algo_output = agent(example)
-        print(f'search cache size: {len(agent.search_config.value_cache)}')
+        # print(f'search cache size: {len(agent.search_config.value_cache)}')
         answer = 24
         correct = 0
         output = ''

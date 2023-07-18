@@ -37,11 +37,11 @@ class GPTModel(LanguageModel):
         self.model = model
         self.max_seq_len = max_seq_len
 
-    def generate(self, prompt, temperature=0.7, max_tokens=1000, generation_num=1, end_token=None) -> list:
+    def generate(self, prompt, temperature=0.0, max_tokens=1000, generation_num=1, end_token=None) -> list:
         messages = [{"role": "user", "content": prompt}]
         return self.chatgpt(messages, temperature=temperature, max_tokens=max_tokens, generation_num=generation_num, end_token=end_token)
 
-    def chatgpt(self, messages, temperature=0.7, max_tokens=1000, generation_num=1, end_token=None) -> list:
+    def chatgpt(self, messages, temperature=0.0, max_tokens=1000, generation_num=1, end_token=None) -> list:
         global completion_tokens, prompt_tokens
         outputs = []
         while generation_num > 0:
