@@ -9,7 +9,7 @@ from .. import LanguageModel, GenerateOutput
 API_KEY = os.getenv("OPENAI_API_KEY", None)
 
 if API_KEY is None:
-    raise ValueError("OPENAI_API_KEY not set")
+    raise ValueError("OPENAI_API_KEY not set, please run `export OPENAI_API_KEY=<your key>` to ser it")
 else:
     openai.api_key = API_KEY
 
@@ -25,6 +25,7 @@ class GPTCompletionModel(LanguageModel):
                 temperature: float = 1.0,
                 top_p: float = 1.0,
                 num_return_sequences: int = 1,
+                rate_limit_per_min: Optional[int] = 20,
                 stop: Optional[str] = None,
                 logprobs: Optional[int] = None,
                 **kwargs) -> GenerateOutput:
@@ -37,8 +38,12 @@ class GPTCompletionModel(LanguageModel):
 
         i = 1
 
-        while i <= 64: # try 64 times
+        for i in range(1, 65):  # try 64 times
             try:
+                # sleep several seconds to avoid rate limit
+                if rate_limit_per_min is not None:
+                    time.sleep(60 / rate_limit_per_min)
+
                 response = openai.Completion.create(
                     model=self.model,
                     prompt=prompt,
@@ -57,12 +62,11 @@ class GPTCompletionModel(LanguageModel):
                 )
             
             except Exception as e:
-                print(f"An Error Occured: {e}, sleeping for {i*3} seconds")
-                time.sleep(i*3)
-                i += 1
+                print(f"An Error Occured: {e}, sleeping for {i*10} seconds")
+                time.sleep(i*10)
         
         # after 64 tries, still no luck
-        raise RuntimeError("GPTCompletionModel failed to generate output")
+        raise RuntimeError("GPTCompletionModel failed to generate output, even after 64 tries")
     
     def get_next_token_logits(self,
                               prompt: Union[str, list[str]],
