@@ -84,7 +84,7 @@ class game24Config(SearchConfig):
         
         #### query with GPT
         value_outputs = self.base_model.generate(value_prompt, generation_num=self.n_eval, end_token=None)
-        # print(f"reward output: {value_outputs}\n")
+        print(f"reward output: {value_outputs}\n")
 
         ## postprocess for llama
         ## find the first value result: impossible/sure/likely + \n

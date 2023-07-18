@@ -5,6 +5,7 @@ import torch as th
 import pandas as pd
 from collections import Counter
 import sympy
+from prompts.game24 import *
 
 """
 Input (x)   : a string of 4 numbers
@@ -73,10 +74,12 @@ def correct_left_numbers(x: str, y: str, action: str) -> str:
 def propose_prompt_wrap(x: str, y: str='', all_prompt: dict={}) -> str:
         current_numbers = get_current_numbers(y if y else x)
         if current_numbers == '24':
-            prompt = all_prompt['cot_prompt'].format(input=x) + 'Steps:\n' + y
+            # prompt = all_prompt['cot_prompt'].format(input=x) + 'Steps:\n' + y
+            prompt = cot_prompt.format(input=x) + 'Steps:' + y
             # print(f"Final propose: {prompt}")
         else:
-            prompt = all_prompt['propose_prompt'].format(input=current_numbers)
+            # prompt = all_prompt['propose_prompt'].format(input=current_numbers)
+            prompt = propose_prompt.format(input=current_numbers)
         return prompt
 
 def value_prompt_wrap(x: str, y: str, all_prompt: dict={}) -> str:
@@ -84,9 +87,11 @@ def value_prompt_wrap(x: str, y: str, all_prompt: dict={}) -> str:
     if 'left: ' not in last_line and last_line != '':  # last step
         ans = last_line.lower().replace('answer: ', '')
         # print([value_last_step_prompt.format(input=x, answer=ans)])
-        return all_prompt['value_last_step_prompt'].format(input=x, answer=ans)
+        # return all_prompt['value_last_step_prompt'].format(input=x, answer=ans)
+        return value_last_step_prompt.format(input=x, answer=ans)
     current_numbers = get_current_numbers(y)
-    return all_prompt['value_prompt'].format(input=current_numbers)
+    # return all_prompt['value_prompt'].format(input=current_numbers)
+    return value_prompt.format(input=current_numbers)
     
 def value_outputs_unwrap(x: str, y: str, value_outputs: list) -> float:
     if len(y.strip().split('\n')) == 4 and 'answer' not in y.lower():
