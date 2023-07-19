@@ -2,7 +2,7 @@
 
 from typing import NamedTuple
 import utils
-from rap import WorldModel, LanguageModel
+from reasoners import WorldModel, LanguageModel
 import copy
 
 BWAction = str

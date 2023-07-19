@@ -6,8 +6,8 @@ from datasets import load_dataset
 from tqdm import tqdm
 from datetime import datetime
 
-from rap import LanguageModel, RAPAgent, SearchAlgorithm
-from rap.algorithm import MCTS
+from reasoners import LanguageModel, RAPAgent, SearchAlgorithm
+from reasoners.algorithm import MCTS
 
 from world_model import GSM8kWorldModel
 from search_config import GSM8kConfig
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     import json
     import warnings
     import fire
-    from rap.lm import LLaMAModel, LlamaCppModel
+    from reasoners.lm import LLaMAModel, LlamaCppModel
     import random
     import torch
     import torch.backends.cudnn
@@ -108,6 +108,9 @@ if __name__ == '__main__':
              disable_log: bool = False,
              disable_tqdm: bool = False,
              **kwargs):
+        # set base_lm = 'llama' and llama_ckpt = '13B/30B/65B' to use llama with torchscale
+        # else set base_lm = 'llama.cpp' and llama_cpp_path the the checkpoint to use llama.cpp
+
         with open(interactive_prompt) as f:
             interactive_prompt = json.load(f)
         with open(useful_prompt) as f:

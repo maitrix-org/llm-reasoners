@@ -2,7 +2,9 @@
 ## GSM8K
 Running RAP on GSM8K [1]
 ### RAP
-
+```bash
+python -m torch.distributed.run --nproc_per_node 2 examples/gsm8k/inference.py --llama_size "13B"
+```
 ### PAL + Guided Beam Search
 ```bash
 ```
@@ -11,6 +13,12 @@ Running RAP on GSM8K [1]
 ## Blocksworld
 ### Preparation
 1. Download the validator from [here]()
+
+### RAP
+```bash
+
+CUDA_VISIBLE_DEVICES=3,4,5,6 python -m torch.distributed.run --nproc_per_node 4 examples/blocksworld/inference.py --llama_size "30B" --data_path 'examples/blocksworld/data/step_6.json' --depth_limit 6
+```
 
 
 ## References

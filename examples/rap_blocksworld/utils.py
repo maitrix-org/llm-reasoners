@@ -8,7 +8,8 @@ import random
 try:
     from tarski.io import PDDLReader
 except:
-    raise ImportError("To run experiments on blocksworld, please install Tarski.")
+    raise ImportError("To run experiments on blocksworld, please install tarski "
+                      "with `pip install tarski`.")
 
 # helper functions from https://github.com/karthikv792/LLMs-Planning
 
@@ -197,7 +198,10 @@ def apply_change(change, state):
             if len(colors) == 0:
                 print("Error: zero-colors")
                 print(c)
-                torch.distributed.barrier()
+
+                if torch.distributed.is_initialized():
+                    torch.distributed.barrier()
+                
                 raise Exception("ERROR")
             color = colors[0]
             if c.startswith(f"the {color} block"):
@@ -223,13 +227,18 @@ def apply_change(change, state):
                     success += 1
             else:
                 print("Error: not recognized")
-                torch.distributed.barrier()
+                print(c)
+                if torch.distributed.is_initialized():
+                    torch.distributed.barrier()
                 raise Exception("ERROR")
+        
         if success == 0:
             print("Error: no successful change")
             print(c)
             print(states)
-            torch.distributed.barrier()
+
+            if torch.distributed.is_initialized():
+                torch.distributed.barrier()
             raise Exception("ERROR")
     states = [s for s in states if s != ""]
     priority_states = []
@@ -249,7 +258,9 @@ def apply_change(change, state):
         else:
             print("Error: unknown state")
             print(s)
-            torch.distributed.barrier()
+
+            if torch.distributed.is_initialized():
+                torch.distributed.barrier()
             raise Exception("ERROR")
     sorted_states = [x.strip() for _, x in sorted(zip(priority_states, states))]
     sorted_states[-1] = "and " + sorted_states[-1]
