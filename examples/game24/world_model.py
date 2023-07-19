@@ -70,6 +70,4 @@ class game24WorldModel(WorldModel[game24State, game24Action]):
         # print(f'\ncurrent numbers in state: {current_numbers} at step {state[2]}')
         if 'answer: ' in last_line.lower():
             print(f"terminal states with answer: {last_line}")
-            return False
-        else:
-            return False
+        return False

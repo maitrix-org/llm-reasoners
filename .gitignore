@@ -9,3 +9,5 @@ __pycache__/
 logs/
 *data/
 scripts/
+data/
+gpt-plan-benchmark/

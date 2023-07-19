@@ -32,20 +32,17 @@ class game24Config(SearchConfig):
 
     def get_actions(self, state: game24State) -> list[game24Action]:
         x, y = state[0], state[1]
-        # with io.StringIO() as f:
-        #     f.write(utils.propose_prompt_wrap(x, y, self.prompt) + "\n")
-        #     f.write(utils.value_prompt_wrap(x, y, self.prompt) + "\n")
         propose_prompt = utils.propose_prompt_wrap(state[0], state[1], self.prompt)
         #print(f'propose prompt:{propose_prompt}')
         
+        ## query with llama
         # outputs = []
         # for idx in range(0, self.n_actions, self.batch_size):
         #     n_samples = min(self.n_actions - idx, self.batch_size)
         #     outputs += self.base_model.generate([model_input] * n_samples, max_gen_len=512, end_token=")", hide_input=True).text
-        ## query with llama
         # outputs = self.base_model.generate([model_input] * 1, max_gen_len=256, end_token=")", hide_input=True).text[0]
         ## query with GPT
-        outputs = self.base_model.generate(propose_prompt, generation_num=1, end_token=None)
+        outputs = self.base_model.generate(propose_prompt, temperature=0.7, num_return_sequences=1, stop=None).text
 
         ######## post process for operation actions
         ## some post-process for llama
@@ -83,7 +80,7 @@ class game24Config(SearchConfig):
         #     # value_outputs += self.base_model.generate([value_prompt] * n_samples, max_gen_len=256, hide_input=True).text
         
         #### query with GPT
-        value_outputs = self.base_model.generate(value_prompt, generation_num=self.n_eval, end_token=None)
+        value_outputs = self.base_model.generate(value_prompt, temperature=0.7, num_return_sequences=self.n_eval, stop=None).text
         #print(f"reward output: {value_outputs}\n")
 
         ## postprocess for llama

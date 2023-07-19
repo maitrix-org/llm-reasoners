@@ -1,8 +1,12 @@
 tqdm
 fire
 numpy
+scipy
 torch
 datasets
+
+# openai
+openai
 
 # hf
 transformers

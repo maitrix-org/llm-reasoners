@@ -6,8 +6,11 @@ import numpy as np
 from tqdm import tqdm
 from datetime import datetime
 
-from rap import LanguageModel, RAPAgent, SearchAlgorithm
-from rap.algorithm import BeamSearch
+# from rap import LanguageModel, RAPAgent, SearchAlgorithm
+# from rap.algorithm import BeamSearch
+
+from reasoners import LanguageModel, RAPAgent, SearchAlgorithm
+from reasoners.algorithm import BeamSearch
 
 from world_model import game24WorldModel
 from search_config import game24Config
@@ -58,7 +61,7 @@ def rap_game24(base_model: LanguageModel,
         agent.world_model = game24WorldModel(base_model=base_model, prompt=prompts,
                                   n_confidence=n_confidence, batch_size=batch_size)
         # agent.search_config.value_cache = {}
-        algo_output = agent(example)
+        algo_output = agent(example, action_dedup=True, return_beam=True, early_terminate=False)
         # print(f'search cache size: {len(agent.search_config.value_cache)}')
         answer = 24
         correct = 0

@@ -1,0 +1,300 @@
+import re
+import os
+import torch
+import json
+import yaml
+import random
+
+try:
+    from tarski.io import PDDLReader
+except:
+    raise ImportError("To run experiments on blocksworld, please install tarski "
+                      "with `pip install tarski`.")
+
+# helper functions from https://github.com/karthikv792/LLMs-Planning
+
+def instance_to_text_blocksworld(problem, get_plan, data, shuffle=False):
+    """Function to make a blocksworld instance into human-readable format
+    
+    :param get_plan: Flag to return the plan as text as well
+    """
+
+    OBJS = data['encoded_objects']
+
+    # ----------- PARSE THE PROBLEM ----------- #
+    INIT, GOAL = parse_problem(problem, data, shuffle)
+
+    # ----------- PLAN TO TEXT ----------- #
+    PLAN = ""
+    plan_file = "sas_plan"
+    if get_plan:
+        PLAN = "\n"
+        with open(plan_file) as f:
+            plan = [line.rstrip() for line in f][:-1]
+
+        for action in plan:
+            action = action.strip("(").strip(")")
+            act_name, objs = action.split(" ")[0], action.split(" ")[1:]
+            objs = [OBJS[obj] for obj in objs]
+            PLAN += data['actions'][act_name].format(*objs) + "\n"
+        PLAN += "[PLAN END]\n"
+
+    return INIT, GOAL, PLAN
+
+def parse_problem(problem, data, shuffle):
+    def get_sorted(init_atoms):
+        return sorted(init_atoms, key=lambda x: x.symbol.name+" "+\
+                      " ".join([subterm.name for subterm in x.subterms]))
+
+    def parse(init_goal_preds, OBJS):
+        TEXT = ""
+        predicates = []
+
+        init_goal_preds = list(init_goal_preds)
+        for atom in init_goal_preds:
+            objs = []
+            for subterm in atom.subterms:
+                objs.append(OBJS[subterm.name])
+            predicates.append(data['predicates'][atom.symbol.name].format(*objs))
+        if len(predicates) > 1:
+            TEXT += ", ".join(predicates[:-1]) + f" and {predicates[-1]}"
+        else:
+            TEXT += predicates[0]
+        return TEXT
+    
+    OBJS = data['encoded_objects']
+
+    init_atoms = get_sorted(problem.init.as_atoms())
+    goal_preds = get_sorted(problem.goal.subformulas) if hasattr(problem.goal, 'subformulas') else [problem.goal]
+
+    if shuffle:
+        random.shuffle(init_atoms)
+        random.shuffle(goal_preds)
+
+    # ----------- INIT STATE TO TEXT ----------- #
+    INIT = parse(init_atoms, OBJS)
+
+    # ----------- GOAL TO TEXT ----------- #
+    GOAL = parse(goal_preds, OBJS)
+
+    return INIT, GOAL
+
+def fill_template(INIT, GOAL, PLAN):
+    text = ""
+    if INIT != "":
+        text += "\n[STATEMENT]\n"
+        text += f"As initial conditions I have that, {INIT.strip()}."
+    if GOAL != "":
+        text += f"\nMy goal is to have that {GOAL}."
+    text += f"\n\nMy plan is as follows:\n\n[PLAN]{PLAN}"
+
+    # TODO: Add this replacement to the yml file -- Use "Translations" dict in yml
+    text = text.replace("-", " ").replace("ontable", "on the table")
+    return text
+
+def read_config(config_file):
+    with open(config_file, 'r') as file:
+        data = yaml.safe_load(file)
+    return data
+
+def get_problem(instance, domain):
+    reader = PDDLReader(raise_on_error=True)
+    reader.parse_domain(domain)
+    return reader.parse_instance(instance)
+
+# defined for RAP
+
+def load_blocksworld(config_file, data_file, prompt):
+    config_data = read_config(config_file)
+    domain_file = config_data["domain_file"]
+    domain_pddl = f'gpt-plan-benchmark/gpt_plan_test/instances/{domain_file}'
+    data_files = json.load(open(data_file, 'r'))
+    data = []
+    for cur_instance in data_files:
+        cur_data = {}
+        problem = get_problem(cur_instance[0], domain_pddl)
+        gt_plan_text = cur_instance[1]
+        INIT, GOAL, PLAN = instance_to_text_blocksworld(problem, False, config_data)
+
+        cur_data["icl"] = prompt["icl"]
+        # gt_plan = self.compute_plan(domain_pddl, cur_instance)
+        cur_data["question"] = fill_template(
+            *instance_to_text_blocksworld(problem, False, config_data)) + "\n"
+        cur_data["instance_file"] = cur_instance[0]
+        data.append(cur_data)
+    return data
+
+def validate_plan(domain, instance, lm_plan_file):
+    """Validate the plan using VAL
+
+    :param domain: domain file
+    :param instance: instance file
+    :param lm_plan_file: plan file (saved earlier)
+    """
+    val_path = os.getenv("VAL")
+    cmd = f"{val_path}/validate {domain} {instance} {lm_plan_file}"
+    response = os.popen(cmd).read()
+
+    print("RESPONSE:::", response)
+    if 'Problem in domain' in response:
+        raise Exception('Problem in domain: Check PDDL Writer')
+
+    if "Plan valid" in response:
+        return True, response
+    return False, response
+
+
+def generate_all_actions(state):
+    """Generate all possible actions from the current state
+
+    :param state: current state
+    """
+    return_list = []
+    if "hand is empty" in state:
+        block = re.findall("the [a-z]{0,10} block is clear", state)
+        block_color = [re.search("the ([a-z]{0,10}) block is clear", b).group(1) for b in block]
+        for c in block_color:
+            if f"the {c} block is on the table" in state:
+                return_list.append(f"pick up the {c} block")
+            else:
+                c_ = re.search(f"the {c} block" + " is on top of the ([a-z]{0,10}) block", state).group(1)
+                return_list.append(f"unstack the {c} block from on top of the {c_} block")
+    else:
+        c = re.search("is holding the ([a-z]{0,10}) block", state).group(1)
+        block = re.findall("the [a-z]{0,10} block is clear", state)
+        clear_color = [re.search("the ([a-z]{0,10}) block is clear", b).group(1) for b in block]
+        for c_ in clear_color:
+            return_list.append(f"stack the {c} block on top of the {c_} block")
+        return_list.append(f"put down the {c} block")
+    return return_list
+
+
+def apply_change(change, state):
+    """Apply the predicted change to the state
+    
+    :param change: predicted change
+    :param state: current state
+    """
+    if "and the " in state and ", and the" not in state:
+        state = state.replace("and the ", ", and the ")
+    states = state.split(", ")
+    states = [s.strip()[4:].strip(".") if s.strip().startswith("and ")\
+               else s.strip().strip(".") for s in states]
+    changes = change.lower().strip().strip(".").split(", ")
+    for c in changes:
+        if c.startswith("and "):
+            c = c[4:]
+        success = 0
+        if c.startswith("the hand"):
+            old = c.split("was")[1].split("and")[0].strip()
+            new = c.split("now")[1].strip()
+            for idx in range(len(states)):
+                if ("hand is " + old) in states[idx]:
+                    states[idx] = states[idx].replace(old, new)
+                    success += 1
+        else:
+            
+            colors = re.findall(r"the (\w+) block", c)
+            if len(colors) == 0:
+                print("Error: zero-colors")
+                print(c)
+
+                if torch.distributed.is_initialized():
+                    torch.distributed.barrier()
+                
+                raise Exception("ERROR")
+            color = colors[0]
+            if c.startswith(f"the {color} block"):
+                subj = f"{color} block"
+                if "no longer" in c:
+                    old = c.split("no longer")[1].strip()
+                    # print("old:", old)
+                    for idx in range(len(states)):
+                        if f"{color} block is " + old in states[idx]:
+                            states[idx] = ""
+                            success += 1
+                elif "was" in c and "now" in c:
+                    old = c.split("was")[1].split(" and")[0].strip()
+                    new = c.split("now")[1].strip()
+                    # print("previous:", "{color} block is " + old)
+                    for idx in range(len(states)):
+                        if f"{color} block is " + old in states[idx]:
+                            states[idx] = states[idx].replace(old, new)
+                            success += 1
+                elif "now" in c:
+                    new = c.split("now")[1].strip()
+                    states.append("the " + color + " block is " + new)
+                    success += 1
+            else:
+                print("Error: not recognized")
+                print(c)
+                if torch.distributed.is_initialized():
+                    torch.distributed.barrier()
+                raise Exception("ERROR")
+        
+        if success == 0:
+            print("Error: no successful change")
+            print(c)
+            print(states)
+
+            if torch.distributed.is_initialized():
+                torch.distributed.barrier()
+            raise Exception("ERROR")
+    states = [s for s in states if s != ""]
+    priority_states = []
+    for s in states:
+        if "have that" in s:
+            priority_states.append(0)
+        elif "clear" in s:
+            priority_states.append(1)
+        elif "in the hand" in s:
+            priority_states.append(1)
+        elif "the hand is" in s:
+            priority_states.append(2)
+        elif "on top of" in s:
+            priority_states.append(3)
+        elif "on the table" in s:
+            priority_states.append(4)
+        else:
+            print("Error: unknown state")
+            print(s)
+
+            if torch.distributed.is_initialized():
+                torch.distributed.barrier()
+            raise Exception("ERROR")
+    sorted_states = [x.strip() for _, x in sorted(zip(priority_states, states))]
+    sorted_states[-1] = "and " + sorted_states[-1]
+    return ", ".join(sorted_states) + "."
+
+
+def goal_check(goals, blocks_state):
+    """Check if the goals are met and return the percentage of goals met
+
+    :param goals: goals
+    :param blocks_state: current blocks state
+    """
+    meetings = [g in blocks_state for g in goals]
+    if sum(meetings) == len(meetings):
+        return True, 1.0
+    return False, sum(meetings) / len(meetings)
+
+def extract_goals(example, return_raw=False):
+    """Extract the goals from the example
+    
+    :param example: example
+    """
+    goal_statement = example["question"].split("[STATEMENT]")[-1]\
+        .split("My goal is to ")[1].split("My plan is as follows")[0].strip()
+    if return_raw:
+        return goal_statement
+    goals = re.findall("the [a-z]{0,10} block is on top of the [a-z]{0,10} block", goal_statement)
+    return goals
+
+def extract_init_state(example):
+    """Extract the initial state from the example
+    
+    :param example: example
+    """
+    init_statement = example["question"].split("[STATEMENT]\nAs initial conditions I have that, ")[1]\
+        .split("My goal")[0].strip()
+    return init_statement

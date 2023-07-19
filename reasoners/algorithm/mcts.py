@@ -1,6 +1,7 @@
 import math
 from copy import deepcopy
 from typing import Generic, Optional, NamedTuple, Callable
+import itertools
 
 import numpy as np
 from tqdm import trange
@@ -9,8 +10,14 @@ from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action, Trace
 
 
 class MCTSNode(Generic[State, Action]):
+    id_iter = itertools.count()
+
+    @classmethod
+    def reset_id(cls):
+        cls.id_iter = itertools.count()
+
     def __init__(self, state: Optional[State], action: Optional[Action], parent: "Optional[MCTSNode]" = None,
-                 fast_reward: float = 0., fast_reward_aux=None,
+                 fast_reward: float = 0., fast_reward_details=None,
                  is_terminal: bool = False, calc_q: Callable[[list[float]], float] = np.mean):
         """
         A node in the MCTS search tree
@@ -22,11 +29,12 @@ class MCTSNode(Generic[State, Action]):
         :param is_terminal: whether the current state is a terminal state
         :param calc_q: the way to calculate the Q value from histories. Defaults: np.mean
         """
-        if fast_reward_aux is None:
-            fast_reward_aux = {}
+        self.id = next(MCTSNode.id_iter)
+        if fast_reward_details is None:
+            fast_reward_details = {}
         self.cum_rewards: list[float] = []
         self.fast_reward = self.reward = fast_reward
-        self.fast_reward_aux = fast_reward_aux
+        self.fast_reward_details = fast_reward_details
         self.is_terminal = is_terminal
         self.action = action
         self.state = state
@@ -62,13 +70,13 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                  output_trace_in_each_iter: bool = False,
                  w_exp: float = 1.,
                  depth_limit: int = 5,
-                 n_iter: int = 10,
+                 n_iters: int = 10,
                  cum_reward: Callable[[list[float]], float] = sum,
                  calc_q: Callable[[list[float]], float] = np.mean,
                  simulate_strategy: str | Callable[[list[float]], int] = 'max',
                  output_strategy: str = 'max_reward',
                  uct_with_fast_reward: bool = True,
-                 use_tqdm: bool = True):
+                 disable_tqdm: bool = True):
         """
         MCTS algorithm
 
@@ -95,7 +103,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         self.output_trace_in_each_iter = output_trace_in_each_iter
         self.w_exp = w_exp
         self.depth_limit = depth_limit
-        self.n_iter = n_iter
+        self.n_iters = n_iters
         self.cum_reward = cum_reward
         self.calc_q = calc_q
         default_simulate_strategies: dict[str, Callable[[list[float]], int]] = {
@@ -113,7 +121,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         self._output_cum_reward = -math.inf
         self.trace_in_each_iter: list[list[MCTSNode]] = None
         self.root: Optional[MCTSNode] = None
-        self.use_tqdm = use_tqdm
+        self.disable_tqdm = disable_tqdm
 
     def iterate(self, node: MCTSNode) -> list[MCTSNode]:
         path = self._select(node)
@@ -156,15 +164,21 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
     def _expand(self, node: MCTSNode):
         if node.state is None:
             node.state, aux = self.world_model.step(node.parent.state, node.action)
-            node.reward = self.search_config.reward(node.state, node.action, **node.fast_reward_aux, **aux)
+            # reward is calculated after the state is updated, so that the
+            # information can be cached and passed from the world model
+            # to the reward function with **aux without repetitive computation
+            node.reward, node.reward_details = self.search_config.\
+                reward(node.state, node.action, **node.fast_reward_details, **aux)
             node.is_terminal = self.world_model.is_terminal(node.state)
+
         children = []
         actions = self.search_config.get_actions(node.state)
         for action in actions:
-            fast_reward, fast_reward_aux = self.search_config.fast_reward(node.state, action)
+            fast_reward, fast_reward_details = self.search_config.fast_reward(node.state, action)
             child = MCTSNode(state=None, action=action, parent=node,
-                             fast_reward=fast_reward, fast_reward_aux=fast_reward_aux, calc_q=self.calc_q)
+                             fast_reward=fast_reward, fast_reward_details=fast_reward_details, calc_q=self.calc_q)
             children.append(child)
+
         node.children = children
 
     def _simulate(self, path: list[MCTSNode]):
@@ -205,7 +219,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         if self.output_trace_in_each_iter:
             self.trace_in_each_iter = []
 
-        for _ in trange(self.n_iter, disable=not self.use_tqdm, desc='MCTS iteration', leave=False):
+        for _ in trange(self.n_iters, disable=self.disable_tqdm, desc='MCTS iteration', leave=False):
             path = self.iterate(self.root)
             if self.output_trace_in_each_iter:
                 self.trace_in_each_iter.append(deepcopy(path))
@@ -231,6 +245,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                  world_model: WorldModel[State, Action],
                  search_config: SearchConfig[State, Action],
                  **kwargs) -> MCTSResult:
+        MCTSNode.reset_id()
         self.world_model = world_model
         self.search_config = search_config
 
