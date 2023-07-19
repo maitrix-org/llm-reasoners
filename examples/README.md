@@ -7,7 +7,7 @@ python -m torch.distributed.run --nproc_per_node 2 examples/rap_gsm8k/inference.
 ```
 ### PAL + Guided Beam Search
 
->> Note: You need to apply for the [research access](https://openai.com/form/researcher-access-program) to `Codex` (`code-davinci-002`) to run this approach
+> Note: You need to apply for the [research access](https://openai.com/form/researcher-access-program) to `Codex` (`code-davinci-002`) to run this approach
 ```bash
 export OPENAI_API_KEY=YOUR_API_KEY
 python examples/guided_gsm8k/inference.py --n_actions 16 --beam_size 5
