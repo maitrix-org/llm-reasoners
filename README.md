@@ -16,23 +16,33 @@
 
 ## Understanding LLM Reasoners
 
-Let's begin with classic chain-of-thought reasoning. Provided with a few examples of problem-solving step by step, the LLM is capable of generating a chain of thoughts to solve a new problem. For instance, consider the following example:
+Provided with a few examples of problem-solving step by step, the LLM is capable of generating a chain of thoughts (or a sequence of actions) to solve a new problem. For instance, consider the following example:
 
-> [Few-shots examples of chain-of-thought reasoning]
+> I am playing with a set of blocks where I need to arrange the blocks into stacks...
 > 
-> Q: Julie is reading a 120-page book. Yesterday, she was able to read 12 pages and today, she read twice as many pages as yesterday. If she wants to read half of the remaining pages tomorrow, how many pages should she read?
+> ...
 > 
-> A: *Julie read 12 x 2 = 24 pages today. So she was able to read a total of 12 + 24 = 36 pages since yesterday. There are 120 - 36 = 84 pages left to be read. Since she wants to read half of the remaining pages tomorrow, then she should read 84/2 = 42 pages.*
+> [STATEMENT] As initial conditions I have that, the red block is clear, the blue block is clear, the yellow block is clear, the hand is empty, the red block is on the yellow block, the yellow block is on the table, the blue block is on the table and the orange block is on the table.\nMy goal is to have that the orange block is on top of the blue block.\n\nMy plan is as follows:\n\n
+> 
+> [PLAN]
+> 
+> *pick up the orange block*
+>
+> *stack the orange block on top of the blue block*
+>
+> ...
 
-Regarding each reasoning step as an action, we have $a_1=\text{``Julie read 12 x 2 = 24 pages today.''}$, $a_2=\text{``So she was able to read a total of 12 + 24 = 36 pages since yesterday.''}$, and so on. Essentially, the LLM defines a policy $\pi := P(a_i | s_i)$, where $s_i = (a_0, a_1, ..., a_{i-1})$ is the list of previous steps. Chain-of-thought reasoning is equivalent to sampling from the policy defined by the LLM.
+Regarding each reasoning step as an action, we have $a_1=\text{``pick up the orange block''}$, $a_2=\text{``stack the orange block on top of the blue block''}$, and so on. Essentially, the LLM defines a policy $\pi := P(a_i | s_i)$, where $s_i = (a_0, a_1, ..., a_{i-1})$ is the list of previous steps. Chain-of-thought reasoning is equivalent to sampling from the policy defined by the LLM.
 
-LLM Reasoners formulates the reasoning as **planning**. Instead of randomly sampling from a policy, the goal is to **search for the optimal reasoning chain**. To achieve this, two components need to be defined: a reward function and a world model.
+LLM Reasoners formulates the reasoning as **planning**. Instead of randomly sampling from a policy, the goal is to **search for the optimal reasoning trace**. To achieve this, two components need to be defined: a world model and a reward function.
 
-- **Reward function** provides a criterion to evaluate a reasoning step. Ideally, a reasoning chain with higher accumulated reward should be more likely to be correct. For example, for the mathematical reasoning problem shown above, a reward function can be also defined by an LLM. We can directly ask an LLM: $\text{``Is this step correct?''}$ and check the likelihood of it outputting $\text{``Yes''}$. Guided by the reward function, we can deploy a search algorithm to find the optimal reasoning chain.
+- **World model** defines the state transition, formally $P(s_{i+1} | s_i, a_i)$. In chain-of-thoughts reasoning, the world model is straghtforward: $s_{i+1} = s_i + a_i$. However, a better-defined world model can predict and keep track of a more meaningful state (e.g., environment status, intermediate variable values), thus enhancing the reasoning. For the example shown above, we can naturally define the state as the conditions of blocks, and a world model is to predict the state of blocks after every potential action.
+  
+- **Reward function** provides a criterion to evaluate a reasoning step. Ideally, a reasoning chain with higher accumulated reward should be more likely to be correct. For the example shown above, we can reward actions based on the increased number of accomplished goals they lead to. Besides, the likelihood of LLMs generating the action can also be used as a reward, to give the search a good prior.
 
-- **World model** defines the state transition, formally $P(s_{i+1} | s_i, a_i)$. In chain-of-thoughts reasoning, the world model is straghtforward: $s_{i+1} = s_i + a_i$. However, a better-defined world model can predict and keep track of the state (e.g., environment status, intermediate variable values), thus enhancing the reasoning. For the mathematical reasoning problem shown above, if a state is defined as the set of known variables, and an action is to query the value of an unknown variable by asking a subquestion, then the world model is responsible for answering the subquestion to expand the known variable set.
+![Alt text](images/bw_example.png)
 
-![Alt text](images/gsm_example.png)
+
 ## Online Demo
 > TBA
 
