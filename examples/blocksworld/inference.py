@@ -93,7 +93,7 @@ if __name__ == '__main__':
              depth_limit: int = 6,
              **kwargs):
 
-        from rap.lm import LLaMAModel
+        from reasoners.lm import LLaMAModel
         local_rank = int(os.environ["LOCAL_RANK"])
         llama_ckpts = os.environ["LLAMA_CKPTS"]
         with open(prompt_path) as f:

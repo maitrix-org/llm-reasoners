@@ -89,10 +89,10 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
         world_output = self.base_model.generate([world_update_prompt],
                                     end_token="\n", hide_input=True, temperature=0).text[0].strip()
         new_state = utils.apply_change(world_output, block_states)
-        world_output = self.base_model.generate([world_update_prompt], hide_input=True, num_return_sequences=1,
-                                                eos_token="\n").text[0]
-        world_change = world_output.split("[CHANGE]")[-1]
-        new_state = utils.apply_change(world_change, block_states)
+        # world_output = self.base_model.generate([world_update_prompt], hide_input=True, num_return_sequences=1,
+        #                                         eos_token="\n").text[0]
+        # world_change = world_output.split("[CHANGE]")[-1]
+        # new_state = utils.apply_change(world_change, block_states)
         return new_state
 
     def is_terminal(self, state: BWState) -> bool:

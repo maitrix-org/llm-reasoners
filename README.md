@@ -4,14 +4,35 @@
 ---
 
 
-**LLM Reasoners** is a library to support advanced reasoning with LLMs. We formulate multi-step reasoning as decision-making, where each reasoning step is an action. A user could define the problem they want to work on, and LLM reasoners would provide you with anything else (Search Algorithms, Visualization, LLM calling, etc.)!
+**LLM Reasoners** is a library to support advanced reasoning with LLMs. It approaches multi-step reasoning as planning and search for the optimal reasoning chain. Given any reasoning problems, users can easily define a search configuration and an optional world model (explained below), while LLM reasoners takes care of the rest, including Search Algorithms, Visualization, LLM calling, and more!
 
-## Why Reasoners?
-- **Unified Formulation**: A Reasoner is composed of a `SearchConfig` to formulate the action space and reward, with an optional `WorldModel` to customize the state transition. This minimizes the workload to reason on new problems with LLMs, but also supports diverse types of reasoning problems, ranging from Question Answering to Embodied Plan Generation.
-- **Latest Algorithms**: We provide the latest search algorithms for reasoning, including [RAP](https://arxiv.org/abs/2305.14992), [ToT](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633), etc. These algorithms enable tree-structure reasoning and are essentially superior to chain-of-thoughts.
-- **Visualization**: Visualization tools are available to help users understand the reasoning process. Users can easily diagnose what happened even for the most complicated reasoning algorithms, e.g., Monte-Carlo Tree Search.
-- **LLM Wrapper**: Our framework is compatible with any LLM framework, and we specifically wrap LLaMA with some common helper functions to make it easier to use. We support LLaMA with [fairscale](https://github.com/facebookresearch/llama) backend for better multi-GPU performance, or [LLaMA.cpp](https://github.com/ggerganov/llama.cpp) backend with less hardware requirement. 
+## Why Choose LLM Reasoners?
 
+- **Cutting-Edge Algorithms**: We offer the most up-to-date search algorithms for reasoning, such as [RAP-MCTS](https://arxiv.org/abs/2305.14992), [ToT](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633), and more. These advanced algorithms enable tree-structure reasoning and outperform traditional chain-of-thoughts approaches.
+
+- **Intuitive Visualization**: Our platform provides visualization tools to aid users in comprehending the reasoning process. Even for the most complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand what occurred.
+
+- **User-Friendly LLM Wrapper**: Our framework is compatible with any LLM framework, and we have specifically included common helper functions to simplify its usage. We support LLaMA with the option of using [fairscale](https://github.com/facebookresearch/llama) backend for improved multi-GPU performance or [LLaMA.cpp](https://github.com/ggerganov/llama.cpp) backend with lower hardware requirements.
+
+## Understanding LLM Reasoners
+
+Let's begin with classic chain-of-thought reasoning. Provided with a few examples of problem-solving step by step, the LLM is capable of generating a chain of thoughts to solve a new problem. For instance, consider the following example:
+
+> [Few-shots examples of chain-of-thought reasoning]
+> 
+> Q: Julie is reading a 120-page book. Yesterday, she was able to read 12 pages and today, she read twice as many pages as yesterday. If she wants to read half of the remaining pages tomorrow, how many pages should she read?
+> 
+> A: *Julie read 12 x 2 = 24 pages today. So she was able to read a total of 12 + 24 = 36 pages since yesterday. There are 120 - 36 = 84 pages left to be read. Since she wants to read half of the remaining pages tomorrow, then she should read 84/2 = 42 pages.*
+
+Regarding each reasoning step as an action, we have $a_1=\text{``Julie read 12 x 2 = 24 pages today.''}$, $a_2=\text{``So she was able to read a total of 12 + 24 = 36 pages since yesterday.''}$, and so on. Essentially, the LLM defines a policy $\pi := P(a_i | s_i)$, where $s_i = (a_0, a_1, ..., a_{i-1})$ is the list of previous steps. Chain-of-thought reasoning is equivalent to sampling from the policy defined by the LLM.
+
+LLM Reasoners formulates the reasoning as **planning**. Instead of randomly sampling from a policy, the goal is to **search for the optimal reasoning chain**. To achieve this, two components need to be defined: a reward function and a world model.
+
+- **Reward function** provides a criterion to evaluate a reasoning step. Ideally, a reasoning chain with higher accumulated reward should be more likely to be correct. For example, for the mathematical reasoning problem shown above, a reward function can be also defined by an LLM. We can directly ask an LLM: $\text{``Is this step correct?''}$ and check the likelihood of it outputting $\text{``Yes''}$. Guided by the reward function, we can deploy a search algorithm to find the optimal reasoning chain.
+
+- **World model** defines the state transition, formally $P(s_{i+1} | s_i, a_i)$. In chain-of-thoughts reasoning, the world model is straghtforward: $s_{i+1} = s_i + a_i$. However, a better-defined world model can predict and keep track of the state (e.g., environment status, intermediate variable values), thus enhancing the reasoning. For the mathematical reasoning problem shown above, if a state is defined as the set of known variables, and an action is to query the value of an unknown variable by asking a subquestion, then the world model is responsible for answering the subquestion to expand the known variable set.
+
+![Alt text](images/gsm_example.png)
 ## Online Demo
 > TBA
 
