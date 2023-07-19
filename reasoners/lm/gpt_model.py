@@ -80,13 +80,3 @@ class GPTCompletionModel(LanguageModel):
                     **kwargs) -> list[np.ndarray]:
         
         raise NotImplementedError("GPTCompletionModel does not support get_log_prob")
-        
-
-        
-        
-
-
-
-    
-
-
