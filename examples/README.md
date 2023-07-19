@@ -20,7 +20,6 @@ python examples/guided_gsm8k/inference.py --n_actions 16 --beam_size 5
 
 ### RAP
 ```bash
-
 CUDA_VISIBLE_DEVICES=3,4,5,6 python -m torch.distributed.run --nproc_per_node 4 examples/rap_blocksworld/inference.py --llama_size "30B" --data_path 'examples/blocksworld/data/step_6.json' --depth_limit 6
 ```
 
