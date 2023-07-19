@@ -6,9 +6,11 @@ Running RAP on GSM8K [1]
 python -m torch.distributed.run --nproc_per_node 2 examples/rap_gsm8k/inference.py --llama_size "13B"
 ```
 ### PAL + Guided Beam Search
+
+>> Note: You need to apply for the [research access](https://openai.com/form/researcher-access-program) to `Codex` (`code-davinci-002`) to run this approach
 ```bash
 export OPENAI_API_KEY=YOUR_API_KEY
-python examples/guided_gsm8k/inference.py 
+python examples/guided_gsm8k/inference.py --n_actions 16 --beam_size 5
 ```
 
 
