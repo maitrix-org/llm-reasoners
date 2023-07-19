@@ -6,16 +6,17 @@ import time
 
 from .. import LanguageModel, GenerateOutput
 
-
-
+API_KEY = os.getenv("OPENAI_API_KEY", None)
 
 class GPTCompletionModel(LanguageModel):
     def __init__(self, model:str, max_tokens:int = 2048):
-        API_KEY = os.getenv("OPENAI_API_KEY", None)
+
+        # check if API_KEY is set, if not, raise error
         if API_KEY is None:
             raise ValueError("OPENAI_API_KEY not set, please run `export OPENAI_API_KEY=<your key>` to set it")
         else:
             openai.api_key = API_KEY
+
         self.model = model
         self.max_tokens = max_tokens
     
