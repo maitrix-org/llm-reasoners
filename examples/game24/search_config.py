@@ -36,7 +36,7 @@ class game24Config(SearchConfig):
         #     f.write(utils.propose_prompt_wrap(x, y, self.prompt) + "\n")
         #     f.write(utils.value_prompt_wrap(x, y, self.prompt) + "\n")
         propose_prompt = utils.propose_prompt_wrap(state[0], state[1], self.prompt)
-        print(f'propose prompt:{propose_prompt}')
+        #print(f'propose prompt:{propose_prompt}')
         
         # outputs = []
         # for idx in range(0, self.n_actions, self.batch_size):
@@ -52,7 +52,7 @@ class game24Config(SearchConfig):
         # outputs = outputs[0].split('Input: ')
         ## post-process for llama and gpt
         outputs = outputs[0].split('\n')
-        print(f'original actions: {outputs}')
+        #print(f'original actions: {outputs}')
         ## correct the left number status
         # outputs = [utils.correct_left_numbers(x, y, action) if 'left' in action else action for action in outputs]
         return_actions = [y + _ + '\n' for _ in outputs]
@@ -72,9 +72,9 @@ class game24Config(SearchConfig):
         flatten_y = y.strip().replace('\n', '->')
         # print(f"--checking status: {x}, {y}")
         value_prompt = utils.value_prompt_wrap(x, y, self.prompt)
-        print(f'reward prompt with {flatten_y}: {value_prompt}')
+        #print(f'reward prompt with {flatten_y}: {value_prompt}')
         if value_prompt in self.value_cache:
-            print(f"-- duplicate state eval: {flatten_y}, \nvalue: {self.value_cache[value_prompt]}")
+            #print(f"-- duplicate state eval: {flatten_y}, \nvalue: {self.value_cache[value_prompt]}")
             return self.value_cache[value_prompt]
         #### query with llama
         # value_outputs = []
@@ -84,7 +84,7 @@ class game24Config(SearchConfig):
         
         #### query with GPT
         value_outputs = self.base_model.generate(value_prompt, generation_num=self.n_eval, end_token=None)
-        print(f"reward output: {value_outputs}\n")
+        #print(f"reward output: {value_outputs}\n")
 
         ## postprocess for llama
         ## find the first value result: impossible/sure/likely + \n
@@ -104,5 +104,5 @@ class game24Config(SearchConfig):
         value = utils.value_outputs_unwrap(x, y, value_outputs)
         self.value_cache[value_prompt] = value
         flatten_y = y.strip().replace('\n', '->')
-        print(f"-- new_state eval: {flatten_y}, \nvalue: {value}")
+        #print(f"-- new_state eval: {flatten_y}, \nvalue: {value}")
         return value
