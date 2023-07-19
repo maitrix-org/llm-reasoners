@@ -1,6 +1,12 @@
 from typing import Generic
 from collections import defaultdict
 from .. import SearchAlgorithm, WorldModel, RAPAgent, SearchConfig, State, Action
+from typing import NamedTuple, List, Tuple
+
+class BeamSearchResult(NamedTuple):
+    terminal_state: State
+    cum_reward: float
+    trace: List[Tuple[Action, State]]
 
 
 class BeamSearch(SearchAlgorithm, Generic[State, Action]):
@@ -8,8 +14,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         self.beam_size = beam_size
         self.max_depth = max_depth
 
-    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action],
-                 output_trace: bool = False):
+    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action]):
         init_state = world.init_state()
         cur_beam = [([(None, init_state)], 0)]  # (trace, reward)
         terminal_beam = []
@@ -27,7 +32,11 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             new_beam.sort(key=lambda x: x[1], reverse=True)
             cur_beam = new_beam[:self.beam_size]
 
-        if output_trace:
-            return terminal_beam[0][0]
-        else:
-            return terminal_beam[0][0][-1][-1]
+        best_result = terminal_beam[0]
+        result = BeamSearchResult(
+            terminal_state=best_result[0][-1][-1], 
+            cum_reward=best_result[1], 
+            trace=best_result[0]
+            )
+
+        return result
