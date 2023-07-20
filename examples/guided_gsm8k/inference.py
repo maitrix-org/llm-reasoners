@@ -27,6 +27,8 @@ def guided_decoding_gsm8k(base_model: LanguageModel,
               reward_alpha: float = 0.5,
               beam_size: int = 5,
               max_depth: int = 15,
+              beam_search_temperature: float = 0.5,
+              beam_search_temperature_decay: float = 1,
               log_dir: Optional[str] = None,
               disable_log: bool = False,
               disable_tqdm: bool = False,
@@ -39,7 +41,17 @@ def guided_decoding_gsm8k(base_model: LanguageModel,
         with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
             print(sys.argv, file=f)
     
-    search_algo_params |= {'beam_size': beam_size, 'max_depth': max_depth}
+    # set parameters for beam search
+    search_algo_params |= {
+            'beam_size': beam_size, 
+            'max_depth': max_depth,
+            'sampling_strategy': 'softmax',
+            'temperature': beam_search_temperature,
+            'temperature_decay': beam_search_temperature_decay,
+            # production of list and raised to the power of the reciprocal of the list length
+            'reward_aggregator': lambda x: np.prod(x) ** (1 / len(x))
+        }
+    
     world_model = GSM8kWorldModel(base_model=base_model)
     config = GSM8kConfig(base_model=base_model,
                             n_actions=n_action,
