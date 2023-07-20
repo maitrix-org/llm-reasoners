@@ -43,23 +43,40 @@ class GPTCompletionModel(LanguageModel):
                 # sleep several seconds to avoid rate limit
                 if rate_limit_per_min is not None:
                     time.sleep(60 / rate_limit_per_min)
+                ### GPT 3.5 and higher use a different API
+                if ('gpt-3.5' in self.model) or ('gpt-4' in self.model):
+                    messages = [{"role": "user", "content": prompt}]
+                    response = openai.ChatCompletion.create(
+                        model=self.model,
+                        messages=messages,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        top_p=top_p,
+                        n=num_return_sequences,
+                        stop=stop,
+                        **kwargs
+                    )
+                    return GenerateOutput(
+                        text=[choice["message"]["content"] for choice in response["choices"]],
+                        log_prob=None
+                    )
+                else:
+                    response = openai.Completion.create(
+                        model=self.model,
+                        prompt=prompt,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        top_p=top_p,
+                        n=num_return_sequences,
+                        stop=stop,
+                        logprobs=logprobs,
+                        **kwargs
+                    )
 
-                response = openai.Completion.create(
-                    model=self.model,
-                    prompt=prompt,
-                    max_tokens=max_tokens,
-                    temperature=temperature,
-                    top_p=top_p,
-                    n=num_return_sequences,
-                    stop=stop,
-                    logprobs=logprobs,
-                    **kwargs
-                )
-
-                return GenerateOutput(
-                    text=[choice["text"] for choice in response["choices"]],
-                    log_prob=[choice["logprobs"] for choice in response["choices"]]
-                )
+                    return GenerateOutput(
+                        text=[choice["text"] for choice in response["choices"]],
+                        log_prob=[choice["logprobs"] for choice in response["choices"]]
+                    )
             
             except Exception as e:
                 print(f"An Error Occured: {e}, sleeping for {i*10} seconds")
