@@ -111,7 +111,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
 
         state.append(SubResult(action=action[0], action_prob=action[1], evaluation=evaluation, action_confidence=action_confidence))
 
-        return state
+        return state, {"action_confidence": action_confidence}
 
     def is_terminal(self, state: GSM8kState) -> bool:
         # several ways to terminate:

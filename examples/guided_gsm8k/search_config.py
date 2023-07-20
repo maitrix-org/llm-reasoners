@@ -66,11 +66,8 @@ class GSM8kConfig(SearchConfig):
     def reward(self, state: GSM8kState, 
                action: GSM8kAction,
                action_confidence: float = None,
-               next_state: GSM8kState = None,
                **kwargs) -> float:
         
-        if action_confidence is None:
-            assert next_state is not None, "action_confidence and next_state cannot be both None"
-            action_confidence = next_state[-1].action_confidence
+        assert action_confidence is not None, "action_confidence should not be None"
         
         return action[1] ** self.reward_alpha * action_confidence ** (1 - self.reward_alpha)

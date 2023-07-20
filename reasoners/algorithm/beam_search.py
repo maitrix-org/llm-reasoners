@@ -61,8 +61,8 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                     terminal_beam.append((trace, reward_list, score))
                 else:
                     for action in config.get_actions(state):
-                        next_state = world.step(state, action)
-                        reward = config.reward(state, action, next_state=next_state)
+                        next_state, aux = world.step(state, action)
+                        reward = config.reward(state, action, **aux)
                         # Add new reward to list of rewards
                         new_reward_list = reward_list + [reward]
                         # Calculate the new reward
