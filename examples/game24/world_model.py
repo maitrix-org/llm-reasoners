@@ -1,7 +1,8 @@
 import io
 from typing import NamedTuple
 from collections import defaultdict
-from rap import WorldModel, LanguageModel
+# from rap import WorldModel, LanguageModel
+from reasoners import WorldModel, LanguageModel
 import utils
 
 

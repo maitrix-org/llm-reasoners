@@ -19,7 +19,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         cur_beam = [([(None, init_state)], 0)]  # (trace, reward)
         terminal_beam = []
         for i in range(self.max_depth):
-            # print(f"\n----new step {i}----")
+            print(f"\n----new step {i}----")
             new_beam = []
             rewards = []
             new_actions = []
@@ -60,8 +60,8 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                 ids = list(range(len(new_beam)))
                 select_ids = sorted(ids, key=lambda x: rewards[x], reverse=True)[:self.beam_size]
                 cur_beam = [new_beam[select_id] for select_id in select_ids]
-                # print(f"----choices: {[(x[0][-1][-1].sub_answer) for x in cur_beam]}----")
-                # print(f"----values: {[(x[-1]) for x in cur_beam]}----")
+                print(f"----choices: {[(x[0][-1][-1].sub_answer) for x in cur_beam]}----")
+                print(f"----values: {[(x[-1]) for x in cur_beam]}----")
             else:
                 new_beam.sort(key=lambda x: x[1], reverse=True)
                 cur_beam = new_beam[:self.beam_size]

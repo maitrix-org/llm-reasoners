@@ -57,11 +57,11 @@ def rap_game24(base_model: LanguageModel,
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=len(dataset), initial=0, desc='game24')):
         print(f'\n======== example {i}: {example} ========')
-        base_model = GPTModel(model='gpt-3.5-turbo')
+        base_model = GPTCompletionModel(model='gpt-3.5-turbo')
         agent.world_model = game24WorldModel(base_model=base_model, prompt=prompts,
                                   n_confidence=n_confidence, batch_size=batch_size)
         # agent.search_config.value_cache = {}
-        algo_output = agent(example, action_dedup=True, return_beam=True, early_terminate=False)
+        algo_output = agent(example, action_dedup=True, return_beam=True, early_terminate=False, reward_strategy='last_iter')
         # print(f'search cache size: {len(agent.search_config.value_cache)}')
         answer = 24
         correct = 0
@@ -93,7 +93,8 @@ if __name__ == '__main__':
     import json
     import warnings
     import fire
-    from rap.lm import LLaMAModel, GPTModel
+    # from rap.lm import LLaMAModel, GPTModel
+    from reasoners.lm import LLaMAModel, GPTCompletionModel
     import random
     import torch
     import torch.backends.cudnn
@@ -121,7 +122,7 @@ if __name__ == '__main__':
             prompts = json.load(f)
         # llama_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
         ## try GPT
-        gpt_model = GPTModel(model='gpt-3.5-turbo')
+        gpt_model = GPTCompletionModel(model='gpt-3.5-turbo')
         rap_game24(base_model=gpt_model,
                   prompts=prompts,
                   batch_size=batch_size,
