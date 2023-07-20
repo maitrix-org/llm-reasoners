@@ -168,7 +168,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
             # information can be cached and passed from the world model
             # to the reward function with **aux without repetitive computation
             node.reward, node.reward_details = self.search_config.\
-                reward(node.state, node.action, **node.fast_reward_details, **aux)
+                reward(node.parent.state, node.action, **node.fast_reward_details, **aux)
             node.is_terminal = self.world_model.is_terminal(node.state)
 
         children = []
