@@ -1,4 +1,4 @@
-from rap import WorldModel, LanguageModel
+from reasoners import WorldModel, LanguageModel
 from typing import NamedTuple
 from prompt import choice_prefix, evaluate_prompt
 from utils import get_indent

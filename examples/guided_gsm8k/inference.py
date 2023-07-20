@@ -8,9 +8,9 @@ from datasets import load_dataset
 from tqdm import tqdm
 from datetime import datetime
 
-from rap import LanguageModel, RAPAgent, SearchAlgorithm
-from rap.algorithm import BeamSearch
-from rap.lm import GPTCompletionModel
+from reasoners import LanguageModel, RAPAgent, SearchAlgorithm
+from reasoners.algorithm import BeamSearch
+from reasoners.lm import GPTCompletionModel
 
 from world_model import GSM8kWorldModel
 from search_config import GSM8kConfig
