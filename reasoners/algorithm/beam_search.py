@@ -2,11 +2,7 @@ from typing import Generic
 from collections import defaultdict
 from .. import SearchAlgorithm, WorldModel, RAPAgent, SearchConfig, State, Action
 from typing import NamedTuple, List, Tuple, Callable, Any
-
-def softmax(x: List[float], temperature: float) -> List[float]:
-    # Implement softmax function
-    e_x = np.exp(np.array(x) / temperature)
-    return list(e_x / e_x.sum())
+import numpy as np
 
 class BeamSearchResult(NamedTuple):
     terminal_state: State
@@ -19,6 +15,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                  beam_size: int, 
                  max_depth: int, 
                  sampling_strategy: str = 'argmax', # sampling strategy, argmax or softmax
+                 replace: bool = False, # whether to sample with replacement
                  temperature: float = 1.0, # temperature for softmax sampling
                  temperature_decay: float = 1.0, # temperature decay, default to no decay
                  reward_aggregator: Callable[[List[float]], float] = lambda x: sum(x)/len(x)
@@ -26,25 +23,48 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         # Initialize the BeamSearch class with a given beam size and maximum depth
         self.beam_size = beam_size
         self.max_depth = max_depth
-        self.sampling_method = sampling_method
+        self.sampling_strategy = sampling_strategy
+        self.replace = replace
         self.temperature = temperature
+        self.temperature_decay = temperature_decay
         self.reward_aggregator = reward_aggregator # aggregate the reward list into a single reward, default to be average
+
+        # if the temperature is set to 0, then we force the sampling strategy to be argmax
+        if self.temperature < 1e-3:
+            self.sampling_strategy = 'argmax'
+        
+        # if sampling strategy not in argmax or stochastic, just use argmax
+        if self.sampling_strategy not in ['argmax', 'stochastic']:
+            self.sampling_strategy = 'argmax'
     
-    def _softmax(self, x):
-        e_x = np.exp(x - np.max(x)) 
-        return e_x / e_x.sum(axis=0)
+    @staticmethod
+    def softmax(x: List[float], temperature: float) -> List[float]:
+        e_x = np.exp(np.array(x) / temperature)
+        return list(e_x / e_x.sum())
+
 
     def _sample(self, beam):
-        rewards = np.array([x[2] for x in beam])
-        if self.sampling_strategy == 'argmax':
-            indices = np.argmax(rewards)
-        elif self.sampling_strategy == 'softmax':
-            probs = self._softmax(rewards / self.temperature)
-            indices = np.random.choice(len(probs), size=self.beam_size, p=probs)
-        else:
-            raise ValueError(f"Invalid sampling_strategy: {self.sampling_strategy}")
 
-        return [beam[i] for i in indices]
+        if self.sampling_strategy == 'argmax':
+            # sort the beam by reward
+            beam.sort(key=lambda x: x[2], reverse=True)
+            # return the top k
+            return beam[:self.beam_size]
+
+        elif self.sampling_strategy == 'stochastic':
+            rewards = np.array([x[2] for x in beam])
+
+            if len(rewards) == 0:
+                return []
+
+            # sample size is the minimum of beam size and the length of the beam
+            sample_size = min(self.beam_size, len(beam))
+            # calculate the probability distribution
+            probs = BeamSearch.softmax(rewards, self.temperature)
+            # sample from the probability distribution without replacement
+            indices = np.random.choice(len(probs), size=sample_size, p=probs, replace=self.replace)
+
+            return [beam[i] for i in indices]
         
 
     def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action]):
@@ -70,6 +90,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                         new_beam.append((trace + [(action, next_state)], new_reward_list, new_reward))
             # Sort new beam by reward
             new_beam.sort(key=lambda x: x[2], reverse=True)
+
             # Sample from new beam
             cur_beam = self._sample(new_beam)
 
