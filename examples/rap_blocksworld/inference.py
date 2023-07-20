@@ -26,7 +26,8 @@ def rap_bw(base_model: LanguageModel,
            calc_q: Callable[[list[float]], float] = np.mean,
            log_dir: Optional[str] = None,
            disable_log: bool = False,
-           config_file: str = "data/blocksworld/bw_config.yaml",
+           domain_file: str = "",
+           config_file: str = "",
            lm_plan_file: str = 'lm_plan.tmp',
            **search_algo_params):
 
@@ -45,17 +46,22 @@ def rap_bw(base_model: LanguageModel,
                       goal_reward_default=goal_reward_default)
     search_algo = search_algo(**search_algo_params)
     agent = RAPAgent(world_model=world_model, search_config=config, search_algo=search_algo)
-    dataset = utils.load_blocksworld(config_file, data_path, prompt)  # [{"goal": str, "init": str}]
+    dataset = utils.load_blocksworld(config_file, domain_file, data_path, prompt)  # [{"goal": str, "init": str}]
     correct_count = 0
-
-    domain_file = utils.read_config(config_file)["domain_file"]
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume, desc='Blocksworld')):
         algo_output = agent(example)
 
         if torch.distributed.is_initialized():
             torch.distributed.barrier()
         # to make sure the plan is saved before evaluation in multi-process setting
-        correct = utils.validate_plan(domain_file, example["instance_file"], lm_plan_file)[0]
+        if algo_output.trace is None:
+            print("No plan found")
+            correct = 0
+        else:
+            utils.text_to_plan_blocksworld("\n".join(algo_output.trace[1]), example["instance_file"], config_file, domain_file, lm_plan_file)
+            correct = utils.validate_plan(domain_file, example["instance_file"], lm_plan_file)[0]
+
+
         correct_count += correct
         accuracy = correct_count / (i + 1)
         log_str = f'Case #{resume + i + 1}: {correct=}; '\
@@ -85,10 +91,11 @@ if __name__ == '__main__':
     torch.backends.cudnn.deterministic = True
 
     def llama_main(llama_size: str = '13B',
-             prompt_path: str = 'examples/blocksworld/prompts/prompt.json',
-             data_path: str = 'examples/blocksworld/data/step_4.json',
+             prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
+             data_path: str = 'examples/rap_blocksworld/data/step_4.json',
              disable_log: bool = False,
-             config_file: str = "examples/blocksworld/data/bw_config.yaml",
+             config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
+             domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
              lm_plan_file: str = 'lm_plan.tmp',
              depth_limit: int = 6,
              **kwargs):
@@ -104,17 +111,19 @@ if __name__ == '__main__':
                disable_log=disable_log or local_rank != 0,
                data_path=data_path,
                config_file=config_file,
+               domain_file=domain_file,
                depth_limit=depth_limit,
                lm_plan_file=lm_plan_file, **kwargs)
 
 
     def llamacpp_main(
             llama_path = '/home/shibo/llama.cpp/models/65B/ggml-model-q8_0.bin',
-            prompt_path: str = 'examples/blocksworld/prompts/prompt.json',
-            data_path: str = 'examples/blocksworld/data/step_4.json',
+            prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
+            data_path: str = 'examples/rap_blocksworld/data/step_4.json',
             disable_log: bool = False,
-            config_file: str = "examples/blocksworld/data/bw_config.yaml",
+            config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
             lm_plan_file: str = 'lm_plan.tmp',
+            domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
             depth_limit: int = 6,
             **kwargs):
 
@@ -127,6 +136,7 @@ if __name__ == '__main__':
                disable_log=disable_log,
                data_path=data_path,
                config_file=config_file,
+               domain_file=domain_file,
                depth_limit=depth_limit,
                lm_plan_file=lm_plan_file, **kwargs)
 

@@ -174,6 +174,8 @@ class TreeLog():
         with open(path, 'rb') as f:
             obj = pickle.load(f)
 
+        if obj.tree_state_after_each_iter == None:
+            raise ValueError('tree_state_after_each_iter is None. Please set `save_tree` to True when initializing MCTS.')
         n_trajs = len(obj.tree_state_after_each_iter)
 
         for step in range(n_trajs):

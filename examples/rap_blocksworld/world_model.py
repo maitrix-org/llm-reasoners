@@ -87,7 +87,7 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
             raise ValueError("Invalid action")
         world_update_prompt = self.prompt[key].format(block_states, action.capitalize() + ".")
         world_output = self.base_model.generate([world_update_prompt],
-                                    end_token="\n", hide_input=True, temperature=0).text[0].strip()
+                                    eos_token_id="\n", hide_input=True, temperature=0).text[0].strip()
         new_state = utils.apply_change(world_output, block_states)
         # world_output = self.base_model.generate([world_update_prompt], hide_input=True, num_return_sequences=1,
         #                                         eos_token="\n").text[0]
