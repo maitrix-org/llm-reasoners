@@ -10,7 +10,9 @@ python -m torch.distributed.run --nproc_per_node 2 examples/rap_gsm8k/inference.
 > Note: You need to apply for the [research access](https://openai.com/form/researcher-access-program) to `Codex` (`code-davinci-002`) to run this approach
 ```bash
 export OPENAI_API_KEY=YOUR_API_KEY
-python examples/guided_gsm8k/inference.py --n_actions 16 --beam_size 5
+python examples/guided_gsm8k/inference.py --n_actions 16 --temperature 1.0 --reward_alpha 0.5 \
+    --beam_size 5 --sampling_strategy stochastic --replace False \
+    --beam_search_temperature 0.5 --beam_search_temperature_decay 1.0
 ```
 
 
