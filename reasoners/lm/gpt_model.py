@@ -41,9 +41,14 @@ class GPTCompletionModel(LanguageModel):
 
         for i in range(1, 65):  # try 64 times
             try:
-                # sleep several seconds to avoid rate limit
                 if rate_limit_per_min is not None:
-                    time.sleep(60 / rate_limit_per_min)
+                    # get the interval
+                    interval = 60 / rate_limit_per_min
+                    # actually we can sleep for a shorter time since the API call itself takes time
+                    if interval > 2:
+                        interval = interval - 1
+
+                    time.sleep(interval)
 
                 response = openai.Completion.create(
                     model=self.model,
