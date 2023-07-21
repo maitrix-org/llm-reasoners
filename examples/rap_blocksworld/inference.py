@@ -5,7 +5,7 @@ import numpy as np
 from tqdm import tqdm
 from datetime import datetime
 
-from reasoners import LanguageModel, RAPAgent, SearchAlgorithm
+from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import MCTS
 
 from world_model import BlocksWorldModel
@@ -45,11 +45,11 @@ def rap_bw(base_model: LanguageModel,
                       reward_alpha=reward_alpha, goal_reached_reward=goal_reached_reward,
                       goal_reward_default=goal_reward_default)
     search_algo = search_algo(**search_algo_params)
-    agent = RAPAgent(world_model=world_model, search_config=config, search_algo=search_algo)
+    reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
     dataset = utils.load_blocksworld(config_file, domain_file, data_path, prompt)  # [{"goal": str, "init": str}]
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume, desc='Blocksworld')):
-        algo_output = agent(example)
+        algo_output = reasoner(example)
 
         if torch.distributed.is_initialized():
             torch.distributed.barrier()

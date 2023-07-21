@@ -2,14 +2,10 @@ import pickle
 from typing import Type, Callable, Optional
 
 import numpy as np
-# from datasets import load_dataset
 from tqdm import tqdm
 from datetime import datetime
 
-# from rap import LanguageModel, RAPAgent, SearchAlgorithm
-# from rap.algorithm import BeamSearch
-
-from reasoners import LanguageModel, RAPAgent, SearchAlgorithm
+from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import BeamSearch
 
 from world_model import game24WorldModel
@@ -50,7 +46,7 @@ def rap_game24(base_model: LanguageModel,
                          n_actions=n_action, batch_size=batch_size,reward_confidence_default=reward_confidence_default,
                          force_terminating_on_depth_limit=force_terminating_on_depth_limit, depth_limit=depth_limit, n_eval=n_eval_sample)
     search_algo = search_algo(**search_algo_params)
-    agent = RAPAgent(world_model=world_model, search_config=config, search_algo=search_algo)
+    reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
     ## test from 900-999
     dataset = utils.read_data(file='./examples/game24/data/24.csv')[900:1000]
@@ -58,15 +54,15 @@ def rap_game24(base_model: LanguageModel,
     for i, example in enumerate(tqdm(dataset, total=len(dataset), initial=0, desc='game24')):
         print(f'\n======== example {i}: {example} ========')
         base_model = GPTCompletionModel(model='gpt-3.5-turbo')
-        agent.world_model = game24WorldModel(base_model=base_model, prompt=prompts,
+        reasoner.world_model = game24WorldModel(base_model=base_model, prompt=prompts,
                                   n_confidence=n_confidence, batch_size=batch_size)
-        # agent.search_config.value_cache = {}
-        algo_output = agent(example, action_dedup=True, return_beam=True, early_terminate=False, reward_strategy='last_iter')
-        # print(f'search cache size: {len(agent.search_config.value_cache)}')
+        # reasoner.search_config.value_cache = {}
+        algo_output = reasoner(example, action_dedup=True, return_beam=True, early_terminate=False, reward_strategy='last_iter')
+        # print(f'search cache size: {len(reasoner.search_config.value_cache)}')
         answer = 24
         correct = 0
         output = ''
-        # print(f'agent output: {algo_output}')
+        # print(f'reasoner output: {algo_output}')
         ## eval each trace, consider correct if one trace can correctly reach 24
         for end_state in algo_output:
             output = end_state[0][-1][-1]
@@ -93,7 +89,6 @@ if __name__ == '__main__':
     import json
     import warnings
     import fire
-    # from rap.lm import LLaMAModel, GPTModel
     from reasoners.lm import LLaMAModel, GPTCompletionModel
     import random
     import torch

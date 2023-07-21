@@ -1,6 +1,6 @@
 from typing import Generic
 from collections import defaultdict
-from .. import SearchAlgorithm, WorldModel, RAPAgent, SearchConfig, State, Action
+from .. import SearchAlgorithm, WorldModel, Reasoner, SearchConfig, State, Action
 from typing import NamedTuple, List, Tuple
 
 class BeamSearchResult(NamedTuple):

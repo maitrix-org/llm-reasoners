@@ -8,9 +8,9 @@ from datasets import load_dataset
 from tqdm import tqdm
 from datetime import datetime
 
-from rap import LanguageModel, RAPAgent, SearchAlgorithm
-from rap.algorithm import BeamSearch
-from rap.lm import GPTCompletionModel
+from reasoners import LanguageModel, Reasoner, SearchAlgorithm
+from reasoners.algorithm import BeamSearch
+from reasoners.lm import GPTCompletionModel
 
 from world_model import GSM8kWorldModel
 from search_config import GSM8kConfig
@@ -49,13 +49,13 @@ def guided_decoding_gsm8k(base_model: LanguageModel,
                             depth_limit=depth_limit)
     search_algo = search_algo(**search_algo_params)
 
-    agent = RAPAgent(world_model=world_model, search_config=config, search_algo=search_algo)
+    reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
     dataset = load_dataset("gsm8k", "main", split=f'test[{resume}:]')
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
                                      desc='GSM8k', disable=disable_tqdm)):
-        algo_output = agent(example["question"])
+        algo_output = reasoner(example["question"])
         # get the last state
         state = algo_output.terminal_state
         # use the state to form the full output

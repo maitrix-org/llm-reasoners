@@ -3,7 +3,6 @@ import io
 import numpy as np
 import re
 
-# from rap import SearchConfig, LanguageModel
 from reasoners import SearchConfig, LanguageModel
 from world_model import game24State, game24Action
 import utils

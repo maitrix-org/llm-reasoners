@@ -2,7 +2,7 @@ import io
 import numpy as np
 from prompt import code_prompt
 from world_model import GSM8kState, GSM8kAction
-from rap import SearchConfig, LanguageModel
+from reasoners import SearchConfig, LanguageModel
 from typing import Tuple
 
 
