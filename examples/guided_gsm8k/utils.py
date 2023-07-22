@@ -13,21 +13,25 @@ def construct_full_solution(state, execute=True):
     with io.StringIO() as f:
         f.write("def solution():\n")
         # iterate through the state
-        for a, _, _, _ in state:
+        for a, _, _, _, _ in state:
             f.write(f"{a}\n")
 
         full_output = f.getvalue()
 
     if execute:
-        # Create a dictionary to serve as the global and local scope for the exec call
-        exec_globals = {}
+        try:
+            # Create a dictionary to serve as the global and local scope for the exec call
+            exec_globals = {}
 
-        # Execute the function definition
-        exec(full_output, exec_globals)
+            # Execute the function definition
+            exec(full_output, exec_globals)
 
-        # Call the function and get the output
-        output = exec_globals['solution']()
-        return output
+            # Call the function and get the output
+            output = exec_globals['solution']()
+            return output
+        except Exception as e:
+            # return the error message
+            return str(e)
     else:
         return full_output
 
