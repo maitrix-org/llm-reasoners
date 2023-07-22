@@ -4,11 +4,13 @@ import torch
 import json
 import yaml
 import random
+import numpy as np
 
 try:
     from tarski.io import PDDLReader
 except:
-    raise ImportError("To run experiments on blocksworld, please install Tarski.")
+    raise ImportError("To run experiments on blocksworld, please install tarski "
+                      "with `pip install tarski`.")
 
 # helper functions from https://github.com/karthikv792/LLMs-Planning
 
@@ -103,10 +105,9 @@ def get_problem(instance, domain):
 
 # defined for RAP
 
-def load_blocksworld(config_file, data_file, prompt):
+def load_blocksworld(config_file, domain_file, data_file, prompt):
     config_data = read_config(config_file)
-    domain_file = config_data["domain_file"]
-    domain_pddl = f'gpt-plan-benchmark/gpt_plan_test/instances/{domain_file}'
+    domain_pddl = domain_file
     data_files = json.load(open(data_file, 'r'))
     data = []
     for cur_instance in data_files:
@@ -122,6 +123,73 @@ def load_blocksworld(config_file, data_file, prompt):
         cur_data["instance_file"] = cur_instance[0]
         data.append(cur_data)
     return data
+
+def get_ordered_objects(object_names, line):
+    objs = []
+    pos = []
+    for obj in object_names:
+        if obj in line:
+            objs.append(obj)
+            pos.append(line.index(obj))
+
+    sorted_zipped_lists = sorted(zip(pos, objs))
+    return [el for _, el in sorted_zipped_lists]
+
+def text_to_plan_blocksworld(text, cur_instance_file, config_file, domain_pddl, plan_file, ground_flag=False):
+
+    data = read_config(config_file)
+    problem = get_problem(cur_instance_file, domain_pddl)
+    action_set = problem.actions
+    # ----------- GET DICTIONARIES ----------- #
+    LD = data['encoded_objects']  # Letters Dictionary
+    BD = {v: k for k, v in LD.items()}  # Blocks Dictionary
+
+    # ----------- GET RAW AND TEXT-FORMATTED ACTIONS AND OBJECTS ----------- #
+    actions_params_dict = dict(action_set.items())
+    raw_actions = list(action_set.keys())
+    text_actions = [x.replace("-", " ") for x in raw_actions]
+
+    text = text.lower().strip()
+    for raw_action, text_action in zip(raw_actions, text_actions):
+        text = text.replace(text_action, raw_action)
+
+    object_names = [x.lower() for x in LD.values()]
+
+    # ----------- GET PLAN FROM TEXT ----------- #
+    plan = ""
+    readable_plan = ""
+    lines = [line.strip() for line in text.split("\n")]
+    for line in lines:
+        if '[COST]' in line:
+            break
+        # Extracting actions
+        action_list = [action in line.split() for action in raw_actions]
+        if sum(action_list) == 0:
+            continue
+        # TODO: Handle GPT-3 text that can't be parsed as an action
+        action = raw_actions[np.where(action_list)[0][0]]
+        # Extracting Objects
+        n_objs = len(actions_params_dict[action].parameters.vars())
+        objs = get_ordered_objects(object_names, line)
+        if len(objs) != n_objs:
+            continue
+        readable_objs = [obj.replace(' block', '') for obj in objs]
+        objs = [BD[x] for x in objs]
+        readable_action = "({} {})".format(action, " ".join(readable_objs[:n_objs + 1]))
+        if not ground_flag:
+            action = "({} {})".format(action, " ".join(objs[:n_objs + 1]))
+        else:
+            action = "({}_{})".format(action, "_".join(objs[:n_objs + 1]))
+
+        plan += f"{action}\n"
+        readable_plan += f"{readable_action}\n"
+
+    print(f"[+]: Saving plan in {plan_file}")
+    file = open(plan_file, "wt")
+    file.write(plan)
+    file.close()
+
+    return plan, readable_plan
 
 def validate_plan(domain, instance, lm_plan_file):
     """Validate the plan using VAL
@@ -197,7 +265,10 @@ def apply_change(change, state):
             if len(colors) == 0:
                 print("Error: zero-colors")
                 print(c)
-                torch.distributed.barrier()
+
+                if torch.distributed.is_initialized():
+                    torch.distributed.barrier()
+                
                 raise Exception("ERROR")
             color = colors[0]
             if c.startswith(f"the {color} block"):
@@ -223,13 +294,18 @@ def apply_change(change, state):
                     success += 1
             else:
                 print("Error: not recognized")
-                torch.distributed.barrier()
+                print(c)
+                if torch.distributed.is_initialized():
+                    torch.distributed.barrier()
                 raise Exception("ERROR")
+        
         if success == 0:
             print("Error: no successful change")
             print(c)
             print(states)
-            torch.distributed.barrier()
+
+            if torch.distributed.is_initialized():
+                torch.distributed.barrier()
             raise Exception("ERROR")
     states = [s for s in states if s != ""]
     priority_states = []
@@ -249,7 +325,9 @@ def apply_change(change, state):
         else:
             print("Error: unknown state")
             print(s)
-            torch.distributed.barrier()
+
+            if torch.distributed.is_initialized():
+                torch.distributed.barrier()
             raise Exception("ERROR")
     sorted_states = [x.strip() for _, x in sorted(zip(priority_states, states))]
     sorted_states[-1] = "and " + sorted_states[-1]

@@ -1,8 +1,12 @@
-tqdm~=4.65.0
+tqdm
 fire
-numpy~=1.25.0
-torch~=2.0.1
-datasets~=2.13.1
+numpy
+scipy
+torch
+datasets
+
+# openai
+openai
 
 # hf
 transformers
@@ -11,7 +15,7 @@ datasets
 # llama
 sentencepiece
 git+https://github.com/facebookresearch/llama
-fairscale~=0.4.13
+fairscale
 
 requests~=2.31.0
 PyYAML~=6.0

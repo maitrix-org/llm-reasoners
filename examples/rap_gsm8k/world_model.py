@@ -1,7 +1,7 @@
 import io
 from typing import NamedTuple
 from collections import defaultdict
-from rap import WorldModel, LanguageModel
+from reasoners import WorldModel, LanguageModel
 import utils
 
 
@@ -27,6 +27,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                  prompt: dict,
                  n_confidence=8,
                  batch_size=2,
+                 temperature=0.8,
                  early_stop_base=None,
                  early_stop_threshold=1.) -> None:
         super().__init__()
@@ -34,6 +35,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
         self.prompt = prompt
         self.batch_size = batch_size
         self.n_confidence = n_confidence
+        self.temperature = temperature
         self.early_stop_base = early_stop_base if early_stop_base is not None else n_confidence
         self.early_stop_threshold = early_stop_threshold
 
@@ -61,7 +63,11 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                 stop = min(start + self.batch_size, stop1)
                 num = stop - start
 
-                outputs = self.base_model.generate([model_input] * num, end_token="\n", hide_input=True).text
+                outputs = self.base_model.generate([model_input] * num,
+                                                   hide_input=True,
+                                                   do_sample=True,
+                                                   temperature=self.temperature,
+                                                   eos_token_id='\n').text
                 for output in outputs:
                     result = output.strip()
                     answer = utils.retrieve_answer(result)

@@ -2,7 +2,7 @@ import io
 import numpy as np
 
 from world_model import GSM8kState, GSM8kAction
-from rap import SearchConfig, LanguageModel
+from reasoners import SearchConfig, LanguageModel
 
 
 class GSM8kConfig(SearchConfig):
@@ -12,6 +12,7 @@ class GSM8kConfig(SearchConfig):
                  useful_prompt: dict,
                  n_actions=4,
                  batch_size=2,
+                 temperature=0.8,
                  reward_alpha=0.5,
                  reward_confidence_default=0.8,
                  depth_limit=5,
@@ -22,6 +23,7 @@ class GSM8kConfig(SearchConfig):
         self.prompt = prompt
         self.useful_prompt = useful_prompt
         self.batch_size = batch_size
+        self.temperature = temperature
         self.n_actions = n_actions
         self.force_terminating_on_depth_limit = force_terminating_on_depth_limit
         self.depth_limit = depth_limit
@@ -43,7 +45,11 @@ class GSM8kConfig(SearchConfig):
         outputs = []
         for idx in range(0, self.n_actions, self.batch_size):
             n_samples = min(self.n_actions - idx, self.batch_size)
-            outputs += self.base_model.generate([model_input] * n_samples, end_token="\n", hide_input=True).text
+            outputs += self.base_model.generate([model_input] * n_samples,
+                                                hide_input=True,
+                                                do_sample=True,
+                                                temperature=self.temperature,
+                                                eos_token_id='\n').text
 
         return_actions = [output.strip() for output in outputs]
         return return_actions
@@ -61,7 +67,8 @@ class GSM8kConfig(SearchConfig):
         logits = self.base_model.get_next_token_logits(model_input, ["Yes", "No"])[0]
         probs = np.exp(logits) / np.sum(np.exp(logits))
         useful_prob = probs[0]
-        return self.calculate_reward(useful_prob), {'r_useful': useful_prob}
+        fast_reward, _ = self.calculate_reward(useful_prob)
+        return fast_reward, {'r_useful': useful_prob}
 
     def calculate_reward(self, r_useful, r_conf=None):
         if r_conf is None:

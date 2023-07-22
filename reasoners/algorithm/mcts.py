@@ -70,7 +70,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                  output_trace_in_each_iter: bool = False,
                  w_exp: float = 1.,
                  depth_limit: int = 5,
-                 n_iter: int = 10,
+                 n_iters: int = 10,
                  cum_reward: Callable[[list[float]], float] = sum,
                  calc_q: Callable[[list[float]], float] = np.mean,
                  simulate_strategy: str | Callable[[list[float]], int] = 'max',
@@ -103,7 +103,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         self.output_trace_in_each_iter = output_trace_in_each_iter
         self.w_exp = w_exp
         self.depth_limit = depth_limit
-        self.n_iter = n_iter
+        self.n_iters = n_iters
         self.cum_reward = cum_reward
         self.calc_q = calc_q
         default_simulate_strategies: dict[str, Callable[[list[float]], int]] = {
@@ -168,7 +168,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
             # information can be cached and passed from the world model
             # to the reward function with **aux without repetitive computation
             node.reward, node.reward_details = self.search_config.\
-                reward(node.state, node.action, **node.fast_reward_details, **aux)
+                reward(node.parent.state, node.action, **node.fast_reward_details, **aux)
             node.is_terminal = self.world_model.is_terminal(node.state)
 
         children = []
@@ -219,7 +219,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         if self.output_trace_in_each_iter:
             self.trace_in_each_iter = []
 
-        for _ in trange(self.n_iter, disable=self.disable_tqdm, desc='MCTS iteration', leave=False):
+        for _ in trange(self.n_iters, disable=self.disable_tqdm, desc='MCTS iteration', leave=False):
             path = self.iterate(self.root)
             if self.output_trace_in_each_iter:
                 self.trace_in_each_iter.append(deepcopy(path))

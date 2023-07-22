@@ -6,8 +6,8 @@ from datasets import load_dataset
 from tqdm import tqdm
 from datetime import datetime
 
-from rap import LanguageModel, RAPAgent, SearchAlgorithm
-from rap.algorithm import MCTS
+from reasoners import LanguageModel, Reasoner, SearchAlgorithm
+from reasoners.algorithm import MCTS
 
 from world_model import GSM8kWorldModel
 from search_config import GSM8kConfig
@@ -24,6 +24,7 @@ def rap_gsm8k(base_model: LanguageModel,
               depth_limit: int = 5,
               force_terminating_on_depth_limit: bool = True,
               batch_size: int = 2,
+              temperature: float = 0.8,
               early_stop_base: int = 2,
               early_stop_threshold: float = 0.5,
               reward_alpha: float = 0.5,
@@ -44,20 +45,20 @@ def rap_gsm8k(base_model: LanguageModel,
 
     search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm}
     world_model = GSM8kWorldModel(base_model=base_model, prompt=interactive_prompt,
-                                  n_confidence=n_confidence, batch_size=batch_size,
+                                  n_confidence=n_confidence, batch_size=batch_size, temperature=temperature,
                                   early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
     config = GSM8kConfig(base_model=base_model, prompt=interactive_prompt, useful_prompt=useful_prompt,
-                         n_actions=n_action, batch_size=batch_size,
+                         n_actions=n_action, batch_size=batch_size, temperature=temperature,
                          reward_alpha=reward_alpha, reward_confidence_default=reward_confidence_default,
                          force_terminating_on_depth_limit=force_terminating_on_depth_limit, depth_limit=depth_limit)
     search_algo = search_algo(**search_algo_params)
-    agent = RAPAgent(world_model=world_model, search_config=config, search_algo=search_algo)
+    reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
     dataset = load_dataset("gsm8k", "main", split=f'test[{resume}:]')
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
                                      desc='GSM8k', disable=disable_tqdm)):
-        algo_output = agent(example["question"])
+        algo_output = reasoner(example["question"])
         output = utils.retrieve_answer(algo_output.terminal_state[-1].sub_answer)
         answer = utils.retrieve_answer_from_dataset(example["answer"])
         correct = utils.judge_answer(output, answer)
@@ -79,7 +80,7 @@ if __name__ == '__main__':
     import json
     import warnings
     import fire
-    from rap.lm import LLaMAModel
+    from reasoners.lm import LLaMAModel, LlamaCppModel
     import random
     import torch
     import torch.backends.cudnn
@@ -90,27 +91,38 @@ if __name__ == '__main__':
     torch.cuda.manual_seed(0)
     torch.backends.cudnn.deterministic = True
 
-    llama_ckpts = os.environ["LLAMA_CKPTS"]
-    local_rank = int(os.environ["LOCAL_RANK"])
+    llama_ckpts = os.environ.get("LLAMA_CKPTS", None)
+    local_rank = int(os.environ.get("LOCAL_RANK", 0))
     if local_rank != 0:
         sys.stdout = open(os.devnull, 'w')
         warnings.filterwarnings('ignore')
 
 
-    def main(llama_ckpt: str = llama_ckpts,
+    def main(base_lm: str = 'llama',
+             llama_ckpt: str = llama_ckpts,
              llama_size: str = '13B',
+             llama_cpp_path: str = None,
              batch_size: int = 2,
              interactive_prompt: str = 'examples/gsm8k/prompts/interactive_examples.json',
              useful_prompt: str = 'examples/gsm8k/prompts/useful_examples.json',
              disable_log: bool = False,
              disable_tqdm: bool = False,
              **kwargs):
+        # set base_lm = 'llama' and llama_ckpt = '13B/30B/65B' to use llama with torchscale
+        # else set base_lm = 'llama.cpp' and llama_cpp_path the the checkpoint to use llama.cpp
+
         with open(interactive_prompt) as f:
             interactive_prompt = json.load(f)
         with open(useful_prompt) as f:
             useful_prompt = json.load(f)
-        llama_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
-        rap_gsm8k(base_model=llama_model,
+        if base_lm == 'llama':
+            base_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
+        elif base_lm == 'llama.cpp':
+            base_model = LlamaCppModel(llama_cpp_path)
+        else:
+            base_model = None
+            assert False, f'cannot resolve {base_lm=}'
+        rap_gsm8k(base_model=base_model,
                   interactive_prompt=interactive_prompt,
                   useful_prompt=useful_prompt,
                   batch_size=batch_size,

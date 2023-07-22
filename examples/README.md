@@ -2,15 +2,26 @@
 ## GSM8K
 Running RAP on GSM8K [1]
 ### RAP
-
-### PAL + Guided Beam Search
 ```bash
+python -m torch.distributed.run --nproc_per_node 2 examples/rap_gsm8k/inference.py --llama_size "13B"
+```
+### PAL + Guided Beam Search
+
+> Note: You need to apply for the [research access](https://openai.com/form/researcher-access-program) to `Codex` (`code-davinci-002`) to run this approach
+```bash
+export OPENAI_API_KEY=YOUR_API_KEY
+python examples/guided_gsm8k/inference.py --n_actions 16 --beam_size 5
 ```
 
 
 ## Blocksworld
 ### Preparation
 1. Download the validator from [here]()
+
+### RAP
+```bash
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.run --nproc_per_node 4 examples/rap_blocksworld/inference.py --llama_size "30B" --data_path 'examples/rap_blocksworld/data/step_4.json' --depth_limit 4 --output_trace_in_each_iter
+```
 
 
 ## References
