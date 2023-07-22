@@ -45,8 +45,8 @@ class GPTCompletionModel(LanguageModel):
                     # get the interval
                     interval = 60 / rate_limit_per_min
                     # actually we can sleep for a shorter time since the API call itself takes time
-                    if interval > 2:
-                        interval = interval - 1
+                    if interval >=3:
+                        interval = interval - 0.5
 
                     time.sleep(interval)
 
