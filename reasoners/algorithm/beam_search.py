@@ -129,7 +129,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                                 reward, reward_aux = config.reward(state, action, **aux)
                                 action_prob = reward_aux['action_prob']
                             except:
-                                raise NotImplementedError(f"If unbiased stochastic sampling is used, action_prob must be returned by the reward function.")
+                                raise ValueError(f"If unbiased stochastic sampling is used, action_prob must be returned by the reward function.")
                         else:
                             reward = config.reward(state, action, **aux)
 
@@ -165,7 +165,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             # Decay the temperature
             self.temperature *= self.temperature_decay
         
-        if self.early_terminate:
+        if not self.early_terminate:
             # simply return the beam
             return cur_beam
 
