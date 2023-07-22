@@ -1,7 +1,7 @@
 from typing import Sequence, Union
 
-from rap.algorithm import MCTSNode, MCTSResult
-from rap.visualization.tree_snapshot import NodeId, EdgeId, TreeSnapshot, NodeData, EdgeData
+from reasoners.algorithm import MCTSNode, MCTSResult
+from reasoners.visualization.tree_snapshot import NodeId, EdgeId, TreeSnapshot, NodeData, EdgeData
 
 
 class TreeLog:

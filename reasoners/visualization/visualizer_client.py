@@ -4,7 +4,7 @@ from typing import Optional
 
 import requests
 
-from rap.visualization import TreeLog, TreeSnapshot
+from reasoners.visualization import TreeLog, TreeSnapshot
 
 _API_DEFAULT_BASE_URL = "https://2wz3t0av30.execute-api.us-west-1.amazonaws.com/staging"
 _VISUALIZER_DEFAULT_BASE_URL = "https://www.llm-reasoners.net"
