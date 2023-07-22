@@ -10,12 +10,13 @@ import math
 class SubResult(NamedTuple):
     action: str
     action_prob: float
+    action_length: int
     evaluation: str
     action_confidence: float
 
 GSM8kState = list[SubResult]
 # action should include both the action and the action_prob
-GSM8kAction = (str, float)
+GSM8kAction = (str, float, int) # (action, action_prob, action_length)
 
 
 class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
@@ -47,7 +48,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
             f.write(evaluate_prompt)
             f.write("\n\n\n\n\n")
             f.write(f'Q: {self.example}\n\n# solution in Python:\n\n\ndef solution():\n    """{self.example}"""\n')
-            for a, _, e, _ in state:
+            for a, _, _, e, _ in state:
                 f.write(f"{a}\n")
                 # get the indent of action
                 indent = get_indent(a)
@@ -109,7 +110,9 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
         action_confidence = max(action_confidence_list)
         evaluation = evaluation_list[action_confidence_list.index(action_confidence)]
 
-        state.append(SubResult(action=action[0], action_prob=action[1], evaluation=evaluation, action_confidence=action_confidence))
+        state.append(SubResult(
+            action=action[0], action_prob=action[1], action_length=action[2],
+            evaluation=evaluation, action_confidence=action_confidence))
 
         return state, {"action_confidence": action_confidence}
 
