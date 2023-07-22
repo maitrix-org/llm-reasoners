@@ -94,8 +94,8 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                                          'last_iter': the last trajectory. May output a non-terminal node if the last iteration leads to a dead end
                                          'last_terminal_iter': the last trajectory with a terminal node
                                 Outputs *None* if no trajectory with terminal node but required
-        :param uct_with_fast_reward: if True, use fast_reward instead of reward for unvisited _children in UCT
-                                     Otherwise, visit the *unvisited* _children with maximum fast_reward first
+        :param uct_with_fast_reward: if True, use fast_reward instead of reward for unvisited children in UCT
+                                     Otherwise, visit the *unvisited* children with maximum fast_reward first
         """
         super().__init__()
         self.world_model = None
