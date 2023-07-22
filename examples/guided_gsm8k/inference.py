@@ -18,23 +18,26 @@ from search_config import GSM8kConfig
 from utils import construct_full_solution, retrieve_answer_from_dataset, judge_answer
 
 def guided_decoding_gsm8k(base_model: LanguageModel,
-              search_algo: Type[SearchAlgorithm] = BeamSearch,
-              resume: int = 0,
-              n_actions: int = 16,
-              depth_limit: int = 15,
-              force_terminating_on_depth_limit: bool = True,
-              temperature: float = 1,
-              reward_alpha: float = 0.5,
-              beam_size: int = 5,
-              max_depth: int = 15,
-              sampling_strategy: str = 'stochastic',
-              replace: bool = False,
-              beam_search_temperature: float = 0.5,
-              beam_search_temperature_decay: float = 1,
-              log_dir: Optional[str] = None,
-              disable_log: bool = False,
-              disable_tqdm: bool = False,
-              **search_algo_params):
+                search_algo: Type[SearchAlgorithm] = BeamSearch,
+                resume: int = 0,
+                n_actions: int = 16,
+                depth_limit: int = 16,
+                force_terminating_on_depth_limit: bool = True,
+                temperature: float = 1,
+                reward_alpha: float = 0.5,
+                beam_size: int = 5,
+                max_depth: int = 16,
+                sampling_strategy: str = 'stochastic',
+                replace: bool = False,
+                beam_search_temperature: float = 0.5,
+                beam_search_temperature_decay: float = 1,
+                reject_sample: bool = True, 
+                reject_min_reward: float = 0.6,
+                unbiased: bool = True,
+                log_dir: Optional[str] = None,
+                disable_log: bool = False,
+                disable_tqdm: bool = False,
+                **search_algo_params):
     if not disable_log:
         if log_dir is None:
             log_dir = f'logs/guided_decoding_gsm8k_{search_algo.__name__}/{datetime.now().strftime("%m%d%Y-%H%M%S")}'
@@ -51,9 +54,12 @@ def guided_decoding_gsm8k(base_model: LanguageModel,
             'replace': replace,
             'temperature': beam_search_temperature,
             'temperature_decay': beam_search_temperature_decay,
-            # production of list and raised to the power of the reciprocal of the list length
-            'reward_aggregator': lambda x: np.prod(x) ** (1 / len(x))
-        }
+            'reject_sample': reject_sample,
+            'reject_min_reward': reject_min_reward,
+            'unbiased': unbiased,
+            # just use the last reward
+            'reward_aggregator': lambda x: x[-1],
+            }
     
     world_model = GSM8kWorldModel(base_model=base_model)
     config = GSM8kConfig(base_model=base_model,
@@ -95,20 +101,26 @@ def guided_decoding_gsm8k(base_model: LanguageModel,
 def main(base_lm: str = 'codex',
         resume: int = 0,
         n_actions: int = 16,
-        depth_limit: int = 15,
+        depth_limit: int = 16,
         force_terminating_on_depth_limit: bool = True,
         temperature: float = 1,
         reward_alpha: float = 0.5,
         beam_size: int = 5,
-        max_depth: int = 15,
+        max_depth: int = 16,
         sampling_strategy: str = 'stochastic',
         replace: bool = False,
         beam_search_temperature: float = 0.5,
         beam_search_temperature_decay: float = 1,
+        reject_sample: bool = True,
+        reject_min_reward: float = 0.6,
+        unbiased: bool = False,
         log_dir: Optional[str] = None,       
         disable_log: bool = False,
         disable_tqdm: bool = False,
         **kwargs):
+    
+    np.random.seed(0)
+
     if base_lm == 'codex':
         base_model = GPTCompletionModel('code-davinci-002')
     else:
@@ -127,6 +139,9 @@ def main(base_lm: str = 'codex',
                         replace=replace,
                         beam_search_temperature=beam_search_temperature,
                         beam_search_temperature_decay=beam_search_temperature_decay,
+                        reject_sample=reject_sample,
+                        reject_min_reward=reject_min_reward,
+                        unbiased=unbiased,
                         log_dir=log_dir,
                         disable_log=disable_log,
                         disable_tqdm=disable_tqdm,
