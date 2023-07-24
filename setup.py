@@ -13,5 +13,5 @@ setup(name='reasoners',
                         'datasets',
                         'transformers',
                         'sentencepiece',
-                        'llama@git+https://github.com/facebookresearch/llama',
+                        'llama@git+https://github.com/facebookresearch/llama@llama_v1',
                         'fairscale'])

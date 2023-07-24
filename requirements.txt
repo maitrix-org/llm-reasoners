@@ -14,7 +14,7 @@ datasets
 
 # llama
 sentencepiece
-git+https://github.com/facebookresearch/llama
+git+https://github.com/facebookresearch/llama@llama_v1
 fairscale
 
 requests~=2.31.0
