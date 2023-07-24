@@ -16,3 +16,8 @@ datasets
 sentencepiece
 git+https://github.com/facebookresearch/llama
 fairscale
+
+requests~=2.31.0
+PyYAML~=6.0
+tarski~=0.8.2
+setuptools~=67.8.0
