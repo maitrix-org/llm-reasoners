@@ -8,7 +8,7 @@ datasets
 transformers
 # llama
 sentencepiece
-git+https://github.com/facebookresearch/llama
+git+https://github.com/facebookresearch/llama@llama_v1
 fairscale
 # visualization
 requests~=2.31.0
