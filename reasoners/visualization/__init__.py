@@ -6,14 +6,14 @@ from ..algorithm import MCTSResult
 
 class ReasonersVisualizer:
     @staticmethod
-    def visualize(result: Union[TreeLog, MCTSResult]):
+    def visualize(result: Union[TreeLog, MCTSResult], **kwargs):
 
         tree_log: TreeLog
 
         if isinstance(result, TreeLog):
             tree_log = result
         elif isinstance(result, MCTSResult):
-            tree_log = TreeLog.from_mcts_results(result)
+            tree_log = TreeLog.from_mcts_results(result, **kwargs)
         elif isinstance(result, ...):
             raise NotImplementedError()
         else:

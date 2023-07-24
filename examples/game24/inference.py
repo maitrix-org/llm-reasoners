@@ -89,7 +89,7 @@ if __name__ == '__main__':
     import json
     import warnings
     import fire
-    from reasoners.lm import LLaMAModel, GPTCompletionModel
+    from reasoners.lm import GPTCompletionModel
     import random
     import torch
     import torch.backends.cudnn
@@ -117,8 +117,8 @@ if __name__ == '__main__':
             prompts = json.load(f)
         # llama_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
         ## try GPT
-        gpt_model = GPTCompletionModel(model='gpt-3.5-turbo')
-        rap_game24(base_model=gpt_model,
+        openai_model = GPTCompletionModel(model='gpt-3.5-turbo')
+        rap_game24(base_model=openai_model,
                   prompts=prompts,
                   batch_size=batch_size,
                   n_select_sample=5,

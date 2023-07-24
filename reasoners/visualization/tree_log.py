@@ -18,18 +18,21 @@ class TreeLog:
         return len(self._tree_snapshots)
 
     @classmethod
-    def from_mcts_results(cls, mcts_results: MCTSResult) -> 'TreeLog':
+    def from_mcts_results(cls, mcts_results: MCTSResult, node_data_factory: callable = None, edge_data_factory: callable = None) -> 'TreeLog':
 
-        def get_reward(n: MCTSNode) -> Union[dict, None]:
+        def get_reward_details(n: MCTSNode) -> Union[dict, None]:
             if hasattr(n, "reward_details"):
                 return n.reward_details
             return n.fast_reward_details if hasattr(n, "fast_reward_details") else None
 
-        def node_data_factory(n: MCTSNode) -> NodeData:
-            return NodeData({"state": n.state.blocks_state if n.state else None})
+        def default_node_data_factory(n: MCTSNode) -> NodeData:
+            return NodeData(n.state._asdict() if n.state else {})
 
-        def edge_data_factory(n: MCTSNode) -> EdgeData:
-            return EdgeData({"Q": n.Q, **get_reward(n)})
+        def default_edge_data_factory(n: MCTSNode) -> EdgeData:
+            return EdgeData({"Q": n.Q, "reward": n.reward, **get_reward_details(n)})
+
+        node_data_factory = node_data_factory or default_node_data_factory
+        edge_data_factory = edge_data_factory or default_edge_data_factory
 
         snapshots = []
 

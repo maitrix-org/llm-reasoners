@@ -4,19 +4,13 @@ numpy
 scipy
 torch
 datasets
-
-# openai
-openai
-
 # hf
 transformers
-datasets
-
 # llama
 sentencepiece
 git+https://github.com/facebookresearch/llama
 fairscale
-
+# visualization
 requests~=2.31.0
 PyYAML~=6.0
 tarski~=0.8.2

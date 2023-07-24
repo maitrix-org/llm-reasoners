@@ -22,8 +22,6 @@ class BWConfig(SearchConfig):
         self.goal_reached_reward = goal_reached_reward
 
     def get_actions(self, state: BWState) -> list[BWAction]:
-        # print("state: ", state)
-        # print("type: ", type(state))
         blocks_state = state.blocks_state
         return utils.generate_all_actions(blocks_state)
 
