@@ -12,3 +12,4 @@ logs/
 scripts/
 data/
 gpt-plan-benchmark/
+.DS_Store
