@@ -103,8 +103,8 @@ if __name__ == '__main__':
              llama_size: str = '13B',
              llama_cpp_path: str = None,
              batch_size: int = 2,
-             interactive_prompt: str = 'examples/gsm8k/prompts/interactive_examples.json',
-             useful_prompt: str = 'examples/gsm8k/prompts/useful_examples.json',
+             interactive_prompt: str = 'examples/rap_gsm8k/prompts/interactive_examples.json',
+             useful_prompt: str = 'examples/rap_gsm8k/prompts/useful_examples.json',
              disable_log: bool = False,
              disable_tqdm: bool = False,
              **kwargs):
