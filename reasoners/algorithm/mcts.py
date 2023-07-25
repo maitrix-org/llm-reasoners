@@ -170,7 +170,8 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
             node.reward, node.reward_details = self.search_config.\
                 reward(node.parent.state, node.action, **node.fast_reward_details, **aux)
             node.is_terminal = self.world_model.is_terminal(node.state)
-
+            if node.is_terminal:
+                return
         children = []
         actions = self.search_config.get_actions(node.state)
         for action in actions:
