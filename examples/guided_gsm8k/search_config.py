@@ -87,4 +87,9 @@ class GSM8kConfig(SearchConfig):
         # normalize the action_prob
         acc_action_prob = acc_action_prob ** (1 / acc_action_length)
 
-        return acc_action_prob ** self.reward_alpha * acc_action_confidence ** (1 - self.reward_alpha)
+        return acc_action_prob ** self.reward_alpha * acc_action_confidence ** (1 - self.reward_alpha), \
+            {
+                "acc_action_prob": acc_action_prob, 
+                "cur_action_prob": action[1]**(1/action[2]),
+            }
+                                            
