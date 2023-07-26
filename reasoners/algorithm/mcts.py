@@ -147,7 +147,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         path = []
         while True:
             path.append(node)
-            if node.state is None or self._is_terminal_with_depth_limit(node):
+            if node.children is None or len(node.children) == 0 or self._is_terminal_with_depth_limit(node):
                 return path
             node = self._uct_select(node)
 
