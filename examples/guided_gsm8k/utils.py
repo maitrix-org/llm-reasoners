@@ -47,13 +47,16 @@ def judge_answer(output: Optional[str], answer: str) -> bool:
         output = int(output)
         answer = int(answer)
         return output == answer
-    except ValueError:
+    except:
         pass
     try:
         output = float(output)
         answer = float(answer)
         return output == answer
-    except ValueError:
+    except:
         pass
-    return output == answer
+    try:
+        return output == answer
+    except ValueError:
+        return False
 
