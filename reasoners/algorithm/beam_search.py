@@ -1,6 +1,6 @@
 from typing import Generic
 from collections import defaultdict
-from .. import SearchAlgorithm, WorldModel, Reasoner, SearchConfig, State, Action
+from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action
 from typing import NamedTuple, List, Tuple, Callable, Any, Union, Optional
 import numpy as np
 import warnings
