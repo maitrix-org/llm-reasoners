@@ -4,6 +4,8 @@ from .. import SearchAlgorithm, WorldModel, RAPAgent, SearchConfig, State, Actio
 from typing import NamedTuple, List, Tuple, Callable, Any, Union, Optional
 import numpy as np
 import warnings
+import random
+from copy import deepcopy
 
 class BeamSearchResult(NamedTuple):
     terminal_state: State
@@ -61,7 +63,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             # adjust the values by the action_probs
             adjusted_values = [ n*p for n, p in zip(e_x, action_probs)]
 
-            return list(adjusted_values / np.sum(adjusted_values))
+            return [p / sum(adjusted_values) / max(1, len(adjusted_values)) for p in e_x]
 
         return list(e_x / e_x.sum())
 
@@ -85,15 +87,45 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
 
             # sample size is the minimum of beam size and the length of the beam
             sample_size = min(self.beam_size, len(beam))
+            
+            acc_action_probs = [x[3][0] for x in beam]
+            cur_action_prob = [x[3][1] for x in beam]
+
             # calculate the probability distribution
             if self.unbiased:
-                probs = BeamSearch.softmax(rewards, self.temperature, self.unbiased, action_probs=[x[3] for x in beam])
+                probs = BeamSearch.softmax(rewards, self.temperature, self.unbiased, action_probs=acc_action_probs)
+
             else:
                 probs = BeamSearch.softmax(rewards, self.temperature, self.unbiased, action_probs=None)
-            # sample from the probability distribution without replacement
-            indices = np.random.choice(len(probs), size=sample_size, p=probs, replace=self.replace)
 
-            return [beam[i] for i in indices]
+            # reject the samples with reward less than the reject_min_reward
+            if self.reject_sample:
+                indexes, topk_beam_idx, iterate_cnt = list(range(len(probs))), [], 0
+                cur_probs = deepcopy(probs)
+
+                while len(topk_beam_idx) < sample_size and len(indexes) and iterate_cnt < 100:
+                    iterate_cnt += 1
+                    # sample an index
+                    idx = random.choices(list(range(len(indexes))), weights=cur_probs)[0]
+                    idx = indexes[idx]
+
+                    if random.uniform(0,1) < cur_action_prob[idx] and rewards[idx] > self.reject_min_reward:
+                        topk_beam_idx.append(idx)
+                        indexes.remove(idx)
+                    
+                        if self.unbiased:
+                            cur_probs = BeamSearch.softmax([rewards[i] for i in indexes], 
+                                                            self.temperature,
+                                                            self.unbiased,
+                                                            action_probs=[acc_action_probs[i] for i in indexes])
+                            
+                        else:
+                            cur_probs = BeamSearch.softmax([rewards[i] for i in indexes], self.temperature)
+
+            else:
+                topk_beam_idx = np.random.choice(len(probs), size=sample_size, p=probs, replace=self.replace)
+
+            return [beam[i] for i in topk_beam_idx]
         
 
     def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action]):
@@ -127,9 +159,14 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                             # the action should have action.action_prob
                             try:
                                 reward, reward_aux = config.reward(state, action, **aux)
-                                action_prob = reward_aux['action_prob']
+                                acc_action_prob = reward_aux['acc_action_prob']
+                                cur_action_prob = reward_aux['cur_action_prob']
                             except:
-                                raise ValueError(f"If unbiased stochastic sampling is used, action_prob must be returned by the reward function.")
+                                raise ValueError(f"If unbiased stochastic sampling is used, \
+                                                   please make sure the reward function returns \
+                                                   a dictionary with keys 'acc_action_prob', which \
+                                                   is the accumulated action probability, and \
+                                                   'cur_action_prob', which is the current action probability.")
                         else:
                             reward = config.reward(state, action, **aux)
 
@@ -151,7 +188,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                         new_reward = self.reward_aggregator(new_reward_list)
 
                         if self.unbiased and self.sampling_strategy == 'stochastic':
-                            new_beam.append((trace + [(action, next_state)], new_reward_list, new_reward, action_prob))
+                            new_beam.append((trace + [(action, next_state)], new_reward_list, new_reward, (acc_action_prob, cur_action_prob)))
                         else:
                             new_beam.append((trace + [(action, next_state)], new_reward_list, new_reward))
 
