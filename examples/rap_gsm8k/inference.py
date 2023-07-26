@@ -3,15 +3,22 @@ from typing import Type, Callable, Optional
 
 import numpy as np
 from datasets import load_dataset
+from reasoners.visualization import TreeLog
 from tqdm import tqdm
 from datetime import datetime
 
 from reasoners import LanguageModel, Reasoner, SearchAlgorithm
-from reasoners.algorithm import MCTS
+from reasoners.algorithm import MCTS, MCTSNode
 
-from world_model import GSM8kWorldModel
+from world_model import GSM8kWorldModel, GSM8kState, GSM8kAction
 from search_config import GSM8kConfig
 import utils
+
+
+def node_visualizer(x: MCTSNode[GSM8kState, GSM8kAction]):
+    if not x.state:
+        return {'state': '{}'}
+    return {'state': str({"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer})}
 
 
 def rap_gsm8k(base_model: LanguageModel,
@@ -34,6 +41,7 @@ def rap_gsm8k(base_model: LanguageModel,
               log_dir: Optional[str] = None,
               disable_log: bool = False,
               disable_tqdm: bool = False,
+              output_trace_in_each_iter: bool = True,
               **search_algo_params):
     if not disable_log:
         if log_dir is None:
@@ -43,7 +51,8 @@ def rap_gsm8k(base_model: LanguageModel,
         with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
             print(sys.argv, file=f)
 
-    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm}
+    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm,
+                           'output_trace_in_each_iter': output_trace_in_each_iter}
     world_model = GSM8kWorldModel(base_model=base_model, prompt=interactive_prompt,
                                   n_confidence=n_confidence, batch_size=batch_size, temperature=temperature,
                                   early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
@@ -59,6 +68,11 @@ def rap_gsm8k(base_model: LanguageModel,
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
                                      desc='GSM8k', disable=disable_tqdm)):
         algo_output = reasoner(example["question"])
+        if not disable_log:
+            with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
+                pickle.dump(algo_output, f)
+            with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
+                f.write(str(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer)))
         output = utils.retrieve_answer(algo_output.terminal_state[-1].sub_answer)
         answer = utils.retrieve_answer_from_dataset(example["answer"])
         correct = utils.judge_answer(output, answer)
@@ -70,8 +84,6 @@ def rap_gsm8k(base_model: LanguageModel,
         if not disable_log:
             with open(os.path.join(log_dir, 'result.log'), 'a') as f:
                 print(log_str, file=f)
-            with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
-                pickle.dump(algo_output, f)
 
 
 if __name__ == '__main__':
@@ -109,7 +121,7 @@ if __name__ == '__main__':
              disable_tqdm: bool = False,
              **kwargs):
         # set base_lm = 'llama' and llama_ckpt = '13B/30B/65B' to use llama with torchscale
-        # else set base_lm = 'llama.cpp' and llama_cpp_path the the checkpoint to use llama.cpp
+        # else set base_lm = 'llama.cpp' and llama_cpp_path = the checkpoint to use llama.cpp
 
         with open(interactive_prompt) as f:
             interactive_prompt = json.load(f)
@@ -120,7 +132,6 @@ if __name__ == '__main__':
         elif base_lm == 'llama.cpp':
             base_model = LlamaCppModel(llama_cpp_path)
         else:
-            base_model = None
             assert False, f'cannot resolve {base_lm=}'
         rap_gsm8k(base_model=base_model,
                   interactive_prompt=interactive_prompt,
