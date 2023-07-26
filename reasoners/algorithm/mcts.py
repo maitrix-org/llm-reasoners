@@ -147,7 +147,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         path = []
         while True:
             path.append(node)
-            if node.children is None or self._is_terminal_with_depth_limit(node):
+            if node.state is None or self._is_terminal_with_depth_limit(node):
                 return path
             node = self._uct_select(node)
 
@@ -167,11 +167,13 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
             # reward is calculated after the state is updated, so that the
             # information can be cached and passed from the world model
             # to the reward function with **aux without repetitive computation
-            node.reward, node.reward_details = self.search_config.\
+            node.reward, node.reward_details = self.search_config. \
                 reward(node.parent.state, node.action, **node.fast_reward_details, **aux)
             node.is_terminal = self.world_model.is_terminal(node.state)
-            if node.is_terminal:
-                return
+
+        if node.is_terminal:
+            return
+
         children = []
         actions = self.search_config.get_actions(node.state)
         for action in actions:
@@ -185,7 +187,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
     def _simulate(self, path: list[MCTSNode]):
         node = path[-1]
         while True:
-            if node.children is None:
+            if node.state is None:
                 self._expand(node)
             if self._is_terminal_with_depth_limit(node) or len(node.children) == 0:
                 return
@@ -208,7 +210,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
             return self.cum_reward([node.reward for node in path[1:]]), path
         if cur.children is None:
             return -math.inf, path
-        visited_children = [x for x in cur.children if x.children is not None]
+        visited_children = [x for x in cur.children if x.state is not None]
         if len(visited_children) == 0:
             return -math.inf, path
         return max((self._dfs_max_reward(path + [child]) for child in visited_children), key=lambda x: x[0])
