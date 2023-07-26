@@ -45,10 +45,13 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         # if the temperature is set to 0, then we force the sampling strategy to be argmax
         if self.temperature < 1e-3:
             self.sampling_strategy = 'argmax'
+            warnings.warn(f"Temperature is set to 0, sampling strategy is forced to be argmax.")
         
         # if sampling strategy not in argmax or stochastic, just use argmax
         if self.sampling_strategy not in ['argmax', 'stochastic']:
             self.sampling_strategy = 'argmax'
+            warnings.warn(f"Sampling strategy only supports argmax or stochastic, but got {self.sampling_strategy}. \
+                            Sampling strategy is changed to argmax automatically.")
         
         # if early_terminate is set to False, we need to inform the user that we will return the beam instead of the best trace
         if not self.early_terminate:
