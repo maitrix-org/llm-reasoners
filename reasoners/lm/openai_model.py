@@ -11,14 +11,13 @@ API_KEY = os.getenv("OPENAI_API_KEY", None)
 class GPTCompletionModel(LanguageModel):
     def __init__(self, model:str, max_tokens:int = 2048):
 
-        # check if API_KEY is set, if not, raise error
-        if API_KEY is None:
-            raise ValueError("OPENAI_API_KEY not set, please run `export OPENAI_API_KEY=<your key>` to set it")
-        else:
-            openai.api_key = API_KEY
-
         self.model = model
         self.max_tokens = max_tokens
+        API_KEY = os.getenv("OPENAI_API_KEY", None)
+        if API_KEY is None:
+            raise ValueError("OPENAI_API_KEY not set, please run `export OPENAI_API_KEY=<your key>` to ser it")
+        else:
+            openai.api_key = API_KEY
     
     def generate(self,
                 prompt: str,
@@ -49,23 +48,41 @@ class GPTCompletionModel(LanguageModel):
                         interval = interval - 0.5
 
                     time.sleep(interval)
+                    time.sleep(60 / rate_limit_per_min)
+                ### GPT 3.5 and higher use a different API
+                if ('gpt-3.5' in self.model) or ('gpt-4' in self.model):
+                    messages = [{"role": "user", "content": prompt}]
+                    response = openai.ChatCompletion.create(
+                        model=self.model,
+                        messages=messages,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        top_p=top_p,
+                        n=num_return_sequences,
+                        stop=stop,
+                        **kwargs
+                    )
+                    return GenerateOutput(
+                        text=[choice["message"]["content"] for choice in response["choices"]],
+                        log_prob=None
+                    )
+                else:
+                    response = openai.Completion.create(
+                        model=self.model,
+                        prompt=prompt,
+                        max_tokens=max_tokens,
+                        temperature=temperature,
+                        top_p=top_p,
+                        n=num_return_sequences,
+                        stop=stop,
+                        logprobs=logprobs,
+                        **kwargs
+                    )
 
-                response = openai.Completion.create(
-                    model=self.model,
-                    prompt=prompt,
-                    max_tokens=max_tokens,
-                    temperature=temperature,
-                    top_p=top_p,
-                    n=num_return_sequences,
-                    stop=stop,
-                    logprobs=logprobs,
-                    **kwargs
-                )
-
-                return GenerateOutput(
-                    text=[choice["text"] for choice in response["choices"]],
-                    log_prob=[choice["logprobs"] for choice in response["choices"]]
-                )
+                    return GenerateOutput(
+                        text=[choice["text"] for choice in response["choices"]],
+                        log_prob=[choice["logprobs"] for choice in response["choices"]]
+                    )
             
             except Exception as e:
                 print(f"An Error Occured: {e}, sleeping for {i*10} seconds")

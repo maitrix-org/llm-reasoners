@@ -3,7 +3,7 @@
 Running RAP on GSM8K [1]
 ### RAP
 ```bash
-python -m torch.distributed.run --nproc_per_node 2 examples/rap_gsm8k/inference.py --llama_size "13B"
+python -m torch.distributed.run --nproc_per_node 4 examples/rap_gsm8k/inference.py --llama_size "30B" --output_trace_in_each_iter
 ```
 ### PAL + Guided Beam Search
 
@@ -22,8 +22,7 @@ python examples/guided_gsm8k/inference.py --n_actions 16 --temperature 1.0 --rew
 
 ### RAP
 ```bash
-
-CUDA_VISIBLE_DEVICES=3,4,5,6 python -m torch.distributed.run --nproc_per_node 4 examples/rap_blocksworld/inference.py --llama_size "30B" --data_path 'examples/blocksworld/data/step_6.json' --depth_limit 6
+CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.run --nproc_per_node 4 examples/rap_blocksworld/inference.py --llama_size "30B" --data_path 'examples/rap_blocksworld/data/step_4.json' --depth_limit 4 --output_trace_in_each_iter
 ```
 
 

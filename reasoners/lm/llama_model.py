@@ -5,6 +5,7 @@ import time
 import warnings
 from pathlib import Path
 from typing import Tuple, Union, Optional
+import copy
 
 import numpy as np
 import torch
@@ -36,6 +37,7 @@ class LLaMAModel(LanguageModel):
                                                local_rank, world_size, max_batch_size=max_batch_size,
                                                max_seq_len=max_seq_len)
         self.max_seq_len = max_seq_len
+        self.local_rank = local_rank
 
     @staticmethod
     def load(ckpt_dir: str, tokenizer_path: str, local_rank: int, world_size: int, max_batch_size: int,
@@ -61,17 +63,52 @@ class LLaMAModel(LanguageModel):
         print(f"Loaded in {time.time() - start_time:.2f} seconds")
         return tokenizer, model
 
-    @torch.no_grad()
-    def _generate(self,
-                  inputs: list[str],
-                  max_length: Optional[int],
-                  max_new_tokens: Optional[int],
-                  temperature: float,
-                  top_k: int,
-                  top_p: float,
-                  eos_token_id: list[int],
-                  hide_input: bool,
-                  output_log_probs: bool):
+    def generate(self,
+                 inputs: list[str],
+                 max_length: Optional[int] = None,
+                 max_new_tokens: Optional[int] = None,
+                 do_sample: bool = False,
+                 temperature: float = 1.0,
+                 top_k: int = 50,
+                 top_p: float = 1.0,
+                 num_return_sequences: int = 1,
+                 eos_token_id: Union[None, str, int, list[str, int]] = None,
+                 hide_input: bool = True,
+                 output_log_probs: bool = False,
+                 **kwargs) -> GenerateOutput:
+        if max_length is None:
+            max_length = self.max_seq_len  # use LLaMA's max length if not set
+        if max_new_tokens is None:
+            max_new_tokens = max_length  # set to a large number cannot be reached
+
+        if not do_sample:
+            if temperature != 1.0 and self.local_rank == 0:  # temperature is explicitly set with do_sample=False
+                warnings.warn('temperature is set, but do_sample=False')
+            temperature = 0
+
+        # unify eos_token
+        eos_token_id_input = copy.deepcopy(eos_token_id)
+        eos_token_id = []
+        if eos_token_id_input is not None:
+            if not isinstance(eos_token_id_input, list):
+                eos_token_id_input = [eos_token_id_input]
+            for token in eos_token_id_input:
+                if isinstance(token, str):
+                    tokenized = self.tokenizer.encode(token, bos=False, eos=False)
+                    if len(tokenized) != 1 and self.local_rank == 0:
+                        warnings.warn(f'the eos_token {repr(token)} is encoded into {tokenized} with length != 1, '
+                                      f'using {tokenized[-1]} as the eos_token_id')
+                    token = tokenized[-1]
+                if isinstance(token, int):
+                    eos_token_id.append(token)
+                elif self.local_rank == 0:
+                    warnings.warn(f'the eos_token {repr(token)} is neither str nor int, which is ignored')
+
+        if num_return_sequences > 1:
+            assert len(inputs) == 1, 'num_return_sequences > 1 is not supported for multiple inputs'
+        
+        inputs = [i for i in inputs for _ in range(num_return_sequences)]
+        
         end_pos = torch.zeros(len(inputs)).long().cuda() - 1
         bsz = len(inputs)
         params = self.model.params
@@ -80,7 +117,7 @@ class LLaMAModel(LanguageModel):
         prompt_tokens = [self.tokenizer.encode(x, bos=True, eos=False) for x in inputs]
         min_prompt_size = min([len(t) for t in prompt_tokens])
         max_prompt_size = max([len(t) for t in prompt_tokens])
-        if max_prompt_size > params.max_seq_len:
+        if max_prompt_size > params.max_seq_len and self.local_rank == 0:
             warnings.warn(f"prompts exceed context length limit: {max_prompt_size} > {params.max_seq_len}")
         total_len = min(params.max_seq_len, max_prompt_size + max_new_tokens)
         total_len = max(total_len, max_length)
@@ -116,9 +153,13 @@ class LLaMAModel(LanguageModel):
                         end_pos[idx] = cur_pos
             if (eos_cnt >= 1).all():
                 break
-        seq_probs = torch.stack(seq_probs, dim=0)
+
+        
         decoded = []
-        log_prob = torch.log(seq_probs)
+        log_prob = None
+        if output_log_probs:
+            seq_probs = torch.stack(seq_probs, dim=0)
+            log_prob = torch.log(seq_probs)
 
         for i, (t, input_t) in enumerate(zip(tokens.tolist(), prompt_tokens)):
             t = t[:params.max_seq_len]
@@ -133,58 +174,6 @@ class LLaMAModel(LanguageModel):
 
         # TODO: check log_probs
         return GenerateOutput(decoded, log_prob)
-
-    def generate(self,
-                 inputs: list[str],
-                 max_length: Optional[int] = None,
-                 max_new_tokens: Optional[int] = None,
-                 do_sample: bool = False,
-                 temperature: float = 1.0,
-                 top_k: int = 50,
-                 top_p: float = 1.0,
-                 num_return_sequences: int = 1,
-                 eos_token_id: Union[None, str, int, list[str, int]] = None,
-                 hide_input: bool = True,
-                 output_log_probs: bool = False,
-                 **kwargs) -> GenerateOutput:
-        if max_length is None:
-            max_length = self.max_seq_len  # use LLaMA's max length if not set
-        if max_new_tokens is None:
-            max_new_tokens = max_length  # set to a large number cannot be reached
-
-        if not do_sample:
-            if temperature != 1.0:  # temperature is explicitly set with do_sample=False
-                warnings.warn('temperature is set, but do_sample=False')
-            temperature = 0
-
-        eos_token_id_input = eos_token_id
-        eos_token_id = []
-        if eos_token_id_input is not None:
-            if not isinstance(eos_token_id_input, list):
-                eos_token_id_input = [eos_token_id_input]
-            for token in eos_token_id_input:
-                if isinstance(token, str):
-                    tokenized = self.tokenizer.encode(token, bos=False, eos=False)
-                    if len(tokenized) != 1:
-                        warnings.warn(f'the eos_token {repr(token)} is encoded into {tokenized} with length != 1, '
-                                      f'using {tokenized[-1]} as the eos_token_id')
-                    token = tokenized[-1]
-                if isinstance(token, int):
-                    eos_token_id.append(token)
-                else:
-                    warnings.warn(f'the eos_token {repr(token)} is neither str nor int, which is ignored')
-
-        inputs = [i for i in inputs for _ in range(num_return_sequences)]
-
-        return self._generate(inputs=inputs,
-                              max_length=max_length,
-                              max_new_tokens=max_new_tokens,
-                              temperature=temperature,
-                              top_k=top_k,
-                              top_p=top_p,
-                              eos_token_id=eos_token_id,
-                              hide_input=hide_input,
-                              output_log_probs=output_log_probs)
 
     @torch.no_grad()
     def get_next_token_logits(self,

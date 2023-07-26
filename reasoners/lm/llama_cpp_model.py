@@ -2,8 +2,8 @@ import os
 import warnings
 from typing import Union, Optional
 
-import numpy as np
 import scipy
+import numpy as np
 from transformers import StoppingCriteriaList
 
 from reasoners import LanguageModel, GenerateOutput

@@ -4,8 +4,12 @@ __pycache__/
 *.egg-info/
 *.log
 *.egg-info/
+*.tmp
 .env
 .run/
 logs/
+*data/
+scripts/
 data/
 gpt-plan-benchmark/
+.DS_Store

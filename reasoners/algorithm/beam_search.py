@@ -1,6 +1,6 @@
 from typing import Generic
 from collections import defaultdict
-from .. import SearchAlgorithm, WorldModel, RAPAgent, SearchConfig, State, Action
+from .. import SearchAlgorithm, WorldModel, Reasoner, SearchConfig, State, Action
 from typing import NamedTuple, List, Tuple, Callable, Any, Union, Optional
 import numpy as np
 import warnings
@@ -131,7 +131,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             return [beam[i] for i in topk_beam_idx]
         
 
-    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action]):
+    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action], action_dedup: bool=False, return_beam: bool=False, early_terminate: bool=True, reward_strategy: str='last_iter'):
         init_state = world.init_state()
         # Initialize current beam with initial state
         cur_beam = [([(None, init_state)], [], 0)]   # (trace, reward_list, reward)

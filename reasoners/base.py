@@ -123,7 +123,7 @@ class SearchAlgorithm(ABC):
     def __call__(self, world_model: WorldModel, search_config: SearchConfig, **kwargs) -> HasTerminalStateAndTrace: ...
 
 
-class RAPAgent(ABC, Generic[State, Action, Example]):
+class Reasoner(ABC, Generic[State, Action, Example]):
     def __init__(self,
                  world_model: WorldModel[State, Action],
                  search_config: SearchConfig[State, Action],
