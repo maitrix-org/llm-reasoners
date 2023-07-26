@@ -30,7 +30,8 @@ I am playing with a set of blocks where I need to arrange the blocks into stacks
 
 <i>(Example problems and solutions * 4)</i>
 
-[STATEMENT] As initial conditions I have that, the red block is clear, the blue block is clear, the orange block is clear, the hand is empty, the red block is on the yellow block, the yellow block is on the table, the blue block is on the table and the orange block is on the table. My goal is to have that the orange block is on top of the blue block and the yellow block on top of the orange block.
+[STATEMENT] 
+As initial conditions I have that, the red block is clear, the blue block is clear, the orange block is clear, the hand is empty, the red block is on the yellow block, the yellow block is on the table, the blue block is on the table and the orange block is on the table. My goal is to have that the orange block is on top of the blue block and the yellow block on top of the orange block.
 
 [PLAN]
 <b>pick up the orange block</b>
@@ -87,3 +88,14 @@ We tested different reasoning algorithms on first 100 examples of the following 
 |ToT<sup>[[2]](https://arxiv.org/abs/2305.10601)<sup>|-|-|-|-|-|
 |ToT|-|-|-|-|-|
 |RAP|LLaMA-33B|-|-|-|-|
+
+## Citation
+This project is an extension of the following paper:
+```bibtex
+@article{hao2023reasoning,
+  title={Reasoning with language model is planning with world model},
+  author={Hao, Shibo and Gu, Yi and Ma, Haodi and Hong, Joshua Jiahua and Wang, Zhen and Wang, Daisy Zhe and Hu, Zhiting},
+  journal={arXiv preprint arXiv:2305.14992},
+  year={2023}
+}
+```
