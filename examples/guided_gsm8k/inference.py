@@ -113,13 +113,13 @@ def main(base_lm: str = 'codex',
         beam_search_temperature_decay: float = 1,
         reject_sample: bool = True,
         reject_min_reward: float = 0.6,
-        unbiased: bool = False,
+        unbiased: bool = True,
         log_dir: Optional[str] = None,       
         disable_log: bool = False,
         disable_tqdm: bool = False,
         **kwargs):
     
-    np.random.seed(0)
+    np.random.seed(42)
 
     if base_lm == 'codex':
         base_model = GPTCompletionModel('code-davinci-002')
