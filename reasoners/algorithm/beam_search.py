@@ -106,13 +106,20 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                 indexes, topk_beam_idx, iterate_cnt = list(range(len(probs))), [], 0
                 cur_probs = deepcopy(probs)
 
+                # get the upper bound of the reward
+                reward_upper_bound = max(rewards)
+                reward_upper_bound -= 1e-5 # to avoid the case where the reward is exactly the upper bound
+
+
                 while len(topk_beam_idx) < sample_size and len(indexes) and iterate_cnt < 100:
                     iterate_cnt += 1
                     # sample an index
                     idx = random.choices(list(range(len(indexes))), weights=cur_probs)[0]
                     idx = indexes[idx]
 
-                    if random.uniform(0,1) < cur_action_prob[idx] and rewards[idx] > self.reject_min_reward:
+                    if random.uniform(0,1) < cur_action_prob[idx] and \
+                        rewards[idx] > min(self.reject_min_reward, reward_upper_bound):
+                        
                         topk_beam_idx.append(idx)
                         indexes.remove(idx)
                     
