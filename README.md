@@ -57,8 +57,141 @@ After we have the world model and reward function, it's time to apply an algorit
 ![Alt text](images/mcts_animation.gif)
 
 ## Quick Tour
-> TBA
+Let's go through the code of reasoning over the Blocksworld domain. Note that the code is simplified for demonstration (check [this](https://github.com/Ber666/llm-reasoners/tree/main/examples/rap_blocksworld) for actual experiments).
 
+The first step is to define the world model: you will set up an initial state given a question in `init_state`, judge whether a state is terminal in `is_terminal`, and most importantly, define the world dynamic with `step`:
+```python
+from typing import NamedTuple
+import utils
+from reasoners import WorldModel, LanguageModel
+import copy
+
+BWState = str
+BWAction = str
+
+class BlocksWorldModel(WorldModel[BWState, BWAction]):
+    def __init__(self,
+                 base_model: LanguageModel,
+                 prompt: dict) -> None:
+        super().__init__()
+        self.base_model = base_model
+        self.prompt = prompt
+
+    def init_state(self) -> BWState:
+        # extract the statement from a given problem
+        return BWState(utils.extract_init_state(self.example)) 
+
+    def step(self, state: BWState, action: BWAction) -> tuple[BWState, dict]:
+        state = copy.deepcopy(state)
+        world_update_prompt = self.prompt["update"].format(state, action)
+        # call the LLM for state update
+        world_output = self.base_model.generate([world_update_prompt],
+                                    eos_token_id="\n", hide_input=True, temperature=0).text[0].strip()
+        new_state = utils.process_new_state(world_output)
+
+        # check how many of the subgoals are met.
+        goal_reached = utils.goal_check(utils.extract_goals(self.example, new_state))
+
+        # return the new state and an additional dictionary to be passed to the reward function.
+        # by default, you may return an empty dictionary, but here `goal_reached` is calculated at convenience.
+        return new_state, {"goal_reached": goal_reached}
+
+    def is_terminal(self, state: BWState) -> bool:
+        if utils.goal_check(utils.extract_goals(self.example), state.blocks_state):
+            return True
+        return False
+```
+Then, it's time to consider how to search for the optimal reasoning chain. It involves `get_actions` to get the action space given a state, and the most important `reward` as the guidance for reasoning. For Monte-Carlo Tree Search, we can additionally define a `fast_reward` to speed up the roll-out stage.
+```python
+import utils
+from world_model import BWState, BWAction
+from reasoners import SearchConfig, LanguageModel
+class BWConfig(SearchConfig):
+    def __init__(self,
+                 base_model: LanguageModel,
+                 prompt: dict,
+                 reward_alpha=0.5,
+                 goal_reward_default=0.,
+                 goal_reached_reward=100) -> None:
+        super().__init__()
+        self.base_model = base_model
+        self.example = None
+        self.prompt = prompt
+        # some parameters to calculate the fast reward or reward (explained below)
+        self.reward_alpha = reward_alpha
+        self.goal_reward_default = goal_reward_default
+        self.goal_reached_reward = goal_reached_reward
+
+    def get_actions(self, state: BWState) -> list[BWAction]:
+        # use a rule-based function to extract all legal actions
+        return utils.generate_all_actions(state)
+
+    def fast_reward(self, state: BWState, action: BWAction) -> tuple[float, dict]:
+        # build an in-context learning prompt (similar to the one used in Chain-of-thoughts reasoning)
+        inputs = self.prompt["icl"].replace("<init_state>", state)\
+            .replace("<goals>", utils.extract_goals(self.example))
+        # concatenate a candidate action after the prompt, and test its loglikelihood
+        intuition = self.base_model.get_loglikelihood(inputs, [inputs + action])[0]
+        # the reward is a combination of intuition and goal satisfaction
+        # in fast_reward, we skip the calculation of goal satisfaction and use a default value
+        fast_reward = intuition * self.reward_alpha + self.goal_reward_default * (1 - self.reward_alpha)
+        # cache some details for the reward calculation later
+        details = {'intuition': intuition}
+        return fast_reward, details
+
+    def reward(self, state: BWState, action: BWAction,
+               intuition: float = None,
+               goal_reached: tuple[bool, float] = None) -> float:
+        # note that `intuition` (cached in `fast_reward`) and `goal_reached` (cached in `step`) are automatically passed as parameters to this reward function
+        if goal_reached[0]:
+            # if the goal state is reached, we will assign a large reward
+            goal_reward = self.goal_reached_reward
+        else:
+            # otherwise assign the reward based on the number of satisfied subgoals
+            goal_reward = goal_reached[1]
+        # the reward is a combination of intuition and goal satisfaction
+        reward = intuition * self.reward_alpha + goal_reward * (1 - self.reward_alpha)
+        # return the reward and a dictionary of additional information (for a more detailed visualization later)
+        return reward, {'intuition': intuition, 'goal_reached': goal_reached}
+```
+Now, we are ready to apply a reasoning algorithm to solve the problem:
+```python
+from reasoners.algorithm import MCTS
+from reasoners.lm import LLaMAModel
+from world_model import BlocksWorldModel
+from search_config import BWConfig
+
+llama_model = LLaMAModel(llama_ckpts, llama_size, max_batch_size=1)
+with open(prompt_path) as f:
+    prompt = json.load(f)
+world_model = BlocksWorldModel(base_model=base_model, prompt=prompt)
+config = BWConfig(base_model=llama_model, prompt=prompt)
+# save the history of every iteration for visualization
+search_algo = MCTS(output_trace_in_each_iter=True)
+reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
+for i, example in enumerate(dataset):
+    algo_output = reasoner(example)
+    # save the MCTS results as pickle files
+    with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
+        pickle.dump(algo_output, f)
+```
+Finally, we can easily visualize the reasoning process:
+```python
+import pickle
+from reasoners.visualization import ReasonersVisualizer
+with open("logs/bw_MCTS/xxx/algo_output/1.pkl", 'rb') as f:
+    mcts_result = pickle.load(f)
+
+from reasoners.visualization.tree_snapshot import NodeData
+from reasoners.algorithm.mcts import MCTSNode
+
+# by default, a state will be presented along with the node, and the reward with saved dictionary in `SearchConfig.reward` will be presented along with the edge. 
+# we can also define a helper function to customize what we want to see in the visualizer.
+def blocksworld_node_data_factory(n: MCTSNode) -> NodeData:
+    return NodeData({"block_state": n.state if n.state else None})
+ReasonersVisualizer.visualize(mcts_result, node_data_factory=blocksworld_node_data_factory)
+```
+Then an URL of the visualized results will pop up. The figure will be interactive and look like the examples shown in our [demo website](https://llm-reasoners.net/).
 ## Installation
 ```bash
 git clone https://github.com/Ber666/llm-reasoners
@@ -68,7 +201,7 @@ pip install -e .
 Note that some optional modules may need other dependencies. Please refer to the error message for details.
 
 ## Benchmarks
-We tested different reasoning algorithms on first 100 examples of the following benchmarks (to be updated). Superscripted rows indicate the reported results in the original paper.
+We tested different reasoning algorithms on the first 100 examples of the following benchmarks (to be updated). Superscripted rows indicate the reported results in the original paper.
 
 |Methods|Base LLM|GSM8K|AQuA|SVAMP|ASDiv|CommonsenseQA|StrategyQA|
 |-|-|-|-|-|-|-|-|
