@@ -1,5 +1,5 @@
 import io
-from typing import NamedTuple
+from typing import NamedTuple, TypedDict
 from collections import defaultdict
 from reasoners import WorldModel, LanguageModel
 import utils
@@ -13,6 +13,14 @@ class SubResult(NamedTuple):
 
 GSM8kState = list[SubResult]
 GSM8kAction = str
+
+
+class GSM8kPrompt(TypedDict):
+    input: str
+    question_prefix: str
+    subquestion_prefix: str
+    answer_prefix: str
+    overall_question_prefix: str
 
 
 class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
@@ -32,7 +40,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                  early_stop_threshold=1.) -> None:
         super().__init__()
         self.base_model = base_model
-        self.prompt = prompt
+        self.prompt: GSM8kPrompt = prompt
         self.batch_size = batch_size
         self.n_confidence = n_confidence
         self.temperature = temperature
