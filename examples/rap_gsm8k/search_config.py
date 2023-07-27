@@ -75,18 +75,22 @@ class GSM8kConfig(SearchConfig):
                                                 temperature=temperature,
                                                 eos_token_id='\n').text
 
-        return_actions = [output.strip() for output in outputs]
+        outputs = [output.strip() for output in outputs]
         if at_depth_limit:
-            return_actions = [self.prompt["overall_question_prefix"] + ' ' + output for output in return_actions]
+            outputs = [self.prompt["overall_question_prefix"] + ' ' + output for output in outputs]
         if self.force_overall_question_on_overall_prompt:
-            for i, output in enumerate(return_actions):
+            for i, output in enumerate(outputs):
                 if self.prompt["overall_question_prefix"] in output:
-                    return_actions[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
+                    outputs[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
         if self.force_overall_prompt_on_overall_question:
-            for i, output in enumerate(return_actions):
+            for i, output in enumerate(outputs):
                 if self.overall_question.lower() in output.lower():
-                    return_actions[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
-        return return_actions
+                    outputs[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
+
+        # set does not guarantee order, but dict does guarantee
+        # we cannot use set here because torch.distributed in LLaMA requires the same order across all processes
+        outputs = list(dict.fromkeys(outputs))
+        return outputs
 
     def fast_reward(self, state: GSM8kState, action: GSM8kAction) -> tuple[float, dict]:
         with io.StringIO() as f:
