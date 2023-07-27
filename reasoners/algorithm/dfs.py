@@ -29,6 +29,7 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
             return 
         # get candidate actions (list, (action, score) or action)
         new_actions = config.get_actions(cur_state)
+        print(f'new actions {new_actions}')
         if len(new_actions) == 0: 
             return 
         ## sort possible actions by score

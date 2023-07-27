@@ -56,6 +56,7 @@ class crosswordsConfig(SearchConfig):
     def get_actions(self, state: crosswordsState) -> list[crosswordsAction]:
         env, actions, trace = state
         obs = env.render()
+        print(f"current obs: {obs}")
         if obs in self.cache: 
             print('cache hit')
             return self.cache[obs]

@@ -46,18 +46,32 @@ def rap_crosswords(base_model: LanguageModel,
     search_algo = search_algo(**search_algo_params)
     agent = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
+    correct = 0
     correct_count = 0
+    example_cnt = 0
     for i in range(0, 100, 5):
-        infos = []
-        actions = []
+        example_cnt += 1
         algo_output = agent(i, best_state=True)
-        log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=} ; {accuracy=:.3f} ({correct_count}/{i + 1})'
+        best = 0
+        output = ''
+        for state in algo_output:
+            env, actions, info = state
+            if best < info['info']['r_word']:
+                best = info['info']['r_word']
+                output = env.ans
+                answer = env.ans_gt
+        if best == 1.0:
+            correct = 1
+            correct_count += 1
+        accuracy = correct_count / example_cnt
+        log_str = f'Case #{resume + i}: {correct=}, {output=}, {answer=} ; {accuracy=:.3f} ({correct_count}/{example_cnt})'
         tqdm.write(log_str)
         if not disable_log:
             with open(os.path.join(log_dir, 'result.log'), 'a') as f:
                 print(log_str, file=f)
             with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
                 pickle.dump(algo_output, f)
+        break
 
 
 if __name__ == '__main__':
