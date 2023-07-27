@@ -1,8 +1,18 @@
 import io
+from typing import TypedDict
+
 import numpy as np
 
-from world_model import GSM8kState, GSM8kAction
+from world_model import GSM8kState, GSM8kAction, GSM8kPrompt
 from reasoners import SearchConfig, LanguageModel
+
+
+class GSM8kUsefulPrompt(TypedDict):
+    input: str
+    question_prefix: str
+    subquestion_prefix: str
+    new_subquestion_prefix: str
+    useful_prefix: str
 
 
 class GSM8kConfig(SearchConfig):
@@ -20,8 +30,8 @@ class GSM8kConfig(SearchConfig):
         super().__init__()
         self.base_model = base_model
         self.example = None
-        self.prompt = prompt
-        self.useful_prompt = useful_prompt
+        self.prompt: GSM8kPrompt = prompt
+        self.useful_prompt: GSM8kUsefulPrompt = useful_prompt
         self.batch_size = batch_size
         self.temperature = temperature
         self.n_actions = n_actions
@@ -38,20 +48,24 @@ class GSM8kConfig(SearchConfig):
                 f.write(self.prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
                 f.write(self.prompt["answer_prefix"].format(idx + 1) + " " + a + "\n")
             f.write(self.prompt["subquestion_prefix"].format(len(state) + 1))
-            if self.force_terminating_on_depth_limit and len(state) + 1 >= self.depth_limit:
+            if at_depth_limit := self.force_terminating_on_depth_limit and len(state) + 1 >= self.depth_limit:
                 f.write(" " + self.prompt["overall_question_prefix"])
             model_input = f.getvalue()
 
+        n_actions = 1 if at_depth_limit else self.n_actions
+        temperature = 0 if at_depth_limit else self.temperature
         outputs = []
-        for idx in range(0, self.n_actions, self.batch_size):
-            n_samples = min(self.n_actions - idx, self.batch_size)
+        for idx in range(0, n_actions, self.batch_size):
+            n_samples = min(n_actions - idx, self.batch_size)
             outputs += self.base_model.generate([model_input] * n_samples,
                                                 hide_input=True,
                                                 do_sample=True,
-                                                temperature=self.temperature,
+                                                temperature=temperature,
                                                 eos_token_id='\n').text
 
         return_actions = [output.strip() for output in outputs]
+        if at_depth_limit:
+            return_actions = [self.prompt["overall_question_prefix"] + ' ' + output for output in return_actions]
         return return_actions
 
     def fast_reward(self, state: GSM8kState, action: GSM8kAction) -> tuple[float, dict]:
@@ -73,11 +87,12 @@ class GSM8kConfig(SearchConfig):
     def calculate_reward(self, r_useful, r_conf=None):
         if r_conf is None:
             r_conf = self.reward_confidence_default
-        return r_useful ** self.reward_alpha * r_conf ** (1 - self.reward_alpha), {'r_useful': r_useful, 'r_conf': r_conf}
+        return r_useful ** self.reward_alpha * r_conf ** (1 - self.reward_alpha), {'r_useful': r_useful,
+                                                                                   'r_conf': r_conf}
 
     def reward(self, state: GSM8kState, action: GSM8kAction,
                r_useful: float = None,
-               confidence: float = None) -> float:
+               confidence: float = None) -> tuple[float, dict]:
         assert r_useful is not None, "useful_reward is required to calculate reward in this search config, consider passing it in fast_reward"
         assert confidence is not None, "confidence is required to calculate reward in this search config, consider passing it in world model's step"
         return self.calculate_reward(r_useful, confidence)
