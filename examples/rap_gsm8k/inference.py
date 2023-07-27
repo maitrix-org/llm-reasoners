@@ -17,8 +17,8 @@ import utils
 
 def node_visualizer(x: MCTSNode[GSM8kState, GSM8kAction]):
     if not x.state:
-        return {'state': '{}'}
-    return {'state': str({"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer})}
+        return {}
+    return {"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer}
 
 
 def rap_gsm8k(base_model: LanguageModel,
@@ -68,12 +68,10 @@ def rap_gsm8k(base_model: LanguageModel,
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
                                      desc='GSM8k', disable=disable_tqdm)):
         algo_output = reasoner(example["question"])
-        if not disable_log:
-            with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
-                pickle.dump(algo_output, f)
-            with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
-                f.write(str(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer)))
-        output = utils.retrieve_answer(algo_output.terminal_state[-1].sub_answer)
+        if algo_output.terminal_state is None:
+            output = None
+        else:
+            output = utils.retrieve_answer(algo_output.terminal_state[-1].sub_answer)
         answer = utils.retrieve_answer_from_dataset(example["answer"])
         correct = utils.judge_answer(output, answer)
 
@@ -84,6 +82,12 @@ def rap_gsm8k(base_model: LanguageModel,
         if not disable_log:
             with open(os.path.join(log_dir, 'result.log'), 'a') as f:
                 print(log_str, file=f)
+            with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
+                pickle.dump(algo_output, f)
+            if isinstance(search_algo, MCTS):
+                with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
+                    # noinspection PyTypeChecker
+                    f.write(str(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer)))
 
 
 if __name__ == '__main__':
