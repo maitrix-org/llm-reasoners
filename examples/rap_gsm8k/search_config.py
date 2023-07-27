@@ -1,5 +1,6 @@
 import io
-from typing import TypedDict
+import re
+from typing import TypedDict, Optional
 
 import numpy as np
 
@@ -26,10 +27,12 @@ class GSM8kConfig(SearchConfig):
                  reward_alpha=0.5,
                  reward_confidence_default=0.8,
                  depth_limit=5,
-                 force_terminating_on_depth_limit=True) -> None:
+                 force_terminating_on_depth_limit=True,
+                 force_overall_prompt_on_overall_question=True,
+                 force_overall_question_on_overall_prompt=True) -> None:
         super().__init__()
         self.base_model = base_model
-        self.example = None
+        self.example = ''
         self.prompt: GSM8kPrompt = prompt
         self.useful_prompt: GSM8kUsefulPrompt = useful_prompt
         self.batch_size = batch_size
@@ -39,8 +42,17 @@ class GSM8kConfig(SearchConfig):
         self.depth_limit = depth_limit
         self.reward_alpha = reward_alpha
         self.reward_confidence_default = reward_confidence_default
+        self.force_overall_prompt_on_overall_question = force_overall_prompt_on_overall_question
+        self.force_overall_question_on_overall_prompt = force_overall_question_on_overall_prompt
+        self.overall_question: Optional[str] = None
 
-    def get_actions(self, state: GSM8kState) -> list[GSM8kAction]:
+    def update_example(self, example: str) -> None:
+        super().update_example(example)
+        if self.force_overall_prompt_on_overall_question or self.force_overall_question_on_overall_prompt:
+            self.overall_question = re.match('.*((Calculate|calculate|how|How|what|What|Find|find|True or false).*)$',
+                                             self.example)[1]
+
+    def get_actions(self, state: GSM8kState, ) -> list[GSM8kAction]:
         with io.StringIO() as f:
             f.write(self.prompt["input"])
             f.write(self.prompt["question_prefix"] + self.example + "\n")
@@ -66,6 +78,14 @@ class GSM8kConfig(SearchConfig):
         return_actions = [output.strip() for output in outputs]
         if at_depth_limit:
             return_actions = [self.prompt["overall_question_prefix"] + ' ' + output for output in return_actions]
+        if self.force_overall_question_on_overall_prompt:
+            for i, output in enumerate(return_actions):
+                if self.prompt["overall_question_prefix"] in output:
+                    return_actions[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
+        if self.force_overall_prompt_on_overall_question:
+            for i, output in enumerate(return_actions):
+                if self.overall_question.lower() in output.lower():
+                    return_actions[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
         return return_actions
 
     def fast_reward(self, state: GSM8kState, action: GSM8kAction) -> tuple[float, dict]:
