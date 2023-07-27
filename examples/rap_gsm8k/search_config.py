@@ -84,7 +84,7 @@ class GSM8kConfig(SearchConfig):
                     outputs[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
         if self.force_overall_prompt_on_overall_question:
             for i, output in enumerate(outputs):
-                if self.overall_question.lower() in output.lower():
+                if self.overall_question.lower() == output.lower():
                     outputs[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
 
         # set does not guarantee order, but dict does guarantee
