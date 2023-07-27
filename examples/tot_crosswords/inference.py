@@ -18,7 +18,7 @@ from utils import MiniCrosswordsEnv
 def rap_crosswords(base_model: LanguageModel,
               search_algo: Type[SearchAlgorithm] = DFS,
               resume: int = 0,
-              n_select_sample: int = 5,
+              n_eval: int = 8,
               depth: int = 5,
               batch_size: int = 2,
               max_per_state: int = 3,
@@ -42,7 +42,7 @@ def rap_crosswords(base_model: LanguageModel,
     world_model = crosswordsWorldModel(base_model=base_model, batch_size=batch_size)
     config = crosswordsConfig(base_model=base_model,
                          batch_size=batch_size,
-                         depth=depth)
+                         depth=depth, n_eval=n_eval)
     search_algo = search_algo(**search_algo_params)
     agent = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
@@ -50,8 +50,7 @@ def rap_crosswords(base_model: LanguageModel,
     for i in range(0, 100, 5):
         infos = []
         actions = []
-        agent(i, best_state=True)
-        algo_output = agent.search_config.terminals
+        algo_output = agent(i, best_state=True)
         log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=} ; {accuracy=:.3f} ({correct_count}/{i + 1})'
         tqdm.write(log_str)
         if not disable_log:

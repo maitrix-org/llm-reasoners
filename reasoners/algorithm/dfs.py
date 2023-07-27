@@ -15,7 +15,7 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
         self.depth = depth
         self.total_states = total_states
         self.terminals = [] ## final results
-        self.visited = set()
+        self.stat_cnt = 0
 
     def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action], best_state: bool=True):
         init_state = world.init_state()
@@ -23,7 +23,7 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
         return self.terminals
 
     def dfs(self, world: WorldModel[State, Action], config: SearchConfig[State, Action], cur_state: State, best_state: bool=True):
-        self.visited.add(cur_state)
+        self.stat_cnt += 1
         if world.is_terminal(cur_state):
             self.terminals.append(cur_state)
             return 
@@ -40,7 +40,7 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
         cnt_per_state = 0
         for action in new_actions:
             # check all existing state/depth/branch constraints
-            if len(self.visited) < self.total_states and cnt_per_state < self.max_per_state and config.search_condition(cur_state, action):
+            if self.stat_cnt < self.total_states and cnt_per_state < self.max_per_state and config.search_condition(cur_state):
                 cnt_per_state += 1
                 #### new state
                 new_state = world.step(cur_state, action)
@@ -48,7 +48,7 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
                 # infos.append(info)
                 ## other state constraints
                 if config.state_condition(new_state):  # only continue if the current status is possible
-                    neibor_info = self(world, config, new_state, best_state)
+                    neibor_info = self.dfs(world, config, new_state, best_state)
                 # actions.pop()
             # env.reset(env.idx, board=board.copy(), status=status.copy(), steps=steps)
         return

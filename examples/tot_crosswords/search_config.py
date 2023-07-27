@@ -5,17 +5,20 @@ import re
 
 from reasoners import SearchConfig, LanguageModel
 from world_model import crosswordsState, crosswordsAction
-import utils
+from utils import *
+from prompts.crosswords import * 
 
 
 class crosswordsConfig(SearchConfig):
     def __init__(self,
                  base_model: LanguageModel,
+                 n_eval=8,
                  batch_size=2,
                  depth=10,) -> None:
         super().__init__()
         self.base_model = base_model
         self.example = None
+        self.n_eval = n_eval
         self.batch_size = batch_size
         self.depth = depth
         self.confidence_to_value = {'certain': 1, 'high': 0.5, 'medium': 0.2, 'low': 0.1}  # TODO: ad hoc
@@ -57,10 +60,7 @@ class crosswordsConfig(SearchConfig):
             print('cache hit')
             return self.cache[obs]
         print('call gpt')
-        responses = []
-        for idx in range(0, self.n_actions, self.batch_size):
-            n_samples = min(self.n_eval - idx, self.batch_size)
-            responses += self.base_model.generate([self.prompt_wrap(obs)] * n_samples, max_gen_len=256, hide_input=True).text
+        responses = self.base_model.generate(self.prompt_wrap(obs), temperature=0.7, num_return_sequences=self.n_eval, stop=None).text
 
         candidates_to_scores = {}
         for response in responses:
@@ -96,4 +96,5 @@ class crosswordsConfig(SearchConfig):
     def state_condition(self, state: crosswordsState) -> bool:
         env, actions, info = state
         count = info['count']
+        print(f'curent count: {count}')
         return (count['impossible'] < 1)

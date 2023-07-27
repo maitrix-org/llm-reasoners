@@ -29,7 +29,7 @@ class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
         ## input, output
         env = MiniCrosswordsEnv()
         env.reset(self.example)
-        return [(env, [], {})]
+        return (env, [], {})
 
     def is_terminal(self, state: crosswordsState) -> bool:
         env, actions, info = state
@@ -48,7 +48,7 @@ class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
             if prompt in self.prompt_status_cache:
                 res = self.prompt_status_cache[prompt]
             else:
-                res = self.base_model.generate([prompt], max_gen_len=256, hide_input=True).text[0]
+                res = self.base_model.generate(prompt, temperature=0.7, num_return_sequences=1, stop=None).text[0]
                 self.prompt_status_cache[prompt] = res
             # print(line)
             # print(res)
@@ -61,10 +61,14 @@ class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
     def step(self, state: crosswordsState, action: crosswordsAction) -> crosswordsState:
         env, actions, info = state
         ## to next state
-        obs, r, done, new_info = env.step(action)
+        obs, r, done, new_info = env.step(action[0])
         count = self.prompt_status(env=env)
         actions.append(action)
+        print(actions)
+        print(env.render_board())
+        print(new_info)
+        print(count)
         # info = {'total_step': len(infos), 'env_step': env.steps, 'actions': actions.copy(), 'info': info, 'count': count}
-        info = {'env_step': env.steps, 'actions': actions.copy(), 'info': info, 'count': count}
+        new_info = {'env_step': env.steps, 'actions': actions.copy(), 'info': new_info, 'count': count}
         new_state = (env, actions, new_info)
         return new_state
