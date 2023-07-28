@@ -201,14 +201,14 @@ pip install -e .
 Note that some optional modules may need other dependencies. Please refer to the error message for details.
 
 ## Benchmarks
-We tested different reasoning algorithms on the first 100 examples of the following benchmarks (to be updated). Superscripted rows indicate the reported results in the original paper.
+We tested different reasoning algorithms on the first 100 examples of the following benchmarks (to be updated). Superscripted rows indicate the results reproduced from the official code repository of the corresponding paper.
 
 |Methods|Base LLM|GSM8K|AQuA|SVAMP|ASDiv|CommonsenseQA|StrategyQA|
 |-|-|-|-|-|-|-|-|
 |CoT|-|-|-|-|-|-|-|
 |CoT+SC|-|-|-|-|-|-|-|
 |Least-to-Most+SC|-|-|-|-|-|-|-|
-|Guided Decoding<sup>[[1]](https://arxiv.org/abs/2305.00633)</sup>|CodeX (PAL)|-|-|-|-|-|-|
+|Guided Decoding<sup>[[1]](https://github.com/YuxiXie/SelfEval-Guided-Decoding)</sup>|CodeX (PAL)|-|-|-|-|-|-|
 |Guided Decoding|CodeX (PAL)|-|-|-|-|-|-|
 |RAP - BeamSearch|-|-|-|-|-|-|-|
 |RAP - MCTS|-|-|-|-|-|-|-|
@@ -218,7 +218,7 @@ We tested different reasoning algorithms on the first 100 examples of the follow
 |Methods|Base LLM|Blocksworld|Game of 24|Mini Crosswords|ProntoQA|
 |-|-|-|-|-|-|
 |CoT|-|-|-|-|-|
-|ToT<sup>[[2]](https://arxiv.org/abs/2305.10601)<sup>|-|-|GPT-3.5-turbo|-|-|
+|ToT<sup>[[2]]([https://arxiv.org/abs/2305.10601](https://github.com/princeton-nlp/tree-of-thought-llm))<sup>|-|-|GPT-3.5-turbo|-|-|
 |ToT|-|-|-|-|-|
 |RAP|LLaMA-33B|-|-|-|-|
 
