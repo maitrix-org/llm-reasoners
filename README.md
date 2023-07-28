@@ -219,7 +219,7 @@ We tested different reasoning algorithms on the first 100 examples of the follow
 |CoT+SC|-|-|-|-|-|-|-|
 |Least-to-Most+SC|-|-|-|-|-|-|-|
 |Guided Decoding<sup>[[1]](https://github.com/YuxiXie/SelfEval-Guided-Decoding)</sup>|CodeX (PAL)|-|-|-|-|-|-|
-|Guided Decoding|CodeX (PAL)|-|-|-|-|-|-|
+|Guided Decoding|CodeX (PAL)|0.83|-|-|-|-|-|
 |RAP - BeamSearch|-|-|-|-|-|-|-|
 |RAP - MCTS|-|-|-|-|-|-|-|
 |RAP - MCTS - aggr|-|-|-|-|-|-|-|
@@ -228,8 +228,8 @@ We tested different reasoning algorithms on the first 100 examples of the follow
 |Methods|Base LLM|Blocksworld|Game of 24|Mini Crosswords|ProntoQA|
 |-|-|-|-|-|-|
 |CoT|-|-|-|-|-|
-|ToT<sup>[[2]]([https://arxiv.org/abs/2305.10601](https://github.com/princeton-nlp/tree-of-thought-llm))<sup>|-|-|GPT-3.5-turbo|-|-|
-|ToT|-|-|-|-|-|
+|ToT<sup>[[2]]([https://arxiv.org/abs/2305.10601](https://github.com/princeton-nlp/tree-of-thought-llm))<sup>|GPT-3.5-turbo|-|0.22|-|-|
+|ToT|GPT-3.5-turbo|-|0.22|-|-|
 |RAP|LLaMA-33B|-|-|-|-|
 
 ## Citation
