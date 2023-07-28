@@ -7,11 +7,11 @@ import time
 from .. import LanguageModel, GenerateOutput
 
 class GPTCompletionModel(LanguageModel):
-    def __init__(self, model:str, max_tokens:int = 2048):
-
+    def __init__(self, model:str, max_tokens:int = 2048, temperature=0.7):
         self.model = model
         self.max_tokens = max_tokens
-        
+        self.temperature = temperature
+
         API_KEY = os.getenv("OPENAI_API_KEY", None)
         if API_KEY is None:
             raise ValueError("OPENAI_API_KEY not set, please run `export OPENAI_API_KEY=<your key>` to ser it")
@@ -21,14 +21,17 @@ class GPTCompletionModel(LanguageModel):
     def generate(self,
                 prompt: str,
                 max_tokens: int = None,
-                temperature: float = 1.0,
+                
                 top_p: float = 1.0,
                 num_return_sequences: int = 1,
                 rate_limit_per_min: Optional[int] = 20,
                 stop: Optional[str] = None,
                 logprobs: Optional[int] = None,
+                temperature = None,
                 **kwargs) -> GenerateOutput:
         
+        gpt_temperature = self.temperature if temperature is None else temperature
+
         if max_tokens is None:
             max_tokens = self.max_tokens
         
@@ -39,14 +42,8 @@ class GPTCompletionModel(LanguageModel):
 
         for i in range(1, 65):  # try 64 times
             try:
+                # sleep several seconds to avoid rate limit
                 if rate_limit_per_min is not None:
-                    # get the interval
-                    interval = 60 / rate_limit_per_min
-                    # actually we can sleep for a shorter time since the API call itself takes time
-                    if interval >=3:
-                        interval = interval - 0.5
-
-                    time.sleep(interval)
                     time.sleep(60 / rate_limit_per_min)
                 ### GPT 3.5 and higher use a different API
                 if ('gpt-3.5' in self.model) or ('gpt-4' in self.model):
@@ -55,7 +52,7 @@ class GPTCompletionModel(LanguageModel):
                         model=self.model,
                         messages=messages,
                         max_tokens=max_tokens,
-                        temperature=temperature,
+                        temperature=gpt_temperature,
                         top_p=top_p,
                         n=num_return_sequences,
                         stop=stop,
@@ -70,7 +67,7 @@ class GPTCompletionModel(LanguageModel):
                         model=self.model,
                         prompt=prompt,
                         max_tokens=max_tokens,
-                        temperature=temperature,
+                        temperature=gpt_temperature,
                         top_p=top_p,
                         n=num_return_sequences,
                         stop=stop,
