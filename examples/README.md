@@ -32,6 +32,14 @@ python examples/guided_gsm8k/inference.py --n_actions 16 --temperature 1.0 --rew
 CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.run --nproc_per_node 4 examples/rap_blocksworld/inference.py --llama_size "30B" --data_path 'examples/rap_blocksworld/data/step_4.json' --depth_limit 4 --output_trace_in_each_iter
 ```
 
+## Game of 24
+> Note: You need to make a directory and put the game24 data in it. For example, examples/tot_game24/data/24.csv
+
+### ToT (Beam Search)
+```bash
+export OPENAI_API_KEY=YOUR_API_KEY
+python examples/tot_game24/inference.py --batch_size 2 --model gpt-3.5-turbo --temperature 0.7
+```
 
 ## References
 [1] Cobbe, Karl, Vineet Kosaraju, Mohammad Bavarian, Mark Chen, Heewoo Jun, Lukasz Kaiser, Matthias Plappert et al. "Training verifiers to solve math word problems." arXiv preprint arXiv:2110.14168 (2021).
