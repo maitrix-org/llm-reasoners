@@ -211,7 +211,7 @@ pip install -e .
 Note that some optional modules may need other dependencies. Please refer to the error message for details.
 
 ## Benchmarks
-We tested different reasoning algorithms on the first 100 examples of the following benchmarks (to be updated). Superscripted rows indicate the results reproduced from the official code repository of the corresponding paper.
+We tested different reasoning algorithms on the first 100 examples of the following benchmarks (to be updated). Superscripted rows indicate the results reproduced from official code repositories.
 
 |Methods|Base LLM|GSM8K|AQuA|SVAMP|ASDiv|CommonsenseQA|StrategyQA|
 |-|-|-|-|-|-|-|-|
