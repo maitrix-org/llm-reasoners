@@ -3,18 +3,18 @@
 ---
 
 
-**LLM Reasonsers** is a library to enable LLMs to conduct complex reasoning, with advanced reasoning algorithms. It approaches multi-step reasoning as planning and searches for the optimal reasoning chain, and achieves the best balance of exploration vs exploitation with the idea of "World Model" and "Reward".
+**LLM Reasonsers** is a library to enable LLMs to conduct complex reasoning, with advanced reasoning algorithms. It approaches multi-step reasoning as planning and searches for the optimal reasoning chain, which achieves the best balance of exploration vs exploitation with the idea of "World Model" and "Reward".
 
-Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Search Algorithms, Visualization, LLM calling, and more!
+Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Reasoning Algorithms, Visualization, LLM calling, and more!
 
 
 ## Why Choose LLM Reasoners?
 
-- **Cutting-Edge Algorithms**: We offer the most up-to-date search algorithms for reasoning with LLMs, such as [RAP-MCTS](https://arxiv.org/abs/2305.14992), [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633), and more. These advanced algorithms enable tree-structure reasoning and outperform traditional chain-of-thoughts approaches.
+- **Cutting-Edge Reasoning Algorithms**: We offer the most up-to-date search algorithms for reasoning with LLMs, such as [RAP-MCTS](https://arxiv.org/abs/2305.14992), [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633), and more. These advanced algorithms enable tree-structure reasoning and outperform traditional chain-of-thoughts approaches.
 
 - **Intuitive Visualization and Interpretation**: Our library provides visualization tools to aid users in comprehending the reasoning process. Even for the most complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand what occurred with one line of python code.
 
-- **Compatibility with LLM libraries**: Our framework is compatible with any LLM framework, e.g. Huggingface transformers, OpenAI API, etc. Specifically, we integrated LLaMA with the option of using [fairscale](https://github.com/facebookresearch/llama) backend for improved multi-GPU performance or [LLaMA.cpp](https://github.com/ggerganov/llama.cpp) backend with lower hardware requirements.
+- **Compatibility with any LLM libraries**: Our framework is compatible with any LLM frameworks, e.g. Huggingface transformers, OpenAI API, etc. Specifically, we integrated LLaMA with the option of using [fairscale](https://github.com/facebookresearch/llama) backend for improved multi-GPU performance or [LLaMA.cpp](https://github.com/ggerganov/llama.cpp) backend with lower hardware requirements.
 
 ## Understanding LLM Reasoners
 
@@ -47,9 +47,9 @@ Regarding each reasoning step as an action, we have $a_1=$"*pick up the orange b
 
 LLM Reasoners formulates the reasoning as planning. Different from Chain-of-thoughts reasoning which autoregressively samples the next action, our goal is to **efficiently search in the reasoning space for the optimal reasoning chain**. To achieve this, two components need to be defined: a world model and a reward function.
 
-- World model defines the state transition, formally $P(s_{i+1} | s_i, a_i)$. A default world model regards the partial solution as the state and simply appends a new action/thought to the state as the transition (as the formulation of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)). However, you’ll have the option to design a better world model which predicts and keeps track of a more meaningful state (e.g., environment status, intermediate variable values, etc. Check [RAP](https://arxiv.org/abs/2305.14992) for more examples), thus enhancing the reasoning. For the example shown above, we can naturally define the state as the condition of blocks (e.g., the red block is on the yellow block...), and a world model is to predict the condition of blocks after every potential action.  
+- **World model** defines the state transition, formally $P(s_{i+1} | s_i, a_i)$. A default world model regards the partial solution as the state and simply appends a new action/thought to the state as the state transition (the same formulation of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)). However, you’ll have the option to design a better world model which predicts and keeps track of a more meaningful state (e.g., environment status, intermediate variable values, etc. Check [RAP](https://arxiv.org/abs/2305.14992) for more examples), thus enhancing the reasoning. For the example shown above, we can naturally define the state as the condition of blocks (e.g., the red block is on the yellow block...), and a world model is to predict the condition of blocks after every potential action.
 
-- Reward function provides a criterion to evaluate a reasoning step. Ideally, a reasoning chain with a higher accumulated reward should be more likely to be correct. For the example shown above, we can reward actions based on the increased number of accomplished subgoals they lead to. Besides, the likelihood of LLMs generating the action can also be used as a reward, to give the search a good prior.
+- **Reward function** provides a criterion to evaluate a reasoning step. Ideally, a reasoning chain with a higher accumulated reward should be more likely to be correct. For the example shown above, we can reward actions based on the increased number of accomplished subgoals they lead to. Besides, the likelihood of LLMs generating the action can also be used as a reward, to give the search a good prior.
 
 
 After we have the world model and reward function, it's time to apply an algorithm to search for the optimal reasoning trace. Here, we show the process of Monte-Carlo Tree Search:
@@ -57,9 +57,9 @@ After we have the world model and reward function, it's time to apply an algorit
 ![Alt text](images/mcts_animation.gif)
 
 ## Quick Tour
-Let's go through the code of reasoning over the Blocksworld domain. Note that the code is simplified for demonstration (check [this](https://github.com/Ber666/llm-reasoners/tree/main/examples/rap_blocksworld) for actual experiments).
+Let's go through the code of reasoning over Blocksworld problems. Note that the code is simplified for demonstration (check [here](https://github.com/Ber666/llm-reasoners/tree/main/examples/rap_blocksworld) for full experiment code).
 
-The first step is to define the world model: you will set up an initial state given a question in `init_state`, judge whether a state is terminal in `is_terminal`, and most importantly, define the world dynamic with `step`:
+The first step is to define the world model: you will set up an initial state given a question in `init_state`, judge whether a state is terminal in `is_terminal`, and most importantly, define the world dynamics with `step`:
 ```python
 from typing import NamedTuple
 import utils
@@ -79,25 +79,31 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
 
     def init_state(self) -> BWState:
         # extract the statement from a given problem
+        # e.g., "the red block is clear, the blue block is clear..."
         return BWState(utils.extract_init_state(self.example)) 
 
     def step(self, state: BWState, action: BWAction) -> tuple[BWState, dict]:
+        # call the LLM to predict the state transition
         state = copy.deepcopy(state)
-        world_update_prompt = self.prompt["update"].format(state, action)
-        # call the LLM for state update
+        # load the prompt for the LLM to predict the next state
+        # e.g. "... I have that <state>, if I <action>, then ..."
+        world_update_prompt = self.prompt["update"].replace("<state>", state).replace("<action>", action)
         world_output = self.base_model.generate([world_update_prompt],
                                     eos_token_id="\n", hide_input=True, temperature=0).text[0].strip()
         new_state = utils.process_new_state(world_output)
+        # till now, we have the new state after the action
+        # the following part is to speed up the reward calculation
 
-        # check how many of the subgoals are met.
+        # we want to check the portion of the satisfied subgoals, and use it as a part of the reward
+        # since we have predicted the new state already, we can just check it here at convenience
         goal_reached = utils.goal_check(utils.extract_goals(self.example, new_state))
-
-        # return the new state and an additional dictionary to be passed to the reward function.
-        # by default, you may return an empty dictionary, but here `goal_reached` is calculated at convenience.
+        # return the new state and the additional dictionary (to be passed to the reward function)
         return new_state, {"goal_reached": goal_reached}
 
     def is_terminal(self, state: BWState) -> bool:
-        if utils.goal_check(utils.extract_goals(self.example), state.blocks_state):
+        # define the condition the terminal state to stop the search
+        # e.g., all the subgoals are met
+        if utils.goal_check(utils.extract_goals(self.example), state.blocks_state) == 1:
             return True
         return False
 ```
@@ -135,7 +141,7 @@ class BWConfig(SearchConfig):
         # the reward is a combination of intuition and goal satisfaction
         # in fast_reward, we skip the calculation of goal satisfaction and use a default value
         fast_reward = intuition * self.reward_alpha + self.goal_reward_default * (1 - self.reward_alpha)
-        # cache some details for the reward calculation later
+        # cache some information for the reward calculation later (will be passed to `reward` function)
         details = {'intuition': intuition}
         return fast_reward, details
 
@@ -143,15 +149,15 @@ class BWConfig(SearchConfig):
                intuition: float = None,
                goal_reached: tuple[bool, float] = None) -> float:
         # note that `intuition` (cached in `fast_reward`) and `goal_reached` (cached in `step`) are automatically passed as parameters to this reward function
-        if goal_reached[0]:
+        if goal_reached == 1:
             # if the goal state is reached, we will assign a large reward
             goal_reward = self.goal_reached_reward
         else:
-            # otherwise assign the reward based on the number of satisfied subgoals
-            goal_reward = goal_reached[1]
+            # otherwise assign the reward based on the portion of satisfied subgoals
+            goal_reward = goal_reached
         # the reward is a combination of intuition and goal satisfaction
         reward = intuition * self.reward_alpha + goal_reward * (1 - self.reward_alpha)
-        # return the reward and a dictionary of additional information (for a more detailed visualization later)
+        # return the reward and an additional dictionary (to be saved in the log for visualization later)
         return reward, {'intuition': intuition, 'goal_reached': goal_reached}
 ```
 Now, we are ready to apply a reasoning algorithm to solve the problem:
@@ -178,7 +184,7 @@ for i, example in enumerate(dataset):
 Finally, we can easily visualize the reasoning process:
 ```python
 import pickle
-from reasoners.visualization import ReasonersVisualizer
+from reasoners.visualization import visualize
 with open("logs/bw_MCTS/xxx/algo_output/1.pkl", 'rb') as f:
     mcts_result = pickle.load(f)
 
@@ -188,8 +194,12 @@ from reasoners.algorithm.mcts import MCTSNode
 # by default, a state will be presented along with the node, and the reward with saved dictionary in `SearchConfig.reward` will be presented along with the edge. 
 # we can also define a helper function to customize what we want to see in the visualizer.
 def blocksworld_node_data_factory(n: MCTSNode) -> NodeData:
-    return NodeData({"block_state": n.state if n.state else None})
-ReasonersVisualizer.visualize(mcts_result, node_data_factory=blocksworld_node_data_factory)
+    return NodeData({"block state": n.state.blocks_state if n.state else None,
+                     "satisfied": n.fast_reward_details if n.fast_reward_details else "Not expanded"})
+def blocksworld_edge_data_factory(n: MCTSNode) -> EdgeData:
+    return EdgeData({"reward": n.reward, "intuition": n.fast_reward_details["intuition"]})
+visualize(mcts_result, node_data_factory=blocksworld_node_data_factory,
+                       edge_data_factory=blocksworld_edge_data_factory)
 ```
 Then an URL of the visualized results will pop up. The figure will be interactive and look like the examples shown in our [demo website](https://llm-reasoners.net/).
 ## Installation

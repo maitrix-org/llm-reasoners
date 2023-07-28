@@ -61,7 +61,6 @@ def rap_bw(base_model: LanguageModel,
             utils.text_to_plan_blocksworld("\n".join(algo_output.trace[1]), example["instance_file"], config_file, domain_file, lm_plan_file)
             correct = utils.validate_plan(domain_file, example["instance_file"], lm_plan_file)[0]
 
-
         correct_count += correct
         accuracy = correct_count / (i + 1)
         log_str = f'Case #{resume + i + 1}: {correct=}; '\
@@ -72,6 +71,11 @@ def rap_bw(base_model: LanguageModel,
                 print(log_str, file=f)
             with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
                 pickle.dump(algo_output, f)
+            question = {"goal": utils.extract_goals(example, return_raw=True), "init": utils.extract_init_state(example)}
+            # append the question to the jsonl file
+            with open(os.path.join(log_dir, 'questions.jsonl'), 'a') as f:
+                print(json.dumps(question), file=f)
+
 
 if __name__ == '__main__':
     import os
