@@ -64,6 +64,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
             model_input = f.getvalue()
 
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
+        result = ""
         for start1 in range(0, self.n_confidence, self.early_stop_base):
             stop1 = min(start1 + self.early_stop_base, self.n_confidence)
 
@@ -79,7 +80,8 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                 for output in outputs:
                     result = output.strip()
                     answer = utils.retrieve_answer(result)
-                    answer_dict[answer].append(result)
+                    if answer is not None:
+                        answer_dict[answer].append(result)
 
             # Early stop if confidence is high enough
             if len(answer_dict) == 0:  # no answer yet
@@ -93,7 +95,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                     break
 
         if len(answer_dict) == 0:
-            confidence, answer = 0, ""
+            confidence, answer = 0, result  # No reasonable answer found. Fall back to choose the last response
         else:
             sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
             max_answer = sorted_answer_dict[0]
