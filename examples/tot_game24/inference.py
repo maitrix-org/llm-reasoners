@@ -100,29 +100,23 @@ if __name__ == '__main__':
     torch.cuda.manual_seed(0)
     torch.backends.cudnn.deterministic = True
 
-    llama_ckpts = os.environ["LLAMA_CKPTS"]
-    local_rank = int(os.environ["LOCAL_RANK"])
-    if local_rank != 0:
-        sys.stdout = sys.stderr = open(os.devnull, 'w')
-        warnings.filterwarnings('ignore')
 
-
-    def main(llama_ckpt: str = llama_ckpts,
-             llama_size: str = '13B',
-             batch_size: int = 2,
+    def main(batch_size: int = 2,
              prompts: str = 'examples/game24/prompts/game24.json',
              disable_log: bool = False,
+             model: str = 'gpt-3.5-turbo',
+             temperature: float = 0.7,
              **kwargs):
         with open(prompts) as f:
             prompts = json.load(f)
         # llama_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
         ## try GPT
-        openai_model = GPTCompletionModel(model='gpt-3.5-turbo')
+        openai_model = GPTCompletionModel(model=model, temperature=temperature)
         rap_game24(base_model=openai_model,
                   prompts=prompts,
                   batch_size=batch_size,
                   n_select_sample=5,
-                  disable_log=disable_log or local_rank != 0,
+                  disable_log=disable_log,
                   **kwargs)
 
 
