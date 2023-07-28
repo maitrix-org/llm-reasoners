@@ -8,8 +8,10 @@ from .. import LanguageModel, GenerateOutput
 
 class GPTCompletionModel(LanguageModel):
     def __init__(self, model:str, max_tokens:int = 2048):
+
         self.model = model
         self.max_tokens = max_tokens
+        
         API_KEY = os.getenv("OPENAI_API_KEY", None)
         if API_KEY is None:
             raise ValueError("OPENAI_API_KEY not set, please run `export OPENAI_API_KEY=<your key>` to ser it")
@@ -37,8 +39,14 @@ class GPTCompletionModel(LanguageModel):
 
         for i in range(1, 65):  # try 64 times
             try:
-                # sleep several seconds to avoid rate limit
                 if rate_limit_per_min is not None:
+                    # get the interval
+                    interval = 60 / rate_limit_per_min
+                    # actually we can sleep for a shorter time since the API call itself takes time
+                    if interval >=3:
+                        interval = interval - 0.5
+
+                    time.sleep(interval)
                     time.sleep(60 / rate_limit_per_min)
                 ### GPT 3.5 and higher use a different API
                 if ('gpt-3.5' in self.model) or ('gpt-4' in self.model):
