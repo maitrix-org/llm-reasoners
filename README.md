@@ -209,7 +209,7 @@ We tested different reasoning algorithms on the first 100 examples of the follow
 |CoT+SC|-|-|-|-|-|-|-|
 |Least-to-Most+SC|-|-|-|-|-|-|-|
 |Guided Decoding<sup>[[1]](https://github.com/YuxiXie/SelfEval-Guided-Decoding)</sup>|CodeX (PAL)|-|-|-|-|-|-|
-|Guided Decoding|CodeX (PAL)|-|-|-|-|-|-|
+|Guided Decoding|CodeX (PAL)|0.83|-|-|-|-|-|
 |RAP - BeamSearch|-|-|-|-|-|-|-|
 |RAP - MCTS|-|-|-|-|-|-|-|
 |RAP - MCTS - aggr|-|-|-|-|-|-|-|
