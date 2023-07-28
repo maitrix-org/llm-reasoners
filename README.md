@@ -218,7 +218,7 @@ We tested different reasoning algorithms on the first 100 examples of the follow
 |Methods|Base LLM|Blocksworld|Game of 24|Mini Crosswords|ProntoQA|
 |-|-|-|-|-|-|
 |CoT|-|-|-|-|-|
-|ToT<sup>[[2]](https://arxiv.org/abs/2305.10601)<sup>|-|-|-|-|-|
+|ToT<sup>[[2]](https://arxiv.org/abs/2305.10601)<sup>|-|-|GPT-3.5-turbo|-|-|
 |ToT|-|-|-|-|-|
 |RAP|LLaMA-33B|-|-|-|-|
 
