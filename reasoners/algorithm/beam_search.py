@@ -24,7 +24,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                  reject_sample: Optional[bool] = None, # whether to reject the samples with reward less than the reject_min_reward
                  reject_min_reward: Optional[float] = None, # the minimum reward to reject the sample
                  unbiased: Optional[bool] = None, # whether to use unbiased sampling
-                 reward_aggregator: Union[Callable[[List[Any]], float], str] = 'cumulative', # how to aggregate the reward list
+                 reward_aggregator: Union[Callable[[List[Any]], float], str] = 'last', # how to aggregate the reward list
                  action_dedup: bool = False, # whether to deduplicate the actions
                  early_terminate: bool = True, # whether to add to terminal beam if the action is terminal
                  return_beam: bool = False # whether to return the beam instead of the best trace
@@ -223,9 +223,13 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             # Decay the temperature
             self.temperature *= self.temperature_decay
         
+        if not self.early_terminate:
+            # add the cur_beam to terminal_beam
+            terminal_beam += cur_beam
+
         if self.return_beam:
             # simply return the beam
-            return cur_beam
+            return terminal_beam
 
         # Sort terminal beam by reward
         terminal_beam.sort(key=lambda x: x[2], reverse=True)
