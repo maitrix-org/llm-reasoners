@@ -24,7 +24,7 @@ python examples/guided_gsm8k/inference.py --n_actions 16 --temperature 1.0 --rew
 
 ```bash
 export OPENAI_API_KEY=YOUR_API_KEY
-python examples/guided_gsm8k/inference.py --n_actions 16 --temperature 0.7 --reward_alpha 0.5 \
+python examples/guided_gsm8k/inference.py --n_actions 16 --temperature 1 --reward_alpha 0.5 \
     --beam_size 5 --sampling_strategy argmax 
 
 ```

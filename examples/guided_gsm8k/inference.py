@@ -15,7 +15,7 @@ from reasoners.lm import GPTCompletionModel
 from world_model import GSM8kWorldModel
 from search_config import GSM8kConfig
 
-from utils import construct_full_solution, retrieve_answer_from_dataset, judge_answer
+from utils import construct_full_solution, retrieve_answer_from_dataset, judge_answer, majority_voting
 
 def guided_decoding_gsm8k(base_model: LanguageModel,
                 search_algo: Type[SearchAlgorithm] = BeamSearch,
@@ -87,15 +87,15 @@ def guided_decoding_gsm8k(base_model: LanguageModel,
         outputs = []
         # certain trace may be rejected, if we set reject_sample=True
         majority_voting_n = min(majority_voting_n, len(algo_output))
-        for i in range(majority_voting_n):
+        for j in range(majority_voting_n):
             # get the last state
-            state = algo_output[i].terminal_state
+            state = algo_output[j][0][-1][-1]
             # use the state to form the full output
             output = construct_full_solution(state, execute=True)
             outputs.append(output)
         
         # get the most common output, if there is a tie, always choose the first one
-        output = max(set(outputs), key=outputs.count)
+        output = majority_voting(outputs)
 
         # get the answer from the dataset
         answer = retrieve_answer_from_dataset(example["answer"])

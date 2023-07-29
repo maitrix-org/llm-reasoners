@@ -1,6 +1,15 @@
 import re
 from typing import Optional
 import io
+from collections import Counter
+
+def majority_voting(outputs):
+    # get the output with the highest count
+    count = Counter(outputs)
+    max_count = max(count.values())
+    for output in outputs:
+        if count[output] == max_count:
+            return output
 
 def get_indent(line):
     match = re.match(r'^(\s*)', line)
