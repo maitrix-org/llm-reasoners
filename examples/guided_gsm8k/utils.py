@@ -4,6 +4,9 @@ import io
 from collections import Counter
 
 def majority_voting(outputs):
+    # filter out non-numeric strings
+    outputs = [output for output in outputs if isinstance(output, (int, float))]
+
     # get the output with the highest count
     count = Counter(outputs)
     max_count = max(count.values())
