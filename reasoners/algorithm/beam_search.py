@@ -26,7 +26,8 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                  unbiased: Optional[bool] = None, # whether to use unbiased sampling
                  reward_aggregator: Union[Callable[[List[Any]], float], str] = 'cumulative', # how to aggregate the reward list
                  action_dedup: bool = False, # whether to deduplicate the actions
-                 early_terminate: bool = True # whether to add to terminal beam if the action is terminal
+                 early_terminate: bool = True, # whether to add to terminal beam if the action is terminal
+                 return_beam: bool = False # whether to return the beam instead of the best trace
                 ) -> None:
         # Initialize the BeamSearch class
         self.beam_size = beam_size
@@ -41,11 +42,16 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         self.reward_aggregator = reward_aggregator
         self.action_dedup = action_dedup
         self.early_terminate = early_terminate
+        self.return_beam = return_beam
 
         # if the temperature is set to 0, then we force the sampling strategy to be argmax
         if self.temperature < 1e-3:
             self.sampling_strategy = 'argmax'
             warnings.warn(f"Temperature is set to 0, sampling strategy is forced to be argmax.")
+        
+        # argmax = greedy = deterministic = topk
+        if self.sampling_strategy in ['greedy', 'deterministic', 'topk']:
+            self.sampling_strategy = 'argmax'
         
         # if sampling strategy not in argmax or stochastic, just use argmax
         if self.sampling_strategy not in ['argmax', 'stochastic']:
@@ -55,6 +61,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         
         # if early_terminate is set to False, we need to inform the user that we will return the beam instead of the best trace
         if not self.early_terminate:
+            self.return_beam = True
             warnings.warn(f"early_terminate is set to True, BeamSearch will return the beam instead of the best trace.")
 
     
@@ -138,7 +145,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             return [beam[i] for i in topk_beam_idx]
         
 
-    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action], action_dedup: bool=False, return_beam: bool=False, early_terminate: bool=True, reward_strategy: str='last_iter'):
+    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action]):
         init_state = world.init_state()
         # Initialize current beam with initial state
         cur_beam = [([(None, init_state)], [], 0)]   # (trace, reward_list, reward)
@@ -180,6 +187,10 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                         else:
                             reward = config.reward(state, action, **aux)
 
+                            # if the reward is a tuple, then it is (reward, aux)
+                            if isinstance(reward, tuple):
+                                reward, reward_aux = reward
+
                         # Add new reward to list of rewards
                         new_reward_list = reward_list + [reward]
                         # Compute new reward
@@ -212,7 +223,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             # Decay the temperature
             self.temperature *= self.temperature_decay
         
-        if not self.early_terminate:
+        if self.return_beam:
             # simply return the beam
             return cur_beam
 
