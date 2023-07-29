@@ -227,12 +227,20 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             # add the cur_beam to terminal_beam
             terminal_beam += cur_beam
 
-        if self.return_beam:
-            # simply return the beam
-            return terminal_beam
-
         # Sort terminal beam by reward
         terminal_beam.sort(key=lambda x: x[2], reverse=True)
+
+        if self.return_beam:
+            # convert terminal_beam to a list of BeamSearchResult
+            terminal_beam = [BeamSearchResult(
+                                terminal_state=item[0][-1][-1], 
+                                cum_reward=item[2],  # Use the precomputed cum_reward
+                                trace=item[0]
+                                ) for item in terminal_beam]
+            
+            return terminal_beam
+
+
         best_result = terminal_beam[0]
         result = BeamSearchResult(
             terminal_state=best_result[0][-1][-1], 
