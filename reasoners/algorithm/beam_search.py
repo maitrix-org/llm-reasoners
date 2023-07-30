@@ -64,6 +64,18 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             self.return_beam = True
             warnings.warn(f"early_terminate is set to False, BeamSearch will return the beam instead of the best trace.")
 
+        # how to aggregate the reward list
+        if self.reward_aggregator == 'cumulative' or self.reward_aggregator == 'accumulative':
+            self.reward_aggregator = lambda x: sum(x)
+        elif self.reward_aggregator == 'mean' or self.reward_aggregator == 'average':
+            self.reward_aggregator = lambda x: sum(x) / len(x)
+        elif isinstance(self.reward_aggregator, str) and self.reward_aggregator.startswith('last'):
+            self.reward_aggregator = lambda x: x[-1]
+        else:
+            # if the reward_aggregator is a string but not the above, raise error
+            if isinstance(self.reward_aggregator, str):
+                raise NotImplementedError(f"Reward aggregator {self.reward_aggregator} is not implemented.")
+
     
     @staticmethod
     def softmax(x: List[float], temperature: float, unbiased: bool = False, action_probs: Optional[List[float]] = None) -> List[float]:
@@ -193,19 +205,8 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
 
                         # Add new reward to list of rewards
                         new_reward_list = reward_list + [reward]
+
                         # Compute new reward
-
-                        if self.reward_aggregator == 'cumulative' or self.reward_aggregator == 'accumulative':
-                            self.reward_aggregator = lambda x: sum(x)
-                        elif self.reward_aggregator == 'mean' or self.reward_aggregator == 'average':
-                            self.reward_aggregator = lambda x: sum(x) / len(x)
-                        elif isinstance(self.reward_aggregator, str) and self.reward_aggregator.startswith('last'):
-                            self.reward_aggregator = lambda x: x[-1]
-                        else:
-                            # if the reward_aggregator is a string but not the above, raise error
-                            if isinstance(self.reward_aggregator, str):
-                                raise NotImplementedError(f"Reward aggregator {self.reward_aggregator} is not implemented.")
-
                         new_reward = self.reward_aggregator(new_reward_list)
 
                         if self.unbiased and self.sampling_strategy == 'stochastic':
