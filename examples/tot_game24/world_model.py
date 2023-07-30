@@ -56,7 +56,7 @@ class game24WorldModel(WorldModel[game24State, game24Action]):
         state = SubResult(x, action, step_id + 1)
         # answer = utils.get_current_numbers(action)
         # state.append(SubResult(action, answer))
-        return state
+        return state, {'new_state': state}
 
     def is_terminal(self, state: game24State) -> bool:
         ## if there is no left number or LLM is sure it can reach 24
