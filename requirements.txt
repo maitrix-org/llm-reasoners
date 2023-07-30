@@ -10,6 +10,8 @@ transformers
 sentencepiece
 git+https://github.com/facebookresearch/llama@llama_v1
 fairscale
+# openai
+openai
 # visualization
 requests~=2.31.0
 PyYAML~=6.0

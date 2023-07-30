@@ -102,7 +102,8 @@ class SearchConfig(ABC, Generic[State, Action]):
     def get_actions(self, state: State) -> list[Action]: ...
 
     @abstractmethod
-    def fast_reward(self, state: State, action: Action) -> tuple[float, dict]: ...
+    def fast_reward(self, state: State, action: Action) -> tuple[float, dict]:
+        return 0, {}
 
     @abstractmethod
     def reward(self, state, action, **kwargs) -> tuple[float, dict]: ...

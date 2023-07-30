@@ -8,8 +8,8 @@ __pycache__/
 .env
 .run/
 logs/
-*data/
+temp/
 scripts/
-data/
 gpt-plan-benchmark/
 .DS_Store
+.vscode/

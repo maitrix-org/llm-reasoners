@@ -49,7 +49,7 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
         
         :param state: the current state (see the docstring of BlocksWorldModel)
         :param action: the action to take
-        :return: the next state and an empty dict (placeholder)
+        :return: the next state and additional information cached for reward calculation
         """
         state = copy.deepcopy(state)
         buffered_action = state.buffered_action
@@ -89,10 +89,6 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
         world_output = self.base_model.generate([world_update_prompt],
                                     eos_token_id="\n", hide_input=True, temperature=0).text[0].strip()
         new_state = utils.apply_change(world_output, block_states)
-        # world_output = self.base_model.generate([world_update_prompt], hide_input=True, num_return_sequences=1,
-        #                                         eos_token="\n").text[0]
-        # world_change = world_output.split("[CHANGE]")[-1]
-        # new_state = utils.apply_change(world_change, block_states)
         return new_state
 
     def is_terminal(self, state: BWState) -> bool:

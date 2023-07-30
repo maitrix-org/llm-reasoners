@@ -28,7 +28,7 @@ class GSM8kConfig(SearchConfig):
             f.write(code_prompt)
             f.write("\n\n\n\n\n")
             f.write(f'Q: {self.example}\n\n# solution in Python:\n\n\ndef solution():\n    """{self.example}"""\n')
-            for a, _, _, _ in state:
+            for a, _, _, _ , _ in state:
                 f.write(f"{a}\n")
             
             # get the prompt
@@ -53,10 +53,12 @@ class GSM8kConfig(SearchConfig):
             log_prob = outputs.log_prob[i]
             # get the token_logprobs
             token_logprobs = log_prob["token_logprobs"]
-            # let's calculate the probability of this action
-            action_prob = np.exp(sum(token_logprobs)) ** (1 / len(token_logprobs))
+            # let's calculate the probability of this action, without normalizing
+            action_prob = np.exp(sum(token_logprobs))
+            # action length
+            action_length = len(token_logprobs)
 
-            return_actions.append((action, action_prob))
+            return_actions.append((action, action_prob, action_length))
 
         return return_actions
 
@@ -66,11 +68,28 @@ class GSM8kConfig(SearchConfig):
     def reward(self, state: GSM8kState, 
                action: GSM8kAction,
                action_confidence: float = None,
-               next_state: GSM8kState = None,
                **kwargs) -> float:
         
-        if action_confidence is None:
-            assert next_state is not None, "action_confidence and next_state cannot be both None"
-            action_confidence = next_state[-1].action_confidence
+        assert action_confidence is not None, "action_confidence should not be None"
+
+        # reward should be accumulated
+        acc_action_prob, acc_action_length, acc_action_confidence = 1, 0, 1
+        for _, prob, length, _, confidence in state:
+            acc_action_prob *= prob
+            acc_action_length += length
+            acc_action_confidence *= confidence
         
-        return action[1] ** self.reward_alpha * action_confidence ** (1 - self.reward_alpha)
+        # add the current action
+        acc_action_prob *= action[1]
+        acc_action_length += action[2]
+        acc_action_confidence *= action_confidence
+
+        # normalize the action_prob
+        acc_action_prob = acc_action_prob ** (1 / acc_action_length)
+
+        return acc_action_prob ** self.reward_alpha * acc_action_confidence ** (1 - self.reward_alpha), \
+            {
+                "acc_action_prob": acc_action_prob, 
+                "cur_action_prob": action[1]**(1/action[2]),
+            }
+                                            

@@ -1,7 +1,26 @@
+import json
 from typing import Sequence, Union
 
 from reasoners.algorithm import MCTSNode, MCTSResult
 from reasoners.visualization.tree_snapshot import NodeId, EdgeId, TreeSnapshot, NodeData, EdgeData
+
+
+class TreeLogEncoder(json.JSONEncoder):
+    def default(self, o):
+        from numpy import float32
+
+        if isinstance(o, TreeSnapshot.Node):
+            return o.__dict__
+        elif isinstance(o, TreeSnapshot.Edge):
+            return o.__dict__
+        elif isinstance(o, TreeSnapshot):
+            return o.__dict__()
+        elif isinstance(o, float32):
+            return float(o)
+        if isinstance(o, TreeLog):
+            return {"logs": list(o)}
+        else:
+            return super().default(o)
 
 
 class TreeLog:
@@ -17,8 +36,12 @@ class TreeLog:
     def __len__(self):
         return len(self._tree_snapshots)
 
+    def __str__(self):
+        return json.dumps(self, cls=TreeLogEncoder, indent=2)
+
     @classmethod
-    def from_mcts_results(cls, mcts_results: MCTSResult, node_data_factory: callable = None, edge_data_factory: callable = None) -> 'TreeLog':
+    def from_mcts_results(cls, mcts_results: MCTSResult, node_data_factory: callable = None,
+                          edge_data_factory: callable = None) -> 'TreeLog':
 
         def get_reward_details(n: MCTSNode) -> Union[dict, None]:
             if hasattr(n, "reward_details"):
@@ -47,7 +70,11 @@ class TreeLog:
                 edges.append(TreeSnapshot.Edge(edge_id, node.id, child.id, edge_data_factory(child)))
                 all_nodes(child)
 
-        for step in range(len(mcts_results.tree_state_after_each_iter)):
+        if mcts_results.tree_state_after_each_iter is None:
+            tree_states = [mcts_results.tree_state]
+        else:
+            tree_states = mcts_results.tree_state_after_each_iter
+        for step in range(len(tree_states)):
             edges = []
             nodes = {}
 
