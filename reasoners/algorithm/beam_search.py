@@ -221,7 +221,8 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             cur_beam = self._sample(new_beam)
 
             # Decay the temperature
-            self.temperature *= self.temperature_decay
+            if self.temperature_decay is not None:
+                self.temperature *= self.temperature_decay
         
         if not self.early_terminate:
             # add the cur_beam to terminal_beam
