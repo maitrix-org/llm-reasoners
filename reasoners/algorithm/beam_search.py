@@ -45,7 +45,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         self.return_beam = return_beam
 
         # if the temperature is set to 0, then we force the sampling strategy to be argmax
-        if self.temperature < 1e-3:
+        if self.temperature is not None and self.temperature < 1e-4:
             self.sampling_strategy = 'argmax'
             warnings.warn(f"Temperature is set to 0, sampling strategy is forced to be argmax.")
         
