@@ -39,7 +39,8 @@ def rap_game24(base_model: LanguageModel,
 
     ## keep the best 5 candidates, need at most 4 steps to solve
     ## following ToT, eval step will consider number of times to prompt for state evaluation
-    search_algo_params |= {'beam_size': n_select_sample, 'max_depth': depth_limit}
+    search_algo_params |= {'beam_size': n_select_sample, 'max_depth': depth_limit, 'temperature': 0,
+            'temperature_decay': 0, 'reject_sample': False, 'action_dedup': True, 'return_beam': True, 'early_terminate': False, 'reward_aggregator': 'last'}
     world_model = game24WorldModel(base_model=base_model, prompt=prompts,
                                   n_confidence=n_confidence, batch_size=batch_size)
     config = game24Config(base_model=base_model, prompt=prompts,
@@ -57,15 +58,15 @@ def rap_game24(base_model: LanguageModel,
         reasoner.world_model = game24WorldModel(base_model=base_model, prompt=prompts,
                                   n_confidence=n_confidence, batch_size=batch_size)
         # reasoner.search_config.value_cache = {}
-        algo_output = reasoner(example, action_dedup=True, return_beam=True, early_terminate=False, reward_strategy='last_iter')
+        algo_output = reasoner(example)
         # print(f'search cache size: {len(reasoner.search_config.value_cache)}')
         answer = 24
         correct = 0
         output = ''
         # print(f'reasoner output: {algo_output}')
         ## eval each trace, consider correct if one trace can correctly reach 24
-        for end_state in algo_output:
-            output = end_state[0][-1][-1]
+        for subresult in algo_output:
+            output = subresult.terminal_state
             print(output.sub_answer.replace('\n', '->'))
             output_check = utils.test_output(output.sub_question, output.sub_answer)
             if output_check['r']:
@@ -102,7 +103,7 @@ if __name__ == '__main__':
 
 
     def main(batch_size: int = 2,
-             prompts: str = 'examples/game24/prompts/game24.json',
+             prompts: str = 'examples/tot_game24/prompts/game24.json',
              disable_log: bool = False,
              model: str = 'gpt-3.5-turbo',
              temperature: float = 0.7,

@@ -62,10 +62,10 @@ class game24Config(SearchConfig):
         ## don't need fast_reward for beam search
         return 0
 
-    def reward(self, state: game24State, action: game24Action, next_state: game24State) -> float:
+    def reward(self, state: game24State, action: game24Action, new_state: game24State) -> float:
         ## get values (state eval) for each action
         ## impossible, maybe, sure
-        x, y = next_state[0], next_state[1]
+        x, y = new_state[0], new_state[1]
         flatten_y = y.strip().replace('\n', '->')
         # print(f"--checking status: {x}, {y}")
         value_prompt = utils.value_prompt_wrap(x, y, self.prompt)
