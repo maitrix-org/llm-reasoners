@@ -1,7 +1,7 @@
 import json
-from typing import Sequence, Union
-
-from reasoners.algorithm import MCTSNode, MCTSResult
+from typing import Sequence, Union, Tuple
+from reasoners import State, Action
+from reasoners.algorithm import MCTSNode, MCTSResult, BeamSearchNode, BeamSearchResult
 from reasoners.visualization.tree_snapshot import NodeId, EdgeId, TreeSnapshot, NodeData, EdgeData
 
 
@@ -91,5 +91,47 @@ class TreeLog:
                     ).id
 
             snapshots.append(tree)
+
+        return cls(snapshots)
+
+    @classmethod
+    def from_beam_search_results(cls, bs_results: BeamSearchResult, node_data_factory: callable = None,
+                        edge_data_factory: callable = None) -> 'TreeLog':
+
+        def default_node_data_factory(n: BeamSearchNode) -> NodeData:
+            return NodeData(n.state._asdict() if n.state else {})
+
+        def default_edge_data_factory(n: BeamSearchNode) -> EdgeData:
+            return EdgeData({"reward": n.reward, "action": n.action})
+
+        node_data_factory = node_data_factory or default_node_data_factory
+        edge_data_factory = edge_data_factory or default_edge_data_factory
+
+        snapshots = []
+
+        def all_nodes(node: BeamSearchNode):
+            node_id = NodeId(node.id)
+
+            nodes[node_id] = TreeSnapshot.Node(node_id, node_data_factory(node))
+            for child in node.children:
+                edge_id = EdgeId(len(edges))
+                edges.append(TreeSnapshot.Edge(edge_id, node.id, child.id, edge_data_factory(child)))
+                all_nodes(child)
+
+        root = bs_results.tree
+        edges = []
+        nodes = {}
+        all_nodes(root)
+        tree = TreeSnapshot(list(nodes.values()), edges)
+
+        # select edges with highest reward
+        for node in tree.nodes.values():
+            if node.selected_edge is None and tree.children(node.id):
+                node.selected_edge = max(
+                    tree.out_edges(node.id),
+                    key=lambda edge: edge.data.get("reward", -float("inf"))
+                ).id
+
+        snapshots.append(tree)
 
         return cls(snapshots)
