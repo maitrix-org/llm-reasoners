@@ -89,7 +89,7 @@ def guided_decoding_gsm8k(base_model: LanguageModel,
         majority_voting_n = min(majority_voting_n, len(algo_output))
         for j in range(majority_voting_n):
             # get the last state
-            state = algo_output[j].terminal_state
+            state = algo_output[j].terminal_node.state
             # use the state to form the full output
             output = construct_full_solution(state, execute=True)
             outputs.append(output)
