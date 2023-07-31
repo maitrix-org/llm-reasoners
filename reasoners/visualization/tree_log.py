@@ -1,6 +1,6 @@
 import json
-from typing import Sequence, Union, Tuple
-from reasoners import State, Action
+from typing import Sequence, Union
+
 from reasoners.algorithm import MCTSNode, MCTSResult, BeamSearchNode, BeamSearchResult
 from reasoners.visualization.tree_snapshot import NodeId, EdgeId, TreeSnapshot, NodeData, EdgeData
 
@@ -95,8 +95,12 @@ class TreeLog:
         return cls(snapshots)
 
     @classmethod
-    def from_beam_search_results(cls, bs_results: BeamSearchResult, node_data_factory: callable = None,
+    def from_beam_search_results(cls, bs_results: Union[BeamSearchResult, Sequence[BeamSearchResult]],
+                                 node_data_factory: callable = None,
                         edge_data_factory: callable = None) -> 'TreeLog':
+        
+        if isinstance(bs_results, Sequence):
+            bs_results = bs_results[0]
 
         def default_node_data_factory(n: BeamSearchNode) -> NodeData:
             return NodeData(n.state._asdict() if n.state else {})
