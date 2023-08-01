@@ -45,7 +45,7 @@ As initial conditions I have that, the red block is clear, the blue block is cle
 
 Regarding each reasoning step as an action, we have $a_1=$"*pick up the orange block*", $a_2=$"*stack the orange block on top of the blue block*", and so on. At each time step, the next action is sampled from the LLM conditioned on the previous actions. This simple method is often referred to as [Chain-of-thoughts](https://proceedings.neurips.cc/paper_files/paper/2022/hash/9d5609613524ecf4f15af0f7b31abca4-Abstract-Conference.html) reasoning. Unfortunately, it doesn't always work for complex reasoning problems. For [Blocksworld dataset](https://arxiv.org/abs/2305.15771) where the problem above comes from, even the strongest GPT-4 model can only reach the success rate of ~30%.
 
-LLM Reasoners formulates the reasoning as planning. Different from Chain-of-thoughts reasoning which autoregressively samples the next action, our goal is to **efficiently search in the reasoning space for the optimal reasoning chain**. To achieve this, two components need to be defined: a world model and a reward function.
+LLM Reasoners formulate the reasoning as planning. Different from Chain-of-thoughts reasoning which autoregressively samples the next action, our goal is to **efficiently search in the reasoning space for the optimal reasoning chain**. To achieve this, two components need to be defined: a world model and a reward function.
 
 - **World model** defines the state transition, formally $P(s_{i+1} | s_i, a_i)$. A default world model regards the partial solution as the state and simply appends a new action/thought to the state as the state transition (the same formulation of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)). However, you’ll have the option to design a better world model which predicts and keeps track of a more meaningful state (e.g., environment status, intermediate variable values, etc. Check [RAP](https://arxiv.org/abs/2305.14992) for more examples), thus enhancing the reasoning. For the example shown above, we can naturally define the state as the condition of blocks (e.g., the red block is on the yellow block...), and a world model is to predict the condition of blocks after every potential action.
 
@@ -220,14 +220,14 @@ pip install -e .
 Note that some optional modules may need other dependencies. Please refer to the error message for details.
 
 ## Benchmarks
-We tested different reasoning algorithms on the first 100 examples of the following benchmarks (to be updated). Superscripted rows indicate the results reproduced from official code repositories.
+We tested different reasoning algorithms on the first 100 examples of the following benchmarks (to be updated). For Tree-of-thoughts (ToT) and Guided Decoding, we also report the results reproduced from their official repositories for comparison.
 
 |Methods|Base LLM|GSM8K|AQuA|SVAMP|ASDiv|CommonsenseQA|StrategyQA|
 |-|-|-|-|-|-|-|-|
 |CoT|-|-|-|-|-|-|-|
 |CoT+SC|-|-|-|-|-|-|-|
 |Least-to-Most+SC|-|-|-|-|-|-|-|
-|Guided Decoding<sup>[[1]](https://github.com/YuxiXie/SelfEval-Guided-Decoding)</sup>|CodeX (PAL)|-|-|-|-|-|-|
+|Guided Decoding<sup>[[official]](https://github.com/YuxiXie/SelfEval-Guided-Decoding)</sup>|CodeX (PAL)|-|-|-|-|-|-|
 |Guided Decoding|CodeX (PAL)|0.83|-|-|-|-|-|
 |RAP - BeamSearch|-|-|-|-|-|-|-|
 |RAP - MCTS|-|-|-|-|-|-|-|
@@ -237,7 +237,7 @@ We tested different reasoning algorithms on the first 100 examples of the follow
 |Methods|Base LLM|Blocksworld|Game of 24|Mini Crosswords|ProntoQA|
 |-|-|-|-|-|-|
 |CoT|-|-|-|-|-|
-|ToT<sup>[[2]]([https://arxiv.org/abs/2305.10601](https://github.com/princeton-nlp/tree-of-thought-llm))<sup>|GPT-3.5-turbo|-|0.22|-|-|
+|ToT<sup>[[official]](https://github.com/princeton-nlp/tree-of-thought-llm)</sup>|GPT-3.5-turbo|-|0.22|-|-|
 |ToT|GPT-3.5-turbo|-|0.22|-|-|
 |RAP|LLaMA-33B|-|-|-|-|
 
