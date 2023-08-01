@@ -54,6 +54,7 @@ def rap_crosswords(base_model: LanguageModel,
         algo_output = agent(i, best_state=True)
         best = 0
         output = ''
+        ans = ''
         for state in algo_output:
             env, actions, info = state
             if best < info['info']['r_word']:
@@ -91,23 +92,20 @@ if __name__ == '__main__':
     torch.cuda.manual_seed(0)
     torch.backends.cudnn.deterministic = True
 
-    llama_ckpts = os.environ["LLAMA_CKPTS"]
-    local_rank = int(os.environ["LOCAL_RANK"])
-    if local_rank != 0:
-        sys.stdout = sys.stderr = open(os.devnull, 'w')
-        warnings.filterwarnings('ignore')
 
-
-    def main(llama_ckpt: str = llama_ckpts,
-             llama_size: str = '30B',
+    def main(
              batch_size: int = 2,
              prompts: str = 'examples/crosswords/prompts/crosswords.json',
              disable_log: bool = False,
+             model: str = 'gpt-3.5-turbo',
+             temperature: float = 0.7,
              **kwargs):
-        openai_model = GPTCompletionModel(model='gpt-3.5-turbo')
+        openai_model = GPTCompletionModel(model=model, temperature=temperature)
+        log_dir = 'logs/crosswords_dfs/test-gpt3.5'
         rap_crosswords(base_model=openai_model,
                   batch_size=batch_size,
-                  disable_log=disable_log or local_rank != 0,
+                  disable_log=disable_log,
+                  log_dir=log_dir,
                   **kwargs)
 
 

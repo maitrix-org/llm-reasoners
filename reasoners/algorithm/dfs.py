@@ -26,10 +26,10 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
         self.stat_cnt += 1
         if world.is_terminal(cur_state):
             self.terminals.append(cur_state)
-            return 
+            # return
         # get candidate actions (list, (action, score) or action)
         new_actions = config.get_actions(cur_state)
-        print(f'new actions {new_actions}')
+        print(f'state id: {self.stat_cnt}, state: {cur_state} new actions {len(new_actions)}')
         if len(new_actions) == 0: 
             return 
         ## sort possible actions by score
@@ -43,6 +43,7 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
             # check all existing state/depth/branch constraints
             if self.stat_cnt < self.total_states and cnt_per_state < self.max_per_state and config.search_condition(cur_state):
                 cnt_per_state += 1
+                print(f'dfs_branch cnt: {cnt_per_state}')
                 #### new state
                 new_state = world.step(cur_state, action)
 
