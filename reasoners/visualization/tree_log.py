@@ -96,8 +96,7 @@ class TreeLog:
 
     @classmethod
     def from_beam_search_results(cls, bs_results: Union[BeamSearchResult, Sequence[BeamSearchResult]],
-                                 node_data_factory: callable = None,
-                        edge_data_factory: callable = None) -> 'TreeLog':
+                                 node_data_factory: callable = None, edge_data_factory: callable = None) -> 'TreeLog':
         
         if isinstance(bs_results, Sequence):
             bs_results = bs_results[0]
