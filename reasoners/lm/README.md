@@ -2,6 +2,7 @@
 ## LLaMA
 - Please follow MetaAI's [instruction](https://github.com/facebookresearch/llama/tree/llama_v1) to get the models and set up the environment.
 - If you want to run our examples with LLaMA, please set the path to checkpoint with `export LLAMA_CKPTS=/path/to/llama/checkpoints`.
+- for llama2 `export LLAMA_2_CKPTS=/path/to/llama/checkpoints`
 - Note that this version of LLaMA is based on `fairscale`, and you may use `python -m torch.distributed.run --n_proc_per_node num_proc your_script.py` to run the script (`num_proc` depends on the model size, please check the [instruction](https://github.com/facebookresearch/llama/tree/llama_v1)).
 - We are working on the integration of LLaMA-2 into our framework. Stay tuned!
 
