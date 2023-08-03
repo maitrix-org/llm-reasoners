@@ -42,10 +42,9 @@ As initial conditions I have that, the red block is clear, the blue block is cle
 <b>stack the yellow block on top of the orange block</b>
 </pre>
 
-
 Regarding each reasoning step as an action, we have $a_1=$"*pick up the orange block*", $a_2=$"*stack the orange block on top of the blue block*", and so on. At each time step, the next action is sampled from the LLM conditioned on the previous actions. This simple method is often referred to as [Chain-of-thoughts](https://proceedings.neurips.cc/paper_files/paper/2022/hash/9d5609613524ecf4f15af0f7b31abca4-Abstract-Conference.html) reasoning. Unfortunately, it doesn't always work for complex reasoning problems. For [Blocksworld dataset](https://arxiv.org/abs/2305.15771) where the problem above comes from, even the strongest GPT-4 model can only reach the success rate of ~30%.
 
-LLM Reasoners formulate the reasoning as planning. Different from Chain-of-thoughts reasoning which autoregressively samples the next action, our goal is to **efficiently search in the reasoning space for the optimal reasoning chain**. To achieve this, two components need to be defined: a world model and a reward function.
+LLM Reasoners formulate **reasoning as planning** ([RAP](https://arxiv.org/abs/2305.14992)). Different from Chain-of-thoughts reasoning which autoregressively samples the next action, our goal is to **efficiently search in the reasoning space for the optimal reasoning chain**. To achieve this, two components need to be defined: a world model and a reward function.
 
 - **World model** defines the state transition, formally $P(s_{i+1} | s_i, a_i)$. A default world model regards the partial solution as the state and simply appends a new action/thought to the state as the state transition (the same formulation of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)). However, you’ll have the option to design a better world model which predicts and keeps track of a more meaningful state (e.g., environment status, intermediate variable values, etc. Check [RAP](https://arxiv.org/abs/2305.14992) for more examples), thus enhancing the reasoning. For the example shown above, we can naturally define the state as the condition of blocks (e.g., the red block is on the yellow block...), and a world model is to predict the condition of blocks after every potential action.
 
@@ -220,26 +219,27 @@ pip install -e .
 Note that some optional modules may need other dependencies. Please refer to the error message for details.
 
 ## Benchmarks
-We tested different reasoning algorithms on the first 100 examples of the following benchmarks (to be updated). For Tree-of-thoughts (ToT) and Guided Decoding, we also report the results reproduced from their official repositories for comparison.
+We tested different reasoning algorithms on the following benchmarks (to be updated). For Tree-of-thoughts and Guided Decoding, we also list the results reported in their paper /  reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
 
-|Methods|Base LLM|GSM8K|AQuA|SVAMP|ASDiv|CommonsenseQA|StrategyQA|
+|Method|Base LLM|[GSM8K](https://arxiv.org/abs/2110.14168)|[AQuA](https://arxiv.org/abs/2008.12520)|[SVAMP](https://arxiv.org/abs/2103.07191)|[ASDiv](https://arxiv.org/abs/2106.15772)|[CommonsenseQA](https://arxiv.org/abs/1811.00937)|[StrategyQA](https://arxiv.org/abs/2101.02235)|
 |-|-|-|-|-|-|-|-|
-|CoT|-|-|-|-|-|-|-|
-|CoT+SC|-|-|-|-|-|-|-|
-|Least-to-Most+SC|-|-|-|-|-|-|-|
-|Guided Decoding<sup>[[official]](https://github.com/YuxiXie/SelfEval-Guided-Decoding)</sup>|CodeX (PAL)|-|-|-|-|-|-|
-|Guided Decoding|CodeX (PAL)|0.83|-|-|-|-|-|
-|RAP - BeamSearch|-|-|-|-|-|-|-|
-|RAP - MCTS|-|-|-|-|-|-|-|
-|RAP - MCTS - aggr|-|-|-|-|-|-|-|
+|[CoT](https://arxiv.org/abs/2201.11903)|LLaMA-33B|0.29|-|-|-|-|-|
+|CoT+[SC](https://arxiv.org/abs/2203.11171)|LLaMA-33B|0.47|-|-|-|-|-|
+|[Least-to-Most](https://arxiv.org/abs/2205.10625)+SC|LLaMA-33B|0.43|-|-|-|-|-|
+|[Guided Decoding](https://arxiv.org/abs/2305.00633)<sup>†</sup>|CodeX (PAL)|0.80|-|-|-|-|-|
+|Guided Decoding|CodeX (PAL)|0.83\*|-|-|-|-|-|
+|[RAP](https://arxiv.org/abs/2305.14992)|LLaMA-33B|0.49|-|-|-|-|-|
+|[RAP (aggr)](https://arxiv.org/abs/2305.14992)|LLaMA-33B|0.52|-|-|-|-|-|
 
 
-|Methods|Base LLM|Blocksworld|Game of 24|Mini Crosswords|ProntoQA|
+|Method|Base LLM|[Blocksworld](https://arxiv.org/abs/2305.15771)|[Game of 24](https://arxiv.org/abs/2305.10601)|[Mini Crosswords](https://arxiv.org/abs/2305.10601)|[ProntoQA](https://arxiv.org/abs/2210.01240)|
 |-|-|-|-|-|-|
-|CoT|-|-|-|-|-|
-|ToT<sup>[[official]](https://github.com/princeton-nlp/tree-of-thought-llm)</sup>|GPT-3.5-turbo|-|0.22|-|-|
-|ToT|GPT-3.5-turbo|-|0.22|-|-|
-|RAP|LLaMA-33B|-|-|-|-|
+|CoT|LLaMA-33B|0.03|-|-|0.65|
+|[Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)<sup>†</sup>|GPT-3.5-turbo|-|0.22|-|-|
+|Tree-of-Thoughts|GPT-3.5-turbo|-|0.22|-|-|
+|RAP|LLaMA-33B|0.64|-|-|0.79|
+
+
 
 ## Citation
 This project is an extension of the following paper:
