@@ -87,7 +87,7 @@ def rap_gsm8k(base_model: LanguageModel,
             if isinstance(search_algo, MCTS):
                 with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
                     # noinspection PyTypeChecker
-                    f.write(str(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer)))
+                    print(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer), file=f)
 
 
 if __name__ == '__main__':
