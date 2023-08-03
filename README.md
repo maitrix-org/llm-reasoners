@@ -212,6 +212,7 @@ conda activate reasoners
 
 Clone the repository and install the package:
 
+llama 2 have some alias problem so you may need to clone the forked llama1 at private repo. please check the setup.py
 ```bash
 git clone https://github.com/Ber666/llm-reasoners
 cd llm-reasoners
