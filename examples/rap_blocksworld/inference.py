@@ -86,7 +86,7 @@ if __name__ == '__main__':
     import random
     import torch
     import torch.backends.cudnn
-    from reasoners.lm import LLaMAModel
+    from reasoners.lm import LLaMAModel, LlamaModel
 
     np.random.seed(1)
     random.seed(1)
@@ -144,4 +144,31 @@ if __name__ == '__main__':
                depth_limit=depth_limit,
                lm_plan_file=lm_plan_file, **kwargs)
 
-    fire.Fire(llama_main)
+    def llama2_main(llama_size: str = '70B',
+             prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
+             data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+             disable_log: bool = False,
+             config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
+             domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+             lm_plan_file: str = 'lm_plan.tmp',
+             depth_limit: int = 6,
+             **kwargs):
+
+        from reasoners.lm import LlamaModel
+        local_rank = int(os.environ["LOCAL_RANK"])
+        llama2_ckpts = os.environ["LLAMA_2_CKPTS"]
+        with open(prompt_path) as f:
+            prompt = json.load(f)
+        llama_model = LlamaModel(llama2_ckpts, llama_size, max_batch_size=1)
+        rap_bw(llama_model,
+               prompt,
+               disable_log=disable_log or local_rank != 0,
+               data_path=data_path,
+               config_file=config_file,
+               domain_file=domain_file,
+               depth_limit=depth_limit,
+               lm_plan_file=lm_plan_file, **kwargs)
+
+
+
+    fire.Fire(llama2_main)
