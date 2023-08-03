@@ -32,8 +32,8 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
 
     def dfs(self, world: WorldModel[State, Action], config: SearchConfig[State, Action], cur_state: State, best_state: bool=True):
         self.stat_cnt += 1
-        #if world.is_terminal(cur_state): # len(info)==0 #change
-        self.terminals.append(cur_state) #change
+        if world.is_terminal(cur_state): # len(info)==0 #change
+            self.terminals.append(cur_state) #change
             #return # change
         # get candidate actions (list, (action, score) or action)
         new_actions = config.get_actions(cur_state) # [(candidate, candidate score)]
@@ -63,13 +63,8 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
                 if cnt_per_state > self.max_per_state: 
                     print(f'reach max_per_state {self.max_per_state}: break')
                     break
-                
-                #### new state
-                
-                # infos.append(info)
+
                 ## other state constraints
                 if config.state_condition(new_state):  # only continue if the current status is possible
                     neibor_info = self.dfs(world, config, new_state, best_state)
-                # actions.pop()
-            # env.reset(env.idx, board=board.copy(), status=status.copy(), steps=steps)
         return
