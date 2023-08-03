@@ -17,6 +17,5 @@ setup(name='reasoners',
                         'transformers',
                         'sentencepiece',
                         'openai',
-                        'llama1@git+https://github.com/AegeanYan/llama@llama_v1',
-                        'llama@git+https://github.com/facebookresearch/llama@main',
+                        'llama@git+https://github.com/facebookresearch/llama@llama_v1',
                         'fairscale'])
