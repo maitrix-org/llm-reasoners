@@ -103,7 +103,7 @@ class LlamaModel(LanguageModel):
             max_new_tokens = max_length  # set to a large number cannot be reached
 
         if not do_sample:
-            if temperature != 0.0 and self.local_rank == 0:  # temperature is explicitly set with do_sample=False #if do_sample=False, temperature set to not 0 have no effect
+            if temperature != 1.0 and self.local_rank == 0:  # temperature is explicitly set with do_sample=False 
                 warnings.warn('temperature is set, but do_sample=False, so temperature will be ignored.')#if this feature for you is important, you can change the warning to error
             temperature = 0
         
@@ -141,8 +141,10 @@ class LlamaModel(LanguageModel):
         max_prompt_size = max([len(t) for t in prompt_tokens])
 
         assert max_prompt_size <= params.max_seq_len, f"prompt length exceeds limit: {max_prompt_size} > {params.max_seq_len}"
-        total_len = min(params.max_seq_len, max_prompt_size + max_new_tokens)
-        total_len = max(total_len, max_length)##there seems a bug, max_length can be larger than params.max_seq_len. I think we should take min
+        # total_len = min(params.max_seq_len, max_prompt_size + max_new_tokens)
+        # total_len = min(total_len, max_length)##there seems a bug, max_length can be larger than params.max_seq_len. I think we should take min
+        total_len = min(params.max_seq_len, max_length)
+        total_len = min(total_len, max_prompt_size + max_new_tokens) #refer to https://github.com/huggingface/transformers/blob/66c240f3c950612fa05b2e14c85d4b86c88e473e/src/transformers/generation/utils.py#L1401
 
         pad_id = self.tokenizer.pad_id
         tokens = torch.full((bsz, total_len), pad_id, dtype=torch.long, device="cuda")
