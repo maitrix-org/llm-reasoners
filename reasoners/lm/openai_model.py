@@ -58,6 +58,16 @@ class GPTCompletionModel(LanguageModel):
                         stop=stop,
                         **kwargs
                     )
+                    '''print('-----------------------------------------')
+                    print(f'Prompt:\n{prompt}')
+                    print('-------------prompt end------------------')
+                    print('-----------------------------------------')
+                    print('Response:')
+                    for i, choice in enumerate(response["choices"]):
+                        print(f'---------response {i}------------')
+                        print(choice["message"]["content"])
+                    print('-------------response end----------------') '''
+
                     return GenerateOutput(
                         text=[choice["message"]["content"] for choice in response["choices"]],
                         log_prob=None

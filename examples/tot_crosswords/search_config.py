@@ -90,6 +90,9 @@ class crosswordsConfig(SearchConfig):
 
     def search_condition(self, state: crosswordsState) -> bool:
         env, actions, info = state
+        #print(f'{env.steps} {self.depth} {env.steps < self.depth} {not any(_ == 2 for _ in env.status)}')
+        print(env.get_ans(env.board))
+        print(env.status)
         if env.steps < self.depth and not any(_ == 2 for _ in env.status):
             return True
         return False

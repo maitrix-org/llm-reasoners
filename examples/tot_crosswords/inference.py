@@ -49,18 +49,28 @@ def rap_crosswords(base_model: LanguageModel,
     correct = 0
     correct_count = 0
     example_cnt = 0
-    for i in range(0, 100, 5):
+    answer=''
+    answer_list = []
+    
+    for index, i in tqdm(enumerate(range(0, 100, 5))):
+        print('\n--------------------------------------------')
+        print(f'index: {index}  example: {i}')
+        print('--------------------------------------------')
         example_cnt += 1
         algo_output = agent(i, best_state=True)
         best = 0
         output = ''
         ans = ''
-        for state in algo_output:
+        print('********************************************')
+        print(f'Output:')
+        for output_i, state in enumerate(algo_output):
+            print(f'{output_i}  {output}')
             env, actions, info = state
             if best < info['info']['r_word']:
                 best = info['info']['r_word']
                 output = env.ans
                 answer = env.ans_gt
+        answer_list.append((output, answer, best, search_algo.stat_cnt))
         if best == 1.0:
             correct = 1
             correct_count += 1
@@ -72,7 +82,14 @@ def rap_crosswords(base_model: LanguageModel,
                 print(log_str, file=f)
             with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
                 pickle.dump(algo_output, f)
+
         break
+    for i, result in enumerate(answer_list):
+        print('--------------------------------------------')
+        print(f'Example {i}  best: {result[2]} stat_cnt: {result[3]}')
+        print(f'Pred: {result[0]}')
+        print(f'GT  : {result[1]}')
+        
 
 
 if __name__ == '__main__':
@@ -95,17 +112,17 @@ if __name__ == '__main__':
 
     def main(
              batch_size: int = 2,
-             prompts: str = 'examples/crosswords/prompts/crosswords.json',
+             prompts: str = 'examples/crosswords/prompts/crosswords.json', # not used
              disable_log: bool = False,
              model: str = 'gpt-3.5-turbo',
              temperature: float = 0.7,
              **kwargs):
         openai_model = GPTCompletionModel(model=model, temperature=temperature)
-        log_dir = 'logs/crosswords_dfs/test-gpt3.5'
+        #log_dir = 'logs/crosswords_dfs/test-gpt3.5'
         rap_crosswords(base_model=openai_model,
-                  batch_size=batch_size,
+                  batch_size=batch_size, # not used
                   disable_log=disable_log,
-                  log_dir=log_dir,
+                  #log_dir=log_dir,
                   **kwargs)
 
 
