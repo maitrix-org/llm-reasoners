@@ -12,10 +12,10 @@ from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import BeamSearch
 from reasoners.lm import GPTCompletionModel
 
-from world_model import GSM8kWorldModel
-from search_config import GSM8kConfig
+from .world_model import GSM8kWorldModel
+from .search_config import GSM8kConfig
 
-from utils import construct_full_solution, retrieve_answer_from_dataset, judge_answer, majority_voting
+from .utils import construct_full_solution, retrieve_answer_from_dataset, judge_answer, majority_voting
 
 def guided_decoding_gsm8k(base_model: LanguageModel,
                 search_algo: Type[SearchAlgorithm] = BeamSearch,
