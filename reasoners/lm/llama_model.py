@@ -11,7 +11,7 @@ import numpy as np
 import torch
 import torch.distributed
 from fairscale.nn.model_parallel.initialize import initialize_model_parallel
-from llama1 import ModelArgs, Transformer, Tokenizer
+from llama import ModelArgs, Transformer, Tokenizer
 
 from .. import LanguageModel, GenerateOutput
 
@@ -82,7 +82,7 @@ class LLaMAModel(LanguageModel):
             max_new_tokens = max_length  # set to a large number cannot be reached
 
         if not do_sample:
-            if temperature != 0.0 and self.local_rank == 0:  # temperature is explicitly set with do_sample=False #if do_sample=False, temperature set to not 0 have no effect
+            if temperature != 1.0 and self.local_rank == 0:  # temperature is explicitly set with do_sample=False
                 warnings.warn('temperature is set, but do_sample=False')
             temperature = 0
 
