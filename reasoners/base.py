@@ -12,7 +12,7 @@ Trace = tuple[list[State], list[Action]]
 
 class GenerateOutput(NamedTuple):
     text: list[str]
-    log_prob: list[np.ndarray] = None
+    log_prob: Optional[list[np.ndarray]] = None
 
 
 class LanguageModel(ABC):

@@ -14,7 +14,7 @@ Input: {input}
 '''
 
 # 5-shot
-cot_prompt = '''Use numbers and basic arithmetic operations (+ - * /) to obtain 24. Each step, you are only allowed to choose two of the remaining numbers to obtain a new number.
+output_prompt = '''Use numbers and basic arithmetic operations (+ - * /) to obtain 24. Each step, you are only allowed to choose two of the remaining numbers to obtain a new number.
 Input: 4 4 6 8
 Steps:
 4 + 8 = 12 (left: 4 6 12)
@@ -46,6 +46,7 @@ Steps:
 15 + 9 = 24 (left: 24)
 Answer: ((5 + 5) + 5) + 9 = 24
 Input: {input}
+{history}
 '''
 
 # 1-shot
@@ -57,7 +58,7 @@ Possible next steps:
 2 * 8 = 16 (left: 8 14 16)
 8 - 2 = 6 (left: 6 8 14)
 14 - 8 = 6 (left: 2 6 8)
-14 /  2 = 7 (left: 7 8 8)
+14 / 2 = 7 (left: 7 8 8)
 14 - 2 = 12 (left: 8 8 12)
 Input: {input}
 Possible next steps:
@@ -132,3 +133,6 @@ impossible
 Input: {input}
 Answer: {answer}
 Judge:'''
+
+value_name = ['sure', 'likely', 'impossible']
+value_map = {'sure': 1, 'likely': 0.1, 'impossible': 0.0001}

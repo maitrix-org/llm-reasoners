@@ -1,2 +1,2 @@
-from world_model import game24State, game24Action, game24WorldModel
-from search_config import game24Config
+from world_model import Game24State, Game24Action, Game24WorldModel
+from search_config import Game24config

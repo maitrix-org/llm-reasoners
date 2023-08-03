@@ -155,7 +155,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
         return node.Q + self.w_exp * np.sqrt(np.log(len(node.parent.cum_rewards)) / max(1, len(node.cum_rewards)))
 
     def _uct_select(self, node: MCTSNode) -> MCTSNode:
-        if self.uct_with_fast_reward:
+        if self.uct_with_fast_reward or all(x.state is not None for x in node.children):
             return max(node.children, key=self._uct)
         else:
             unvisited_children = filter(lambda x: x.state is None, node.children)
