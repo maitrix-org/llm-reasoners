@@ -42,7 +42,7 @@ class game24Config(SearchConfig):
         #     outputs += self.base_model.generate([model_input] * n_samples, max_gen_len=512, end_token=")", hide_input=True).text
         # outputs = self.base_model.generate([model_input] * 1, max_gen_len=256, end_token=")", hide_input=True).text[0]
         ## query with GPT
-        outputs = self.base_model.generate(propose_prompt, temperature=0.7, num_return_sequences=1, stop=None).text
+        outputs = self.base_model.generate(propose_prompt, num_return_sequences=1, stop=None).text
 
         ######## post process for operation actions
         ## some post-process for llama
@@ -62,10 +62,10 @@ class game24Config(SearchConfig):
         ## don't need fast_reward for beam search
         return 0
 
-    def reward(self, state: game24State, action: game24Action, next_state: game24State) -> float:
+    def reward(self, state: game24State, action: game24Action, new_state: game24State) -> float:
         ## get values (state eval) for each action
         ## impossible, maybe, sure
-        x, y = next_state[0], next_state[1]
+        x, y = new_state[0], new_state[1]
         flatten_y = y.strip().replace('\n', '->')
         # print(f"--checking status: {x}, {y}")
         value_prompt = utils.value_prompt_wrap(x, y, self.prompt)
@@ -80,7 +80,7 @@ class game24Config(SearchConfig):
         #     # value_outputs += self.base_model.generate([value_prompt] * n_samples, max_gen_len=256, hide_input=True).text
         
         #### query with GPT
-        value_outputs = self.base_model.generate(value_prompt, temperature=0.7, num_return_sequences=self.n_eval, stop=None).text
+        value_outputs = self.base_model.generate(value_prompt, num_return_sequences=self.n_eval, stop=None).text
         #print(f"reward output: {value_outputs}\n")
 
         ## postprocess for llama

@@ -39,7 +39,8 @@ def rap_game24(base_model: LanguageModel,
 
     ## keep the best 5 candidates, need at most 4 steps to solve
     ## following ToT, eval step will consider number of times to prompt for state evaluation
-    search_algo_params |= {'beam_size': n_select_sample, 'max_depth': depth_limit}
+    search_algo_params |= {'beam_size': n_select_sample, 'max_depth': depth_limit, 'reject_sample': False, 
+                           'action_dedup': True, 'return_beam': True, 'early_terminate': False, 'reward_aggregator': 'last'}
     world_model = game24WorldModel(base_model=base_model, prompt=prompts,
                                   n_confidence=n_confidence, batch_size=batch_size)
     config = game24Config(base_model=base_model, prompt=prompts,
@@ -57,15 +58,15 @@ def rap_game24(base_model: LanguageModel,
         reasoner.world_model = game24WorldModel(base_model=base_model, prompt=prompts,
                                   n_confidence=n_confidence, batch_size=batch_size)
         # reasoner.search_config.value_cache = {}
-        algo_output = reasoner(example, action_dedup=True, return_beam=True, early_terminate=False, reward_strategy='last_iter')
+        algo_output = reasoner(example)
         # print(f'search cache size: {len(reasoner.search_config.value_cache)}')
         answer = 24
         correct = 0
         output = ''
         # print(f'reasoner output: {algo_output}')
         ## eval each trace, consider correct if one trace can correctly reach 24
-        for end_state in algo_output:
-            output = end_state[0][-1][-1]
+        for subresult in algo_output:
+            output = subresult.terminal_node.state
             print(output.sub_answer.replace('\n', '->'))
             output_check = utils.test_output(output.sub_question, output.sub_answer)
             if output_check['r']:
@@ -100,29 +101,23 @@ if __name__ == '__main__':
     torch.cuda.manual_seed(0)
     torch.backends.cudnn.deterministic = True
 
-    llama_ckpts = os.environ["LLAMA_CKPTS"]
-    local_rank = int(os.environ["LOCAL_RANK"])
-    if local_rank != 0:
-        sys.stdout = sys.stderr = open(os.devnull, 'w')
-        warnings.filterwarnings('ignore')
 
-
-    def main(llama_ckpt: str = llama_ckpts,
-             llama_size: str = '13B',
-             batch_size: int = 2,
-             prompts: str = 'examples/game24/prompts/game24.json',
+    def main(batch_size: int = 2,
+             prompts: str = 'examples/tot_game24/prompts/game24.json',
              disable_log: bool = False,
+             model: str = 'gpt-3.5-turbo',
+             temperature: float = 0.7,
              **kwargs):
         with open(prompts) as f:
             prompts = json.load(f)
         # llama_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
         ## try GPT
-        openai_model = GPTCompletionModel(model='gpt-3.5-turbo')
+        openai_model = GPTCompletionModel(model=model, temperature=temperature)
         rap_game24(base_model=openai_model,
                   prompts=prompts,
                   batch_size=batch_size,
                   n_select_sample=5,
-                  disable_log=disable_log or local_rank != 0,
+                  disable_log=disable_log,
                   **kwargs)
 
 
