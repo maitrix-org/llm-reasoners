@@ -13,7 +13,7 @@ import torch.distributed
 from fairscale.nn.model_parallel.initialize import initialize_model_parallel
 from llama1 import ModelArgs, Transformer, Tokenizer
 
-from .. import LanguageModel, GenerateOutput
+from reasoners import LanguageModel, GenerateOutput
 
 
 def setup_model_parallel() -> Tuple[int, int]:
@@ -163,7 +163,7 @@ class LLaMAModel(LanguageModel):
 
         for i, (t, input_t) in enumerate(zip(tokens.tolist(), prompt_tokens)):
             t = t[:params.max_seq_len]
-            t = t[:len(prompt_tokens[i]) + max_length]
+            t = t[:len(prompt_tokens[i]) + max_length]#here is the difference, i think you want to set max_new_tokens
             t = [x if x != self.tokenizer.pad_id else self.tokenizer.eos_id for x in t]
             if end_pos[i].item() != -1:
                 t = t[:end_pos[i]]
@@ -191,7 +191,7 @@ class LLaMAModel(LanguageModel):
                 token = self.tokenizer.encode(cand, bos=False, eos=False)
                 if len(token) != 1:
                     warnings.warn(f'candidate {cand} corresponds to {len(token)} instead of 1')
-                cand_tokens[-1].append(token[0])
+                cand_tokens[-1].append(token[0])#here is the difference
 
         bsz = len(prompt)
         params = self.model.params
@@ -206,6 +206,7 @@ class LLaMAModel(LanguageModel):
         all_logits = self.model.forward(tokens, 0)
         logits = []
         for case_logits, cand in zip(all_logits, cand_tokens):
+            print(cand)
             logits.append(case_logits[cand].cpu().numpy())
         return logits
 
@@ -304,3 +305,14 @@ class DummyLLaMAModel(LanguageModel):
                               prompt: Union[str, list[str]],
                               candidates: Union[list[str], list[list[str]]]) -> list[np.ndarray]:
         return [np.zeros(len(cand)) for cand in candidates]
+
+
+if __name__ == '__main__':
+    model = LLaMAModel("/data/haotian/RAP_tune/llama-ckpts",'7B')
+    # print(model.get_next_token_logits(['Hello'], candidates=[[',']]))
+    print(model.get_next_token_logits(['Hello,'], candidates=[[' I']]))
+    print(model.get_next_token_logits(['Hello, I'], candidates=[[' am']]))
+    # model.generate(['Hello'], max_new_tokens=20, output_log_probs=True, hide_input=False)
+    # print(model.tokenizer.decode([29892, 306 ,626,8852, 297, 518, 29896]))
+    # print(model.tokenizer.decode([1919, 29871, 29871]))
+    print(model.tokenizer.decode([29871]))

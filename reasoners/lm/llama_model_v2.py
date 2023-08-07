@@ -20,7 +20,7 @@ from fairscale.nn.model_parallel.initialize import (
 )
 from llama import ModelArgs, Transformer, Tokenizer
 
-from .. import LanguageModel, GenerateOutput
+from reasoners import LanguageModel, GenerateOutput
 
 class LlamaModel(LanguageModel):
     @staticmethod
@@ -34,7 +34,7 @@ class LlamaModel(LanguageModel):
         if not torch.distributed.is_initialized():
             torch.distributed.init_process_group("nccl")
         if not model_parallel_is_initialized():
-            if model_parallel_size is None:# add WORL_SIZE to env
+            if model_parallel_size is None:# add WORLD_SIZE to env
                 model_parallel_size = int(os.environ.get("WORLD_SIZE", 1))
             initialize_model_parallel(model_parallel_size)
 
@@ -141,10 +141,9 @@ class LlamaModel(LanguageModel):
         max_prompt_size = max([len(t) for t in prompt_tokens])
 
         assert max_prompt_size <= params.max_seq_len, f"prompt length exceeds limit: {max_prompt_size} > {params.max_seq_len}"
-        # total_len = min(params.max_seq_len, max_prompt_size + max_new_tokens)
-        # total_len = min(total_len, max_length)##there seems a bug, max_length can be larger than params.max_seq_len. I think we should take min
+        #from max_length and max_new_tokens, we choose the shorter one as the total length
         total_len = min(params.max_seq_len, max_length)
-        total_len = min(total_len, max_prompt_size + max_new_tokens) #refer to https://github.com/huggingface/transformers/blob/66c240f3c950612fa05b2e14c85d4b86c88e473e/src/transformers/generation/utils.py#L1401
+        total_len = min(total_len, max_prompt_size + max_new_tokens) 
 
         pad_id = self.tokenizer.pad_id
         tokens = torch.full((bsz, total_len), pad_id, dtype=torch.long, device="cuda")
@@ -161,6 +160,8 @@ class LlamaModel(LanguageModel):
         assert start_pos > 0
         for cur_pos in range(start_pos, total_len):
             logits = self.model.forward(tokens[:, prev_pos:cur_pos], prev_pos)
+            # print(tokens[:, :cur_pos])###
+            # logits = self.model.forward(tokens[:, :cur_pos], 0)
             if temperature > 0:
                 probs = torch.softmax(logits[:,-1]/ temperature , dim=-1)# here is a modification on slice
                 next_token = self.sample_top_pk(probs, top_p, top_k)
@@ -174,6 +175,7 @@ class LlamaModel(LanguageModel):
                 tokens[:, cur_pos],
                 next_token
             )
+            print(logits[:,-1,next_token])###
             seq_probs.append(probs[:, next_token])
             tokens[:, cur_pos] = next_token
             prev_pos = cur_pos
@@ -209,7 +211,7 @@ class LlamaModel(LanguageModel):
             prompt = [prompt]
         if isinstance(candidates[0], str):
             candidates = [candidates] * len(prompt)
-
+        #prompt: list[str], candidates: list[list[str]]
         cand_tokens = []
         for candidate in candidates:
             cand_tokens.append([])
@@ -217,7 +219,7 @@ class LlamaModel(LanguageModel):
                 token = self.tokenizer.encode(cand, bos=False, eos=False)
                 if len(token) != 1:
                     warnings.warn(f'candidate {cand} corresponds to {len(token)} instead of 1')
-                cand_tokens[-1].append(token[0])
+                cand_tokens[-1].append(token[-1])###?29871 I prefer to change this, same in llama1
 
         bsz = len(prompt)
         params = self.model.params
@@ -230,8 +232,10 @@ class LlamaModel(LanguageModel):
             tokens[k, :len(t)] = torch.tensor(t)[:params.max_seq_len].long()
 
         all_logits = self.model.forward(tokens, 0)[:,-1]
+        # print(tokens)###
         logits = []
         for case_logits, cand in zip(all_logits, cand_tokens):
+            print(cand)###
             logits.append(case_logits[cand].cpu().numpy())
         return logits
 
@@ -259,7 +263,6 @@ class LlamaModel(LanguageModel):
             tokens[k, : len(t)] = torch.tensor(t)[:params.max_seq_len].long()
 
         logits = self.model.forward(tokens[:, :], 0)
-        # logits = self.model.output(h)
         acc_probs = torch.zeros(bsz).cuda()
         for i in range(len(prefix_tokens), max_prompt_size):
             probs = torch.softmax(logits[:, i - 1, :], dim=-1)
@@ -280,3 +283,19 @@ class LlamaModel(LanguageModel):
         next_token = torch.multinomial(probs_sort, num_samples=1)
         next_token = torch.gather(probs_idx, -1, next_token)
         return next_token
+
+if __name__ == '__main__':
+    model = LlamaModel("/data/haotian/RAP_tune/llama-2-ckpts",'7b')
+    # print(model.get_next_token_logits(['Hello'], candidates=[[',']]))
+    # print(model.get_next_token_logits(['Hello,'], candidates=[[' I']]))
+    # print(model.get_next_token_logits(['Hello, I'], candidates=[[' am']]))
+    print(model.get_next_token_logits(['Here I am.'], candidates=["Yes", "No"]))
+    # model.generate(['Hello'], max_new_tokens=20, output_log_probs=True, hide_input=False)
+    # print(model.tokenizer.decode([29892, 306 ,626,8852, 297, 518, 29896]))
+    # print(model.tokenizer.decode([1919, 29871, 29871]))
+    print(model.tokenizer.decode([3869,1939]))
+    # print(model.tokenizer.encode(',', bos=False, eos=False))
+    # print(model.tokenizer.encode(' I', bos=False, eos=False))
+    # print(model.tokenizer.encode(' am', bos=False, eos=False))
+    # print(model.tokenizer.encode('Hello', bos=False, eos=False))
+    # print(model.tokenizer.encode('Hello,', bos=False, eos=False))
