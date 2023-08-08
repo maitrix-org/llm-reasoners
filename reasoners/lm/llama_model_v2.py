@@ -160,8 +160,6 @@ class LlamaModel(LanguageModel):
         assert start_pos > 0
         for cur_pos in range(start_pos, total_len):
             logits = self.model.forward(tokens[:, prev_pos:cur_pos], prev_pos)
-            # print(tokens[:, :cur_pos])###
-            # logits = self.model.forward(tokens[:, :cur_pos], 0)
             if temperature > 0:
                 probs = torch.softmax(logits[:,-1]/ temperature , dim=-1)# here is a modification on slice
                 next_token = self.sample_top_pk(probs, top_p, top_k)
@@ -175,7 +173,6 @@ class LlamaModel(LanguageModel):
                 tokens[:, cur_pos],
                 next_token
             )
-            print(logits[:,-1,next_token])###
             seq_probs.append(probs[:, next_token])
             tokens[:, cur_pos] = next_token
             prev_pos = cur_pos
@@ -193,8 +190,8 @@ class LlamaModel(LanguageModel):
             seq_probs = torch.stack(seq_probs, dim=0)
             log_prob = torch.log(seq_probs)
         for i, (t, input_t) in enumerate(zip(tokens.tolist(), prompt_tokens)):
-            # t = t[:params.max_seq_len]
-            t = t[:len(prompt_tokens[i]) + max_length] # another potential bug
+            t = t[:params.max_seq_len]
+            t = t[:len(prompt_tokens[i]) + max_new_tokens]
             t = [x if x != self.tokenizer.pad_id else self.tokenizer.eos_id for x in t]
             if end_pos[i].item() != -1:
                 t = t[:end_pos[i]]
@@ -211,7 +208,7 @@ class LlamaModel(LanguageModel):
             prompt = [prompt]
         if isinstance(candidates[0], str):
             candidates = [candidates] * len(prompt)
-        #prompt: list[str], candidates: list[list[str]]
+
         cand_tokens = []
         for candidate in candidates:
             cand_tokens.append([])
@@ -219,7 +216,7 @@ class LlamaModel(LanguageModel):
                 token = self.tokenizer.encode(cand, bos=False, eos=False)
                 if len(token) != 1:
                     warnings.warn(f'candidate {cand} corresponds to {len(token)} instead of 1')
-                cand_tokens[-1].append(token[-1])###?29871 I prefer to change this, same in llama1
+                cand_tokens[-1].append(token[1] if token[0] == 29871 else token[0])###?29871 I prefer to change this, same in llama1
 
         bsz = len(prompt)
         params = self.model.params
@@ -232,10 +229,8 @@ class LlamaModel(LanguageModel):
             tokens[k, :len(t)] = torch.tensor(t)[:params.max_seq_len].long()
 
         all_logits = self.model.forward(tokens, 0)[:,-1]
-        # print(tokens)###
         logits = []
         for case_logits, cand in zip(all_logits, cand_tokens):
-            print(cand)###
             logits.append(case_logits[cand].cpu().numpy())
         return logits
 
@@ -250,9 +245,7 @@ class LlamaModel(LanguageModel):
         assert bsz <= params.max_batch_size, (bsz, params.max_batch_size)
         prefix_tokens = self.tokenizer.encode(prefix, bos=True, eos=False)
         prompts_tokens = [self.tokenizer.encode(x, bos=True, eos=False) for x in contents]
-        # print("prefix length:", len(prefix_tokens))
         for prompt_tokens in prompts_tokens:
-            # print("prompt length:", len(prompt_tokens))
             assert prompt_tokens[: len(prefix_tokens)] == prefix_tokens
 
         max_prompt_size = max([len(t) for t in prompts_tokens])
@@ -283,19 +276,3 @@ class LlamaModel(LanguageModel):
         next_token = torch.multinomial(probs_sort, num_samples=1)
         next_token = torch.gather(probs_idx, -1, next_token)
         return next_token
-
-if __name__ == '__main__':
-    model = LlamaModel("/data/haotian/RAP_tune/llama-2-ckpts",'7b')
-    # print(model.get_next_token_logits(['Hello'], candidates=[[',']]))
-    # print(model.get_next_token_logits(['Hello,'], candidates=[[' I']]))
-    # print(model.get_next_token_logits(['Hello, I'], candidates=[[' am']]))
-    print(model.get_next_token_logits(['Here I am.'], candidates=["Yes", "No"]))
-    # model.generate(['Hello'], max_new_tokens=20, output_log_probs=True, hide_input=False)
-    # print(model.tokenizer.decode([29892, 306 ,626,8852, 297, 518, 29896]))
-    # print(model.tokenizer.decode([1919, 29871, 29871]))
-    print(model.tokenizer.decode([3869,1939]))
-    # print(model.tokenizer.encode(',', bos=False, eos=False))
-    # print(model.tokenizer.encode(' I', bos=False, eos=False))
-    # print(model.tokenizer.encode(' am', bos=False, eos=False))
-    # print(model.tokenizer.encode('Hello', bos=False, eos=False))
-    # print(model.tokenizer.encode('Hello,', bos=False, eos=False))

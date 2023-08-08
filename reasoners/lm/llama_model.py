@@ -143,8 +143,6 @@ class LLaMAModel(LanguageModel):
                 next_token = torch.argmax(logits, dim=-1)
             next_token = next_token.reshape(-1)
             next_token = torch.where(input_text_mask[:, cur_pos], tokens[:, cur_pos], next_token)
-            print(logits[:, next_token])
-            print(next_token)
             seq_probs.append(probs[:, next_token])
             tokens[:, cur_pos] = next_token
             prev_pos = cur_pos
@@ -193,7 +191,7 @@ class LLaMAModel(LanguageModel):
                 token = self.tokenizer.encode(cand, bos=False, eos=False)
                 if len(token) != 1:
                     warnings.warn(f'candidate {cand} corresponds to {len(token)} instead of 1')
-                cand_tokens[-1].append(token[-1])#here is the difference
+                cand_tokens[-1].append(token[1] if token[0] == 29871 else token[0])
 
         bsz = len(prompt)
         params = self.model.params
@@ -208,7 +206,6 @@ class LLaMAModel(LanguageModel):
         all_logits = self.model.forward(tokens, 0)
         logits = []
         for case_logits, cand in zip(all_logits, cand_tokens):
-            print(cand)
             logits.append(case_logits[cand].cpu().numpy())
         return logits
 
@@ -241,9 +238,9 @@ class LLaMAModel(LanguageModel):
         assert bsz <= params.max_batch_size, (bsz, params.max_batch_size)
         prefix_tokens = self.tokenizer.encode(prefix, bos=True, eos=False)
         prompts_tokens = [self.tokenizer.encode(x, bos=True, eos=False) for x in contents]
-        # print("prefix length:", len(prefix_tokens))
+
         for prompt_tokens in prompts_tokens:
-            # print("prompt length:", len(prompt_tokens))
+
             assert prompt_tokens[: len(prefix_tokens)] == prefix_tokens
 
         max_prompt_size = max([len(t) for t in prompts_tokens])
@@ -311,21 +308,7 @@ class DummyLLaMAModel(LanguageModel):
 
 if __name__ == '__main__':
     model = LLaMAModel("/data/haotian/RAP_tune/llama-ckpts",'7B')
-    # print(model.get_next_token_logits(['Hello'], candidates=[[',']]))
-    # print(model.get_next_token_logits(['Hello,'], candidates=[[' ']]))
-    # print(model.get_next_token_logits(['Hello, '], candidates=[['I']]))
-    # print(model.get_next_token_logits(['Hello, I'], candidates=[[' ']]))
-    # print(model.get_next_token_logits(['Hello, I '], candidates=[['am']]))
-    # print(model.get_next_token_logits(['Hello,'], candidates=[[' I']]))
-    # print(model.get_next_token_logits(['Hello, I'], candidates=[[' \'']]))
-    # print(model.get_next_token_logits(['Hello, I \''], candidates=[['m']]))
-    # print(model.get_next_token_logits(['llama model is'], candidates=[[' a']]))
-    # print(model.get_next_token_logits(['llama model is a'], candidates=[[' 3D']]))
     print(model.get_next_token_logits(['Smoking is harmful to health.'], candidates=[[' It']]))
     print(model.get_next_token_logits(['Smoking is harmful to health. It'], candidates=[[' is']]))
     print(model.get_next_token_logits(['Smoking is harmful to health. It is'], candidates=[[' the']]))
     print(model.generate(['Smoking is harmful to health.'], max_new_tokens=20, output_log_probs=True, hide_input=False))
-    # print(model.tokenizer.encode('\'m', bos=False, eos=False))
-    # print(model.tokenizer.decode([29871,29941]))
-    # print(model.tokenizer.decode([1919, 29871, 29871]))
-    # print(model.tokenizer.decode([29871]))
