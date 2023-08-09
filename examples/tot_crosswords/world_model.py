@@ -79,7 +79,7 @@ class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
         print(count)
         # info = {'total_step': len(infos), 'env_step': env.steps, 'actions': actions.copy(), 'info': info, 'count': count}
         new_info = {'env_step': new_env.steps, 'actions': new_state_actions.copy(), 'info': new_info, 'count': count}
-        new_state = (new_env, actions, new_info)
+        new_state = (new_env, new_state_actions, new_info)
 
         # actions.pop()
         # state = (env, actions, info)
