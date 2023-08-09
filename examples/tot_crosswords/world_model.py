@@ -48,7 +48,7 @@ class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
             if prompt in self.prompt_status_cache:
                 res = self.prompt_status_cache[prompt]
             else:
-                res = self.base_model.generate(prompt, temperature=0.7, num_return_sequences=1, stop=None).text[0]
+                res = self.base_model.generate(prompt, num_return_sequences=1, stop=None).text[0]
                 self.prompt_status_cache[prompt] = res
             # print(line)
             # print(res)
@@ -60,15 +60,27 @@ class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
 
     def step(self, state: crosswordsState, action: crosswordsAction) -> crosswordsState:
         env, actions, info = state
+        # back up current state
+        board, status, steps = env.board.copy(), env.status.copy(), env.steps
+        new_state_actions = actions.copy()
+        
+        ## create a new state for step forward
+        new_env = MiniCrosswordsEnv()
+        new_env.reset(env.idx, board=board.copy(), status=status.copy(), steps=steps)
+
         ## to next state
-        obs, r, done, new_info = env.step(action[0])
-        count = self.prompt_status(env=env)
-        actions.append(action)
-        print(actions)
-        print(env.render_board())
+        obs, r, done, new_info = new_env.step(action[0])
+        print('new action check', action, new_env.steps, new_env.status)
+        count = self.prompt_status(env=new_env)
+        new_state_actions.append(action)
+        print(new_state_actions)
+        print(new_env.render_board())
         print(new_info)
         print(count)
         # info = {'total_step': len(infos), 'env_step': env.steps, 'actions': actions.copy(), 'info': info, 'count': count}
-        new_info = {'env_step': env.steps, 'actions': actions.copy(), 'info': new_info, 'count': count}
-        new_state = (env, actions, new_info)
+        new_info = {'env_step': new_env.steps, 'actions': new_state_actions.copy(), 'info': new_info, 'count': count}
+        new_state = (new_env, actions, new_info)
+
+        # actions.pop()
+        # state = (env, actions, info)
         return new_state

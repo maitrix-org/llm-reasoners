@@ -52,7 +52,7 @@ def rap_crosswords(base_model: LanguageModel,
     answer=''
     answer_list = []
     
-    for index, i in tqdm(enumerate(range(0, 100, 5))):
+    for index, i in tqdm(enumerate(range(0, 6, 5))):
         print('\n--------------------------------------------')
         print(f'index: {index}  example: {i}')
         print('--------------------------------------------')
@@ -83,7 +83,7 @@ def rap_crosswords(base_model: LanguageModel,
             with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
                 pickle.dump(algo_output, f)
 
-        break
+        # break
     for i, result in enumerate(answer_list):
         print('--------------------------------------------')
         print(f'Example {i}  best: {result[2]} stat_cnt: {result[3]}')
@@ -115,14 +115,13 @@ if __name__ == '__main__':
              prompts: str = 'examples/crosswords/prompts/crosswords.json', # not used
              disable_log: bool = False,
              model: str = 'gpt-3.5-turbo',
-             temperature: float = 0.7,
+             temperature: float = 0.0,
              **kwargs):
         openai_model = GPTCompletionModel(model=model, temperature=temperature)
         #log_dir = 'logs/crosswords_dfs/test-gpt3.5'
         rap_crosswords(base_model=openai_model,
                   batch_size=batch_size, # not used
                   disable_log=disable_log,
-                  #log_dir=log_dir,
                   **kwargs)
 
 

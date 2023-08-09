@@ -56,12 +56,13 @@ class crosswordsConfig(SearchConfig):
     def get_actions(self, state: crosswordsState) -> list[crosswordsAction]:
         env, actions, trace = state
         obs = env.render()
-        print(f"current obs: {obs}")
         if obs in self.cache: 
             print('cache hit')
             return self.cache[obs]
         print('call gpt')
-        responses = self.base_model.generate(self.prompt_wrap(obs), temperature=0.7, num_return_sequences=self.n_eval, stop=None).text
+        print(f"current obs: {obs}")
+        # print(f'prompt: {self.prompt_wrap(obs)}')
+        responses = self.base_model.generate(self.prompt_wrap(obs), num_return_sequences=self.n_eval, stop=None).text
 
         candidates_to_scores = {}
         for response in responses:
@@ -91,8 +92,8 @@ class crosswordsConfig(SearchConfig):
     def search_condition(self, state: crosswordsState) -> bool:
         env, actions, info = state
         #print(f'{env.steps} {self.depth} {env.steps < self.depth} {not any(_ == 2 for _ in env.status)}')
-        print(env.get_ans(env.board))
-        print(env.status)
+        # print(env.get_ans(env.board))
+        # print(env.status)
         if env.steps < self.depth and not any(_ == 2 for _ in env.status):
             return True
         return False
