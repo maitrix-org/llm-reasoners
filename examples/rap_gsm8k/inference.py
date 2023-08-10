@@ -115,7 +115,7 @@ if __name__ == '__main__':
         warnings.filterwarnings('ignore')
 
 
-    def main(base_lm: str = 'llama', #llama means llama_v1 and llama2 means llama_v2
+    def main(base_lm: str = 'llama2', #llama means llama_v1 and llama2 means llama_v2
              llama_ckpt: str = llama_ckpts,
              llama_2_ckpt: str = llama_2_ckpts,
              llama_size: str = '13B',
