@@ -52,7 +52,7 @@ def rap_crosswords(base_model: LanguageModel,
     answer=''
     answer_list = []
     
-    for index, i in tqdm(enumerate(range(0, 6, 5))):
+    for index, i in tqdm(enumerate(range(0, 40, 5))):
         print('\n--------------------------------------------')
         print(f'index: {index}  example: {i}')
         print('--------------------------------------------')
@@ -62,7 +62,7 @@ def rap_crosswords(base_model: LanguageModel,
         output = ''
         ans = ''
         print('********************************************')
-        print(f'Output:')
+        print(f'Output: {len(algo_output)}')
         for output_i, state in enumerate(algo_output):
             print(f'{output_i}  {output}')
             env, actions, info = state
@@ -117,7 +117,7 @@ if __name__ == '__main__':
              model: str = 'gpt-3.5-turbo',
              temperature: float = 0.0,
              **kwargs):
-        openai_model = GPTCompletionModel(model=model, temperature=temperature)
+        openai_model = GPTCompletionModel(model=model, temperature=temperature, max_tokens=1000)
         #log_dir = 'logs/crosswords_dfs/test-gpt3.5'
         rap_crosswords(base_model=openai_model,
                   batch_size=batch_size, # not used

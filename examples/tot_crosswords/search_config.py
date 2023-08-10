@@ -61,7 +61,7 @@ class crosswordsConfig(SearchConfig):
             return self.cache[obs]
         print('call gpt')
         # print(f"current obs: {obs}")
-        print(f'prompt: {self.prompt_wrap(obs)}')
+        # print(f'prompt: {self.prompt_wrap(obs)}')
         responses = self.base_model.generate(self.prompt_wrap(obs), num_return_sequences=self.n_eval, stop=None).text
         print(responses)
 
