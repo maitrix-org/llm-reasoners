@@ -233,7 +233,6 @@ conda activate reasoners
 ```
 
 Clone the repository and install the package:
-
 ```bash
 git clone https://github.com/Ber666/llm-reasoners
 cd llm-reasoners

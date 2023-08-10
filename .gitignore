@@ -11,5 +11,6 @@ logs/
 temp/
 scripts/
 gpt-plan-benchmark/
+gpt-plan-benchmark
 .DS_Store
 .vscode/
