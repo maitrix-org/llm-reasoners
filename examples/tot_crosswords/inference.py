@@ -2,7 +2,6 @@ import pickle
 from typing import Type, Callable, Optional
 
 import numpy as np
-from datasets import load_dataset
 from tqdm import tqdm
 from datetime import datetime
 
@@ -39,9 +38,8 @@ def rap_crosswords(base_model: LanguageModel,
     ## keep the best 5 candidates, need at most 4 steps to solve
     ## following ToT, eval step will consider number of times to prompt for state evaluation
     search_algo_params |= {'max_per_state': max_per_state, 'total_states': total_states, 'depth': depth}
-    world_model = crosswordsWorldModel(base_model=base_model, batch_size=batch_size)
+    world_model = crosswordsWorldModel(base_model=base_model)
     config = crosswordsConfig(base_model=base_model,
-                         batch_size=batch_size,
                          depth=depth, n_eval=n_eval)
     search_algo = search_algo(**search_algo_params)
     agent = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
@@ -52,7 +50,7 @@ def rap_crosswords(base_model: LanguageModel,
     answer=''
     answer_list = []
     
-    for index, i in tqdm(enumerate(range(0, 40, 5))):
+    for index, i in tqdm(enumerate(range(0, 5, 5))):
         print('\n--------------------------------------------')
         print(f'index: {index}  example: {i}')
         print('--------------------------------------------')

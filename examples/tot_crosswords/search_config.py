@@ -13,13 +13,11 @@ class crosswordsConfig(SearchConfig):
     def __init__(self,
                  base_model: LanguageModel,
                  n_eval=8,
-                 batch_size=2,
                  depth=10,) -> None:
         super().__init__()
         self.base_model = base_model
         self.example = None
         self.n_eval = n_eval
-        self.batch_size = batch_size
         self.depth = depth
         self.confidence_to_value = {'certain': 1, 'high': 0.5, 'medium': 0.2, 'low': 0.1}  # TODO: ad hoc
         self.cache = {}

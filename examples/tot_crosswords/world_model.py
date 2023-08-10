@@ -19,10 +19,9 @@ class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
 
     def __init__(self,
                  base_model: LanguageModel,
-                 batch_size=2,) -> None:
+                 ) -> None:
         super().__init__()
         self.base_model = base_model
-        self.batch_size = batch_size
         self.prompt_status_cache = {}
 
     def init_state(self) -> list:
