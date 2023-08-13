@@ -49,8 +49,9 @@ class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
             else:
                 res = self.base_model.generate(prompt, num_return_sequences=1, stop=None).text[0]
                 self.prompt_status_cache[prompt] = res
-            # print(line)
-            # print(res)
+            # print(f'status prompt: {prompt}')
+            # print(f'status check: {line}')
+            # print(f'check result: {res}')
             # print()
             res = res.split('\n')[-1].strip()
             if res in count: count[res] += 1
@@ -60,22 +61,23 @@ class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
     def step(self, state: crosswordsState, action: crosswordsAction) -> crosswordsState:
         env, actions, info = state
         # back up current state
-        board, status, steps = env.board.copy(), env.status.copy(), env.steps
+        board, status, steps, cur_ans = env.board.copy(), env.status.copy(), env.steps, env.ans.copy()
         new_state_actions = actions.copy()
         
         ## create a new state for step forward
         new_env = MiniCrosswordsEnv()
         new_env.reset(env.idx, board=board.copy(), status=status.copy(), steps=steps)
+        new_env.ans = cur_ans.copy()
 
         ## to next state
         obs, r, done, new_info = new_env.step(action[0])
         print('new action check', action, new_env.steps, new_env.status)
         count = self.prompt_status(env=new_env)
         new_state_actions.append(action)
-        print(new_state_actions)
-        print(new_env.render_board())
-        print(new_info)
-        print(count)
+        # print(new_state_actions)
+        # print(new_env.render_board())
+        # print(new_info)
+        # print(count)
         # info = {'total_step': len(infos), 'env_step': env.steps, 'actions': actions.copy(), 'info': info, 'count': count}
         new_info = {'env_step': new_env.steps, 'actions': new_state_actions.copy(), 'info': new_info, 'count': count}
         new_state = (new_env, new_state_actions, new_info)

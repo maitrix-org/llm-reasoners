@@ -50,7 +50,7 @@ def rap_crosswords(base_model: LanguageModel,
     answer=''
     answer_list = []
     
-    for index, i in tqdm(enumerate(range(0, 5, 5))):
+    for index, i in tqdm(enumerate(range(0, 50, 5))):
         print('\n--------------------------------------------')
         print(f'index: {index}  example: {i}')
         print('--------------------------------------------')
@@ -62,12 +62,12 @@ def rap_crosswords(base_model: LanguageModel,
         print('********************************************')
         print(f'Output: {len(algo_output)}')
         for output_i, state in enumerate(algo_output):
-            print(f'{output_i}  {output}')
             env, actions, info = state
             if best < info['info']['r_word']:
                 best = info['info']['r_word']
                 output = env.ans
                 answer = env.ans_gt
+            print(f'{output_i}, {env.ans}, {output}')
         answer_list.append((output, answer, best, search_algo.stat_cnt))
         if best == 1.0:
             correct = 1

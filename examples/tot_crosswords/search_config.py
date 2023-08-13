@@ -45,6 +45,7 @@ class crosswordsConfig(SearchConfig):
 
         # parse each line
         parsed_lines = [self.parse_line(line) for line in lines]
+        # print(f'parsed responses: {parsed_lines}')
 
         # filter out the lines that didn't match the format
         parsed_lines = [(line[0].lower() + '. ' + line[1].lower(), self.confidence_to_value.get(line[2], 0)) for line in parsed_lines if line is not None]
@@ -53,7 +54,7 @@ class crosswordsConfig(SearchConfig):
 
     def get_actions(self, state: crosswordsState) -> list[crosswordsAction]:
         env, actions, trace = state
-        obs = env.render()
+        obs = env.render(status=True)
         if obs in self.cache: 
             print('cache hit')
             return self.cache[obs]
@@ -61,7 +62,7 @@ class crosswordsConfig(SearchConfig):
         # print(f"current obs: {obs}")
         # print(f'prompt: {self.prompt_wrap(obs)}')
         responses = self.base_model.generate(self.prompt_wrap(obs), num_return_sequences=self.n_eval, stop=None).text
-        print(responses)
+        # print(responses)
 
         candidates_to_scores = {}
         for response in responses:
@@ -99,6 +100,8 @@ class crosswordsConfig(SearchConfig):
     
     def state_condition(self, state: crosswordsState) -> bool:
         env, actions, info = state
+        if len(info) == 0:
+            return True
         count = info['count']
-        print(f'curent count: {count}')
+        # print(f'current count: {count}')
         return (count['impossible'] < 1)

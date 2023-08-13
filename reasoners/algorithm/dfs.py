@@ -30,28 +30,29 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
         self.dfs(world, config, init_state, best_state=best_state)
         return self.terminals
 
-    def dfs(self, world: WorldModel[State, Action], config: SearchConfig[State, Action], cur_state: State, best_state: bool=True):
-        self.stat_cnt += 1
-        if world.is_terminal(cur_state): # len(info)==0 #change
+    def dfs(self, world: WorldModel[State, Action], config: SearchConfig[State, Action], cur_state: State, best_state: bool=True, early_terminate: bool=True):
+        ## if it's terminal state
+        if world.is_terminal(cur_state): # if is terminal
             self.terminals.append(cur_state) #change
-            #return # change
+        if not config.state_condition(cur_state):  # only continue if the current status is possible
+            return
+
         # get candidate actions (list, (action, score) or action)
         new_actions = config.get_actions(cur_state) # [(candidate, candidate score)]
-        print(f'state id: {self.stat_cnt}, state: {cur_state} new actions {(new_actions)}')
+        print(f'new actions: {sorted(new_actions, key=lambda x: x[1], reverse=True)}')
         if len(new_actions) == 0: 
             print('terminal return: no new action')
             return 
         ## sort possible actions by score
         if best_state:
             new_actions = sorted(new_actions, key=lambda x: x[1], reverse=True)
+        # exit()
 
         # try each candidate
         cnt_per_state = 0
         for action in new_actions:
             print('------------- world.step ---------------')
             new_state = world.step(cur_state, action)
-            print(f'current_state: {cur_state}')
-            print(f'new_state: {new_state}')
             print('------------- world.step Done---------------')
             # check all existing state/depth/branch constraints
             print(f'check condition:')
@@ -61,12 +62,17 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
             print()
             if self.stat_cnt < self.total_states and config.search_condition(new_state):
                 cnt_per_state += 1
-                print(f'dfs_branch cnt: {cnt_per_state}')
                 if cnt_per_state > self.max_per_state: 
                     print(f'reach max_per_state {self.max_per_state}: break')
                     break
+                print(f'accepted new_state: {self.stat_cnt}')
+                self.stat_cnt += 1
+                new_env, new_state_actions, new_info = new_state
+                print(new_state_actions)
+                print(new_env.render_board())
+                print(new_info['info'])
+                print(new_info['count'])
+                print(f'dfs_branch cnt: {cnt_per_state}')
 
-                ## other state constraints
-                if config.state_condition(new_state):  # only continue if the current status is possible
-                    neibor_info = self.dfs(world, config, new_state, best_state)
+                neibor_info = self.dfs(world, config, new_state, best_state)
         return
