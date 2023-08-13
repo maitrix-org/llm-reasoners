@@ -18,7 +18,7 @@ def rap_crosswords(base_model: LanguageModel,
               search_algo: Type[SearchAlgorithm] = DFS,
               resume: int = 0,
               n_eval: int = 8,
-              depth: int = 5,
+              depth: int = 10,
               batch_size: int = 2,
               max_per_state: int = 3,
               total_states: int = 100,
@@ -50,7 +50,7 @@ def rap_crosswords(base_model: LanguageModel,
     answer=''
     answer_list = []
     
-    for index, i in tqdm(enumerate(range(0, 50, 5))):
+    for index, i in tqdm(enumerate(range(30, 50, 5))):
         print('\n--------------------------------------------')
         print(f'index: {index}  example: {i}')
         print('--------------------------------------------')
@@ -80,6 +80,8 @@ def rap_crosswords(base_model: LanguageModel,
                 print(log_str, file=f)
             with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
                 pickle.dump(algo_output, f)
+            with open(os.path.join(log_dir, 'infoss_dfs_tot.json'), 'w') as f:
+                json.dump(algo_output, f)
 
         # break
     for i, result in enumerate(answer_list):
@@ -112,8 +114,8 @@ if __name__ == '__main__':
              batch_size: int = 2,
              prompts: str = 'examples/crosswords/prompts/crosswords.json', # not used
              disable_log: bool = False,
-             model: str = 'gpt-3.5-turbo',
-             temperature: float = 0.0,
+             model: str = 'gpt-4',
+             temperature: float = 0.7,
              **kwargs):
         openai_model = GPTCompletionModel(model=model, temperature=temperature, max_tokens=1000)
         #log_dir = 'logs/crosswords_dfs/test-gpt3.5'

@@ -13,7 +13,7 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
     def __init__(self, 
                  total_states: int = 100, 
                  max_per_state: int = 3, 
-                 depth: int = 5):
+                 depth: int = 10):
         self.max_per_state = max_per_state
         self.depth = depth # not used
         self.total_states = total_states
@@ -58,7 +58,7 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
             print(f'check condition:')
             print(f'{self.stat_cnt} {self.total_states} {self.stat_cnt < self.total_states}')
             print(f'{cnt_per_state} {self.max_per_state} {cnt_per_state < self.max_per_state}')
-            print(f'{config.search_condition(new_state)} {new_state[0].status}')
+            print(f'{config.search_condition(new_state)} {new_state[0].status}, {new_state[0].steps}')
             print()
             if self.stat_cnt < self.total_states and config.search_condition(new_state):
                 cnt_per_state += 1
