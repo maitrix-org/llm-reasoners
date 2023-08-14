@@ -3,6 +3,7 @@ import openai
 import numpy as np
 from typing import Optional, Union
 import time
+import backoff 
 
 from .. import LanguageModel, GenerateOutput
 
@@ -17,6 +18,10 @@ class GPTCompletionModel(LanguageModel):
             raise ValueError("OPENAI_API_KEY not set, please run `export OPENAI_API_KEY=<your key>` to ser it")
         else:
             openai.api_key = API_KEY
+
+    @backoff.on_exception(backoff.expo, openai.error.OpenAIError)
+    def completions_with_backoff(self, **kwargs):
+        return openai.ChatCompletion.create(**kwargs)
     
     def generate(self,
                 prompt: str,
@@ -48,7 +53,17 @@ class GPTCompletionModel(LanguageModel):
                 ### GPT 3.5 and higher use a different API
                 if ('gpt-3.5' in self.model) or ('gpt-4' in self.model):
                     messages = [{"role": "user", "content": prompt}]
-                    response = openai.ChatCompletion.create(
+                    # response = openai.ChatCompletion.create(
+                    #     model=self.model,
+                    #     messages=messages,
+                    #     max_tokens=max_tokens,
+                    #     temperature=gpt_temperature,
+                    #     top_p=top_p,
+                    #     n=num_return_sequences,
+                    #     stop=stop,
+                    #     **kwargs
+                    # )
+                    response = self.completions_with_backoff(
                         model=self.model,
                         messages=messages,
                         max_tokens=max_tokens,

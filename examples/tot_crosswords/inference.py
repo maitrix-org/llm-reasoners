@@ -49,6 +49,7 @@ def rap_crosswords(base_model: LanguageModel,
     example_cnt = 0
     answer=''
     answer_list = []
+    infoss = []
     
     for index, i in tqdm(enumerate(range(30, 50, 5))):
         print('\n--------------------------------------------')
@@ -61,6 +62,7 @@ def rap_crosswords(base_model: LanguageModel,
         ans = ''
         print('********************************************')
         print(f'Output: {len(algo_output)}')
+        infos = []
         for output_i, state in enumerate(algo_output):
             env, actions, info = state
             if best < info['info']['r_word']:
@@ -68,7 +70,9 @@ def rap_crosswords(base_model: LanguageModel,
                 output = env.ans
                 answer = env.ans_gt
             print(f'{output_i}, {env.ans}, {output}')
+            infos.append(env.info)
         answer_list.append((output, answer, best, search_algo.stat_cnt))
+        infoss.append(infos)
         if best == 1.0:
             correct = 1
             correct_count += 1
@@ -80,8 +84,8 @@ def rap_crosswords(base_model: LanguageModel,
                 print(log_str, file=f)
             with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
                 pickle.dump(algo_output, f)
-            with open(os.path.join(log_dir, 'infoss_dfs_tot.json'), 'w') as f:
-                json.dump(algo_output, f)
+    with open(os.path.join(log_dir, 'infoss_dfs_tot.json'), 'w') as f:
+        json.dump(infoss, f)
 
         # break
     for i, result in enumerate(answer_list):
