@@ -70,7 +70,7 @@ def rap_crosswords(base_model: LanguageModel,
                 output = env.ans
                 answer = env.ans_gt
             print(f'{output_i}, {env.ans}, {output}')
-            infos.append(env.info)
+            infos.append(info)
         answer_list.append((output, answer, best, search_algo.stat_cnt))
         infoss.append(infos)
         if best == 1.0:
