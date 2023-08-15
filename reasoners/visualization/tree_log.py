@@ -98,8 +98,9 @@ class TreeLog:
     def from_beam_search_results(cls, bs_results: Union[BeamSearchResult, Sequence[BeamSearchResult]],
                                  node_data_factory: callable = None, edge_data_factory: callable = None) -> 'TreeLog':
         
-        if isinstance(bs_results, Sequence):
-            bs_results = bs_results[0]
+        if isinstance(bs_results, BeamSearchResult):
+            bs_results = [bs_results]
+        bs_results = bs_results[0]
 
         def default_node_data_factory(n: BeamSearchNode) -> NodeData:
             return NodeData(n.state._asdict() if n.state else {})
