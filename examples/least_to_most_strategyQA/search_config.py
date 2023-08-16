@@ -28,19 +28,24 @@ class StrategyQAConfig(SearchConfig):
 
                 model_input = f.getvalue()
             
-            output = self.base_model.generate(
-                [model_input],
-                hide_input=True,
-                do_sample=True,
-                temperature=self.temperature,
-                eos_token_id='\n'
-            ).text[0].strip()
+        
+            # make sure we have subquestions
+            while len(self.actions) == 0:
+            
+                output = self.base_model.generate(
+                    [model_input],
+                    max_new_tokens=256,
+                    hide_input=True,
+                    do_sample=True,
+                    temperature=self.temperature,
+                    eos_token_id='\n'
+                ).text[0].strip()
 
-            # parse the output
-            sub_questions = extract_subquestions(output)
+                # parse the output
+                sub_questions = extract_subquestions(output)
 
-            # set the actions
-            self.actions = sub_questions
+                # set the actions
+                self.actions = sub_questions
         
             return [self.actions[0]]
 
