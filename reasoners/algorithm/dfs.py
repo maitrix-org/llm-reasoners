@@ -51,15 +51,15 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
         # try each candidate
         cnt_per_state = 0
         for action in new_actions:
-            print('------------- world.step ---------------')
+            # print('------------- world.step ---------------')
             new_state = world.step(cur_state, action)
-            print('------------- world.step Done---------------')
+            # print('------------- world.step Done---------------')
             # check all existing state/depth/branch constraints
-            print(f'check condition:')
-            print(f'{self.stat_cnt} {self.total_states} {self.stat_cnt < self.total_states}')
-            print(f'{cnt_per_state} {self.max_per_state} {cnt_per_state < self.max_per_state}')
-            print(f'{config.search_condition(new_state)} {new_state[0].status}, {new_state[0].steps}')
-            print()
+            # print(f'check condition:')
+            # print(f'{self.stat_cnt} {self.total_states} {self.stat_cnt < self.total_states}')
+            # print(f'{cnt_per_state} {self.max_per_state} {cnt_per_state < self.max_per_state}')
+            # print(f'{config.search_condition(new_state)} {new_state[0].status}, {new_state[0].steps}')
+            # print()
             if self.stat_cnt < self.total_states and config.search_condition(new_state):
                 cnt_per_state += 1
                 if cnt_per_state > self.max_per_state: 

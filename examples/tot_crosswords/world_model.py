@@ -44,12 +44,11 @@ class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
             ans = ' '.join(ans.lower())
             line = f'{data}: {ans}'
             prompt = value_prompt.format(input=line)
-            ## try no cache
-            # if prompt in self.prompt_status_cache:
-            #     res = self.prompt_status_cache[prompt]
-            # else:
-            res = self.base_model.generate(prompt, num_return_sequences=1, stop=None).text[0]
-            self.prompt_status_cache[prompt] = res
+            if prompt in self.prompt_status_cache:
+                res = self.prompt_status_cache[prompt]
+            else:
+                res = self.base_model.generate(prompt, num_return_sequences=1, stop=None).text[0]
+                self.prompt_status_cache[prompt] = res
             # print(f'status prompt: {prompt}')
             # print(f'line check: {line}, {res}')
             # print()

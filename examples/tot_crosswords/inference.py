@@ -51,7 +51,7 @@ def rap_crosswords(base_model: LanguageModel,
     answer_list = []
     infoss = []
     
-    for index, i in tqdm(enumerate(range(30, 50, 5))):
+    for index, i in tqdm(enumerate(range(5, 60, 5))):
         print('\n--------------------------------------------')
         print(f'index: {index}  example: {i}')
         print('--------------------------------------------')
