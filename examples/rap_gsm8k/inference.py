@@ -118,7 +118,7 @@ if __name__ == '__main__':
              llama_ckpt: str = llama_ckpts,
              llama_size: str = '13B',
              llama_cpp_path: str = None,
-             batch_size: int = 2,
+             batch_size: int = 1,
              interactive_prompt: str = 'examples/rap_gsm8k/prompts/interactive_examples.json',
              useful_prompt: str = 'examples/rap_gsm8k/prompts/useful_examples.json',
              disable_log: bool = False,
@@ -145,5 +145,26 @@ if __name__ == '__main__':
                   disable_tqdm=disable_tqdm or local_rank != 0,
                   **kwargs)
 
-
-    fire.Fire(main)
+    def main_hf(hf_path = "/data/haotian/RAP_tune/llama-30B-hf",
+                batch_size = 1,
+                interactive_prompt = "examples/rap_gsm8k/prompts/interactive_examples.json",
+                useful_prompt = "examples/rap_gsm8k/prompts/useful_examples.json",
+                disable_log = False,
+                disable_tqdm = False,
+                **kwargs):
+        from reasoners.lm import HFModel
+        device = torch.device("cuda")
+        base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=400, quantized="nf4")
+        with open(interactive_prompt) as f:
+            interactive_prompt = json.load(f)
+        with open(useful_prompt) as f:
+            useful_prompt = json.load(f)
+        rap_gsm8k(base_model=base_model,
+                  interactive_prompt=interactive_prompt,
+                  useful_prompt=useful_prompt,
+                  batch_size=batch_size,
+                  disable_log=disable_log or local_rank != 0,
+                  disable_tqdm=disable_tqdm or local_rank != 0,
+                  **kwargs)
+        
+    fire.Fire(main_hf)

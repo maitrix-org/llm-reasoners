@@ -241,7 +241,7 @@ class LLaMAModel(LanguageModel):
         # print("prefix length:", len(prefix_tokens))
         for prompt_tokens in prompts_tokens:
             # print("prompt length:", len(prompt_tokens))
-            assert prompt_tokens[: len(prefix_tokens)] == prefix_tokens
+            assert prompt_tokens[:len(prefix_tokens)] == prefix_tokens
 
         max_prompt_size = max([len(t) for t in prompts_tokens])
         total_len = max_prompt_size
