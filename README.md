@@ -7,6 +7,8 @@
 
 Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Reasoning Algorithms, Visualization, LLM calling, and more!
 
+## News
+- Aug. 10, 2023: Llama-2 is supported! You can run [examples](https://github.com/Ber666/llm-reasoners/tree/main/examples) with Llama-2 now.
 
 ## Why Choose LLM Reasoners?
 
