@@ -15,6 +15,20 @@ import glob
 import time
 class ExLlamaModel(LanguageModel):
     def __init__(self, model_dir, lora_dir, device, max_batch_size, max_new_tokens, max_seq_length):
+        """
+        Initializes an ExLlamaModel instance.
+
+        Args:
+            model_dir (str): Path to the directory containing the ExLlama model files.
+            lora_dir (str): Path to the directory containing the LoRA adapter files (optional).
+            device (str): Device to use for inference (e.g. "cpu", "cuda").
+            max_batch_size (int): Maximum batch size for inference.
+            max_new_tokens (int): Maximum number of new tokens to generate during inference.
+            max_seq_length (int): Maximum sequence length for input text.
+
+        Returns:
+            None
+        """
         super().__init__()
         torch.cuda._lazy_init()
 
@@ -112,7 +126,7 @@ class ExLlamaModel(LanguageModel):
                         decoded[i] = decoded[i].split(eos_token_id)[0]
             log_prob = None
             if output_log_probs:
-                warnings.warn("output_log_probs is temporarily not supported by ExLlamaModel. Please refere to exllama's code")
+                warnings.warn("output_log_probs is temporarily not supported now by ExLlamaModel. Please refere to exllama's code")
             decoded_list.extend(decoded)
         return GenerateOutput(decoded_list, log_prob_list)
 

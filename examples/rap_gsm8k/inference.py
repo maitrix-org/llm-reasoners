@@ -154,7 +154,7 @@ if __name__ == '__main__':
                 disable_tqdm = False,
                 **kwargs):
         from reasoners.lm import HFModel
-        device = torch.device("cuda")
+        device = torch.device("cuda:0")
         base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=512, peft_pth=peft_path, quantized="awq", load_awq_pth="/data/haotian/RAP_tune/awq_cache/llama-30b-w4-g128.pt")
         with open(interactive_prompt) as f:
             interactive_prompt = json.load(f)

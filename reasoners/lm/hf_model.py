@@ -19,7 +19,20 @@ from accelerate import init_empty_weights, load_checkpoint_and_dispatch, infer_a
 class HFModel(LanguageModel):
     def __init__(self, model_pth, tokenizer_pth, device, max_batch_size=1, max_new_tokens=None, max_length=2048, quantized=None, peft_pth=None, load_awq_pth=None):
         super().__init__()
-        #quantized is a string, can be None, "8bit", "nf4", "fp4" 
+        """
+        Initializes a new instance of the `HFModel` class.
+
+        Args:
+            model_pth (str): The path to the directory containing the pre-trained model.
+            tokenizer_pth (str): The path to the directory containing the pre-trained tokenizer.
+            device (str): The device to use for running the model (e.g. "cpu", "cuda").
+            max_batch_size (int, optional): The maximum batch size to use for inference. Defaults to 1.
+            max_new_tokens (int, optional): The maximum number of new tokens to generate during inference. Defaults to None.
+            max_length (int, optional): The maximum length of the input sequence. Defaults to 2048.
+            quantized (str, optional): The type of quantization to use for the model. Can be "8bit", "nf4", "fp4", or "awq". Defaults to None.
+            peft_pth (str, optional): The path to the directory containing the pre-trained PEFT model. Defaults to None.
+            load_awq_pth (str, optional): The path to the directory containing the pre-trained AWQ model. Defaults to None.
+        """
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_pth, lagacy=False)
 
         if quantized == "8bit":
