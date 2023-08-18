@@ -146,6 +146,7 @@ if __name__ == '__main__':
 
     def llama_hf_main(
             llama_path = '/data/haotian/RAP_tune/llama-30B-hf',
+            peft_path = None,
             prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
             data_path: str = 'examples/rap_blocksworld/data/step_4.json',
             disable_log: bool = False,
@@ -155,11 +156,11 @@ if __name__ == '__main__':
             depth_limit: int = 6,
             **kwargs
             ):
-        from reasoners.lm import HFModel ##maybe other transformer models also support
+        from reasoners.lm import HFModel #maybe other transformer models also support, we have not check that
         with open(prompt_path) as f:
             prompt = json.load(f)
         device = torch.device("cuda:0")
-        llama_model = HFModel(llama_path, llama_path, device=device, max_batch_size=1, max_new_tokens=512, quantized="nf4")
+        llama_model = HFModel(llama_path, llama_path, device=device, max_batch_size=1, max_new_tokens=512, quantized="nf4", peft_pth=peft_path)
         rap_bw(llama_model,
                prompt,
                disable_log=disable_log,
@@ -168,4 +169,31 @@ if __name__ == '__main__':
                domain_file=domain_file,
                depth_limit=depth_limit,
                lm_plan_file=lm_plan_file, **kwargs)
-    fire.Fire(llama_hf_main)
+    #for exllama use please refer to https://github.com/turboderp/exllama and put it under /llm-reasoners/
+    def exllama_main(
+            model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
+            lora_dir = None,
+            prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
+            data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+            disable_log: bool = False,
+            config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
+            domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+            lm_plan_file: str = 'lm_plan.tmp',
+            depth_limit: int = 6,
+            **kwargs
+            ):
+        from reasoners.lm import ExLlamaModel  ##maybe other transformer models also support
+        with open(prompt_path) as f:
+            prompt = json.load(f)
+        device = torch.device("cuda:0")
+        llama_model = ExLlamaModel(model_dir, lora_dir, device=device, max_batch_size=4, max_new_tokens=1024, max_seq_length=2048)
+        rap_bw(llama_model,
+               prompt,
+               disable_log=disable_log,
+               data_path=data_path,
+               config_file=config_file,
+               domain_file=domain_file,
+               depth_limit=depth_limit,
+               lm_plan_file=lm_plan_file, **kwargs)
+
+    fire.Fire(exllama_main())

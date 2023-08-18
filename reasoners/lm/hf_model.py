@@ -1,5 +1,6 @@
+from pyexpat import model
 from .. import LanguageModel,GenerateOutput
-from transformers import LlamaForCausalLM, AutoTokenizer, GenerationConfig, BitsAndBytesConfig
+from transformers import LlamaForCausalLM, AutoTokenizer, GenerationConfig, BitsAndBytesConfig, AutoConfig, AutoModelForCausalLM
 import torch
 from peft import PeftModel
 from typing import Tuple, Union, Optional
@@ -9,8 +10,14 @@ import sys
 import numpy as np
 import optimum
 from optimum.bettertransformer import BetterTransformer
+#for awq quantization, please refer to https://github.com/mit-han-lab/llm-awq
+from awq.quantize.quantizer import pseudo_quantize_model_weight, real_quantize_model_weight
+from awq.utils.utils import simple_dispatch_model
+from awq.quantize.pre_quant import apply_awq
+from awq.quantize.quantizer import real_quantize_model_weight
+from accelerate import init_empty_weights, load_checkpoint_and_dispatch, infer_auto_device_map, load_checkpoint_in_model, dispatch_model
 class HFModel(LanguageModel):
-    def __init__(self, model_pth, tokenizer_pth, device, max_batch_size=1, max_new_tokens=256, quantized=None, peft_pth=None):
+    def __init__(self, model_pth, tokenizer_pth, device, max_batch_size=1, max_new_tokens=None, max_length=2048, quantized=None, peft_pth=None, load_awq_pth=None):
         super().__init__()
         #quantized is a string, can be None, "8bit", "nf4", "fp4" 
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_pth, lagacy=False)
@@ -37,6 +44,24 @@ class HFModel(LanguageModel):
                 quantization_config=bnb_config,
                 device_map="auto",
             )
+        elif quantized == "awq":
+            config = AutoConfig.from_pretrained(model_pth, trust_remote_code=True)
+            self.tokenizer = AutoTokenizer.from_pretrained(model_pth, trust_remote_code=True, lagacy=False)
+            kwargs = {"torch_dtype": torch.float16, "low_cpu_mem_usage": True}
+            self.model = LlamaForCausalLM.from_pretrained(model_pth, config=config, trust_remote_code=True,**kwargs)
+            self.model.eval()
+            awq_results = torch.load(load_awq_pth, map_location="cpu")
+            apply_awq(self.model, awq_results)
+            q_config = {
+                "zero_point": True,  # by default True
+                "q_group_size": 128,  # whether to use group quantization
+
+            }
+            real_quantize_model_weight(self.model, w_bit=4, q_config=q_config)
+            kwargs = {"max_memory": None}
+            device_map = infer_auto_device_map(self.model,no_split_module_classes=["OPTDecoderLayer", "LlamaDecoderLayer", "BloomBlock", "MPTBlock", "DecoderLayer"], **kwargs)
+            self.model = dispatch_model(self.model, device_map=device_map)
+
         else:
             self.model = LlamaForCausalLM.from_pretrained(
                 model_pth,
@@ -51,6 +76,7 @@ class HFModel(LanguageModel):
         
         self.max_new_tokens = max_new_tokens
         self.max_batch_size = max_batch_size
+        self.max_length = max_length
         self.device = device
         self.model = BetterTransformer.transform(self.model)
         self.model.eval()
@@ -59,11 +85,11 @@ class HFModel(LanguageModel):
         self.model.config.bos_token_id = 1
         self.model.config.eos_token_id = 2
         # if torch.__version__ >= "2" and sys.platform != "win32":#need to figure out this line
-        #     self.model = torch.compile(self.model) ###make the faketensor bug
+        #     self.model = torch.compile(self.model) ###make the faketensor bug, an on-going issue in pytorch
     def generate(
             self,
             inputs: list[str],
-            max_length: Optional[int] = 20,
+            max_length: Optional[int] = None,
             max_new_tokens: Optional[int] = None,
             do_sample: bool = False,
             temperature: float = 1.0,
@@ -77,8 +103,8 @@ class HFModel(LanguageModel):
         ) -> GenerateOutput:
 
         # unify eos_token
-        # if max_length is None:
-        #     max_length = self.max_seq_len  # use LLaMA's max length if not set
+        if max_length is None:
+            max_length = self.max_length  
         if max_new_tokens is None:
             max_new_tokens = self.max_new_tokens
         eos_token_id_input = copy.deepcopy(eos_token_id)
@@ -101,6 +127,18 @@ class HFModel(LanguageModel):
         eos_token_id.append(self.tokenizer.eos_token_id)
         generation_config = GenerationConfig(
             max_length=max_length,
+            temperature=temperature,
+            pad_token_id=self.tokenizer.pad_token_id,
+            bos_token_id=self.tokenizer.bos_token_id,
+            eos_token_id=eos_token_id,
+            do_sample = do_sample,
+            early_stopping=True,
+            top_k=top_k,
+            top_p=top_p,
+        )
+        if max_new_tokens is not None:
+            generation_config = GenerationConfig(
+            max_length=max_length,
             max_new_tokens=max_new_tokens,
             temperature=temperature,
             pad_token_id=self.tokenizer.pad_token_id,
@@ -111,12 +149,6 @@ class HFModel(LanguageModel):
             top_k=top_k,
             top_p=top_p,
         )
-#############
-        # print(torch.cuda.memory_summary("cuda:0"))
-        # print(torch.cuda.memory_summary("cuda:1"))
-        # print(torch.cuda.memory_summary("cuda:2"))
-        # print(torch.cuda.memory_summary("cuda:3"))
-        # print(len(inputs))
         
         if num_return_sequences > 1:
             assert len(inputs) == 1, 'num_return_sequences > 1 is not supported for multiple inputs'
@@ -125,7 +157,6 @@ class HFModel(LanguageModel):
         log_prob_list = []
         for start in range(0, len(inputs), self.max_batch_size):
             end = min(start + self.max_batch_size, len(inputs))
-            # print(end-start)
             encoded_inputs = self.tokenizer(inputs[start:end], return_tensors='pt', padding=True).to(self.device)
             with torch.inference_mode():
                 generation_output = self.model.generate(
@@ -136,14 +167,14 @@ class HFModel(LanguageModel):
                 )
             decoded = self.tokenizer.batch_decode(generation_output.sequences, skip_special_tokens=True)
             if hide_input:
-                for i in range(len(inputs)):
-                    decoded[i] = decoded[i][len(inputs[i]):]
+                for i in range(end-start):
+                    decoded[i] = decoded[i][len(inputs[start+i]):]
             log_prob = None
             if output_log_probs:
-                log_prob = generation_output.sequences_scores
+                log_prob = generation_output.scores
                 log_prob_list.extend(log_prob)
             decoded_list.extend(decoded)
-        if output_log_probs:
+        if not output_log_probs:
             log_prob_list = None
 
         return GenerateOutput(decoded_list, log_prob_list)
@@ -171,18 +202,12 @@ class HFModel(LanguageModel):
         assert bsz <= self.max_batch_size, (bsz, self.max_batch_size)
 
         tokens = self.tokenizer(prompt, return_tensors='pt', padding=True).to(self.device)
-        
-        # all_logits = self.model.generate(**tokens,output_scores=True, return_dict_in_generate=True, max_new_tokens=1).scores[0]
-        # all_logits = self.model.generate(**tokens,return_dict=True)
         with torch.no_grad():
             all_logits = self.model(**tokens, return_dict=True).logits[:,-1,:].squeeze(1)
-        # print(all_logits)
 
         logits = []
         for case_logits, cand in zip(all_logits, cand_tokens):
-            # print(case_logits[cand])
             logits.append(case_logits[cand].cpu().numpy())
-        # print(logits)
         return logits
     
     @torch.no_grad()
@@ -193,9 +218,6 @@ class HFModel(LanguageModel):
         prefix_tokens = self.tokenizer(prefix, return_tensors='pt',add_special_tokens=False, padding=True).input_ids[0].to(self.device)
         
         for prompt_tokens in prompts_tokens.input_ids:
-            # print(prompt_tokens)
-            # print(prefix_tokens)
-            # print(len(prompt_tokens), len(prefix_tokens))
             assert torch.all(prompt_tokens[: len(prefix_tokens)] == prefix_tokens), (prompt_tokens, prefix_tokens)
 
         tokens = prompts_tokens

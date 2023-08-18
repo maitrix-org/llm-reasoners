@@ -147,6 +147,7 @@ if __name__ == '__main__':
 
     def main_hf(hf_path = "/data/haotian/RAP_tune/llama-30B-hf",
                 batch_size = 1,
+                peft_path = None,
                 interactive_prompt = "examples/rap_gsm8k/prompts/interactive_examples.json",
                 useful_prompt = "examples/rap_gsm8k/prompts/useful_examples.json",
                 disable_log = False,
@@ -154,7 +155,33 @@ if __name__ == '__main__':
                 **kwargs):
         from reasoners.lm import HFModel
         device = torch.device("cuda")
-        base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=400, quantized="nf4")
+        base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=512, peft_pth=peft_path, quantized="awq", load_awq_pth="/data/haotian/RAP_tune/awq_cache/llama-30b-w4-g128.pt")
+        with open(interactive_prompt) as f:
+            interactive_prompt = json.load(f)
+        with open(useful_prompt) as f:
+            useful_prompt = json.load(f)
+        rap_gsm8k(base_model=base_model,
+                  interactive_prompt=interactive_prompt,
+                  useful_prompt=useful_prompt,
+                  batch_size=batch_size,
+                  disable_log=disable_log or local_rank != 0,
+                  disable_tqdm=disable_tqdm or local_rank != 0,
+                  **kwargs)
+    
+    
+    def main_exllama(
+                model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
+                # lora_dir = '/data/haotian/RAP_tune/qlora/output/llama_30b_July_30/checkpoint-213',
+                lora_dir = None,
+                batch_size = 4,
+                interactive_prompt = "examples/rap_gsm8k/prompts/interactive_examples.json",
+                useful_prompt = "examples/rap_gsm8k/prompts/useful_examples.json",
+                disable_log = False,
+                disable_tqdm = False,
+                **kwargs):
+        from reasoners.lm import ExLlamaModel
+        device = torch.device("cuda:0")
+        base_model = ExLlamaModel(model_dir, lora_dir, device, max_batch_size=batch_size, max_new_tokens=400, max_seq_length=2048)
         with open(interactive_prompt) as f:
             interactive_prompt = json.load(f)
         with open(useful_prompt) as f:
@@ -167,4 +194,4 @@ if __name__ == '__main__':
                   disable_tqdm=disable_tqdm or local_rank != 0,
                   **kwargs)
         
-    fire.Fire(main_hf)
+    fire.Fire(main_hf())
