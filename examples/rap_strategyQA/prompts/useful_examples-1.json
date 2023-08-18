@@ -3,5 +3,5 @@
     "question_prefix": "Question 5: ",
     "subquestion_prefix": "Question 5.{}:",
     "new_subquestion_prefix": "New question 5.{}:",
-    "answer_prefix": "Is the new question useful?"
+    "useful_prefix": "Is the new question useful?"
   }

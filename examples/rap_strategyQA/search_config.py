@@ -71,7 +71,6 @@ class strategyQAConfig(SearchConfig):
                 f.write(" " + self.prompt["overall_question_prefix"])
 
             model_input = f.getvalue()
-
         n_actions = 1 if at_depth_limit else self.n_actions
         temperature = 0 if at_depth_limit else self.temperature
         outputs = []

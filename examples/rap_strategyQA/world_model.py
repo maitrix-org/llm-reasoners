@@ -79,6 +79,7 @@ class strategyQAWorldModel(WorldModel[strategyQAState, strategyQAAction]):
                                                    eos_token_id='\n').text
                 for output in outputs:
                     result = output.strip()
+                    # print(f"before matching: {result}")
                     answer = utils.retrieve_answer(result)
                     if answer is not None:
                         answer_dict[answer].append(result)
@@ -95,7 +96,7 @@ class strategyQAWorldModel(WorldModel[strategyQAState, strategyQAAction]):
                     break
 
         if len(answer_dict) == 0:
-            confidence, answer = 0, result  # No reasonable answer found. Fall back to choose the last response
+            confidence, answer = -10, result  # No reasonable answer found. Fall back to choose the last response
         else:
             sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
             max_answer = sorted_answer_dict[0]
