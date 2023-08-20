@@ -170,10 +170,10 @@ if __name__ == '__main__':
     
     
     def main_exllama(
-                model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
+                model_dir = '/data/haotian/RAP_tune/WizardMath-13B-V1.0-GPTQ',
                 # lora_dir = '/data/haotian/RAP_tune/qlora/output/llama_30b_July_30/checkpoint-213',
                 lora_dir = None,
-                batch_size = 4,
+                batch_size = 1,
                 interactive_prompt = "examples/rap_gsm8k/prompts/interactive_examples.json",
                 useful_prompt = "examples/rap_gsm8k/prompts/useful_examples.json",
                 disable_log = False,
@@ -194,4 +194,4 @@ if __name__ == '__main__':
                   disable_tqdm=disable_tqdm or local_rank != 0,
                   **kwargs)
         
-    fire.Fire(main_hf())
+    fire.Fire(main_exllama())
