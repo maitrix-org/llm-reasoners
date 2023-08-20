@@ -93,7 +93,7 @@ class ExLlamaModel(LanguageModel):
             max_new_tokens = self.max_new_tokens
         if eos_token_id is not None:
             warnings.warn("eos_token_id is not supported by ExLlamaModel. Use disallow_tokens instead. Here may lead to bug and please check. We just use split when eos isinstance(str)")
-        if do_sample is False:
+        if do_sample is False or temperature <= 0.0:
             warnings.warn("do_sample is defaultly set to False, we will set temp=1.0 and top-k = 1 for Exllama")
             temperature = 1.0
             top_k = 1
