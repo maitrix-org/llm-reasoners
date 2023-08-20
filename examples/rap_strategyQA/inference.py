@@ -32,11 +32,11 @@ def rap_strategyQA(base_model: LanguageModel,
               depth_limit: int = 8,
               force_terminating_on_depth_limit: bool = True,
               batch_size: int = 5,
-              temperature: float = 0.8,
+              temperature: float = 0.0,
               early_stop_base: int = 2,
               early_stop_threshold: float = 0.5,
               reward_alpha: float = 0.5,
-              reward_confidence_default: float = 0.8,
+              reward_confidence_default: float = 1,
               cum_reward: Callable[[list[float]], float] = np.mean,
               calc_q: Callable[[list[float]], float] = max,
               log_dir: Optional[str] = None,
@@ -69,10 +69,10 @@ def rap_strategyQA(base_model: LanguageModel,
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
                                      desc='strategyQA', disable=disable_tqdm)):
-        np.random.seed(0)
-        random.seed(0)
-        torch.manual_seed(0)
-        torch.cuda.manual_seed(0)
+        random.seed(12306)
+        np.random.seed(12306)
+        torch.manual_seed(12306)
+        torch.cuda.manual_seed(12306)
         torch.backends.cudnn.deterministic = True
         print(example["question"])
         algo_output = reasoner(example["question"])
@@ -97,7 +97,7 @@ def rap_strategyQA(base_model: LanguageModel,
                 with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
                     # noinspection PyTypeChecker
                     print(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer), file=f)
-        # break
+        break
 
 
 if __name__ == '__main__':

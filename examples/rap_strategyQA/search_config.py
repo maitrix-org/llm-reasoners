@@ -71,6 +71,7 @@ class strategyQAConfig(SearchConfig):
                 f.write(" " + self.prompt["overall_question_prefix"])
 
             model_input = f.getvalue()
+        # print('<<<< prompt >>>>\n{}'.format(model_input))
         n_actions = 1 if at_depth_limit else self.n_actions
         temperature = 0 if at_depth_limit else self.temperature
         outputs = []
@@ -118,12 +119,14 @@ class strategyQAConfig(SearchConfig):
                 f.write(self.useful_prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
             f.write(self.useful_prompt["new_subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
             f.write(self.useful_prompt["useful_prefix"])
-            model_input = f.getvalue()
+            model_input = f.getvalue().replace('Now we can answer the question: ', '')
 
+        # print(f'====\nreward input: {model_input}====\n')
         logits = self.base_model.get_next_token_logits(model_input, ["Yes", "No"])[0]
         probs = np.exp(logits) / np.sum(np.exp(logits))
         useful_prob = probs[0]
         fast_reward, _ = self.calculate_reward(useful_prob)
+        # print(f'original prob: {probs}, r_useful: {useful_prob}, fast_reward: {fast_reward}')
         return fast_reward, {'r_useful': useful_prob}
 
     def calculate_reward(self, r_useful, r_conf=None):
