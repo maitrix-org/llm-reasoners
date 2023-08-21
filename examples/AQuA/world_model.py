@@ -11,11 +11,11 @@ class SubResult(NamedTuple):
     confidence: float
 
 
-GSM8kState = list[SubResult]
-GSM8kAction = str
+MATHState = list[SubResult]
+MATHAction = str
 
 
-class GSM8kPrompt(TypedDict):
+class MATHPrompt(TypedDict):
     input: str
     question_prefix: str
     subquestion_prefix: str
@@ -23,9 +23,9 @@ class GSM8kPrompt(TypedDict):
     overall_question_prefix: str
 
 
-class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
+class MATHWorldModel(WorldModel[MATHState, MATHAction]):
     """
-    GSM8k World Model
+    MATH World Model
     State: [[sub_question_1, sub_answer_1, confidence_1], [sub_question_2, sub_answer_2, confidence_2], ...]
     Action: sub_question
     """
@@ -40,7 +40,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                  early_stop_threshold=1.) -> None:
         super().__init__()
         self.base_model = base_model
-        self.prompt: GSM8kPrompt = prompt
+        self.prompt: MATHPrompt = prompt
         self.batch_size = batch_size
         self.n_confidence = n_confidence
         self.temperature = temperature
@@ -49,8 +49,8 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
 
     def init_state(self) -> list:
         return []
-
-    def step(self, state: GSM8kState, action: GSM8kAction) -> tuple[GSM8kState, dict]:
+    
+    def step(self, state: MATHState, action: MATHAction) -> tuple[MATHState, dict]:
         state = state.copy()
 
         with io.StringIO() as f:
@@ -64,7 +64,6 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
             model_input = f.getvalue()
 
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
-        result = ""
         for start1 in range(0, self.n_confidence, self.early_stop_base):
             stop1 = min(start1 + self.early_stop_base, self.n_confidence)
 
@@ -79,7 +78,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                                                    eos_token_id='\n').text
                 for output in outputs:
                     result = output.strip()
-                    answer = utils.retrieve_answer(result)               
+                    answer = utils.retrieve_answer(result)
                     answer_dict[answer].append(result)
 
             # Early stop if confidence is high enough
@@ -94,7 +93,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                     break
 
         if len(answer_dict) == 0:
-            confidence, answer = 0, result  # No reasonable answer found. Fall back to choose the last response
+            confidence, answer = 0, result
         else:
             sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
             max_answer = sorted_answer_dict[0]
@@ -107,7 +106,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
         aux = {'confidence': confidence}
         return state, aux
 
-    def is_terminal(self, state: GSM8kState) -> bool:
+    def is_terminal(self, state: MATHState) -> bool:
         if len(state) > 0 and "Now we can answer" in state[-1].sub_question:
             return True
         else:
