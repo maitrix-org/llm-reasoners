@@ -10,6 +10,8 @@ Given any reasoning problem, simply define the reward function and an optional w
 ## News
 - Aug. 10, 2023: Llama-2 is supported! You can run [examples](https://github.com/Ber666/llm-reasoners/tree/main/examples) with Llama-2 now.
 
+- Aug. 21, 2023: Huggingface api with bnb or awq quantization is supported now! Exllama with GPT-Q quantization is also supported now! You can now also deploy llama-2-70B with 2x24G GPUs. You can run [examples](https://github.com/Ber666/llm-reasoners/tree/main/examples).
+
 ## Why Choose LLM Reasoners?
 
 - **Cutting-Edge Reasoning Algorithms**: We offer the most up-to-date search algorithms for reasoning with LLMs, such as [RAP-MCTS](https://arxiv.org/abs/2305.14992), [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633), and more. These advanced algorithms enable tree-structure reasoning and outperform traditional chain-of-thoughts approaches.
