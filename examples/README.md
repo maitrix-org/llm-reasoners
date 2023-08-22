@@ -1,13 +1,4 @@
 # Examples
-For exllama, please clone exllama repo under `llm-reasoners/` with `git clone https://github.com/turboderp/exllama.git`. And create an `__init.py__` with
-```
-from .generator import *
-from .cuda_ext import *
-from .model import *
-from .tokenizer import *
-from .lora import *
-```
-to solve dependency conflicts.
 
 
 ## GSM8K

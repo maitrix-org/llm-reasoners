@@ -80,6 +80,7 @@ def rap_bw(base_model: LanguageModel,
 if __name__ == '__main__':
     import os
     import sys
+    sys.path.append('/data/haotian/RAP_tune/llm-reasoners/exllama')
     import json
     import warnings
     import fire
