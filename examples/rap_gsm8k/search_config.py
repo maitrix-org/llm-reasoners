@@ -1,12 +1,9 @@
 import io
 import re
 from typing import TypedDict, Optional
-
 import numpy as np
-
 from world_model import GSM8kState, GSM8kAction, GSM8kPrompt
 from reasoners import SearchConfig, LanguageModel
-
 
 class GSM8kUsefulPrompt(TypedDict):
     input: str
@@ -14,7 +11,6 @@ class GSM8kUsefulPrompt(TypedDict):
     subquestion_prefix: str
     new_subquestion_prefix: str
     useful_prefix: str
-
 
 class GSM8kConfig(SearchConfig):
     def __init__(self,

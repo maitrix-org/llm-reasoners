@@ -1,9 +1,16 @@
 import io
+import re
 import numpy as np
-
-from world_model import MATHState, MATHAction
+from typing import TypedDict, Optional
+from world_model import MATHState, MATHAction, MATHPrompt
 from reasoners import SearchConfig, LanguageModel
 
+class MATHUsefulPrompt(TypedDict):
+    input: str
+    question_prefix: str
+    subquestion_prefix: str
+    answer_prefix: str
+    overall_question_prefix: str
 
 class MATHConfig(SearchConfig):
     def __init__(self,
@@ -16,12 +23,14 @@ class MATHConfig(SearchConfig):
                  reward_alpha=0.5,
                  reward_confidence_default=0.8,
                  depth_limit=5,
-                 force_terminating_on_depth_limit=True) -> None:
+                 force_terminating_on_depth_limit=True,
+                 force_overall_prompt_on_overall_question=True,
+                 force_overall_question_on_overall_prompt=True) -> None:
         super().__init__()
         self.base_model = base_model
-        self.example = None
-        self.prompt = prompt
-        self.useful_prompt = useful_prompt
+        self.example = ''
+        self.prompt: MATHPrompt = prompt
+        self.useful_prompt: MATHUsefulPrompt = useful_prompt
         self.batch_size = batch_size
         self.temperature = temperature
         self.n_actions = n_actions
@@ -29,6 +38,15 @@ class MATHConfig(SearchConfig):
         self.depth_limit = depth_limit
         self.reward_alpha = reward_alpha
         self.reward_confidence_default = reward_confidence_default
+        self.force_overall_prompt_on_overall_question = force_overall_prompt_on_overall_question
+        self.force_overall_question_on_overall_prompt = force_overall_question_on_overall_prompt
+        self.overall_question: Optional[str] = None
+    
+    def update_example(self, example: str) -> None:
+        super().update_example(example)
+        if self.force_overall_prompt_on_overall_question or self.force_overall_question_on_overall_prompt:
+            self.overall_question = re.match('.*((Calculate|calculate|how|How|what|What|Find|find|True or false).*)$',
+                                             self.example)[1]
 
     def get_actions(self, state: MATHState) -> list[MATHAction]:
         with io.StringIO() as f:
@@ -38,21 +56,38 @@ class MATHConfig(SearchConfig):
                 f.write(self.prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
                 f.write(self.prompt["answer_prefix"].format(idx + 1) + " " + a + "\n")
             f.write(self.prompt["subquestion_prefix"].format(len(state) + 1))
-            if self.force_terminating_on_depth_limit and len(state) + 1 >= self.depth_limit:
+            if at_depth_limit := self.force_terminating_on_depth_limit and len(state) + 1 >= self.depth_limit:
                 f.write(" " + self.prompt["overall_question_prefix"])
             model_input = f.getvalue()
 
+        n_actions = 1 if at_depth_limit else self.n_actions
+        temperature = 0 if at_depth_limit else self.temperature
         outputs = []
-        for idx in range(0, self.n_actions, self.batch_size):
+        for idx in range(0, n_actions, self.batch_size):
             n_samples = min(self.n_actions - idx, self.batch_size)
             outputs += self.base_model.generate([model_input] * n_samples,
                                                 hide_input=True,
                                                 do_sample=True,
-                                                temperature=self.temperature,
+                                                temperature=temperature,
                                                 eos_token_id='\n').text
 
-        return_actions = [output.strip() for output in outputs]
-        return return_actions
+        outputs = [output.strip() for output in outputs]
+        if at_depth_limit:
+            outputs = [self.prompt["overall_question_prefix"] + ' ' + output for output in outputs]
+        if self.force_overall_question_on_overall_prompt:
+            for i, output in enumerate(outputs):
+                if self.prompt["overall_question_prefix"] in output:
+                    outputs[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
+        if self.force_overall_prompt_on_overall_question:
+            for i, output in enumerate(outputs):
+                if self.overall_question.lower() == output.lower():
+                    outputs[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
+
+        # set does not guarantee order, but dict does guarantee
+        # we cannot use set here because torch.distributed in LLaMA requires the same order across all processes
+        outputs = list(dict.fromkeys(outputs))
+
+        return outputs
 
     def fast_reward(self, state: MATHState, action: MATHAction) -> tuple[float, dict]:
         with io.StringIO() as f:

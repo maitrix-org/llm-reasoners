@@ -7,9 +7,10 @@ from tqdm import tqdm
 from datetime import datetime
 
 from reasoners import LanguageModel, Reasoner, SearchAlgorithm
-from reasoners.algorithm import MCTS
+from reasoners.algorithm import MCTS, MCTSNode
 from reasoners.visualization import TreeLog
-from world_model import MATHWorldModel
+
+from world_model import MATHWorldModel, MATHState, MATHAction
 from search_config import MATHConfig
 import utils
 import re
@@ -68,9 +69,10 @@ def rap_AQuA(base_model: LanguageModel,
               calc_q: Callable[[list[float]], float] = max,
               log_dir: Optional[str] = None,
               datasetname: str = 'AQuA',
-              dataset_path: str = r"/data/yueshan/llm-reasoners/examples/AQuA/dataset/AQuA",
+              dataset_path: str = r"/data/haotian/RAP_tune/llm-reasoners/dataset/AQuA",
               disable_log: bool = False,
               disable_tqdm: bool = False,
+              output_trace_in_each_iter: bool = True,
               **search_algo_params):
     if not disable_log:
         if log_dir is None:
@@ -80,7 +82,7 @@ def rap_AQuA(base_model: LanguageModel,
         with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
             print(sys.argv, file=f)
 
-    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm}
+    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm, 'output_trace_in_each_iter': output_trace_in_each_iter}
     world_model = MATHWorldModel(base_model=base_model, prompt=interactive_prompt,
                                   n_confidence=n_confidence, batch_size=batch_size, temperature=temperature,
                                   early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
@@ -94,24 +96,6 @@ def rap_AQuA(base_model: LanguageModel,
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
                                      desc='AQuA', disable=disable_tqdm)):
-        # algo_output = agent(example["question"])
-        # if algo_output and algo_output.terminal_state and algo_output.terminal_state[-1] and algo_output.terminal_state[-1].sub_answer:
-        #     output = utils.retrieve_answer(algo_output.terminal_state[-1].sub_answer)
-        #     output_all = algo_output.terminal_state[-1].sub_answer
-        # else:
-        #     output = "Didn't get any output"
-        #     output_all = "Didn't get any output"
-
-        # max_attempts = 3
-        # for attempt in range(max_attempts):
-        #     algo_output = agent(example["question"])
-        #     if algo_output and algo_output.terminal_state and algo_output.terminal_state[-1] and algo_output.terminal_state[-1].sub_answer:
-        #         output = utils.retrieve_answer(algo_output.terminal_state[-1].sub_answer)
-        #         output_all = algo_output.terminal_state[-1].sub_answer
-        #         break 
-        #     else: 
-        #         output = "Didn't get any output"
-        #         output_all = "Didn't get any output"
         
         algo_output = reasoner(example["question"])
         if algo_output.terminal_state is None:
@@ -119,7 +103,7 @@ def rap_AQuA(base_model: LanguageModel,
         else:
             output = utils.retrieve_answer(algo_output.terminal_state[-1].sub_answer)
 
-        answer = (example["answer"])
+        answer = utils.retrieve_answer_from_dataset(example["answer"])
         correct = utils.judge_answer(output, answer)
         correct_count += correct
         accuracy = correct_count / (i + 1)

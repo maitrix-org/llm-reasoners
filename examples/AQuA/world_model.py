@@ -64,6 +64,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
             model_input = f.getvalue()
 
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
+        result = ""
         for start1 in range(0, self.n_confidence, self.early_stop_base):
             stop1 = min(start1 + self.early_stop_base, self.n_confidence)
 
@@ -80,7 +81,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                     result = output.strip()
                     answer = utils.retrieve_answer(result)
                     answer_dict[answer].append(result)
-
+            
             # Early stop if confidence is high enough
             if len(answer_dict) == 0:  # no answer yet
                 continue

@@ -20,6 +20,9 @@ def retrieve_answer(output: str) -> Optional[str]:
 #         answer = answer[answer.rindex('=') + 1:]
 #     return answer
     
+def retrieve_answer_from_dataset(answer: str) -> str:
+    return re.match(r'[\S\s]*#### (.*)$', answer)[1]
+
 
 def judge_answer(output: Optional[str], answer: str) -> bool:
     if output is None:
