@@ -30,7 +30,7 @@ def data_reader(dataset,dataset_path, split=None, sample_size=100):
             data = json.loads(line)
             if isinstance(data, dict):
                 options_list = data['options']
-                question_with_options = data['question'] + "\n" + "\n".join(data['options'])
+                question_with_options = data['question'] + "\n" + "Options: " + ", ".join(data['options']) + "."
                 questions.append(question_with_options)
                 answers.append(data['correct'])
                 options.append(options_list)
@@ -53,7 +53,7 @@ def rap_AQuA(base_model: LanguageModel,
               n_confidence: int = 8,
               depth_limit: int = 5,
               force_terminating_on_depth_limit: bool = True,
-              batch_size: int = 2,
+              batch_size: int = 1,
               temperature: float = 0.8,
               early_stop_base: int = 2,
               early_stop_threshold: float = 0.5,

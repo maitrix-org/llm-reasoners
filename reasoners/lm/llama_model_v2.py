@@ -136,7 +136,10 @@ class LlamaModel(LanguageModel):
         assert bsz <= params.max_batch_size, f"total batch size exceeds limit: {bsz} > {params.max_batch_size}"
 
         prompt_tokens = [self.tokenizer.encode(x, bos=True, eos=False) for x in inputs]
-
+        if self.local_rank == 0:
+            with open('inputs.txt', 'a+') as f:
+                for input in inputs:
+                    f.write(input)
         min_prompt_size = min([len(t) for t in prompt_tokens])
         max_prompt_size = max([len(t) for t in prompt_tokens])
 
