@@ -157,10 +157,12 @@ if __name__ == '__main__':
                 useful_prompt = "examples/rap_gsm8k/prompts/useful_examples.json",
                 disable_log = False,
                 disable_tqdm = False,
+                quantized = "nf4", # awq, int8, fp4, nf4, None
+                load_awq_pth = None,
                 **kwargs):
         from reasoners.lm import HFModel
         device = torch.device("cuda:0")
-        base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=512, peft_pth=peft_path, quantized="awq", load_awq_pth="/data/haotian/RAP_tune/awq_cache/llama-30b-w4-g128.pt")
+        base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=512, peft_pth=peft_path, quantized=quantized, load_awq_pth=load_awq_pth)
         with open(interactive_prompt) as f:
             interactive_prompt = json.load(f)
         with open(useful_prompt) as f:
@@ -176,9 +178,9 @@ if __name__ == '__main__':
     
     def main_exllama(
                 model_dir = '/data/haotian/RAP_tune/WizardMath-13B-V1.0-GPTQ',
-                # lora_dir = '/data/haotian/RAP_tune/qlora/output/llama_30b_July_30/checkpoint-213',
                 lora_dir = None,
                 batch_size = 1,
+                mem_map = None,
                 interactive_prompt = "examples/rap_gsm8k/prompts/interactive_examples.json",
                 useful_prompt = "examples/rap_gsm8k/prompts/useful_examples.json",
                 disable_log = False,
@@ -186,7 +188,7 @@ if __name__ == '__main__':
                 **kwargs):
         from reasoners.lm import ExLlamaModel
         device = torch.device("cuda:0")
-        base_model = ExLlamaModel(model_dir, lora_dir, device, max_batch_size=batch_size, max_new_tokens=400, max_seq_length=2048)
+        base_model = ExLlamaModel(model_dir, lora_dir, device, max_batch_size=batch_size, max_new_tokens=400, max_seq_length=2048, mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
         with open(interactive_prompt) as f:
             interactive_prompt = json.load(f)
         with open(useful_prompt) as f:
@@ -199,4 +201,4 @@ if __name__ == '__main__':
                   disable_tqdm=disable_tqdm or local_rank != 0,
                   **kwargs)
         
-    fire.Fire(main_exllama())
+    fire.Fire(main_hf)

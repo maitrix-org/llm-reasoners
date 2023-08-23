@@ -10,11 +10,11 @@ import sys
 import numpy as np
 import optimum
 from optimum.bettertransformer import BetterTransformer
-#for awq quantization, please refer to https://github.com/mit-han-lab/llm-awq
-from awq.quantize.quantizer import pseudo_quantize_model_weight, real_quantize_model_weight
-from awq.utils.utils import simple_dispatch_model
-from awq.quantize.pre_quant import apply_awq
-from awq.quantize.quantizer import real_quantize_model_weight
+#for awq quantization, please refer to https://github.com/mit-han-lab/llm-awq to build env
+# from awq.quantize.quantizer import pseudo_quantize_model_weight, real_quantize_model_weight
+# from awq.utils.utils import simple_dispatch_model
+# from awq.quantize.pre_quant import apply_awq
+# from awq.quantize.quantizer import real_quantize_model_weight
 from accelerate import init_empty_weights, load_checkpoint_and_dispatch, infer_auto_device_map, load_checkpoint_in_model, dispatch_model
 class HFModel(LanguageModel):
     def __init__(self, model_pth, tokenizer_pth, device, max_batch_size=1, max_new_tokens=None, max_length=2048, quantized=None, peft_pth=None, load_awq_pth=None):
@@ -35,7 +35,7 @@ class HFModel(LanguageModel):
         """
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_pth, lagacy=False)
 
-        if quantized == "8bit":
+        if quantized == "int8":
             self.model = LlamaForCausalLM.from_pretrained(
                 model_pth,
                 load_in_8bit=True,
@@ -145,7 +145,6 @@ class HFModel(LanguageModel):
             bos_token_id=self.tokenizer.bos_token_id,
             eos_token_id=eos_token_id,
             do_sample = do_sample,
-            early_stopping=True,
             top_k=top_k,
             top_p=top_p,
         )
@@ -158,7 +157,6 @@ class HFModel(LanguageModel):
             bos_token_id=self.tokenizer.bos_token_id,
             eos_token_id=eos_token_id,
             do_sample = do_sample,
-            early_stopping=True,
             top_k=top_k,
             top_p=top_p,
         )

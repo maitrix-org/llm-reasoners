@@ -69,7 +69,6 @@ class GSM8kConfig(SearchConfig):
         outputs = []
         for idx in range(0, n_actions, self.batch_size):
             n_samples = min(n_actions - idx, self.batch_size)
-            # print(n_samples)
             outputs += self.base_model.generate([model_input] * n_samples,
                                                 hide_input=True,
                                                 do_sample=True,

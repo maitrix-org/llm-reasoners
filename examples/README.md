@@ -3,6 +3,8 @@
 
 ## GSM8K
 ### RAP
+user need to switch the main function for Fire()
+
 ```bash
 python -m torch.distributed.run --nproc_per_node 4 examples/rap_gsm8k/inference.py --llama_size "30B" --output_trace_in_each_iter
 ```
@@ -10,11 +12,17 @@ for llama2
 ```bash
 CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.run --nproc_per_node 2 examples/rap_gsm8k/inference.py --llama_size "13B" --output_trace_in_each_iter --base_lm 'llama2'
 ```
-for exllama and huggingface llama(params need to fill in inference.py)
 
+for exllama
 ```bash
-CUDA_VISIBLE_DEVICES=0(,1) python examples/rap_gsm8k/inference.py
+CUDA_VISIBLE_DEVICES=0 python examples/rap_gsm8k/inference.py --model_dir 'path/to/model/dir' --lora_dir None --batch_size 1 --output_trace_in_each_iter
 ```
+
+for huggingface llama
+```bash
+CUDA_VISIBLE_DEVICES=0 python examples/rap_gsm8k/inference.py --hf_path 'path/to/hf/model/dir' --peft_path None --batch_size 1 --quantized 'nf4' --output_trace_in_each_iter
+```
+
 ### PAL + Guided Beam Search
 
 > Note: You need to apply for the [research access](https://openai.com/form/researcher-access-program) to `Codex` (`code-davinci-002`) to run this approach
@@ -59,9 +67,17 @@ for llama2
 ```bash
 CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 python -m torch.distributed.run --nproc_per_node 8 examples/rap_blocksworld/inference.py --llama_size "70B" --data_path 'examples/rap_blocksworld/data/step_4.json' --depth_limit 4 --output_trace_in_each_iter
 ```
-for exllama and huggingface llama(params need to fill in inference.py)
+
+for exllama
+
 ```bash
-CUDA_VISIBLE_DEVICES=0(,1) python examples/rap_blocksworld/inference.py
+CUDA_VISIBLE_DEVICES=0 python examples/rap_blocksworld/inference.py --data_path 'examples/rap_blocksworld/data/step_4.json' --depth_limit 4 --model_dir 'path/to/model/dir' --lora_dir None --batch_size 1 --output_trace_in_each_iter
+```
+
+for huggingface llama
+
+```bash
+CUDA_VISIBLE_DEVICES=0 python examples/rap_blockworld/inference.py -data_path 'examples/rap_blocksworld/data/step_4.json' --depth_limit 4 --hf_path 'path/to/hf/model/dir' --peft_path None --batch_size 1 --quantized 'nf4' --output_trace_in_each_iter
 ```
 ## Game of 24
 > Note: You need to make a directory and put the game24 data in it. For example, examples/tot_game24/data/24.csv

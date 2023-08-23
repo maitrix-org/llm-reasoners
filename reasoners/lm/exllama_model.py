@@ -1,3 +1,7 @@
+import os
+import sys
+exllama_pth = os.path.abspath(os.path.join(os.path.join(os.path.join(__file__, os.pardir), os.pardir), os.pardir)) + '/exllama'
+sys.path.append(exllama_pth)
 from exllama import model
 from exllama.generator import ExLlamaGenerator
 from .. import LanguageModel,GenerateOutput
@@ -9,12 +13,12 @@ from typing import Tuple, Union, Optional
 import warnings
 import numpy as np
 import random
-import os
+
 from tqdm import tqdm
 import glob
 import time
 class ExLlamaModel(LanguageModel):
-    def __init__(self, model_dir, lora_dir, device, max_batch_size, max_new_tokens, max_seq_length):
+    def __init__(self, model_dir, lora_dir, device, max_batch_size, max_new_tokens, max_seq_length, mem_map:list[int]=None):
         """
         Initializes an ExLlamaModel instance.
 
@@ -25,7 +29,7 @@ class ExLlamaModel(LanguageModel):
             max_batch_size (int): Maximum batch size for inference.
             max_new_tokens (int): Maximum number of new tokens to generate during inference.
             max_seq_length (int): Maximum sequence length for input text.
-
+            mem_map (list[int]): List of integers specifying the memory map for the model (optional).
         Returns:
             None
         """
@@ -51,7 +55,10 @@ class ExLlamaModel(LanguageModel):
         self.config = ExLlamaConfig(model_config_path)               # create config from config.json
         self.config.model_path = model_path                          # supply path to model weights file
         self.config.max_seq_length = max_seq_length                  # set max sequence length
-        self.config.auto_map = [18,22]
+        if mem_map is not None:
+            self.config.auto_map = mem_map
+            warnings.warn("mem_map is None, if you want model parallelism, please set mem_map like [16,22] for 2 GPUs")
+        
         self.model = ExLlama(self.config)                                 # create ExLlama instance and load the weights
         self.tokenizer = ExLlamaTokenizer(tokenizer_path)            # create tokenizer from tokenizer model file
 

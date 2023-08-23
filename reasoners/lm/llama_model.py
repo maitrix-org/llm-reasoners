@@ -240,7 +240,6 @@ class LLaMAModel(LanguageModel):
         prompts_tokens = [self.tokenizer.encode(x, bos=True, eos=False) for x in contents]
 
         for prompt_tokens in prompts_tokens:
-            # print("prompt length:", len(prompt_tokens))
             assert prompt_tokens[:len(prefix_tokens)] == prefix_tokens
 
         max_prompt_size = max([len(t) for t in prompts_tokens])
