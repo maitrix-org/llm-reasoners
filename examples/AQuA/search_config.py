@@ -60,6 +60,7 @@ class MATHConfig(SearchConfig):
                 f.write(" " + self.prompt["overall_question_prefix"])
             model_input = f.getvalue()
 
+
         n_actions = 1 if at_depth_limit else self.n_actions
         temperature = 0 if at_depth_limit else self.temperature
         outputs = []
@@ -98,7 +99,7 @@ class MATHConfig(SearchConfig):
             f.write(self.useful_prompt["new_subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
             f.write(self.useful_prompt["useful_prefix"])
             model_input = f.getvalue()
-
+        print("model_input is :",model_input)
         logits = self.base_model.get_next_token_logits(model_input, ["Yes", "No"])[0]
         probs = np.exp(logits) / np.sum(np.exp(logits))
         useful_prob = probs[0]

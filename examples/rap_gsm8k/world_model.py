@@ -62,7 +62,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
             f.write(self.prompt["subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
             f.write(self.prompt["answer_prefix"].format(len(state) + 1))
             model_input = f.getvalue()
-
+        
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
         result = ""
         for start1 in range(0, self.n_confidence, self.early_stop_base):

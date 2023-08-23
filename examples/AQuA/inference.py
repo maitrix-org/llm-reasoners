@@ -10,9 +10,9 @@ from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import MCTS, MCTSNode
 from reasoners.visualization import TreeLog
 
-from world_model import MATHWorldModel, MATHState, MATHAction
-from search_config import MATHConfig
-import utils
+from .world_model import MATHWorldModel, MATHState, MATHAction
+from .search_config import MATHConfig
+from . import utils
 import re
 from datasets import Dataset
 
@@ -149,7 +149,7 @@ if __name__ == '__main__':
     def main(base_lm: str = 'llama2', #llama means llama_v1 and llama2 means llama_v2
              llama_ckpt: str = llama_ckpts,
              llama_2_ckpt: str = llama_2_ckpts,
-             llama_size: str = '30B',
+             llama_size: str = '7B',
              llama_cpp_path: str = None,
              batch_size: int = 1,
              interactive_prompt: str = '/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/interactive_examples.json',
