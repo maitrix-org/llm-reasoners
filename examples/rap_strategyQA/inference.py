@@ -20,6 +20,8 @@ def node_visualizer(x: MCTSNode[strategyQAState, strategyQAAction]):
         return {}
     return {"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer}
 
+def rap_cum_reward(cum_rewards):
+    return sum(cum_rewards) / (len(cum_rewards) + 1)
 
 def rap_strategyQA(base_model: LanguageModel,
               interactive_prompt: dict,
@@ -29,16 +31,18 @@ def rap_strategyQA(base_model: LanguageModel,
               resume: int = 0,
               n_action: int = 4,
               n_confidence: int = 8,
-              depth_limit: int = 8,
+              depth_limit: int = 7,
               force_terminating_on_depth_limit: bool = True,
-              batch_size: int = 5,
-              temperature: float = 0.0,
+              batch_size: int = 2,
+              temperature: float = 0.8,
               early_stop_base: int = 2,
               early_stop_threshold: float = 0.5,
               reward_alpha: float = 0.5,
               reward_confidence_default: float = 1,
-              cum_reward: Callable[[list[float]], float] = np.mean,
+            #   cum_reward: Callable[[list[float]], float] = np.mean,
+              cum_reward: Callable[[list[float]], float] = rap_cum_reward,
               calc_q: Callable[[list[float]], float] = max,
+              eos_token_id='\n',
               log_dir: Optional[str] = None,
               disable_log: bool = False,
               disable_tqdm: bool = False,
@@ -54,29 +58,28 @@ def rap_strategyQA(base_model: LanguageModel,
 
     search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm, \
                            'output_trace_in_each_iter': output_trace_in_each_iter}
-    
+    eos_token_id = base_model.tokenizer.encode('\n', bos=False, eos=False)[-1]
     world_model = strategyQAWorldModel(base_model=base_model, prompt=interactive_prompt,
-                                n_confidence=n_confidence, batch_size=batch_size, temperature=temperature,
+                                n_confidence=n_confidence, batch_size=batch_size, temperature=temperature, eos_token_id=eos_token_id,
                                 early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
     config = strategyQAConfig(base_model=base_model, prompt=interactive_prompt, useful_prompt=useful_prompt, decompose_prompt=decompose_prompt,
-                         n_actions=n_action, batch_size=batch_size, temperature=temperature,
+                         n_actions=n_action, batch_size=batch_size, temperature=temperature, eos_token_id=eos_token_id,
                          reward_alpha=reward_alpha, reward_confidence_default=reward_confidence_default,
                          force_terminating_on_depth_limit=force_terminating_on_depth_limit, depth_limit=depth_limit)
     search_algo = search_algo(**search_algo_params)
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
-    dataset = get_examples(folder='examples/rap_strategyQA/data/', split='test')
+    dataset = get_examples(folder='examples/rap_strategyQA/data/', split='test')[resume:]
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
                                      desc='strategyQA', disable=disable_tqdm)):
+        print(example["question"])
         random.seed(12306)
         np.random.seed(12306)
         torch.manual_seed(12306)
         torch.cuda.manual_seed(12306)
         torch.backends.cudnn.deterministic = True
-        print(example["question"])
         algo_output = reasoner(example["question"])
-        print(algo_output)
         if algo_output.terminal_state is None:
             output = None
         else:
@@ -94,10 +97,15 @@ def rap_strategyQA(base_model: LanguageModel,
             with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
                 pickle.dump(algo_output, f)
             if isinstance(search_algo, MCTS) and output_trace_in_each_iter:
-                with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
-                    # noinspection PyTypeChecker
-                    print(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer), file=f)
-        break
+                try:
+                    with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
+                        # noinspection PyTypeChecker
+                        print(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer), file=f)
+                except Exception as e: 
+                    print(e)
+                    print(algo_output)
+                    
+        # break
 
 
 if __name__ == '__main__':
@@ -111,6 +119,11 @@ if __name__ == '__main__':
     import torch
     import torch.backends.cudnn
 
+    # random.seed(0)
+    # np.random.seed(0)
+    # torch.manual_seed(0)
+    # torch.cuda.manual_seed(0)
+    # torch.backends.cudnn.deterministic = True
 
     llama_ckpts = os.environ.get("LLAMA_CKPTS", None)
     llama_2_ckpts = os.environ.get("LLAMA_2_CKPTS", None)
@@ -123,9 +136,9 @@ if __name__ == '__main__':
     def main(base_lm: str = 'llama', #llama means llama_v1 and llama2 means llama_v2
              llama_ckpt: str = llama_ckpts,
              llama_2_ckpt: str = llama_2_ckpts,
-             llama_size: str = '13B',
+             llama_size: str = '30B',
              llama_cpp_path: str = None,
-             batch_size: int = 5,
+             batch_size: int = 2,
              interactive_prompt: str = 'examples/rap_strategyQA/prompts/interactive_examples-1.json',
              useful_prompt: str = 'examples/rap_strategyQA/prompts/useful_examples-1.json',
              decompose_prompt: str = 'examples/rap_strategyQA/problem_decompose_examples-1.0.1.txt',

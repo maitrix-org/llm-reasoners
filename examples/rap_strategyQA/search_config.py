@@ -26,6 +26,7 @@ class strategyQAConfig(SearchConfig):
                  n_actions=4,
                  batch_size=2,
                  temperature=0.8,
+                 eos_token_id='\n',
                  reward_alpha=0.5,
                  reward_confidence_default=0.8,
                  depth_limit=5,
@@ -40,6 +41,7 @@ class strategyQAConfig(SearchConfig):
         self.decompose_prompt = decompose_prompt
         self.batch_size = batch_size
         self.temperature = temperature
+        self.eos_token_id = eos_token_id
         self.n_actions = n_actions
         self.force_terminating_on_depth_limit = force_terminating_on_depth_limit
         self.depth_limit = depth_limit
@@ -71,9 +73,10 @@ class strategyQAConfig(SearchConfig):
                 f.write(" " + self.prompt["overall_question_prefix"])
 
             model_input = f.getvalue()
-        # print('<<<< prompt >>>>\n{}'.format(model_input))
-        n_actions = 1 if at_depth_limit else self.n_actions
-        temperature = 0 if at_depth_limit else self.temperature
+        # n_actions = 1 if at_depth_limit else self.n_actions
+        # temperature = 0 if at_depth_limit else self.temperature
+        n_actions = self.n_actions
+        temperature = self.temperature
         outputs = []
         for idx in range(0, n_actions, self.batch_size):
             n_samples = min(n_actions - idx, self.batch_size)
@@ -81,12 +84,18 @@ class strategyQAConfig(SearchConfig):
                                                 hide_input=True,
                                                 do_sample=True,
                                                 temperature=temperature,
-                                                eos_token_id='\n').text
-
+                                                eos_token_id=self.eos_token_id).text
+        #     agent_output = self.base_model.query_LM(model_input, num_return_sequences=n_samples,
+        #                                         eos_token_id=self.eos_token_id, temperature=temperature)
+        #     print(f'testing: {agent_output}')
+        # exit()
+        # print(f'====\nsub-question prompt: {model_input}\n====')
+        # print(f"====\nsub-question: {outputs}\n====")
         outputs = [output.strip() for output in outputs]
         if len(state) == 0:
             for i, output in enumerate(outputs):
-                subqs_list = utils.extract_subquestions(output)
+                # print(f"sub-question output: {output}")
+                subqs_list = utils.extract_subquestions(output[:-1])
                 print('\n<<<< sub-questions list >>>>\n{}'.format(subqs_list))
                 q1 = subqs_list[0]
                 if q1[0] != '"':
@@ -95,16 +104,22 @@ class strategyQAConfig(SearchConfig):
                     q1 = q1 + '"'
                 # print('\n<<<< Q1 >>>>\n{}'.format(subq_format))
                 outputs[i] = q1[1:-1]
+        # print(f"====\nsub-question: {outputs}\n====")
+        ### similar to is_terminal function in world
         if at_depth_limit:
-            outputs = [self.prompt["overall_question_prefix"] + ' ' + output for output in outputs]
+            outputs = [self.prompt["overall_question_prefix"] + ' ' + self.overall_question]
         if self.force_overall_question_on_overall_prompt:
             for i, output in enumerate(outputs):
                 if self.prompt["overall_question_prefix"] in output:
                     outputs[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
         if self.force_overall_prompt_on_overall_question:
             for i, output in enumerate(outputs):
-                if self.overall_question.lower() == output.lower():
+                last_sub_words = set(output.lower().split(' '))
+                overall_ques_words = set(self.overall_question.lower().split(' '))
+                new_words = last_sub_words - overall_ques_words
+                if len(new_words) <= 1:
                     outputs[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
+        # print(f"====\nsub-question output after process: {outputs}\n====")
 
         # set does not guarantee order, but dict does guarantee
         # we cannot use set here because torch.distributed in LLaMA requires the same order across all processes

@@ -36,6 +36,7 @@ class strategyQAWorldModel(WorldModel[strategyQAState, strategyQAAction]):
                  n_confidence=8,
                  batch_size=2,
                  temperature=0.8,
+                 eos_token_id='\n',
                  early_stop_base=None,
                  early_stop_threshold=1.) -> None:
         super().__init__()
@@ -46,6 +47,7 @@ class strategyQAWorldModel(WorldModel[strategyQAState, strategyQAAction]):
         self.temperature = temperature
         self.early_stop_base = early_stop_base if early_stop_base is not None else n_confidence
         self.early_stop_threshold = early_stop_threshold
+        self.eos_token_id = eos_token_id
 
     def init_state(self) -> list:
         return []
@@ -65,6 +67,7 @@ class strategyQAWorldModel(WorldModel[strategyQAState, strategyQAAction]):
 
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
         result = ""
+        # print(f'====\nsubanswer prompt: {model_input}\n====')
         for start1 in range(0, self.n_confidence, self.early_stop_base):
             stop1 = min(start1 + self.early_stop_base, self.n_confidence)
 
@@ -76,13 +79,14 @@ class strategyQAWorldModel(WorldModel[strategyQAState, strategyQAAction]):
                                                    hide_input=True,
                                                    do_sample=True,
                                                    temperature=self.temperature,
-                                                   eos_token_id='\n').text
+                                                   eos_token_id=self.eos_token_id).text
                 for output in outputs:
                     result = output.strip()
-                    # print(f"before matching: {result}")
+                    # print(f"subanswer output: {result}")
                     answer = utils.retrieve_answer(result)
                     if answer is not None:
                         answer_dict[answer].append(result)
+                    # print(f"subanswer output (extracted): {answer}")
 
             # Early stop if confidence is high enough
             if len(answer_dict) == 0:  # no answer yet
@@ -106,6 +110,7 @@ class strategyQAWorldModel(WorldModel[strategyQAState, strategyQAAction]):
             confidence = max_len / sum(len(v) for v in answer_dict.values())
 
         state.append(SubResult(action, answer, confidence))
+        # print(confidence)
         aux = {'confidence': confidence}
         return state, aux
 
@@ -114,8 +119,8 @@ class strategyQAWorldModel(WorldModel[strategyQAState, strategyQAAction]):
             return True
         else:
             ## try word match
-            last_sub_words = set(state[-1].sub_question.lower().split(' ')[1:])
-            overall_ques_words = set(self.example.lower().split(' ')[1:])
+            last_sub_words = set(state[-1].sub_question.lower().split(' '))
+            overall_ques_words = set(self.example.lower().split(' '))
             new_words = last_sub_words - overall_ques_words
             if len(new_words) <= 1:
                 return True
