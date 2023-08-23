@@ -117,7 +117,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         
         # if early_terminate is set to False, we need to inform the user that we will return the beam instead of the best trace
         if not self.early_terminate:
-            self.return_tree = True
+            self.return_beam = True
             warnings.warn(f"early_terminate is set to False, BeamSearch will return the beam instead of the best trace.")
 
     
