@@ -52,16 +52,11 @@ def rap_crosswords(base_model: LanguageModel,
     infoss = []
     
     for index, i in tqdm(enumerate(range(5, 60, 5))):
-        print('\n--------------------------------------------')
-        print(f'index: {index}  example: {i}')
-        print('--------------------------------------------')
         example_cnt += 1
         algo_output = agent(i, best_state=True)
         best = 0
         output = ''
         ans = ''
-        print('********************************************')
-        print(f'Output: {len(algo_output)}')
         infos = []
         for output_i, state in enumerate(algo_output):
             env, actions, info = state
@@ -86,14 +81,6 @@ def rap_crosswords(base_model: LanguageModel,
                 pickle.dump(algo_output, f)
     with open(os.path.join(log_dir, 'infoss_dfs_tot.json'), 'w') as f:
         json.dump(infoss, f)
-
-        # break
-    for i, result in enumerate(answer_list):
-        print('--------------------------------------------')
-        print(f'Example {i}  best: {result[2]} stat_cnt: {result[3]}')
-        print(f'Pred: {result[0]}')
-        print(f'GT  : {result[1]}')
-        
 
 
 if __name__ == '__main__':

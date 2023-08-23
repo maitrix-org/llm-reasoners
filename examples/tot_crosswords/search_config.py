@@ -45,7 +45,6 @@ class crosswordsConfig(SearchConfig):
 
         # parse each line
         parsed_lines = [self.parse_line(line) for line in lines]
-        # print(f'parsed responses: {parsed_lines}')
 
         # filter out the lines that didn't match the format
         parsed_lines = [(line[0].lower() + '. ' + line[1].lower(), self.confidence_to_value.get(line[2], 0)) for line in parsed_lines if line is not None]
@@ -91,9 +90,6 @@ class crosswordsConfig(SearchConfig):
 
     def search_condition(self, state: crosswordsState) -> bool:
         env, actions, info = state
-        #print(f'{env.steps} {self.depth} {env.steps < self.depth} {not any(_ == 2 for _ in env.status)}')
-        # print(env.get_ans(env.board))
-        # print(env.status)
         if env.steps < self.depth and not any(_ == 2 for _ in env.status):
             return True
         return False
