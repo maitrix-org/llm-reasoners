@@ -3,12 +3,13 @@ from typing import Optional
 
 
 def retrieve_answer(output: str) -> Optional[str]:
-    match = re.match(r'.*The answer is .*?([ $.0-9,\-A-Za-z]+).*\..*', output)##????
+    match = re.match(r'.*The answer is .*?([A-E]).*?\.$', output, re.MULTILINE)
     if match is None:
         return None
-    answer = match[1].replace(',', '').replace('$', '').replace(' ', '')
-    if '=' in answer:
-        answer = answer[answer.rindex('=') + 1:]
+    # answer = match[1].replace(',', '').replace('$', '').replace(' ', '')
+    # if '=' in answer:
+    #     answer = answer[answer.rindex('=') + 1:]
+    answer = match[1]
     return answer
 
 # def retrieve_answer(output: str) -> Optional[str]:
@@ -21,7 +22,7 @@ def retrieve_answer(output: str) -> Optional[str]:
 #     return answer
     
 def retrieve_answer_from_dataset(answer: str) -> str:
-    return re.match(r'[\S\s]*#### (.*)$', answer)[1]
+    return answer
 
 
 def judge_answer(output: Optional[str], answer: str) -> bool:

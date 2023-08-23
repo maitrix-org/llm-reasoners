@@ -45,8 +45,10 @@ class MATHConfig(SearchConfig):
     def update_example(self, example: str) -> None:
         super().update_example(example)
         if self.force_overall_prompt_on_overall_question or self.force_overall_question_on_overall_prompt:
-            self.overall_question = re.match('.*((Calculate|calculate|how|How|what|What|Find|find|True or false).*)$',
-                                             self.example)[1]
+            # self.overall_question = re.match('.*((Calculate|calculate|how|How|what|What|Find|find|True or false).*)$',
+            #                                  self.example, re.MULTILINE)[1]
+
+            self.overall_question = re.match('.*((([A-Z].* (calculate|how|what|find|true or false))|((Calculate|How|What|Find|True or false))).*)$', self.example, flags=re.MULTILINE)[1]
 
     def get_actions(self, state: MATHState) -> list[MATHAction]:
         with io.StringIO() as f:
@@ -99,7 +101,7 @@ class MATHConfig(SearchConfig):
             f.write(self.useful_prompt["new_subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
             f.write(self.useful_prompt["useful_prefix"])
             model_input = f.getvalue()
-        print("model_input is :",model_input)
+        # print("model_input is :",model_input)
         logits = self.base_model.get_next_token_logits(model_input, ["Yes", "No"])[0]
         probs = np.exp(logits) / np.sum(np.exp(logits))
         useful_prob = probs[0]

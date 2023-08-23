@@ -10,9 +10,9 @@ from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import MCTS, MCTSNode
 from reasoners.visualization import TreeLog
 
-from .world_model import MATHWorldModel, MATHState, MATHAction
-from .search_config import MATHConfig
-from . import utils
+from world_model import MATHWorldModel, MATHState, MATHAction
+from search_config import MATHConfig
+import utils
 import re
 from datasets import Dataset
 
@@ -30,14 +30,8 @@ def data_reader(dataset,dataset_path, split=None, sample_size=100):
             data = json.loads(line)
             if isinstance(data, dict):
                 options_list = data['options']
-                options_dict = {}
-                for option in options_list:
-                    match = re.search(r'([A-E])\)[^0-9]*([\d.]+)', option)
-                    if match:
-                        options_dict[match.group(1)] = float(match.group(2))
                 question_with_options = data['question'] + "\n" + "\n".join(data['options'])
                 questions.append(question_with_options)
-                # answers.append(options_dict.get(data['correct']))
                 answers.append(data['correct'])
                 options.append(options_list)
             else:
@@ -98,11 +92,12 @@ def rap_AQuA(base_model: LanguageModel,
                                      desc='AQuA', disable=disable_tqdm)):
         
         algo_output = reasoner(example["question"])
+        print(algo_output.terminal_state[-1].sub_answer)
         if algo_output.terminal_state is None:
             output = None
         else:
             output = utils.retrieve_answer(algo_output.terminal_state[-1].sub_answer)
-
+        print(output)
         answer = utils.retrieve_answer_from_dataset(example["answer"])
         correct = utils.judge_answer(output, answer)
         correct_count += correct
