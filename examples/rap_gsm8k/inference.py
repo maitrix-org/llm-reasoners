@@ -87,7 +87,7 @@ def rap_gsm8k(base_model: LanguageModel,
             if isinstance(search_algo, MCTS):
                 with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
                     # noinspection PyTypeChecker
-                    f.write(str(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer)))
+                    print(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer), file=f)
 
 
 if __name__ == '__main__':
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     import json
     import warnings
     import fire
-    from reasoners.lm import LLaMAModel, LlamaCppModel
+    from reasoners.lm import LLaMAModel, LlamaCppModel, LlamaModel
     import random
     import torch
     import torch.backends.cudnn
@@ -108,14 +108,16 @@ if __name__ == '__main__':
     torch.backends.cudnn.deterministic = True
 
     llama_ckpts = os.environ.get("LLAMA_CKPTS", None)
+    llama_2_ckpts = os.environ.get("LLAMA_2_CKPTS", None)
     local_rank = int(os.environ.get("LOCAL_RANK", 0))
     if local_rank != 0:
         sys.stdout = open(os.devnull, 'w')
         warnings.filterwarnings('ignore')
 
 
-    def main(base_lm: str = 'llama',
+    def main(base_lm: str = 'llama2', #llama means llama_v1 and llama2 means llama_v2
              llama_ckpt: str = llama_ckpts,
+             llama_2_ckpt: str = llama_2_ckpts,
              llama_size: str = '13B',
              llama_cpp_path: str = None,
              batch_size: int = 2,
@@ -135,6 +137,8 @@ if __name__ == '__main__':
             base_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
         elif base_lm == 'llama.cpp':
             base_model = LlamaCppModel(llama_cpp_path)
+        elif base_lm == 'llama2':
+            base_model = LlamaModel(llama_2_ckpt, llama_size, max_batch_size=batch_size)
         else:
             assert False, f'cannot resolve {base_lm=}'
         rap_gsm8k(base_model=base_model,
