@@ -87,13 +87,11 @@ if __name__ == '__main__':
     import torch
     import torch.backends.cudnn
     from reasoners.lm import LLaMAModel, LlamaModel
-
     np.random.seed(1)
     random.seed(1)
     torch.manual_seed(1)
     torch.cuda.manual_seed(1)
     torch.backends.cudnn.deterministic = True
-
     def llama_main(llama_size: str = '13B',
              prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
              data_path: str = 'examples/rap_blocksworld/data/step_4.json',
@@ -144,6 +142,64 @@ if __name__ == '__main__':
                depth_limit=depth_limit,
                lm_plan_file=lm_plan_file, **kwargs)
 
+    def llama_hf_main(
+            llama_path = '/data/haotian/RAP_tune/llama-30B-hf',
+            peft_path = None,
+            prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
+            data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+            disable_log: bool = False,
+            config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
+            domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+            lm_plan_file: str = 'lm_plan.tmp',
+            depth_limit: int = 6,
+            quantized = "nf4", # awq, int8, fp4, nf4, None
+            load_awq_pth = None,
+            **kwargs
+            ):
+        from reasoners.lm import HFModel #maybe other transformer models also support, we have not check that
+        with open(prompt_path) as f:
+            prompt = json.load(f)
+        device = torch.device("cuda:0")
+        llama_model = HFModel(llama_path, llama_path, device=device, max_batch_size=1, max_new_tokens=512, quantized=quantized, peft_pth=peft_path, load_awq_pth=load_awq_pth)
+        rap_bw(llama_model,
+               prompt,
+               disable_log=disable_log,
+               data_path=data_path,
+               config_file=config_file,
+               domain_file=domain_file,
+               depth_limit=depth_limit,
+               lm_plan_file=lm_plan_file, **kwargs)
+    #for exllama use please refer to https://github.com/turboderp/exllama and put it under /llm-reasoners/
+    def exllama_main(
+            model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
+            lora_dir = None,
+            prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
+            data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+            disable_log: bool = False,
+            config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
+            domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+            lm_plan_file: str = 'lm_plan.tmp',
+            depth_limit: int = 6,
+            batch_size: int = 1,
+            mem_map = None,
+            **kwargs
+            ):
+        print(model_dir)
+        from reasoners.lm import ExLlamaModel  ##maybe other transformer models also support
+        with open(prompt_path) as f:
+            prompt = json.load(f)
+        device = torch.device("cuda:0")
+        llama_model = ExLlamaModel(model_dir, lora_dir, device=device, max_batch_size=batch_size, max_new_tokens=1024, max_seq_length=2048, mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
+        rap_bw(llama_model,
+               prompt,
+               disable_log=disable_log,
+               data_path=data_path,
+               config_file=config_file,
+               domain_file=domain_file,
+               depth_limit=depth_limit,
+               lm_plan_file=lm_plan_file,
+               batch_size=batch_size, **kwargs)
+    
     def llama2_main(llama_size: str = '70B',
              prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
              data_path: str = 'examples/rap_blocksworld/data/step_4.json',
@@ -169,6 +225,5 @@ if __name__ == '__main__':
                depth_limit=depth_limit,
                lm_plan_file=lm_plan_file, **kwargs)
 
-
-
-    fire.Fire(llama2_main)
+  
+    fire.Fire(exllama_main)#user still need to switch the model in the code
