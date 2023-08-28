@@ -11,11 +11,11 @@ class SubResult(NamedTuple):
     confidence: float
 
 
-strategyQAState = list[SubResult]
-strategyQAAction = str
+StrategyQAState = list[SubResult]
+StrategyQAAction = str
 
 
-class strategyQAPrompt(TypedDict):
+class StrategyQAPrompt(TypedDict):
     input: str
     question_prefix: str
     subquestion_prefix: str
@@ -23,7 +23,7 @@ class strategyQAPrompt(TypedDict):
     overall_question_prefix: str
 
 
-class strategyQAWorldModel(WorldModel[strategyQAState, strategyQAAction]):
+class StrategyQAWorldModel(WorldModel[StrategyQAState, StrategyQAAction]):
     """
     strategyQA World Model
     State: [[sub_question_1, sub_answer_1, confidence_1], [sub_question_2, sub_answer_2, confidence_2], ...]
@@ -41,7 +41,7 @@ class strategyQAWorldModel(WorldModel[strategyQAState, strategyQAAction]):
                  early_stop_threshold=1.) -> None:
         super().__init__()
         self.base_model = base_model
-        self.prompt: strategyQAPrompt = prompt
+        self.prompt: StrategyQAPrompt = prompt
         self.batch_size = batch_size
         self.n_confidence = n_confidence
         self.temperature = temperature
@@ -52,7 +52,7 @@ class strategyQAWorldModel(WorldModel[strategyQAState, strategyQAAction]):
     def init_state(self) -> list:
         return []
 
-    def step(self, state: strategyQAState, action: strategyQAAction) -> tuple[strategyQAState, dict]:
+    def step(self, state: StrategyQAState, action: StrategyQAAction) -> tuple[StrategyQAState, dict]:
         state = state.copy()
 
         with io.StringIO() as f:
@@ -114,7 +114,7 @@ class strategyQAWorldModel(WorldModel[strategyQAState, strategyQAAction]):
         aux = {'confidence': confidence}
         return state, aux
 
-    def is_terminal(self, state: strategyQAState) -> bool:
+    def is_terminal(self, state: StrategyQAState) -> bool:
         if len(state) > 0 and "Now we can answer" in state[-1].sub_question:
             return True
         else:

@@ -9,13 +9,13 @@ from datetime import datetime
 from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import MCTS, MCTSNode
 
-from world_model import strategyQAWorldModel, strategyQAState, strategyQAAction
-from search_config import strategyQAConfig
+from world_model import StrategyQAWorldModel, StrategyQAState, StrategyQAAction
+from search_config import StrategyQAConfig
 import utils
 from dataset import get_prompt_examples, get_examples, extract_golden_answer 
 
 
-def node_visualizer(x: MCTSNode[strategyQAState, strategyQAAction]):
+def node_visualizer(x: MCTSNode[StrategyQAState, StrategyQAAction]):
     if not x.state:
         return {}
     return {"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer}
@@ -59,10 +59,10 @@ def rap_strategyQA(base_model: LanguageModel,
     search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm, \
                            'output_trace_in_each_iter': output_trace_in_each_iter}
     eos_token_id = base_model.tokenizer.encode('\n', bos=False, eos=False)[-1]
-    world_model = strategyQAWorldModel(base_model=base_model, prompt=interactive_prompt,
+    world_model = StrategyQAWorldModel(base_model=base_model, prompt=interactive_prompt,
                                 n_confidence=n_confidence, batch_size=batch_size, temperature=temperature, eos_token_id=eos_token_id,
                                 early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
-    config = strategyQAConfig(base_model=base_model, prompt=interactive_prompt, useful_prompt=useful_prompt, decompose_prompt=decompose_prompt,
+    config = StrategyQAConfig(base_model=base_model, prompt=interactive_prompt, useful_prompt=useful_prompt, decompose_prompt=decompose_prompt,
                          n_actions=n_action, batch_size=batch_size, temperature=temperature, eos_token_id=eos_token_id,
                          reward_alpha=reward_alpha, reward_confidence_default=reward_confidence_default,
                          force_terminating_on_depth_limit=force_terminating_on_depth_limit, depth_limit=depth_limit)

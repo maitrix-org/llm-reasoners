@@ -4,7 +4,7 @@ from typing import TypedDict, Optional
 
 import numpy as np
 
-from world_model import strategyQAState, strategyQAAction, strategyQAPrompt
+from world_model import StrategyQAState, StrategyQAAction, StrategyQAPrompt
 from reasoners import SearchConfig, LanguageModel
 import utils
 
@@ -17,7 +17,7 @@ class strategyQAUsefulPrompt(TypedDict):
     useful_prefix: str
 
 
-class strategyQAConfig(SearchConfig):
+class StrategyQAConfig(SearchConfig):
     def __init__(self,
                  base_model: LanguageModel,
                  prompt: dict,
@@ -36,7 +36,7 @@ class strategyQAConfig(SearchConfig):
         super().__init__()
         self.base_model = base_model
         self.example = ''
-        self.prompt: strategyQAPrompt = prompt
+        self.prompt: StrategyQAPrompt = prompt
         self.useful_prompt: strategyQAUsefulPrompt = useful_prompt
         self.decompose_prompt = decompose_prompt
         self.batch_size = batch_size
@@ -58,7 +58,7 @@ class strategyQAConfig(SearchConfig):
             #                                  self.example)[1]
             self.overall_question = self.example
 
-    def get_actions(self, state: strategyQAState, ) -> list[strategyQAAction]:
+    def get_actions(self, state: StrategyQAState, ) -> list[StrategyQAAction]:
         with io.StringIO() as f:
             if len(state) == 0:
                 f.write(self.decompose_prompt + '\n\nQ: ' + self.overall_question + '\nA: To answer the question \"' + self.overall_question + '\", we need to know:')
@@ -126,7 +126,7 @@ class strategyQAConfig(SearchConfig):
         outputs = list(dict.fromkeys(outputs))
         return outputs
 
-    def fast_reward(self, state: strategyQAState, action: strategyQAAction) -> tuple[float, dict]:
+    def fast_reward(self, state: StrategyQAState, action: StrategyQAAction) -> tuple[float, dict]:
         with io.StringIO() as f:
             f.write(self.useful_prompt["input"])
             f.write(self.useful_prompt["question_prefix"] + self.example + "\n")
@@ -150,7 +150,7 @@ class strategyQAConfig(SearchConfig):
         return r_useful ** self.reward_alpha * r_conf ** (1 - self.reward_alpha), {'r_useful': r_useful,
                                                                                    'r_conf': r_conf}
 
-    def reward(self, state: strategyQAState, action: strategyQAAction,
+    def reward(self, state: StrategyQAState, action: StrategyQAAction,
                r_useful: float = None,
                confidence: float = None) -> tuple[float, dict]:
         assert r_useful is not None, "useful_reward is required to calculate reward in this search config, consider passing it in fast_reward"
