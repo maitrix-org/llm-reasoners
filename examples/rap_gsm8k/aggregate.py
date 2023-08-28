@@ -32,7 +32,7 @@ def aggregate_rap_gsm8k(log_dir: str,
 
         correct_count += correct
         accuracy = correct_count / (i + 1)
-        log_str = f'Case #{i}({index}): {correct=}, {output=}, {answer=} ; {accuracy=:.3f} ({correct_count}/{i+1})'
+        log_str = f'Case #{i + 1}({index}): {correct=}, {output=}, {answer=} ; {accuracy=:.3f} ({correct_count}/{i+1})'
         tqdm.write(log_str)
 
 
