@@ -4,12 +4,12 @@ import numpy as np
 import re
 
 from reasoners import SearchConfig, LanguageModel
-from world_model import crosswordsState, crosswordsAction
+from world_model import CrosswordsState, CrosswordsAction
 from utils import *
 from prompts.crosswords import * 
 
 
-class crosswordsConfig(SearchConfig):
+class CrosswordsConfig(SearchConfig):
     def __init__(self,
                  base_model: LanguageModel,
                  n_eval=8,
@@ -51,7 +51,7 @@ class crosswordsConfig(SearchConfig):
 
         return parsed_lines if len(parsed_lines) >= 1 else None
 
-    def get_actions(self, state: crosswordsState) -> list[crosswordsAction]:
+    def get_actions(self, state: CrosswordsState) -> list[CrosswordsAction]:
         env, actions, trace = state
         obs = env.render(status=True)
         if obs in self.cache: 
@@ -78,23 +78,23 @@ class crosswordsConfig(SearchConfig):
         # print(f'propose actions: {return_actions}')
         return return_actions
 
-    def fast_reward(self, state: crosswordsState, action: crosswordsAction) -> tuple[float, dict]:
+    def fast_reward(self, state: CrosswordsState, action: CrosswordsAction) -> tuple[float, dict]:
         ## don't need fast_reward for beam search
         return 0
 
-    def reward(self, state: crosswordsState, action: crosswordsAction, next_state: crosswordsState) -> float:
+    def reward(self, state: CrosswordsState, action: CrosswordsAction, next_state: CrosswordsState) -> float:
         env, actions, infos = state
         
         return 0
     
 
-    def search_condition(self, state: crosswordsState) -> bool:
+    def search_condition(self, state: CrosswordsState) -> bool:
         env, actions, info = state
         if env.steps < self.depth and not any(_ == 2 for _ in env.status):
             return True
         return False
     
-    def state_condition(self, state: crosswordsState) -> bool:
+    def state_condition(self, state: CrosswordsState) -> bool:
         env, actions, info = state
         if len(info) == 0:
             return True

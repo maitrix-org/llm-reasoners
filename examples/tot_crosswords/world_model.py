@@ -5,11 +5,11 @@ from prompts.crosswords import *
 from utils import *
 
 
-crosswordsState = Tuple[MiniCrosswordsEnv, List, dict]
-crosswordsAction = Tuple[str, float]
+CrosswordsState = Tuple[MiniCrosswordsEnv, List, dict]
+CrosswordsAction = Tuple[str, float]
 
 
-class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
+class CrosswordsWorldModel(WorldModel[CrosswordsState, CrosswordsAction]):
     """
     crosswords World Model
     Input (x)   : a string of 4 numbers
@@ -30,7 +30,7 @@ class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
         env.reset(self.example)
         return (env, [], {})
 
-    def is_terminal(self, state: crosswordsState) -> bool:
+    def is_terminal(self, state: CrosswordsState) -> bool:
         env, actions, info = state
         if len(info) == 0:
             return False
@@ -53,7 +53,7 @@ class crosswordsWorldModel(WorldModel[crosswordsState, crosswordsAction]):
             if res in count: count[res] += 1
         return count
 
-    def step(self, state: crosswordsState, action: crosswordsAction) -> crosswordsState:
+    def step(self, state: CrosswordsState, action: CrosswordsAction) -> CrosswordsState:
         env, actions, info = state
         # back up current state
         board, status, steps, cur_ans = env.board.copy(), env.status.copy(), env.steps, env.ans.copy()

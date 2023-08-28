@@ -14,7 +14,7 @@ from utils import MiniCrosswordsEnv
 
 
 
-def rap_crosswords(base_model: LanguageModel,
+def tot_crosswords(base_model: LanguageModel,
               search_algo: Type[SearchAlgorithm] = DFS,
               resume: int = 0,
               n_eval: int = 8,
@@ -110,7 +110,7 @@ if __name__ == '__main__':
              **kwargs):
         openai_model = GPTCompletionModel(model=model, temperature=temperature, max_tokens=1000)
         #log_dir = 'logs/crosswords_dfs/test-gpt3.5'
-        rap_crosswords(base_model=openai_model,
+        tot_crosswords(base_model=openai_model,
                   batch_size=batch_size, # not used
                   disable_log=disable_log,
                   **kwargs)
