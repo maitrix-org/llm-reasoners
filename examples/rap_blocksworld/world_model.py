@@ -30,8 +30,10 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
     def __init__(self,
                  base_model: LanguageModel,
                  prompt: dict,
+                 max_steps: int = 6,
                  batch_size=2) -> None:
         super().__init__()
+        self.max_steps = max_steps
         self.base_model = base_model
         self.prompt = prompt
         self.batch_size = batch_size
@@ -93,5 +95,7 @@ class BlocksWorldModel(WorldModel[BWState, BWAction]):
 
     def is_terminal(self, state: BWState) -> bool:
         if utils.goal_check(utils.extract_goals(self.example), state.blocks_state)[0]:
+            return True
+        elif state.step_idx == self.max_steps:
             return True
         return False
