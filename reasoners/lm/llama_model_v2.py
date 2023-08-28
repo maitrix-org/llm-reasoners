@@ -199,6 +199,9 @@ class LlamaModel(LanguageModel):
             if end_pos[i].item() != -1:
                 t = t[:end_pos[i]]
             decoded_tokens = self.tokenizer.decode(t)
+            if self.local_rank == 0:
+                with open('output.txt', 'a+') as f:
+                    f.write(decoded_tokens + '\n')
             if hide_input:
                 decoded_tokens = decoded_tokens[len(inputs[i]):]
             decoded.append(decoded_tokens)

@@ -3,6 +3,7 @@ from typing import Type, Callable, Optional
 
 import numpy as np
 from datasets import load_dataset
+from sklearn import base
 from tqdm import tqdm
 from datetime import datetime
 
@@ -92,12 +93,11 @@ def rap_AQuA(base_model: LanguageModel,
                                      desc='AQuA', disable=disable_tqdm)):
         
         algo_output = reasoner(example["question"])
-        print(algo_output.terminal_state[-1].sub_answer)
         if algo_output.terminal_state is None:
             output = None
         else:
             output = utils.retrieve_answer(algo_output.terminal_state[-1].sub_answer)
-        print(output)
+        # print(output)
         answer = utils.retrieve_answer_from_dataset(example["answer"])
         correct = utils.judge_answer(output, answer)
         correct_count += correct
@@ -167,6 +167,10 @@ if __name__ == '__main__':
             base_model = LlamaModel(llama_2_ckpt, llama_size, max_batch_size=batch_size)
         else:
             assert False, f'cannot resolve {base_lm=}'
+        prompt_tokens = base_model.tokenizer.encode(interactive_prompt['input'],bos=False,eos=False)
+        if local_rank == 0:
+            with open('input.txt', 'w') as f:
+                print(len(prompt_tokens), file=f)
         rap_AQuA(base_model=base_model,
                   interactive_prompt=interactive_prompt,
                   useful_prompt=useful_prompt,

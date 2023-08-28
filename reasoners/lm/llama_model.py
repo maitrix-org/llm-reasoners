@@ -171,6 +171,11 @@ class LLaMAModel(LanguageModel):
             if hide_input:
                 decoded_tokens = decoded_tokens[len(inputs[i]):]
             decoded.append(decoded_tokens)
+        print(decoded)
+        if self.local_rank == 0:
+            with open('output.txt', 'a+') as f:
+                for i in len(decoded):
+                    f.write(decoded[i])
 
         # TODO: check log_probs
         return GenerateOutput(decoded, log_prob)
