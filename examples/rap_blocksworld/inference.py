@@ -40,7 +40,7 @@ def rap_bw(base_model: LanguageModel,
             print(sys.argv, file=f)
 
     search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, "depth_limit": depth_limit}
-    world_model = BlocksWorldModel(base_model=base_model, prompt=prompt, batch_size=batch_size)
+    world_model = BlocksWorldModel(base_model=base_model, prompt=prompt, batch_size=batch_size, max_steps=depth_limit)
     config = BWConfig(base_model=base_model, prompt=prompt, batch_size=batch_size,
                       reward_alpha=reward_alpha, goal_reached_reward=goal_reached_reward,
                       goal_reward_default=goal_reward_default)
@@ -107,7 +107,7 @@ if __name__ == '__main__':
         llama_ckpts = os.environ["LLAMA_CKPTS"]
         with open(prompt_path) as f:
             prompt = json.load(f)
-        llama_model = LLaMAModel(llama_ckpts, llama_size, max_batch_size=1)
+        llama_model = LLaMAModel(llama_ckpts, llama_size, max_batch_size=2)
         rap_bw(llama_model,
                prompt,
                disable_log=disable_log or local_rank != 0,
@@ -226,4 +226,4 @@ if __name__ == '__main__':
                lm_plan_file=lm_plan_file, **kwargs)
 
   
-    fire.Fire(exllama_main)#user still need to switch the model in the code
+    fire.Fire(exllama_main) # user will need to switch the model in the code
