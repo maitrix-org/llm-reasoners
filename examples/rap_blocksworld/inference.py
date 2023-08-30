@@ -185,11 +185,17 @@ if __name__ == '__main__':
             **kwargs
             ):
         print(model_dir)
-        from reasoners.lm import ExLlamaModel  ##maybe other transformer models also support
+        from reasoners.lm import ExLlamaModel  # Maybe other transformer models also support
         with open(prompt_path) as f:
             prompt = json.load(f)
         device = torch.device("cuda:0")
-        llama_model = ExLlamaModel(model_dir, lora_dir, device=device, max_batch_size=batch_size, max_new_tokens=1024, max_seq_length=2048, mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
+        llama_model = ExLlamaModel(model_dir, 
+                                   lora_dir, 
+                                   device=device, 
+                                   max_batch_size=batch_size, 
+                                   max_new_tokens=200, 
+                                   max_seq_length=2048, 
+                                   mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
         rap_bw(llama_model,
                prompt,
                disable_log=disable_log,

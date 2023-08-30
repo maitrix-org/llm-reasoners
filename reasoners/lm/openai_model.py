@@ -17,6 +17,7 @@ class GPTCompletionModel(LanguageModel):
             raise ValueError("OPENAI_API_KEY not set, please run `export OPENAI_API_KEY=<your key>` to ser it")
         else:
             openai.api_key = API_KEY
+
     
     def generate(self,
                 prompt: str,
@@ -58,6 +59,16 @@ class GPTCompletionModel(LanguageModel):
                         stop=stop,
                         **kwargs
                     )
+                    '''print('-----------------------------------------')
+                    print(f'Prompt:\n{prompt}')
+                    print('-------------prompt end------------------')
+                    print('-----------------------------------------')
+                    print('Response:')
+                    for i, choice in enumerate(response["choices"]):
+                        print(f'---------response {i}------------')
+                        print(choice["message"]["content"])
+                    print('-------------response end----------------') '''
+
                     return GenerateOutput(
                         text=[choice["message"]["content"] for choice in response["choices"]],
                         log_prob=None
