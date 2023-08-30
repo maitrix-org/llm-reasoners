@@ -104,8 +104,6 @@ def rap_strategyQA(base_model: LanguageModel,
                 except Exception as e: 
                     print(e)
                     print(algo_output)
-                    
-        # break
 
 
 if __name__ == '__main__':
@@ -118,12 +116,6 @@ if __name__ == '__main__':
     import random
     import torch
     import torch.backends.cudnn
-
-    # random.seed(0)
-    # np.random.seed(0)
-    # torch.manual_seed(0)
-    # torch.cuda.manual_seed(0)
-    # torch.backends.cudnn.deterministic = True
 
     llama_ckpts = os.environ.get("LLAMA_CKPTS", None)
     llama_2_ckpts = os.environ.get("LLAMA_2_CKPTS", None)

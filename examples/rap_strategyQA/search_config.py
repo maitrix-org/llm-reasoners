@@ -54,8 +54,6 @@ class StrategyQAConfig(SearchConfig):
     def update_example(self, example: str) -> None:
         super().update_example(example)
         if self.force_overall_prompt_on_overall_question or self.force_overall_question_on_overall_prompt:
-            # self.overall_question = re.match('.*((Calculate|calculate|how|How|what|What|Find|find|True or false).*)$',
-            #                                  self.example)[1]
             self.overall_question = self.example
 
     def get_actions(self, state: StrategyQAState, ) -> list[StrategyQAAction]:
@@ -85,12 +83,6 @@ class StrategyQAConfig(SearchConfig):
                                                 do_sample=True,
                                                 temperature=temperature,
                                                 eos_token_id=self.eos_token_id).text
-        #     agent_output = self.base_model.query_LM(model_input, num_return_sequences=n_samples,
-        #                                         eos_token_id=self.eos_token_id, temperature=temperature)
-        #     print(f'testing: {agent_output}')
-        # exit()
-        # print(f'====\nsub-question prompt: {model_input}\n====')
-        # print(f"====\nsub-question: {outputs}\n====")
         outputs = [output.strip() for output in outputs]
         if len(state) == 0:
             for i, output in enumerate(outputs):
@@ -102,9 +94,7 @@ class StrategyQAConfig(SearchConfig):
                     q1 = '"' + q1
                 if q1[-1] != '"':
                     q1 = q1 + '"'
-                # print('\n<<<< Q1 >>>>\n{}'.format(subq_format))
                 outputs[i] = q1[1:-1]
-        # print(f"====\nsub-question: {outputs}\n====")
         ### similar to is_terminal function in world
         if at_depth_limit:
             outputs = [self.prompt["overall_question_prefix"] + ' ' + self.overall_question]
@@ -119,7 +109,6 @@ class StrategyQAConfig(SearchConfig):
                 new_words = last_sub_words - overall_ques_words
                 if len(new_words) <= 1:
                     outputs[i] = self.prompt["overall_question_prefix"] + ' ' + self.overall_question
-        # print(f"====\nsub-question output after process: {outputs}\n====")
 
         # set does not guarantee order, but dict does guarantee
         # we cannot use set here because torch.distributed in LLaMA requires the same order across all processes
@@ -136,12 +125,10 @@ class StrategyQAConfig(SearchConfig):
             f.write(self.useful_prompt["useful_prefix"])
             model_input = f.getvalue().replace('Now we can answer the question: ', '')
 
-        # print(f'====\nreward input: {model_input}====\n')
         logits = self.base_model.get_next_token_logits(model_input, ["Yes", "No"])[0]
         probs = np.exp(logits) / np.sum(np.exp(logits))
         useful_prob = probs[0]
         fast_reward, _ = self.calculate_reward(useful_prob)
-        # print(f'original prob: {probs}, r_useful: {useful_prob}, fast_reward: {fast_reward}')
         return fast_reward, {'r_useful': useful_prob}
 
     def calculate_reward(self, r_useful, r_conf=None):

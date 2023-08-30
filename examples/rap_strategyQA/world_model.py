@@ -67,7 +67,6 @@ class StrategyQAWorldModel(WorldModel[StrategyQAState, StrategyQAAction]):
 
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
         result = ""
-        # print(f'====\nsubanswer prompt: {model_input}\n====')
         for start1 in range(0, self.n_confidence, self.early_stop_base):
             stop1 = min(start1 + self.early_stop_base, self.n_confidence)
 
@@ -86,7 +85,6 @@ class StrategyQAWorldModel(WorldModel[StrategyQAState, StrategyQAAction]):
                     answer = utils.retrieve_answer(result)
                     if answer is not None:
                         answer_dict[answer].append(result)
-                    # print(f"subanswer output (extracted): {answer}")
 
             # Early stop if confidence is high enough
             if len(answer_dict) == 0:  # no answer yet
