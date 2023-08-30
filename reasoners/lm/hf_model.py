@@ -1,4 +1,3 @@
-from pyexpat import model
 from .. import LanguageModel,GenerateOutput
 from transformers import LlamaForCausalLM, AutoTokenizer, GenerationConfig, BitsAndBytesConfig, AutoConfig, AutoModelForCausalLM
 import torch
@@ -8,7 +7,6 @@ import warnings
 import copy
 import sys
 import numpy as np
-import optimum
 from optimum.bettertransformer import BetterTransformer
 #for awq quantization, please refer to https://github.com/mit-han-lab/llm-awq to build env
 # from awq.quantize.quantizer import pseudo_quantize_model_weight, real_quantize_model_weight
