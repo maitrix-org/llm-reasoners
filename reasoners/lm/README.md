@@ -7,7 +7,7 @@
 - We are working on the integration of LLaMA-2 into our framework. Stay tuned!
 
 ## llama.cpp
-- We provide the wrapper for `llama-cpp-python`, which can handle 8-bit or even 4-bit quantized version of LLaMA.
+- We provide the wrapper for `llama-cpp-python`.
 For how to quantize LLaMA, refer to [llama.cpp](https://github.com/ggerganov/llama.cpp).
 - To install `llama-cpp-python` with CUDA acceleration, run
     ```bash
@@ -22,3 +22,8 @@ For how to quantize LLaMA, refer to [llama.cpp](https://github.com/ggerganov/lla
     ```
 - For more details and troubleshooting, please refer to [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) and [llama.cpp](https://github.com/ggerganov/llama.cpp).
 - From our experiments, `llama.cpp` suffers from slow inference speed when the model is put on multiple GPUs. Please contact us if you know how to fix this issue.
+
+## Exllama
+If you cloned our repo with `--recursive`, you will have the `exllama` cloned automatically. Otherwise, you will need to clone `exllama` manually to the root directory.
+
+After setting it up, simply download desired quantized [models](https://github.com/turboderp/exllama/blob/master/doc/model_compatibility.md) and you are ready to go!

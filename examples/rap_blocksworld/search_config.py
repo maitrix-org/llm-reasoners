@@ -40,7 +40,7 @@ class BWConfig(SearchConfig):
         self_eval_prompt = self.prompt["self-eval"].replace("<init_state>", current_blocks_state)\
             .replace("<goals>", utils.extract_goals(self.example, return_raw=True)).replace("<action>", action)
         self_eval = self.base_model.get_loglikelihood(self_eval_prompt, 
-            [self_eval_prompt + "good", self_eval_prompt + "bad"])[0]
+            [self_eval_prompt + "good"])[0]
 
         return self.calculate_reward(intuition, self_eval), {'intuition': intuition, "self_eval": self_eval}
 

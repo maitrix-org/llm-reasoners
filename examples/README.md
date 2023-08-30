@@ -1,6 +1,5 @@
 # Examples
 
-
 ## GSM8K
 ### RAP
 user need to switch the main function for Fire()
