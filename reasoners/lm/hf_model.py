@@ -11,10 +11,13 @@ import numpy as np
 import optimum
 from optimum.bettertransformer import BetterTransformer
 #for awq quantization, please refer to https://github.com/mit-han-lab/llm-awq to build env
-# from awq.quantize.quantizer import pseudo_quantize_model_weight, real_quantize_model_weight
-# from awq.utils.utils import simple_dispatch_model
-# from awq.quantize.pre_quant import apply_awq
-# from awq.quantize.quantizer import real_quantize_model_weight
+try:
+    from awq.quantize.quantizer import pseudo_quantize_model_weight, real_quantize_model_weight
+    from awq.utils.utils import simple_dispatch_model
+    from awq.quantize.pre_quant import apply_awq
+    from awq.quantize.quantizer import real_quantize_model_weight
+except:
+    raise ImportError("awq quantization is not available, please refer to https://github.com/mit-han-lab/llm-awq to build env")
 from accelerate import init_empty_weights, load_checkpoint_and_dispatch, infer_auto_device_map, load_checkpoint_in_model, dispatch_model
 class HFModel(LanguageModel):
     def __init__(self, model_pth, tokenizer_pth, device, max_batch_size=1, max_new_tokens=None, max_length=2048, quantized=None, peft_pth=None, load_awq_pth=None):
