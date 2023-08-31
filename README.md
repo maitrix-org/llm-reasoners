@@ -2,15 +2,16 @@
 
 ---
 
-
 **LLM Reasoners** is a library to enable LLMs to conduct complex reasoning, with advanced reasoning algorithms. It approaches multi-step reasoning as planning and searches for the optimal reasoning chain, which achieves the best balance of exploration vs exploitation with the idea of "World Model" and "Reward".
 
 Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Reasoning Algorithms, Visualization, LLM calling, and more!
 
 ## News
+
+- Aug. 21, 2023: A batch of quantized Llama-2 models have arrive! BitsandBytes with huggingface API, GPT-Q with exllama are available. You can now also deploy llama-2-70B with 2x24G/1x40G GPUs.
+
 - Aug. 10, 2023: Llama-2 is supported! You can run [examples](https://github.com/Ber666/llm-reasoners/tree/main/examples) with Llama-2 now.
 
-- Aug. 21, 2023: Huggingface api with bnb or awq quantization is supported now! Exllama with GPT-Q quantization is also supported now! You can now also deploy llama-2-70B with 2x24G GPUs. You can run [examples](https://github.com/Ber666/llm-reasoners/tree/main/examples).
 
 ## Why Choose LLM Reasoners?
 
@@ -238,11 +239,11 @@ conda activate reasoners
 
 Clone the repository and install the package:
 ```bash
-git clone https://github.com/Ber666/llm-reasoners
+git clone https://github.com/Ber666/llm-reasoners --recursive
 cd llm-reasoners
 pip install -e .
 ```
-Note that some optional modules may need other dependencies. Please refer to the error message for details.
+Adding `--recursive` will help you clone exllama automatically. Note that some other optional modules may need other dependencies. Please refer to the error message for details.
 
 ## Citation
 This project is an extension of the following paper:
