@@ -202,8 +202,8 @@ if __name__ == '__main__':
                   **kwargs)
     
     def main_openai(
-            openai_model:str = "gpt-3.5",
-            hf_path = "/data/haotian/RAP_tune/llama-30B-hf",
+            openai_model:str = "gpt-3.5-turbo",
+            hf_path = "/data/haotian/RAP_tune/Llama-2-13b-hf",
             batch_size = 1,
             peft_path = None,
             interactive_prompt = "examples/rap_gsm8k/prompts/interactive_examples.json",

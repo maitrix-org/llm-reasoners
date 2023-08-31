@@ -13,11 +13,11 @@ import sys
 from optimum.bettertransformer import BetterTransformer
 
 class GPT_HF_Model(LanguageModel):
-    def __init__(self, openai_model:str, model_pth, tokenizer_pth, device, max_tokens:int = 2048, temperature=0.7, quantized=None, peft_pth=None):
+    def __init__(self, openai_model:str, model_pth, tokenizer_pth, device, max_tokens:int = 2048, temperature=0.7, quantized=None, peft_pth=None, max_batch_size=1):
         self.openai_model = openai_model
         self.max_tokens = max_tokens
         self.temperature = temperature
-
+        self.max_batch_size = max_batch_size
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_pth, legacy=False)
         if quantized == "int8":
             self.model = LlamaForCausalLM.from_pretrained(
@@ -67,29 +67,37 @@ class GPT_HF_Model(LanguageModel):
     
     def generate(self,
                 inputs: list[str],
-                max_tokens: int = None,
-                
+                max_length: int = None,
+                max_new_tokens: int = None,
+                do_sample: bool = False,
                 top_p: float = 1.0,
                 num_return_sequences: int = 1,
                 rate_limit_per_min: Optional[int] = 20,
-                stop: Optional[str] = None,
+                eos_token_id: Union[None, str, list[str]] = None,
                 logprobs: Optional[int] = None,
                 temperature = None,
+                hide_input: bool = True,
+                output_log_probs: bool = False,
                 **kwargs) -> GenerateOutput:
         
         gpt_temperature = self.temperature if temperature is None else temperature
 
+        ###renaming
+        max_tokens = max_length
         if max_tokens is None:
             max_tokens = self.max_tokens
-        
+        if max_new_tokens is not None:
+            warnings.warn("max_new_tokens is deprecated, please use max_length instead")
+            max_tokens = max_new_tokens
         if logprobs is None:
             logprobs = 0
         if num_return_sequences == 1 and len(inputs) > 0:
-            assert inputs[0] == inputs[1]#all should be the same
+            if len(inputs) > 1:
+                assert inputs[0] == inputs[1]#all should be the same
             num_return_sequences = len(inputs)
             inputs = inputs[0]
-            
-
+        if output_log_probs:
+            warnings.warn("output_log_probs is not implemented yet")
 
         i = 1
 
@@ -99,7 +107,7 @@ class GPT_HF_Model(LanguageModel):
                 if rate_limit_per_min is not None:
                     time.sleep(60 / rate_limit_per_min)
                 ### GPT 3.5 and higher use a different API
-                if ('gpt-3.5' in self.openai_model) or ('gpt-4' in self.openai_model):
+                if ('gpt-3.5-turbo' in self.openai_model) or ('gpt-4' in self.openai_model):
                     messages = [{"role": "user", "content": inputs}]
                     response = openai.ChatCompletion.create(
                         model=self.openai_model,
@@ -108,12 +116,12 @@ class GPT_HF_Model(LanguageModel):
                         temperature=gpt_temperature,
                         top_p=top_p,
                         n=num_return_sequences,
-                        stop=stop,
-                        **kwargs
+                        stop=eos_token_id,
                     )
                     for choice in response["choices"]:
                         with open('openai_output.txt', 'a+') as f:
                             f.write(f"{choice['message']['content']}\n")
+                    
                     return GenerateOutput(
                         text=[choice["message"]["content"] for choice in response["choices"]],
                         log_prob=None
@@ -126,7 +134,7 @@ class GPT_HF_Model(LanguageModel):
                         temperature=gpt_temperature,
                         top_p=top_p,
                         n=num_return_sequences,
-                        stop=stop,
+                        stop=eos_token_id,
                         logprobs=logprobs,
                         **kwargs
                     )
