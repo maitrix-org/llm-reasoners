@@ -16,3 +16,4 @@ gpt-plan-benchmark
 .vscode/
 dataset/
 *.json
+*.txt
