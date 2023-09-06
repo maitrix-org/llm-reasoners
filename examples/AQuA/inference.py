@@ -140,6 +140,34 @@ if __name__ == '__main__':
         sys.stdout = open(os.devnull, 'w')
         warnings.filterwarnings('ignore')
 
+    def main_hf(hf_path = "/data/haotian/RAP_tune/Llama-2-13b-hf",
+            batch_size = 1,
+            peft_path = None,
+            interactive_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/interactive_examples.json",
+            useful_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/useful_examples.json",
+            disable_log = False,
+            disable_tqdm = False,
+            quantized = "nf4", # awq, int8, fp4, nf4, None
+            load_awq_pth = None,
+            **kwargs):
+        from reasoners.lm import HFModel
+        device = torch.device("cuda:0")
+        base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=512, peft_pth=peft_path, quantized=quantized, load_awq_pth=load_awq_pth)
+        with open(interactive_prompt) as f:
+            interactive_prompt = json.load(f)
+        with open(useful_prompt) as f:
+            useful_prompt = json.load(f)
+        rap_AQuA(base_model=base_model,
+                    interactive_prompt=interactive_prompt,
+                    useful_prompt=useful_prompt,
+                    batch_size=batch_size,
+                    disable_log=disable_log or local_rank != 0,
+                    disable_tqdm=disable_tqdm or local_rank != 0,
+                    **kwargs)
+
+
+
+
 
     def main(base_lm: str = 'llama2', #llama means llama_v1 and llama2 means llama_v2
              llama_ckpt: str = llama_ckpts,
@@ -180,4 +208,4 @@ if __name__ == '__main__':
                   **kwargs)
 
 
-    fire.Fire(main)
+    fire.Fire(main_hf)
