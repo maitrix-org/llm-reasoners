@@ -1,13 +1,6 @@
 import os
 import sys
-exllama_pth = os.path.abspath(os.path.join(os.path.join(os.path.join(__file__, os.pardir), os.pardir), os.pardir)) + '/exllama'
-sys.path.append(exllama_pth)
-from exllama import model
-from exllama.generator import ExLlamaGenerator
-from .. import LanguageModel,GenerateOutput
-from exllama.model import ExLlama, ExLlamaCache, ExLlamaConfig
-from exllama.tokenizer import ExLlamaTokenizer
-from exllama.lora import ExLlamaLora
+
 import torch
 from typing import Tuple, Union, Optional
 import warnings
@@ -15,9 +8,12 @@ import numpy as np
 import random
 import copy
 
-from tqdm import tqdm
+from .. import LanguageModel,GenerateOutput
+
 import glob
 import time
+
+
 class ExLlamaModel(LanguageModel):
     def __init__(self, model_dir, lora_dir, device, max_batch_size, max_new_tokens, max_seq_length, mem_map:list[int]=None):
         """
@@ -34,6 +30,17 @@ class ExLlamaModel(LanguageModel):
         Returns:
             None
         """
+        try:
+            import reasoners
+            sys.path.append(os.path.join(os.path.dirname(reasoners.__file__), os.path.pardir, 'exllama'))
+            from exllama.generator import ExLlamaGenerator
+            from exllama.model import ExLlama, ExLlamaCache, ExLlamaConfig
+            from exllama.tokenizer import ExLlamaTokenizer
+            from exllama.lora import ExLlamaLora
+        except ImportError as e:
+            print('\033[31mError\033[0m: Cannot find exllama submodule. If you clone our repo without "--recursive", running \033[1mgit submodule update --init"\033[0m under the repo can solve this problem.', file=sys.stderr)
+            raise e
+
         super().__init__()
         torch.cuda._lazy_init()
 
@@ -255,4 +262,3 @@ class ExLlamaModel(LanguageModel):
                 if tokens[j, i] != self.tokenizer.pad_token_id:
                     acc_probs[j] += torch.log(probs[j, tokens[j, i]])
         return acc_probs.cpu().numpy()
-        
