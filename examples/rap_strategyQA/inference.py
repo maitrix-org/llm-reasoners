@@ -5,6 +5,7 @@ import numpy as np
 from reasoners.visualization import TreeLog
 from tqdm import tqdm
 from datetime import datetime
+import json
 
 from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import MCTS, MCTSNode
@@ -12,7 +13,7 @@ from reasoners.algorithm import MCTS, MCTSNode
 from world_model import StrategyQAWorldModel, StrategyQAState, StrategyQAAction
 from search_config import StrategyQAConfig
 import utils
-from dataset import get_prompt_examples, get_examples, extract_golden_answer 
+from dataset import get_prompt_examples, get_examples, extract_golden_answer
 
 
 def node_visualizer(x: MCTSNode[StrategyQAState, StrategyQAAction]):
@@ -69,8 +70,10 @@ def rap_strategyQA(base_model: LanguageModel,
     search_algo = search_algo(**search_algo_params)
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
-    dataset = get_examples(folder='examples/rap_strategyQA/data/', split='test')[resume:]
+    dataset = get_examples(folder='examples/rap_strategyQA/data/', split='test-ori')[resume:]
     correct_count = 0
+    ### write all answers to json for submission
+    answer_dict = {}
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
                                      desc='strategyQA', disable=disable_tqdm)):
         print(example["question"])
@@ -84,26 +87,34 @@ def rap_strategyQA(base_model: LanguageModel,
             output = None
         else:
             output = utils.extract_final_answer(algo_output.terminal_state[-1].sub_answer)
-        answer = extract_golden_answer(example)
-        correct = utils.judge_answer(output, answer)
+        output = True if output == 'yes' else False
+        # answer = extract_golden_answer(example)
+        # correct = utils.judge_answer(output, answer)
+        # answer = example['answer']
+        # correct = (answer == output)
 
-        correct_count += correct
-        accuracy = correct_count / (i + 1)
-        log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=} ; {accuracy=:.3f} ({correct_count}/{i + 1})'
-        tqdm.write(log_str)
-        if not disable_log:
-            with open(os.path.join(log_dir, 'result.log'), 'a') as f:
-                print(log_str, file=f)
-            with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
-                pickle.dump(algo_output, f)
-            if isinstance(search_algo, MCTS) and output_trace_in_each_iter:
-                try:
-                    with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
-                        # noinspection PyTypeChecker
-                        print(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer), file=f)
-                except Exception as e: 
-                    print(e)
-                    print(algo_output)
+        # correct_count += correct
+        # accuracy = correct_count / (i + 1)
+        # log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=} ; {accuracy=:.3f} ({correct_count}/{i + 1})'
+        # tqdm.write(log_str)
+        # if not disable_log:
+        #     with open(os.path.join(log_dir, 'result.log'), 'a') as f:
+        #         print(log_str, file=f)
+        #     with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
+        #         pickle.dump(algo_output, f)
+        #     if isinstance(search_algo, MCTS) and output_trace_in_each_iter:
+        #         try:
+        #             with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
+        #                 # noinspection PyTypeChecker
+        #                 print(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer), file=f)
+        #         except Exception as e: 
+        #             print(e)
+        #             print(algo_output)
+        ### add to answer dict
+        answer_dict[example['qid']] = {"answer": output, "decomposition": [], "paragraphs": []}
+        with open(os.path.join(log_dir, 'all_answers.json'), 'w') as f:
+            json.dump(answer_dict, f, indent=2)
+        # break
 
 
 if __name__ == '__main__':
@@ -131,6 +142,7 @@ if __name__ == '__main__':
              llama_size: str = '30B',
              llama_cpp_path: str = None,
              batch_size: int = 2,
+             max_seq_len: int = 2048,
              interactive_prompt: str = 'examples/rap_strategyQA/prompts/interactive_examples-1.json',
              useful_prompt: str = 'examples/rap_strategyQA/prompts/useful_examples-1.json',
              decompose_prompt: str = 'examples/rap_strategyQA/problem_decompose_examples-1.0.1.txt',
@@ -146,7 +158,7 @@ if __name__ == '__main__':
             useful_prompt = json.load(f)
         decompose_prompt = get_prompt_examples(path=decompose_prompt)
         if base_lm == 'llama':
-            base_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
+            base_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size, max_seq_len=max_seq_len)
         elif base_lm == 'llama.cpp':
             base_model = LlamaCppModel(llama_cpp_path)
         elif base_lm == 'llama2':

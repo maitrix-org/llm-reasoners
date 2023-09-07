@@ -9,9 +9,6 @@ def get_examples(folder, split):
     with open(path) as f:
         examples = json.load(f)
 
-    for ex in examples:
-        ex.update(answer = 'yes' if ex['answer'] == True else 'no')
-
     print(f"{len(examples)} {split} examples")
     
     return examples
