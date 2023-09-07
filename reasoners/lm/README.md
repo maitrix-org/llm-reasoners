@@ -26,6 +26,10 @@
 - We provide a wrapper for Hugging Face models
 - We support `8bit`, `nf4`, `fp4`, or `awq` as optional quantization method
   - Additional dependencies are requried to use `awq`, which can be installed by running `pip install -e '.[awq]'` under the root of this repository
+- Example run:
+  ```bash
+  CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --base_lm hf --hf_path meta-llama/Llama-2-70b-hf --hf_peft_path None --hf_quantized 'nf4'
+  ```
 
 ## llama.cpp
 - We provide the wrapper for `llama-cpp-python`.
