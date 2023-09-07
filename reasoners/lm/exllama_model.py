@@ -10,6 +10,7 @@ import time
 import torch
 import numpy as np
 from tqdm import tqdm
+from huggingface_hub import snapshot_download
 
 from .. import LanguageModel,GenerateOutput
 
@@ -40,6 +41,9 @@ class ExLlamaModel(LanguageModel):
         except ImportError as e:
             print('\033[31mError\033[0m: Cannot find exllama submodule. If you clone our repo without "--recursive", running \033[1mgit submodule update --init"\033[0m under the repo can solve this problem.', file=sys.stderr)
             raise e
+
+        if not os.path.isdir(model_dir):
+            model_dir = snapshot_download(model_dir)
 
         super().__init__()
         torch.cuda._lazy_init()
