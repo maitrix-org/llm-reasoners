@@ -57,6 +57,7 @@ class ExLlamaModel(LanguageModel):
         self.config.max_seq_length = max_seq_length                  # set max sequence length
         if mem_map is not None:
             self.config.auto_map = mem_map
+        else:    
             warnings.warn("mem_map is None, if you want model parallelism, please set mem_map like [16,22] for 2 GPUs")
         
         self.model = ExLlama(self.config)                                 # create ExLlama instance and load the weights

@@ -21,22 +21,21 @@ def data_reader(dataset,dataset_path, split=None, sample_size=100):
     questions = []
     answers = []
     options = []
-    filename = os.path.join(dataset_path, 'AQuA.json')
-    with open(filename, 'r') as file:
-        lines = file.readlines()
-        if split is not None:
-            start, end = split
-            lines = lines[start:end]
-        for line in lines:
-            data = json.loads(line)
-            if isinstance(data, dict):
-                options_list = data['options']
-                question_with_options = data['question'] + "\n" + "Options: " + ", ".join(data['options']) + "."
-                questions.append(question_with_options)
-                answers.append(data['correct'])
-                options.append(options_list)
-            else:
-                raise ValueError("Unexpected data format")
+    filename = os.path.join(dataset_path, f'{dataset}.json')
+    lines = Dataset.from_json(filename)
+    if split is not None:
+        start, end = split
+        lines = lines[start:end]
+    for i in range(len(lines)):
+        data = lines[i]
+        if isinstance(data, dict):
+            options_list = data['options']
+            question_with_options = data['question'] + "\n" + "Options: " + ", ".join(data['options']) + "."
+            questions.append(question_with_options)
+            answers.append(data['correct'])
+            options.append(options_list)
+        else:
+            raise ValueError("Unexpected data format")
     return Dataset.from_dict({"question": questions, "answer": answers, "options":options})
 
 def node_visualizer(x: MCTSNode[MATHState, MATHAction]):
@@ -63,7 +62,7 @@ def rap_AQuA(base_model: LanguageModel,
               cum_reward: Callable[[list[float]], float] = np.mean,
               calc_q: Callable[[list[float]], float] = max,
               log_dir: Optional[str] = None,
-              datasetname: str = 'AQuA',
+              datasetname: str = 'AQuA_clean',
               dataset_path: str = r"/data/haotian/RAP_tune/llm-reasoners/dataset/AQuA",
               disable_log: bool = False,
               disable_tqdm: bool = False,
@@ -90,7 +89,7 @@ def rap_AQuA(base_model: LanguageModel,
     dataset = data_reader(datasetname, dataset_path)
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
-                                     desc='AQuA', disable=disable_tqdm)):
+                                     desc='AQuA_clean', disable=disable_tqdm)):
         
         algo_output = reasoner(example["question"])
         if algo_output.terminal_state is None:
@@ -165,6 +164,30 @@ if __name__ == '__main__':
                     disable_tqdm=disable_tqdm or local_rank != 0,
                     **kwargs)
 
+    def main_exllama(
+                model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
+                lora_dir = None,
+                batch_size = 4,
+                mem_map = [18,22],
+                interactive_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/interactive_examples.json",
+                useful_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/useful_examples.json",
+                disable_log = False,
+                disable_tqdm = False,
+                **kwargs):
+        from reasoners.lm import ExLlamaModel
+        device = torch.device("cuda:0")
+        base_model = ExLlamaModel(model_dir, lora_dir, device, max_batch_size=batch_size, max_new_tokens=400, max_seq_length=2048, mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
+        with open(interactive_prompt) as f:
+            interactive_prompt = json.load(f)
+        with open(useful_prompt) as f:
+            useful_prompt = json.load(f)
+        rap_AQuA(base_model=base_model,
+                  interactive_prompt=interactive_prompt,
+                  useful_prompt=useful_prompt,
+                  batch_size=batch_size,
+                  disable_log=disable_log or local_rank != 0,
+                  disable_tqdm=disable_tqdm or local_rank != 0,
+                  **kwargs)
 
 
 
@@ -208,4 +231,4 @@ if __name__ == '__main__':
                   **kwargs)
 
 
-    fire.Fire(main_hf)
+    fire.Fire(main_exllama)
