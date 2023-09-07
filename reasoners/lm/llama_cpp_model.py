@@ -10,7 +10,7 @@ from reasoners import LanguageModel, GenerateOutput
 
 
 class LlamaCppModel(LanguageModel):
-    def __init__(self, path, n_ctx=2048, n_batch=2048, n_thread=None):
+    def __init__(self, path, n_ctx=2048, n_batch=512, n_thread=None):
 
         try:
             from llama_cpp import Llama
@@ -24,7 +24,7 @@ class LlamaCppModel(LanguageModel):
         self.llama = Llama(path,
                            n_ctx=n_ctx,
                            n_batch=n_batch,
-                           n_gpu_layers=1000,  # set to a large number to put all layers on GPUs
+                           n_gpu_layers=-1,  # set to a large number to put all layers on GPUs
                            logits_all=True,
                            verbose=False,
                            n_threads=n_thread)

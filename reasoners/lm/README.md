@@ -44,6 +44,6 @@ For how to quantize LLaMA, refer to [llama.cpp](https://github.com/ggerganov/lla
 - For more details and troubleshooting, please refer to [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) and [llama.cpp](https://github.com/ggerganov/llama.cpp).
 - Example run:
   ```bash
-  CUDA_VISIBLE_DEVICES=0 python examples/rap_gsm8k/inference.py --base_lm llama.cpp --llama_cpp_path /data/yi/llama.cpp/models/13B/ggml-model-q8_0.bin
+  CUDA_VISIBLE_DEVICES=0 python examples/rap_gsm8k/inference.py --base_lm llama.cpp --llama_cpp_path /path/to/13B/ggml-model-q5_0.gguf
   ```
 - From our experiments, `llama.cpp` suffers from slow inference speed when the model is put on multiple GPUs. Please contact us if you know how to fix this issue.

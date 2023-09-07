@@ -16,7 +16,12 @@
   ```
 - Hugging Face
   ```bash
-  CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --hf_path meta-llama/Llama-2-70b-hf --hf_peft_path None --hf_quantized 'nf4'
+  CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --base_lm hf --hf_path meta-llama/Llama-2-70b-hf --hf_peft_path None --hf_quantized 'nf4'
+  ```
+  > Note: You need to [request access to `meta-llama/Llama-2-70b-hf` from Meta AI](https://github.com/facebookresearch/llama#access-on-hugging-face). Alternatively, You can also try other models on Hugging Face.
+- llama.cpp
+  ```bash
+  CUDA_VISIBLE_DEVICES=0 python examples/rap_gsm8k/inference.py --base_lm llama.cpp --llama_cpp_path /path/to/13B/ggml-model-q5_0.gguf
   ```
 
 ### PAL + Guided Beam Search

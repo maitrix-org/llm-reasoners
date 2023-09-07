@@ -110,6 +110,7 @@ if __name__ == '__main__':
              llama_2_ckpts: str = llama_2_ckpts,
              llama_size: str = '13B',
              llama_cpp_path: str = None,
+             llama_cpp_n_batch: int = 512,
              hf_path: str = 'meta-llama/Llama-2-13b-hf',
              hf_peft_path: Optional[str] = None,
              hf_quantized: Optional[Literal['awq', 'int8', 'fp4', 'nf4']] = None,
@@ -141,7 +142,7 @@ if __name__ == '__main__':
             base_model = LlamaModel(llama_ckpts, llama_size, max_batch_size=batch_size)
         elif base_lm == 'llama.cpp':
             from reasoners.lm import LlamaCppModel
-            base_model = LlamaCppModel(llama_cpp_path)
+            base_model = LlamaCppModel(llama_cpp_path, n_batch=llama_cpp_n_batch)
         elif base_lm == 'llama-2':
             from reasoners.lm import Llama2Model
             base_model = Llama2Model(llama_2_ckpts, llama_size, max_batch_size=batch_size)
