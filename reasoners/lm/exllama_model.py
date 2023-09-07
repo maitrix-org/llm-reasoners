@@ -39,7 +39,7 @@ class ExLlamaModel(LanguageModel):
             from exllama.tokenizer import ExLlamaTokenizer
             from exllama.lora import ExLlamaLora
         except ImportError as e:
-            print('\033[31mError\033[0m: Cannot find exllama submodule. If you clone our repo without "--recursive", running \033[1mgit submodule update --init"\033[0m under the repo can solve this problem.', file=sys.stderr)
+            print('\033[31mError\033[0m: Cannot find exllama submodule. If you clone our repo without "--recursive", running "\033[1mgit submodule update --init\033[0m" under the repo can solve this problem.', file=sys.stderr)
             raise e
 
         if not os.path.isdir(model_dir):
