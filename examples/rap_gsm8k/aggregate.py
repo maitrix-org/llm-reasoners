@@ -9,16 +9,11 @@ from datasets import load_dataset
 from reasoners.algorithm import MCTSAggregation, MCTSResult
 
 import utils
-from world_model import GSM8kState
-
-
-def retrieve_answer(state: GSM8kState):
-    return utils.retrieve_answer(state[-1].sub_answer)
 
 
 def aggregate_rap_gsm8k(log_dir: str,
                         start: int = 0):
-    aggregator = MCTSAggregation(retrieve_answer, weight_policy='edge_inverse_depth')
+    aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge_inverse_depth')
     files = glob.glob(f'{log_dir}/algo_output/*.pkl')
     indices = sorted(filter(lambda index: index >= start, (int(os.path.basename(f)[:-4]) for f in files)))
     dataset = load_dataset("gsm8k", "main", split=f'test')
