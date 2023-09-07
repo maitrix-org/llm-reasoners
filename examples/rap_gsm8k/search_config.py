@@ -22,7 +22,7 @@ class GSM8kConfig(SearchConfig):
                  prompt: dict,
                  useful_prompt: dict,
                  n_actions=4,
-                 batch_size=2,
+                 batch_size=1,
                  temperature=0.8,
                  reward_alpha=0.5,
                  reward_confidence_default=0.8,

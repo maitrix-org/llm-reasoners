@@ -101,6 +101,7 @@ def rap_gsm8k(base_model: LanguageModel,
 if __name__ == '__main__':
     import os
     import sys
+    sys.path.append('/data/haotian/RAP_tune/llm-reasoners/exllama')
     import json
     import warnings
     import fire
@@ -128,7 +129,7 @@ if __name__ == '__main__':
              llama_2_ckpt: str = llama_2_ckpts,
              llama_size: str = '13B',
              llama_cpp_path: str = None,
-             batch_size: int = 2,
+             batch_size: int = 1,
              interactive_prompt: str = 'examples/rap_gsm8k/prompts/interactive_examples.json',
              useful_prompt: str = 'examples/rap_gsm8k/prompts/useful_examples.json',
              disable_log: bool = False,
@@ -157,5 +158,64 @@ if __name__ == '__main__':
                   disable_tqdm=disable_tqdm or local_rank != 0,
                   **kwargs)
 
-
-    fire.Fire(main)
+    def main_hf(hf_path = "/data/haotian/RAP_tune/llama-30B-hf",
+                batch_size = 1,
+                peft_path = None,
+                interactive_prompt = "examples/rap_gsm8k/prompts/interactive_examples.json",
+                useful_prompt = "examples/rap_gsm8k/prompts/useful_examples.json",
+                disable_log = False,
+                disable_tqdm = False,
+                quantized = "nf4", # awq, int8, fp4, nf4, None
+                load_awq_pth = None,
+                **kwargs):
+        from reasoners.lm import HFModel
+        device = torch.device("cuda:0")
+        base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=512, peft_pth=peft_path, quantized=quantized, load_awq_pth=load_awq_pth)
+        with open(interactive_prompt) as f:
+            interactive_prompt = json.load(f)
+        with open(useful_prompt) as f:
+            useful_prompt = json.load(f)
+        rap_gsm8k(base_model=base_model,
+                  interactive_prompt=interactive_prompt,
+                  useful_prompt=useful_prompt,
+                  batch_size=batch_size,
+                  disable_log=disable_log or local_rank != 0,
+                  disable_tqdm=disable_tqdm or local_rank != 0,
+                  **kwargs)
+    
+    
+    def main_exllama(
+                model_dir = '/data/haotian/RAP_tune/WizardMath-13B-V1.0-GPTQ',
+                lora_dir = None,
+                batch_size = 1,
+                mem_map = None,
+                interactive_prompt = "examples/rap_gsm8k/prompts/interactive_examples.json",
+                useful_prompt = "examples/rap_gsm8k/prompts/useful_examples.json",
+                disable_log = False,
+                disable_tqdm = False,
+                **kwargs):
+        from reasoners.lm import ExLlamaModel
+        device = torch.device("cuda:0")
+        base_model = ExLlamaModel(model_dir,
+                                  lora_dir,
+                                  device,
+                                  max_batch_size=batch_size,
+                                  max_new_tokens=200,
+                                  max_seq_length=2048,
+                                  mem_map=mem_map)
+        # please set mem_map if you need model parallelism
+        # e.g. mem_map = [16,22] with 2 GPUs
+        
+        with open(interactive_prompt) as f:
+            interactive_prompt = json.load(f)
+        with open(useful_prompt) as f:
+            useful_prompt = json.load(f)
+        rap_gsm8k(base_model=base_model,
+                  interactive_prompt=interactive_prompt,
+                  useful_prompt=useful_prompt,
+                  batch_size=batch_size,
+                  disable_log=disable_log or local_rank != 0,
+                  disable_tqdm=disable_tqdm or local_rank != 0,
+                  **kwargs)
+        
+    fire.Fire(main_exllama)
