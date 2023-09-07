@@ -18,3 +18,4 @@ dataset/
 *.json
 *.jsonl
 *.txt
+build/
