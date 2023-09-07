@@ -188,7 +188,16 @@ if __name__ == '__main__':
                 **kwargs):
         from reasoners.lm import ExLlamaModel
         device = torch.device("cuda:0")
-        base_model = ExLlamaModel(model_dir, lora_dir, device, max_batch_size=batch_size, max_new_tokens=400, max_seq_length=2048, mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
+        base_model = ExLlamaModel(model_dir,
+                                  lora_dir,
+                                  device,
+                                  max_batch_size=batch_size,
+                                  max_new_tokens=200,
+                                  max_seq_length=2048,
+                                  mem_map=mem_map)
+        # please set mem_map if you need model parallelism
+        # e.g. mem_map = [16,22] with 2 GPUs
+        
         with open(interactive_prompt) as f:
             interactive_prompt = json.load(f)
         with open(useful_prompt) as f:

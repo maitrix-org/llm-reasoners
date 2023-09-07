@@ -55,6 +55,7 @@ class HFModel(LanguageModel):
                 quantization_config=bnb_config,
                 device_map="auto",
             )
+        
         elif quantized == "awq":
             config = AutoConfig.from_pretrained(model_pth, trust_remote_code=True)
             self.tokenizer = AutoTokenizer.from_pretrained(model_pth, trust_remote_code=True, lagacy=False)

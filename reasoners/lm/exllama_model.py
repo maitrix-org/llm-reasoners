@@ -13,6 +13,7 @@ from typing import Tuple, Union, Optional
 import warnings
 import numpy as np
 import random
+import copy
 
 from tqdm import tqdm
 import glob
@@ -48,8 +49,6 @@ class ExLlamaModel(LanguageModel):
         st_pattern = os.path.join(model_dir, "*.safetensors")
         model_path = glob.glob(st_pattern)[0]
 
-
-
         # Create config, model, tokenizer and generator
 
         self.config = ExLlamaConfig(model_config_path)               # create config from config.json
@@ -78,6 +77,7 @@ class ExLlamaModel(LanguageModel):
         self.max_batch_size = max_batch_size
         self.max_new_tokens = max_new_tokens
         self.max_seq_length = max_seq_length
+    
     def generate(
             self,
             inputs: list[str],
@@ -99,8 +99,6 @@ class ExLlamaModel(LanguageModel):
         if max_new_tokens is None:
             warnings.warn("max_new_tokens is not set, we will use the default value: {}".format(self.max_new_tokens))
             max_new_tokens = self.max_new_tokens
-        if eos_token_id is not None:
-            warnings.warn("eos_token_id is not supported by ExLlamaModel. Use disallow_tokens instead. Here may lead to bug and please check. We just use split when eos isinstance(str)")
         if do_sample is False or temperature <= 0.0:
             warnings.warn("do_sample is defaultly set to False, we will set temp=1.0 and top-k = 1 for Exllama")
             temperature = 1.0
@@ -112,6 +110,26 @@ class ExLlamaModel(LanguageModel):
         self.generator.settings.top_k = top_k
         self.generator.settings.typical = 0.0
 
+        eos_token_id_input = copy.deepcopy(eos_token_id)
+        eos_token_id = []
+
+        if eos_token_id_input is not None:
+            if not isinstance(eos_token_id_input, list):
+                eos_token_id_input = [eos_token_id_input]
+            for token in eos_token_id_input:
+                if isinstance(token, str):
+                    tokenized, mask = self.tokenizer.encode(token, return_mask=True, add_bos=False, add_eos=False)
+                    tokenized = tokenized[0]
+                    if len(tokenized) != 1:
+                        warnings.warn(f'the eos_token {repr(token)} is encoded into {tokenized} with length != 1, '
+                                    f'using {tokenized[-1]} as the eos_token_id')
+                    token = tokenized[-1].item()
+                if isinstance(token, int):
+                    eos_token_id.append(token)
+                else:
+                    warnings.warn(f'the eos_token {repr(token)} is neither str nor int, which is ignored')
+        eos_token_id.append(self.tokenizer.eos_token_id)
+
         if num_return_sequences > 1:
             assert len(inputs) == 1, "num_return_sequences > 1 is not supported for batched inputs"
             inputs = inputs * num_return_sequences
@@ -122,9 +140,15 @@ class ExLlamaModel(LanguageModel):
             end = min(start + self.max_batch_size, len(inputs))
             with torch.inference_mode():
                 p_time = time.time()
-                decoded = self.generator.generate_simple(inputs[start:end], max_new_tokens=self.max_new_tokens)
+                decoded = self.generate_simple(self.generator, inputs[start:end], max_new_tokens=self.max_new_tokens, eos_token_id=eos_token_id)
                 f_time = time.time()
-                print(f"Time for generating {self.max_new_tokens}*{end-start} examples: {f_time-p_time}, speed: {self.max_new_tokens*(end-start)/(f_time-p_time)} t/s")
+                num_new_tokens = [
+                    len(self.tokenizer.encode(d, add_bos=False, add_eos=False)[0])
+                    - len(self.tokenizer.encode(e, add_bos=False, add_eos=False)[0])
+                    for e, d in zip(inputs[start:end], decoded)]
+                t = f_time-p_time
+                print(f"Time for generating {sum(num_new_tokens)} tokens: {round(t, 2)}s "
+                      f"(speed: {round(sum(num_new_tokens) / t, 2)} t/s)")
             if not isinstance(decoded, list):
                 decoded = [decoded]
             if hide_input:
@@ -137,6 +161,31 @@ class ExLlamaModel(LanguageModel):
                 warnings.warn("output_log_probs is temporarily not supported now by ExLlamaModel. Please refere to exllama's code")
             decoded_list.extend(decoded)
         return GenerateOutput(decoded_list, log_prob_list)
+
+    def generate_simple(self, generator, prompt, max_new_tokens = 128, eos_token_id = None):
+        # copied from exllama/generator.py
+        # support customized eos_token_id
+
+        if eos_token_id is None:
+            eos_token_id = [generator.tokenizer.eos_token_id]
+
+        generator.end_beam_search()
+
+        ids, mask = generator.tokenizer.encode(prompt, return_mask = True, max_seq_len = generator.model.config.max_seq_len)
+        generator.gen_begin(ids, mask = mask)
+
+        max_new_tokens = min(max_new_tokens, generator.model.config.max_seq_len - ids.shape[1])
+
+        eos = torch.zeros((ids.shape[0],), dtype = torch.bool)
+        for i in range(max_new_tokens):
+            token = generator.gen_single_token(mask = mask)
+            for j in range(token.shape[0]):
+                if token[j, 0].item() in eos_token_id:
+                    eos[j] = True
+            if eos.all(): break
+
+        text = self.tokenizer.decode(generator.sequence)
+        return text
 
     @torch.no_grad()
     def get_next_token_logits(
@@ -172,9 +221,7 @@ class ExLlamaModel(LanguageModel):
                 output_device = self.device,
                 input_mask = mask
             ).squeeze(1)
-        f_time = time.time()
         assert all_logits.shape[0] == bsz, (all_logits.shape[0], bsz)
-        print(f"Time for forwarding {self.max_new_tokens} examples: {f_time-p_time}, speed: {self.max_new_tokens/(f_time-p_time)} t/s")
         logits = []
         for case_logits, cand in zip(all_logits, cand_tokens):
 
