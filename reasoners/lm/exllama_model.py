@@ -1,21 +1,21 @@
 import os
 import sys
-
-import torch
-from typing import Tuple, Union, Optional
+from typing import Union, Optional
 import warnings
-import numpy as np
 import random
 import copy
-
-from .. import LanguageModel,GenerateOutput
-
 import glob
 import time
 
+import torch
+import numpy as np
+from tqdm import tqdm
+
+from .. import LanguageModel,GenerateOutput
+
 
 class ExLlamaModel(LanguageModel):
-    def __init__(self, model_dir, lora_dir, device, max_batch_size, max_new_tokens, max_seq_length, mem_map:list[int]=None):
+    def __init__(self, model_dir, lora_dir, max_batch_size, max_new_tokens, max_seq_length, device='cuda:0', mem_map:list[int]=None, log_time=False):
         """
         Initializes an ExLlamaModel instance.
 
@@ -84,6 +84,8 @@ class ExLlamaModel(LanguageModel):
         self.max_batch_size = max_batch_size
         self.max_new_tokens = max_new_tokens
         self.max_seq_length = max_seq_length
+
+        self.log_time = log_time
     
     def generate(
             self,
@@ -154,8 +156,9 @@ class ExLlamaModel(LanguageModel):
                     - len(self.tokenizer.encode(e, add_bos=False, add_eos=False)[0])
                     for e, d in zip(inputs[start:end], decoded)]
                 t = f_time-p_time
-                print(f"Time for generating {sum(num_new_tokens)} tokens: {round(t, 2)}s "
-                      f"(speed: {round(sum(num_new_tokens) / t, 2)} t/s)")
+                if self.log_time:
+                    tqdm.write(f"Time for generating {sum(num_new_tokens)} tokens: {round(t, 2)}s "
+                               f"(speed: {round(sum(num_new_tokens) / t, 2)} t/s)")
             if not isinstance(decoded, list):
                 decoded = [decoded]
             if hide_input:

@@ -2,25 +2,22 @@
 
 ## GSM8K
 ### RAP
-user need to switch the main function for Fire()
-
-```bash
-python -m torch.distributed.run --nproc_per_node 4 examples/rap_gsm8k/inference.py --llama_size "30B" --output_trace_in_each_iter
-```
-for llama2
-```bash
-CUDA_VISIBLE_DEVICES=0,1 python -m torch.distributed.run --nproc_per_node 2 examples/rap_gsm8k/inference.py --llama_size "13B" --output_trace_in_each_iter --base_lm 'llama2'
-```
-
-for exllama
-```bash
-CUDA_VISIBLE_DEVICES=0 python examples/rap_gsm8k/inference.py --model_dir 'path/to/model/dir' --lora_dir None --batch_size 1 --output_trace_in_each_iter
-```
-
-for huggingface llama
-```bash
-CUDA_VISIBLE_DEVICES=0 python examples/rap_gsm8k/inference.py --hf_path 'path/to/hf/model/dir' --peft_path None --batch_size 1 --quantized 'nf4' --output_trace_in_each_iter
-```
+- LLaMA
+  ```bash
+  CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc-per-node 2 --master-port 6666 examples/rap_gsm8k/inference.py --base_lm llama --llama_ckpt /path/to/llama_ckpts --llama_size 13B
+  ```
+- Llama2
+  ```bash
+  CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc-per-node 2 --master-port 6676 examples/rap_gsm8k/inference.py --base_lm llama-2 --llama_2_ckpts /path/to/llama-2-ckpts --llama_size 13B
+  ```
+- ExLlama
+  ```bash
+  CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --base_lm exllama --exllama_model_dir /path/to/Llama-2-70B-GPTQ --exllama_lora_dir None --exllama_mem_map '[16,22]'
+  ```
+- Hugging Face
+  ```bash
+  CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --hf_path meta-llama/Llama-2-70b-hf --hf_peft_path None --hf_quantized 'nf4'
+  ```
 
 ### PAL + Guided Beam Search
 
