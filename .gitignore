@@ -17,3 +17,4 @@ gpt-plan-benchmark
 dataset/
 *.json
 *.txt
+*.csv
