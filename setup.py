@@ -26,7 +26,7 @@ setup(name='reasoners',
                         'llama@git+https://github.com/facebookresearch/llama@main',
                         'fairscale'],
       include_package_data=True,
-      extra_require={
+      extras_require={
           'awq': ['awq@git+https://github.com/mit-han-lab/llm-awq',
                   'awq_inference_engine@git+https://github.com/mit-han-lab/llm-awq.git@main#subdirectory=awq/kernels'],
       },
