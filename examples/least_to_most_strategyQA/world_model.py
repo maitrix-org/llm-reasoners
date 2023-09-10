@@ -3,6 +3,9 @@ from typing import NamedTuple, TypedDict
 from collections import defaultdict
 from prompt import solve_prompt
 from reasoners import WorldModel, LanguageModel
+import os
+
+local_rank = int(os.environ.get("LOCAL_RANK", 0))
 
 
 class SubResult(NamedTuple):
@@ -46,14 +49,22 @@ class StrategyQAWorldModel(WorldModel[StrategyQAState, StrategyQAAction]):
         
             model_input = f.getvalue()
 
-
         sub_answer = self.base_model.generate(
             [model_input],
             hide_input=True,
+            top_k=32000,
+            top_p=0.95,
             do_sample=True,
             temperature=self.temperature,
             eos_token_id='\n'
         ).text[0].strip()
+
+        # local rank
+        if local_rank == 0:
+            with open("logs/least_to_most_strategyqa/log.txt", "a") as f:
+                print(f"ACTION: {action}", file=f)
+                print(f"ANSWER: {sub_answer}", file=f)
+                print(f"\n", file=f)
 
         state.append(SubResult(action, sub_answer))
 

@@ -14,7 +14,8 @@ from datetime import datetime
 
 from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import BeamSearch
-from reasoners.lm import LLaMAModel, LlamaCppModel, LlamaModel
+from reasoners.lm import LLaMAModel, LlamaModel, ExLlamaModel
+from collections import Counter
 
 from world_model import StrategyQAWorldModel
 from search_config import StrategyQAConfig
@@ -25,9 +26,9 @@ def least_to_most_strategyqa(base_model: LanguageModel,
                 search_algo: Type[SearchAlgorithm] = BeamSearch,
                 resume: int = 0,
                 depth_limit: int = 16,
-                temperature: float = 0.7,
+                temperature: float = 0.8,
                 beam_size: int = 1,
-                self_consistency_n: int = 1,
+                self_consistency_n: int = 10,
                 max_depth: int = 16,
                 data_path: str = "examples/least_to_most_strategyQA/strategyqa_test.json",
                 log_dir: Optional[str] = None,
@@ -49,9 +50,10 @@ def least_to_most_strategyqa(base_model: LanguageModel,
             'max_depth': max_depth,
             }
     
-    world_model = StrategyQAWorldModel(base_model=base_model)
+    world_model = StrategyQAWorldModel(base_model=base_model, temperature=temperature)
     config = StrategyQAConfig(base_model=base_model,
                             temperature=temperature,
+                            self_consistency_n=self_consistency_n,
                             depth_limit=depth_limit)
     search_algo = search_algo(**search_algo_params)
 
@@ -65,6 +67,13 @@ def least_to_most_strategyqa(base_model: LanguageModel,
                                      desc='Strategy QA', disable=disable_tqdm)):
         outputs = []
 
+        seed_id = 0
+        np.random.seed(seed_id)
+        random.seed(seed_id)
+        torch.manual_seed(seed_id)
+        torch.cuda.manual_seed(seed_id)
+        torch.backends.cudnn.deterministic = True
+
         for _ in range(self_consistency_n):
             # run the reasoner
             algo_output = reasoner(example["question"])
@@ -76,9 +85,22 @@ def least_to_most_strategyqa(base_model: LanguageModel,
             output = parse_answer(output)
             # add to outputs
             outputs.append(output)
+
+            local_rank = int(os.environ.get("LOCAL_RANK", 0))
+            if local_rank == 0:
+                with open("logs/least_to_most_strategyqa/log.txt", "a") as f:
+                    print(f"FINAL ANSWER: {output}", file=f)
         
         # get the most common output, if there is a tie, always choose the first one
         output = majority_voting(outputs)
+        if local_rank == 0:
+            with open("logs/least_to_most_strategyqa/log.txt", "a") as f:
+                # print the distribution of outputs, counter in one line
+                counter = Counter(outputs)
+                print(f"\nSC OUTPUTS: {counter}\n", file=f)
+
+                print(f"\nSC ANSWER: {output}\n", file=f)
+
 
         # get the answer from the dataset
         answer = example["answer"]
@@ -101,21 +123,15 @@ def main(base_lm: str = "llama",
         llama_size: str = "30B",
         resume: int = 0,
         depth_limit: int = 16,
-        temperature: float = 1,
+        temperature: float = 0.8,
         beam_size: int = 1,
-        self_consistency_n: int = 1,
+        self_consistency_n: int = 10,
         max_depth: int = 16,
         data_path: str = "examples/least_to_most_strategyQA/strategyqa_test.json",
         log_dir: Optional[str] = None,       
         disable_log: bool = False,
         disable_tqdm: bool = False,
         **kwargs):
-    
-    np.random.seed(0)
-    random.seed(0)
-    torch.manual_seed(0)
-    torch.cuda.manual_seed(0)
-    torch.backends.cudnn.deterministic = True
 
     llama_ckpts = os.environ.get("LLAMA_CKPTS", None)
     llama_2_ckpts = os.environ.get("LLAMA_2_CKPTS", None)
@@ -125,7 +141,7 @@ def main(base_lm: str = "llama",
         warnings.filterwarnings('ignore')
 
     if base_lm == 'llama':
-        base_model = LLaMAModel(llama_ckpts, llama_size)
+        base_model = LLaMAModel(llama_ckpts, llama_size, max_batch_size=5)
     elif base_lm == 'llama2':
         base_model = LlamaModel(llama_2_ckpts, llama_size)
     else:
@@ -144,6 +160,55 @@ def main(base_lm: str = "llama",
                             disable_tqdm=disable_tqdm,
                             **kwargs)
     
+def main_exllama(
+        model_dir = '/data/tianyang/llm-reasoners/ckpts/Llama-2-70B-GPTQ',
+        lora_dir = None,
+        batch_size = 1,
+        mem_map = [16,22],
+        resume: int = 0,
+        depth_limit: int = 16,
+        temperature: float = 0.8,
+        beam_size: int = 1,
+        self_consistency_n: int = 10,
+        max_depth: int = 16,
+        data_path: str = "examples/least_to_most_strategyQA/strategyqa_test.json",
+        log_dir: Optional[str] = None,       
+        disable_log: bool = False,
+        disable_tqdm: bool = False,
+        **kwargs):
+    
+    local_rank = int(os.environ.get("LOCAL_RANK", 0))
+    if local_rank != 0:
+        sys.stdout = open(os.devnull, 'w')
+        warnings.filterwarnings('ignore')
+
+    device = torch.device("cuda:0")
+    base_model = ExLlamaModel(model_dir,
+                                lora_dir,
+                                device,
+                                max_batch_size=batch_size,
+                                max_new_tokens=512,
+                                max_seq_length=2048,
+                                mem_map=mem_map)
+
+    least_to_most_strategyqa(base_model=base_model,
+                            resume=resume,
+                            depth_limit=depth_limit,
+                            temperature=temperature,
+                            beam_size=beam_size,
+                            self_consistency_n=self_consistency_n,
+                            max_depth=max_depth,
+                            data_path=data_path,
+                            log_dir=log_dir,
+                            disable_log=disable_log,
+                            disable_tqdm=disable_tqdm,
+                            **kwargs)
+    
+
+    
+
+    
 if __name__ == '__main__':
     import fire
-    fire.Fire(main)
+    # fire.Fire(main)
+    fire.Fire(main_exllama)
