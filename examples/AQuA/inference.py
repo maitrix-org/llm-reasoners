@@ -90,8 +90,10 @@ def rap_AQuA(base_model: LanguageModel,
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
                                      desc='AQuA_clean', disable=disable_tqdm)):
-        
-        algo_output = reasoner(example["question"])
+        try:
+            algo_output = reasoner(example["question"])
+        except AssertionError as e:
+            algo_output = {'terminal_state': None, 'trace': None, 'trace_log': None, 'trace_log_str': None}
         if algo_output.terminal_state is None:
             output = None
         else:
@@ -167,7 +169,7 @@ if __name__ == '__main__':
     def main_exllama(
                 model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
                 lora_dir = None,
-                batch_size = 4,
+                batch_size = 1,
                 mem_map = [18,22],
                 interactive_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/interactive_examples.json",
                 useful_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/useful_examples.json",
@@ -176,7 +178,7 @@ if __name__ == '__main__':
                 **kwargs):
         from reasoners.lm import ExLlamaModel
         device = torch.device("cuda:0")
-        base_model = ExLlamaModel(model_dir, lora_dir, device, max_batch_size=batch_size, max_new_tokens=400, max_seq_length=2048, mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
+        base_model = ExLlamaModel(model_dir, lora_dir, device, max_batch_size=batch_size, max_new_tokens=128, max_seq_length=2048, mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
         with open(interactive_prompt) as f:
             interactive_prompt = json.load(f)
         with open(useful_prompt) as f:

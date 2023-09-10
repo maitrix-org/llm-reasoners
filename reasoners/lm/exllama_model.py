@@ -169,9 +169,10 @@ class ExLlamaModel(LanguageModel):
         if eos_token_id is None:
             eos_token_id = [generator.tokenizer.eos_token_id]
 
-        generator.end_beam_search()
+        generator.end_beam_search()###here seems the bug?x this line is no use
 
         ids, mask = generator.tokenizer.encode(prompt, return_mask = True, max_seq_len = generator.model.config.max_seq_len)
+        assert generator.model.config.max_seq_len - ids.shape[1] > 30, (self.tokenizer.decode(ids[0]),ids.shape[1])
         generator.gen_begin(ids, mask = mask)
 
         max_new_tokens = min(max_new_tokens, generator.model.config.max_seq_len - ids.shape[1])
@@ -211,6 +212,8 @@ class ExLlamaModel(LanguageModel):
         tokens, mask = self.tokenizer.encode(prompt, return_mask=True, add_bos=True, add_eos=False)
         p_time = time.time()
         with torch.no_grad():
+            self.sequence = None
+            self.sequence_actual = None
             self.cache.current_seq_len = 0
             all_logits = self.model.forward(
                 tokens,
@@ -238,6 +241,8 @@ class ExLlamaModel(LanguageModel):
             assert torch.all(prompt_tokens[:len(prefix_tokens)] == prefix_tokens)
         tokens = prompts_tokens
         with torch.no_grad():
+            self.sequence = None
+            self.sequence_actual = None
             self.cache.current_seq_len = 0
             logits = self.model.forward(
                 tokens,
