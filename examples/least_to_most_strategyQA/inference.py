@@ -61,6 +61,9 @@ def least_to_most_strategyqa(base_model: LanguageModel,
 
     with open(data_path, 'r') as f:
         dataset = json.load(f)
+    
+    # the first 500 examples are used
+    dataset = dataset[:500]
 
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
@@ -187,7 +190,7 @@ def main_exllama(
                                 lora_dir,
                                 device,
                                 max_batch_size=batch_size,
-                                max_new_tokens=512,
+                                max_new_tokens=256,
                                 max_seq_length=2048,
                                 mem_map=mem_map)
 

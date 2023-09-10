@@ -24,7 +24,7 @@ class StrategyQAConfig(SearchConfig):
         self.actions = []
 
     def get_actions(self, state: StrategyQAState) -> list[StrategyQAAction]:
-        # the first
+        # the first time, we need to query the model to get the subquestions
         if len(state) == 0 and len(self.actions) == 0:
             # query the model using the prompt
             with io.StringIO() as f:
@@ -63,6 +63,15 @@ class StrategyQAConfig(SearchConfig):
                 ## if more than 5 subquestions, keep 5, add final question
                 if len(subqs_list) > 5:
                     subqs_list = subqs_list[:5]
+
+                # before adding the final question, we need to check if it is already in the list
+                if self.example in subqs_list:
+                    # get the all the indexes of the final question
+                    indexes = [i for i, x in enumerate(subqs_list) if x == self.example]
+                    # remove all the indexes
+                    subqs_list = [i for j, i in enumerate(subqs_list) if j not in indexes]
+
+                # add the final question
                 subqs_list.append(self.example)
 
                 subqs_lists.append(subqs_list)
@@ -73,12 +82,13 @@ class StrategyQAConfig(SearchConfig):
             
             # set the actions
             self.actions = subqs_lists
-            
+        
+
+        action = self.actions[0].pop(0)
+
         # pop the first action and del it from actions
         if len(self.actions[0]) == 0:
             self.actions = self.actions[1:]
-
-        action = self.actions[0].pop(0)
 
         return [action]
 
