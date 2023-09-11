@@ -164,6 +164,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
     def _expand(self, node: MCTSNode):
         if node.state is None:
             node.state, aux = self.world_model.step(node.parent.state, node.action)
+            # aux is {'confidence': confidence}
             # reward is calculated after the state is updated, so that the
             # information can be cached and passed from the world model
             # to the reward function with **aux without repetitive computation
