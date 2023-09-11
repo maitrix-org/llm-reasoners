@@ -3,6 +3,7 @@ from typing import Type, Callable, Optional
 
 import numpy as np
 from datasets import load_dataset
+from reasoners.algorithm.mcts import MCTSResult
 from sklearn import base
 from tqdm import tqdm
 from datetime import datetime
@@ -93,7 +94,8 @@ def rap_AQuA(base_model: LanguageModel,
         try:
             algo_output = reasoner(example["question"])
         except AssertionError as e:
-            algo_output = {'terminal_state': None, 'trace': None, 'trace_log': None, 'trace_log_str': None}
+            from reasoners import MCTSResult
+            algo_output = MCTSResult(terminal_state=None, cum_reward=None, trace=None, trace_of_nodes=None, tree_state=None)
         if algo_output.terminal_state is None:
             output = None
         else:
