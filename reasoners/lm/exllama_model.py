@@ -172,7 +172,7 @@ class ExLlamaModel(LanguageModel):
         generator.end_beam_search()###here seems the bug?x this line is no use
 
         ids, mask = generator.tokenizer.encode(prompt, return_mask = True, max_seq_len = generator.model.config.max_seq_len)
-        assert generator.model.config.max_seq_len - ids.shape[1] > 30, (self.tokenizer.decode(ids[0]),ids.shape[1])
+        assert generator.model.config.max_seq_len - ids.shape[1] > 5, (self.tokenizer.decode(ids[0]),ids.shape[1])
         generator.gen_begin(ids, mask = mask)
 
         max_new_tokens = min(max_new_tokens, generator.model.config.max_seq_len - ids.shape[1])
