@@ -1,21 +1,19 @@
-from .. import LanguageModel,GenerateOutput
+from typing import Union, Optional
+import warnings
+import copy
+
 from transformers import LlamaForCausalLM, AutoTokenizer, GenerationConfig, BitsAndBytesConfig, AutoConfig, AutoModelForCausalLM
 import torch
 from peft import PeftModel
-from typing import Tuple, Union, Optional
-import warnings
-import copy
-import sys
 import numpy as np
 from optimum.bettertransformer import BetterTransformer
-#for awq quantization, please refer to https://github.com/mit-han-lab/llm-awq to build env
-# from awq.quantize.quantizer import pseudo_quantize_model_weight, real_quantize_model_weight
-# from awq.utils.utils import simple_dispatch_model
-# from awq.quantize.pre_quant import apply_awq
-# from awq.quantize.quantizer import real_quantize_model_weight
-from accelerate import init_empty_weights, load_checkpoint_and_dispatch, infer_auto_device_map, load_checkpoint_in_model, dispatch_model
+from accelerate import infer_auto_device_map, dispatch_model
+
+from .. import LanguageModel,GenerateOutput
+
+
 class HFModel(LanguageModel):
-    def __init__(self, model_pth, tokenizer_pth, device, max_batch_size=1, max_new_tokens=None, max_length=2048, quantized=None, peft_pth=None, load_awq_pth=None):
+    def __init__(self, model_pth, tokenizer_pth, device='cuda:0', max_batch_size=1, max_new_tokens=None, max_length=2048, quantized=None, peft_pth=None, load_awq_pth=None):
         super().__init__()
         """
         Initializes a new instance of the `HFModel` class.
@@ -57,6 +55,14 @@ class HFModel(LanguageModel):
             )
         
         elif quantized == "awq":
+            try:
+                from awq.quantize.pre_quant import apply_awq
+                from awq.quantize.quantizer import real_quantize_model_weight
+            except ImportError as e:
+                print(f'\033[31mError\033[0m: You need to install package awq to use {quantized=}. '
+                      'It can be installed with \033[1mpip install -e .[awq]\033[0m under cloned reaonsers repo. '
+                      'Refer to https://github.com/mit-han-lab/llm-awq for more details.')
+                raise e
             config = AutoConfig.from_pretrained(model_pth, trust_remote_code=True)
             self.tokenizer = AutoTokenizer.from_pretrained(model_pth, trust_remote_code=True, lagacy=False)
             kwargs = {"torch_dtype": torch.float16, "low_cpu_mem_usage": True}
@@ -67,7 +73,6 @@ class HFModel(LanguageModel):
             q_config = {
                 "zero_point": True,  # by default True
                 "q_group_size": 128,  # whether to use group quantization
-
             }
             real_quantize_model_weight(self.model, w_bit=4, q_config=q_config)
             kwargs = {"max_memory": None}
@@ -245,10 +250,3 @@ class HFModel(LanguageModel):
                 if tokens[j, i] != self.tokenizer.pad_token_id:
                     acc_probs[j] += torch.log(probs[j, tokens[j, i]])
         return acc_probs.cpu().numpy()
-        
-
-
-
-
-        
-

@@ -86,7 +86,7 @@ if __name__ == '__main__':
     import random
     import torch
     import torch.backends.cudnn
-    from reasoners.lm import LLaMAModel, LlamaModel
+    from reasoners.lm import LlamaModel, Llama2Model
     np.random.seed(1)
     random.seed(1)
     torch.manual_seed(1)
@@ -102,12 +102,12 @@ if __name__ == '__main__':
              depth_limit: int = 6,
              **kwargs):
 
-        from reasoners.lm import LLaMAModel
+        from reasoners.lm import LlamaModel
         local_rank = int(os.environ["LOCAL_RANK"])
         llama_ckpts = os.environ["LLAMA_CKPTS"]
         with open(prompt_path) as f:
             prompt = json.load(f)
-        llama_model = LLaMAModel(llama_ckpts, llama_size, max_batch_size=2)
+        llama_model = LlamaModel(llama_ckpts, llama_size, max_batch_size=2)
         rap_bw(llama_model,
                prompt,
                disable_log=disable_log or local_rank != 0,
@@ -143,7 +143,7 @@ if __name__ == '__main__':
                lm_plan_file=lm_plan_file, **kwargs)
 
     def llama_hf_main(
-            llama_path = '/data/haotian/RAP_tune/llama-30B-hf',
+            llama_path = '/data/haotian/RAP_tune/Llama-2-7b-hf',
             peft_path = None,
             prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
             data_path: str = 'examples/rap_blocksworld/data/step_4.json',
@@ -171,7 +171,7 @@ if __name__ == '__main__':
                lm_plan_file=lm_plan_file, **kwargs)
     #for exllama use please refer to https://github.com/turboderp/exllama and put it under /llm-reasoners/
     def exllama_main(
-            model_dir = '/data/haotian/RAP_tune/LLaMA-30b-GPTQ',
+            model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
             lora_dir = None,
             prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
             data_path: str = 'examples/rap_blocksworld/data/step_4.json',
@@ -216,12 +216,12 @@ if __name__ == '__main__':
              depth_limit: int = 6,
              **kwargs):
 
-        from reasoners.lm import LlamaModel
+        from reasoners.lm import Llama2Model
         local_rank = int(os.environ["LOCAL_RANK"])
         llama2_ckpts = os.environ["LLAMA_2_CKPTS"]
         with open(prompt_path) as f:
             prompt = json.load(f)
-        llama_model = LlamaModel(llama2_ckpts, llama_size, max_batch_size=1)
+        llama_model = Llama2Model(llama2_ckpts, llama_size, max_batch_size=1)
         rap_bw(llama_model,
                prompt,
                disable_log=disable_log or local_rank != 0,
@@ -231,5 +231,5 @@ if __name__ == '__main__':
                depth_limit=depth_limit,
                lm_plan_file=lm_plan_file, **kwargs)
 
-  
+
     fire.Fire(exllama_main) # user will need to switch the model in the code

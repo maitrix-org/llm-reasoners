@@ -27,7 +27,7 @@ def setup_model_parallel() -> Tuple[int, int]:
     return local_rank, world_size
 
 
-class LLaMAModel(LanguageModel):
+class LlamaModel(LanguageModel):
     def __init__(self, path, size, max_batch_size=1, max_seq_len=2048,
                  local_rank=-1, world_size=-1):
         super().__init__()
@@ -311,7 +311,7 @@ class DummyLLaMAModel(LanguageModel):
 
 
 if __name__ == '__main__':
-    model = LLaMAModel("/data/haotian/RAP_tune/llama-ckpts",'7B')
+    model = LlamaModel("/data/haotian/RAP_tune/llama-ckpts",'7B')
     print(model.get_next_token_logits(['Smoking is harmful to health.'], candidates=[[' It']]))
     print(model.get_next_token_logits(['Smoking is harmful to health. It'], candidates=[[' is']]))
     print(model.get_next_token_logits(['Smoking is harmful to health. It is'], candidates=[[' the']]))

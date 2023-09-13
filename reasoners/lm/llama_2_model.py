@@ -22,7 +22,7 @@ from llama import ModelArgs, Transformer, Tokenizer
 
 from reasoners import LanguageModel, GenerateOutput
 
-class LlamaModel(LanguageModel):
+class Llama2Model(LanguageModel):
     @staticmethod
     def build(
         ckpt_dir: str,

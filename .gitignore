@@ -16,5 +16,8 @@ gpt-plan-benchmark
 .vscode/
 dataset/
 *.json
+*.jsonl
 *.txt
+build/
+examples/MATH
 *.csv
