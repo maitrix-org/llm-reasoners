@@ -11,10 +11,12 @@ logs/
 temp/
 scripts/
 gpt-plan-benchmark/
-gpt-plan-benchmark
+LLMs-Planning/
+LLMs-Planning
 .DS_Store
 .vscode/
 dataset/
 *.json
 *.jsonl
 *.txt
+sas_plan

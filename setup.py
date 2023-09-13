@@ -22,7 +22,7 @@ setup(name='reasoners',
                         'optimum',
                         'ninja',
                         'bitsandbytes',
-                        'llama1@git+https://github.com/AegeanYan/llama@llama_v1',#llama 2 have some alias problem so you may need to clone the forked llama1 at private repo. please check the setup.py
+                        'llama1@git+https://github.com/AegeanYan/llama@llama_v1', #llama have alias problem, so you may need to clone the forked llama1 at private repo
                         'llama@git+https://github.com/facebookresearch/llama@main',
                         'awq@git+https://github.com/mit-han-lab/llm-awq@main',
                         'awq_inference_engine@git+https://github.com/mit-han-lab/llm-awq.git@main#subdirectory=awq/kernels',
