@@ -86,7 +86,7 @@ if __name__ == '__main__':
     import random
     import torch
     import torch.backends.cudnn
-    from reasoners.lm import LLaMAModel, LlamaModel
+    from reasoners.lm import LlamaModel, Llama2Model
     np.random.seed(1)
     random.seed(1)
     torch.manual_seed(1)
@@ -102,12 +102,12 @@ if __name__ == '__main__':
              depth_limit: int = 6,
              **kwargs):
 
-        from reasoners.lm import LLaMAModel
+        from reasoners.lm import LlamaModel
         local_rank = int(os.environ["LOCAL_RANK"])
         llama_ckpts = os.environ["LLAMA_CKPTS"]
         with open(prompt_path) as f:
             prompt = json.load(f)
-        llama_model = LLaMAModel(llama_ckpts, llama_size, max_batch_size=2)
+        llama_model = LlamaModel(llama_ckpts, llama_size, max_batch_size=2)
         rap_bw(llama_model,
                prompt,
                disable_log=disable_log or local_rank != 0,
@@ -216,12 +216,12 @@ if __name__ == '__main__':
              depth_limit: int = 6,
              **kwargs):
 
-        from reasoners.lm import LlamaModel
+        from reasoners.lm import Llama2Model
         local_rank = int(os.environ["LOCAL_RANK"])
         llama2_ckpts = os.environ["LLAMA_2_CKPTS"]
         with open(prompt_path) as f:
             prompt = json.load(f)
-        llama_model = LlamaModel(llama2_ckpts, llama_size, max_batch_size=1)
+        llama_model = Llama2Model(llama2_ckpts, llama_size, max_batch_size=1)
         rap_bw(llama_model,
                prompt,
                disable_log=disable_log or local_rank != 0,

@@ -1,5 +1,5 @@
 import pickle
-from typing import Type, Callable, Optional
+from typing import Type, Callable, Optional, Literal
 
 import numpy as np
 from datasets import load_dataset
@@ -8,7 +8,7 @@ from tqdm import tqdm
 from datetime import datetime
 
 from reasoners import LanguageModel, Reasoner, SearchAlgorithm
-from reasoners.algorithm import MCTS, MCTSNode
+from reasoners.algorithm import MCTS, MCTSNode, MCTSAggregation
 
 from world_model import GSM8kWorldModel, GSM8kState, GSM8kAction
 from search_config import GSM8kConfig
@@ -42,6 +42,7 @@ def rap_gsm8k(base_model: LanguageModel,
               disable_log: bool = False,
               disable_tqdm: bool = False,
               output_trace_in_each_iter: bool = True,
+              aggregate: bool = True,
               **search_algo_params):
     if not disable_log:
         if log_dir is None:
@@ -63,15 +64,22 @@ def rap_gsm8k(base_model: LanguageModel,
     search_algo = search_algo(**search_algo_params)
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
+    if aggregate:
+        aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge_inverse_depth')
+    else:
+        aggregator = None
+
     dataset = load_dataset("gsm8k", "main", split=f'test[{resume}:]')
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
                                      desc='GSM8k', disable=disable_tqdm)):
         algo_output = reasoner(example["question"])
-        if algo_output.terminal_state is None:
+        if aggregate:
+            output = aggregator(algo_output.tree_state)
+        elif algo_output.terminal_state is None:
             output = None
         else:
-            output = utils.retrieve_answer(algo_output.terminal_state[-1].sub_answer)
+            output = utils.retrieve_answer(algo_output.terminal_state)
         answer = utils.retrieve_answer_from_dataset(example["answer"])
         correct = utils.judge_answer(output, answer)
 
@@ -93,20 +101,10 @@ def rap_gsm8k(base_model: LanguageModel,
 if __name__ == '__main__':
     import os
     import sys
-    sys.path.append('/data/haotian/RAP_tune/llm-reasoners/exllama')
     import json
     import warnings
     import fire
-    from reasoners.lm import LLaMAModel, LlamaCppModel, LlamaModel
     import random
-    import torch
-    import torch.backends.cudnn
-
-    np.random.seed(0)
-    random.seed(0)
-    torch.manual_seed(0)
-    torch.cuda.manual_seed(0)
-    torch.backends.cudnn.deterministic = True
 
     llama_ckpts = os.environ.get("LLAMA_CKPTS", None)
     llama_2_ckpts = os.environ.get("LLAMA_2_CKPTS", None)
@@ -115,31 +113,55 @@ if __name__ == '__main__':
         sys.stdout = open(os.devnull, 'w')
         warnings.filterwarnings('ignore')
 
-
-    def main(base_lm: str = 'llama2', #llama means llama_v1 and llama2 means llama_v2
-             llama_ckpt: str = llama_ckpts,
-             llama_2_ckpt: str = llama_2_ckpts,
+    def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama'] = 'llama-2',
+             llama_ckpts: str = llama_ckpts,
+             llama_2_ckpts: str = llama_2_ckpts,
              llama_size: str = '13B',
              llama_cpp_path: str = None,
+             llama_cpp_n_batch: int = 512,
+             hf_path: str = 'meta-llama/Llama-2-13b-hf',
+             hf_peft_path: Optional[str] = None,
+             hf_quantized: Optional[Literal['awq', 'int8', 'fp4', 'nf4']] = None,
+             hf_load_awq_path: Optional[str] = None,
+             exllama_model_dir: str = 'WizardMath-13B-V1.0-GPTQ',
+             exllama_lora_dir: Optional[str] = None,
+             exllama_mem_map: Optional[str] = None,
              batch_size: int = 1,
              interactive_prompt: str = 'examples/rap_gsm8k/prompts/interactive_examples.json',
              useful_prompt: str = 'examples/rap_gsm8k/prompts/useful_examples.json',
              disable_log: bool = False,
              disable_tqdm: bool = False,
              **kwargs):
-        # set base_lm = 'llama' and llama_ckpt = '13B/30B/65B' to use llama with torchscale
-        # else set base_lm = 'llama.cpp' and llama_cpp_path = the checkpoint to use llama.cpp
-
         with open(interactive_prompt) as f:
             interactive_prompt = json.load(f)
         with open(useful_prompt) as f:
             useful_prompt = json.load(f)
+        if base_lm in ['llama', 'llama2']:
+            import torch
+            import torch.backends.cudnn
+            np.random.seed(0)
+            random.seed(0)
+            torch.manual_seed(0)
+            torch.cuda.manual_seed(0)
+            torch.backends.cudnn.deterministic = True
+
         if base_lm == 'llama':
-            base_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
+            from reasoners.lm import LlamaModel
+            base_model = LlamaModel(llama_ckpts, llama_size, max_batch_size=batch_size)
         elif base_lm == 'llama.cpp':
-            base_model = LlamaCppModel(llama_cpp_path)
-        elif base_lm == 'llama2':
-            base_model = LlamaModel(llama_2_ckpt, llama_size, max_batch_size=batch_size)
+            from reasoners.lm import LlamaCppModel
+            base_model = LlamaCppModel(llama_cpp_path, n_batch=llama_cpp_n_batch)
+        elif base_lm == 'llama-2':
+            from reasoners.lm import Llama2Model
+            base_model = Llama2Model(llama_2_ckpts, llama_size, max_batch_size=batch_size)
+        elif base_lm == 'hf':
+            from reasoners.lm import HFModel
+            base_model = HFModel(hf_path, hf_path, max_batch_size=batch_size, max_new_tokens=512,
+                                 peft_pth=hf_peft_path, quantized=hf_quantized, load_awq_pth=hf_load_awq_path)
+        elif base_lm == 'exllama':
+            from reasoners.lm import ExLlamaModel
+            base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir, mem_map=exllama_mem_map,
+                                      max_batch_size=batch_size, max_new_tokens=200, max_seq_length=2048)
         else:
             assert False, f'cannot resolve {base_lm=}'
         rap_gsm8k(base_model=base_model,
@@ -150,64 +172,4 @@ if __name__ == '__main__':
                   disable_tqdm=disable_tqdm or local_rank != 0,
                   **kwargs)
 
-    def main_hf(hf_path = "/data/haotian/RAP_tune/llama-30B-hf",
-                batch_size = 1,
-                peft_path = None,
-                interactive_prompt = "examples/rap_gsm8k/prompts/interactive_examples.json",
-                useful_prompt = "examples/rap_gsm8k/prompts/useful_examples.json",
-                disable_log = False,
-                disable_tqdm = False,
-                quantized = "nf4", # awq, int8, fp4, nf4, None
-                load_awq_pth = None,
-                **kwargs):
-        from reasoners.lm import HFModel
-        device = torch.device("cuda:0")
-        base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=512, peft_pth=peft_path, quantized=quantized, load_awq_pth=load_awq_pth)
-        with open(interactive_prompt) as f:
-            interactive_prompt = json.load(f)
-        with open(useful_prompt) as f:
-            useful_prompt = json.load(f)
-        rap_gsm8k(base_model=base_model,
-                  interactive_prompt=interactive_prompt,
-                  useful_prompt=useful_prompt,
-                  batch_size=batch_size,
-                  disable_log=disable_log or local_rank != 0,
-                  disable_tqdm=disable_tqdm or local_rank != 0,
-                  **kwargs)
-    
-    
-    def main_exllama(
-                model_dir = '/data/haotian/RAP_tune/WizardMath-13B-V1.0-GPTQ',
-                lora_dir = None,
-                batch_size = 1,
-                mem_map = None,
-                interactive_prompt = "examples/rap_gsm8k/prompts/interactive_examples.json",
-                useful_prompt = "examples/rap_gsm8k/prompts/useful_examples.json",
-                disable_log = False,
-                disable_tqdm = False,
-                **kwargs):
-        from reasoners.lm import ExLlamaModel
-        device = torch.device("cuda:0")
-        base_model = ExLlamaModel(model_dir,
-                                  lora_dir,
-                                  device,
-                                  max_batch_size=batch_size,
-                                  max_new_tokens=200,
-                                  max_seq_length=2048,
-                                  mem_map=mem_map)
-        # please set mem_map if you need model parallelism
-        # e.g. mem_map = [16,22] with 2 GPUs
-        
-        with open(interactive_prompt) as f:
-            interactive_prompt = json.load(f)
-        with open(useful_prompt) as f:
-            useful_prompt = json.load(f)
-        rap_gsm8k(base_model=base_model,
-                  interactive_prompt=interactive_prompt,
-                  useful_prompt=useful_prompt,
-                  batch_size=batch_size,
-                  disable_log=disable_log or local_rank != 0,
-                  disable_tqdm=disable_tqdm or local_rank != 0,
-                  **kwargs)
-        
-    fire.Fire(main_exllama)
+    fire.Fire(main)

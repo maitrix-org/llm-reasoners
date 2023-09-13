@@ -16,7 +16,7 @@ LLMs-Planning
 .DS_Store
 .vscode/
 dataset/
-*.json
 *.jsonl
 *.txt
 sas_plan
+build/
