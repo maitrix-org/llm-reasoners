@@ -22,16 +22,14 @@ Given any reasoning problem, simply define the reward function and an optional w
 - **Compatibility with any LLM libraries**: Our framework is compatible with any LLM frameworks, e.g. Huggingface transformers, OpenAI API, etc. Specifically, we integrated LLaMA with the option of using [fairscale](https://github.com/facebookresearch/llama) backend for improved multi-GPU performance or [LLaMA.cpp](https://github.com/ggerganov/llama.cpp) backend with lower hardware requirements.
 
 
-## Benchmarks
-We tested different reasoning algorithms on the following benchmarks (to be updated). For Tree-of-thoughts and Guided Decoding, we also list the results reported in their paper /  reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
+## Experiment Results
+We tested different reasoning algorithms on the following benchmarks (to be updated).
 
 |Method|Base LLM|[GSM8K](https://arxiv.org/abs/2110.14168)|[AQuA](https://arxiv.org/abs/2008.12520)|[SVAMP](https://arxiv.org/abs/2103.07191)|[ASDiv](https://arxiv.org/abs/2106.15772)|[CommonsenseQA](https://arxiv.org/abs/1811.00937)|[StrategyQA](https://arxiv.org/abs/2101.02235)|
 |-|-|-|-|-|-|-|-|
 |[CoT](https://arxiv.org/abs/2201.11903)|LLaMA-33B|0.29|-|-|-|-|-|
 |CoT+[SC](https://arxiv.org/abs/2203.11171)|LLaMA-33B|0.47|-|-|-|-|-|
 |[Least-to-Most](https://arxiv.org/abs/2205.10625)+SC|LLaMA-33B|0.43|-|-|-|-|-|
-|[Guided Decoding](https://arxiv.org/abs/2305.00633)<sup>†</sup>|CodeX (PAL)|0.80|-|-|-|-|-|
-|Guided Decoding|CodeX (PAL)|[0.83\*](examples/guided_gsm8k)|-|-|-|-|-|
 |[RAP](https://arxiv.org/abs/2305.14992)|LLaMA-33B|0.49|-|-|-|-|-|
 |[RAP (aggr)](https://arxiv.org/abs/2305.14992)|LLaMA-33B|0.52|-|-|-|-|-|
 
@@ -39,9 +37,18 @@ We tested different reasoning algorithms on the following benchmarks (to be upda
 |Method|Base LLM|[Blocksworld](https://arxiv.org/abs/2305.15771)|[Game of 24](https://arxiv.org/abs/2305.10601)|[Mini Crosswords](https://arxiv.org/abs/2305.10601)|[ProntoQA](https://arxiv.org/abs/2210.01240)|
 |-|-|-|-|-|-|
 |CoT|LLaMA-33B|0.03|-|-|0.65|
-|[Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)<sup>†</sup>|GPT-3.5-turbo|-|0.22|-|-|
-|Tree-of-Thoughts|GPT-3.5-turbo|-|[0.22](examples/tot_game24)|-|-|
 |RAP|LLaMA-33B|0.64|-|-|0.79|
+
+Our library has been tested against official repos of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601) and [Guided Decoding](https://arxiv.org/abs/2305.00633). We list the results reported in their paper /  reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
+|Method|Base LLM|GSM8k|
+|--|--|--|
+|[Guided Decoding](https://arxiv.org/abs/2305.00633)<sup>†</sup>|CodeX (PAL)|0.80|-|-|-|-|-|
+|Guided Decoding|CodeX (PAL)|[0.83\*](examples/guided_gsm8k)|-|-|-|-|-|
+
+|Method|Base LLM|Game of 24|
+|--|--|--|
+|[Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)<sup>†</sup>|GPT-3.5-turbo|0.22|
+|Tree-of-Thoughts|GPT-3.5-turbo|[0.22](examples/tot_game24)|
 
 
 ## Understanding LLM Reasoners
