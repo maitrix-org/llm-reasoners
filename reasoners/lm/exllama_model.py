@@ -113,7 +113,7 @@ class ExLlamaModel(LanguageModel):
             warnings.warn("max_new_tokens is not set, we will use the default value: {}".format(self.max_new_tokens))
             max_new_tokens = self.max_new_tokens
         if do_sample is False or temperature <= 0.0:
-            warnings.warn("do_sample is defaultly set to False, we will set temp=1.0 and top-k = 1 for Exllama")
+            warnings.warn("do_sample is False while the temperature is non-positive. We will use greedy decoding for Exllama")
             temperature = 1.0
             top_k = 1
 
@@ -174,6 +174,12 @@ class ExLlamaModel(LanguageModel):
             if output_log_probs:
                 warnings.warn("output_log_probs is temporarily not supported now by ExLlamaModel. Please refere to exllama's code")
             decoded_list.extend(decoded)
+
+        print("="*30 + "prompt" + "="*30)
+        print(inputs[0])
+        print("="*30 + "decoded" + "="*30)
+        print(decoded_list[0])
+        print("="*30 + "end" + "="*30)
         return GenerateOutput(decoded_list, log_prob_list)
 
     def generate_simple(self, generator, prompt, max_new_tokens = 128, eos_token_id = None):
@@ -182,6 +188,8 @@ class ExLlamaModel(LanguageModel):
 
         if eos_token_id is None:
             eos_token_id = [generator.tokenizer.eos_token_id]
+
+        # print(f"eos_token_id: {eos_token_id}")
 
         generator.end_beam_search()
 
@@ -193,6 +201,9 @@ class ExLlamaModel(LanguageModel):
         eos = torch.zeros((ids.shape[0],), dtype = torch.bool)
         for i in range(max_new_tokens):
             token = generator.gen_single_token(mask = mask)
+            # for debugging
+            cur_token = token[0][0]
+            # print(f"token: {cur_token}, {self.tokenizer.decode(torch.tensor([cur_token]))}")
             for j in range(token.shape[0]):
                 if token[j, 0].item() in eos_token_id:
                     eos[j] = True

@@ -39,7 +39,7 @@ def rap_bw(base_model: LanguageModel,
         with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
             print(sys.argv, file=f)
 
-    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, "depth_limit": depth_limit}
+    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, "depth_limit": depth_limit, "disable_tqdm": False}
     world_model = BlocksWorldModel(base_model=base_model, prompt=prompt, batch_size=batch_size, max_steps=depth_limit)
     config = BWConfig(base_model=base_model, prompt=prompt, batch_size=batch_size,
                       reward_alpha=reward_alpha, goal_reached_reward=goal_reached_reward,
