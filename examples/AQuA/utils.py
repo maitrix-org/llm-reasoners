@@ -3,6 +3,8 @@ from typing import Optional
 
 
 def retrieve_answer(output: str) -> Optional[str]:
+    if isinstance(output, list):
+        output = output[-1].sub_answer
     match = re.match(r'.*The answer is .*?([A-E]).*?\.$', output, re.MULTILINE)
     if match is None:
         return None
