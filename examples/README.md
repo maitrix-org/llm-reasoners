@@ -12,8 +12,9 @@
   ```
 - ExLlama
   ```bash
-  CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --base_lm exllama --exllama_model_dir TheBloke/Llama-2-13B-GPTQ --exllama_lora_dir None --exllama_mem_map '[16,22]'
+  CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --base_lm exllama --exllama_model_dir TheBloke/Llama-2-70B-GPTQ --exllama_lora_dir None --exllama_mem_map '[16,22]'
   ```
+  Our experiment is with [TheBloke's checkpoint]("https://huggingface.co/TheBloke/Llama-2-70B-GPTQ"), users can check for customized use.
 - Hugging Face
   ```bash
   CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --base_lm hf --hf_path meta-llama/Llama-2-70b-hf --hf_peft_path None --hf_quantized 'nf4'

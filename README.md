@@ -12,6 +12,13 @@ Given any reasoning problem, simply define the reward function and an optional w
 
 - Aug. 10, 2023: Llama-2 is supported! You can run [examples](https://github.com/Ber666/llm-reasoners/tree/main/examples) with Llama-2 now.
 
+## Quick start
+
+You can quickly install the llm-reasoners on your device with only [five lines](https://github.com/Ber666/llm-reasoners/tree/main#installation)!
+
+We highly recommend you to run llm-reasoners with [exllama](https://github.com/turboderp/exllama), which can hugely reduce your memory requirement while speeding up the process without losing too much performance. 
+
+We made it out-of-box and you can run RAP or other algorithms on your devices with [commands](https://github.com/Ber666/llm-reasoners/tree/main/examples) here. We have also incorporated llama.cpp, meta's llama and huggingface llama, with many quantization methods.
 
 ## Why Choose LLM Reasoners?
 
