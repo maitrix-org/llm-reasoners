@@ -94,7 +94,7 @@ def rap_AQuA(base_model: LanguageModel,
         try:
             algo_output = reasoner(example["question"])
         except AssertionError as e:
-            from reasoners import MCTSResult
+            from reasoners.algorithm import MCTSResult
             algo_output = MCTSResult(terminal_state=None, cum_reward=None, trace=None, trace_of_nodes=None, tree_state=None)
         if algo_output.terminal_state is None:
             output = None
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     import json
     import warnings
     import fire
-    from reasoners.lm import LLaMAModel, LlamaCppModel, LlamaModel
+    from reasoners.lm import Llama2Model, LlamaCppModel, LlamaModel
     import random
     import torch
     import torch.backends.cudnn
@@ -180,7 +180,7 @@ if __name__ == '__main__':
                 **kwargs):
         from reasoners.lm import ExLlamaModel
         device = torch.device("cuda:0")
-        base_model = ExLlamaModel(model_dir, lora_dir, device, max_batch_size=batch_size, max_new_tokens=128, max_seq_length=2048, mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
+        base_model = ExLlamaModel(model_dir, lora_dir, device=device, max_batch_size=batch_size, max_new_tokens=512, max_seq_length=2048, mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
         with open(interactive_prompt) as f:
             interactive_prompt = json.load(f)
         with open(useful_prompt) as f:
