@@ -92,11 +92,13 @@ def rap_AQuA(base_model: LanguageModel,
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
                                      desc='AQuA_clean', disable=disable_tqdm)):
+        flag = True
         try:
             algo_output = reasoner(example["question"])
         except AssertionError as e:
             from reasoners.algorithm import MCTSResult
             algo_output = MCTSResult(terminal_state=None, cum_reward=None, trace=None, trace_of_nodes=None, tree_state=None)
+            flag = False
         if algo_output.terminal_state is None:
             output = None
         else:
@@ -115,6 +117,8 @@ def rap_AQuA(base_model: LanguageModel,
             with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
                 pickle.dump(algo_output, f)
             if isinstance(search_algo, MCTS):
+                if not flag:
+                    continue
                 with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
                     # noinspection PyTypeChecker
                     print(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer), file=f)
