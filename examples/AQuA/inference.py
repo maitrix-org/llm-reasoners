@@ -31,7 +31,7 @@ def data_reader(dataset,dataset_path, split=None, sample_size=100):
         data = lines[i]
         if isinstance(data, dict):
             options_list = data['options']
-            question_with_options = data['question'] + "\n" + "Options: " + ", ".join(data['options']) + "."
+            question_with_options = data['question'] + " Options: " + (" ".join(data['options'])).replace('A)','A) ').replace('B)','B) ').replace('C)','C) ').replace('D)','D) ').replace('E)','E) ') + "."
             questions.append(question_with_options)
             answers.append(data['correct'])
             options.append(options_list)
