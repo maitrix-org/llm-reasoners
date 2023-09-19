@@ -46,8 +46,8 @@ class GSM8kConfig(SearchConfig):
         self.force_overall_question_on_overall_prompt = force_overall_question_on_overall_prompt
         self.overall_question: Optional[str] = None
 
-    def update_example(self, example: str) -> None:
-        super().update_example(example)
+    def update_example(self, example: str, prompt=None) -> None:
+        super().update_example(example, prompt=prompt)
         if self.force_overall_prompt_on_overall_question or self.force_overall_question_on_overall_prompt:
             self.overall_question = re.match('.*((Calculate|calculate|how|How|what|What|Find|find|True or false).*)$',
                                              self.example)[1]

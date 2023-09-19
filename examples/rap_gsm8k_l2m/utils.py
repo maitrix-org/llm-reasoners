@@ -37,3 +37,16 @@ def judge_answer(output: Optional[str], answer: str) -> bool:
     except ValueError:
         pass
     return output == answer
+
+def rap_extractor(algo_output, aggregate=True):
+    
+    from reasoners.algorithm import MCTSAggregation
+    if aggregate:
+        aggregator = MCTSAggregation(retrieve_answer, weight_policy='edge_inverse_depth')
+        output = aggregator(algo_output.tree_state)
+    else:
+        if algo_output.terminal_state is None:
+            output = None
+        else:
+            output = retrieve_answer(algo_output.terminal_state)
+    return output

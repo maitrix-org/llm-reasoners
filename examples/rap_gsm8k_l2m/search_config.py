@@ -31,8 +31,8 @@ class GSM8kConfig(SearchConfig):
         self.reward_confidence_default = reward_confidence_default
         self.overall_question: Optional[str] = None
 
-    def update_example(self, example: str) -> None:
-        super().update_example(example)
+    def update_example(self, example: str, prompt: dict) -> None:
+        super().update_example(example, prompt)
         self.overall_prompt = self.prompt["overall"].replace("{QUESTION}", self.example)
         output = self.base_model.generate([self.overall_prompt],
                                           hide_input=True,
@@ -42,6 +42,11 @@ class GSM8kConfig(SearchConfig):
         self.overall_question = output.split('"')[1]
 
     def get_actions(self, state: GSM8kState, ) -> list[GSM8kAction]:
+        
+        # "!" is a mark for terminal node
+        # it won't be sent to LLMs
+        # just for our convenience to judge whether it's terminal
+
         if len(state) > 0 and state[-1].sub_question.endswith('".'):
             return [' "' + self.overall_question + '"!']
 

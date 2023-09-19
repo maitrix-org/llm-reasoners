@@ -64,5 +64,5 @@ class BWConfig(SearchConfig):
         return (self.calculate_reward(intuition, self_eval, goal_reached), 
                 {'intuition': intuition, 'goal_reached': goal_reached})
 
-    def update_example(self, example) -> None:
-        super().update_example(example)
+    def update_example(self, example, prompt=None) -> None:
+        super().update_example(example, prompt=prompt)
