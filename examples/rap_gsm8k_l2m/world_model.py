@@ -109,4 +109,4 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
 
     def is_terminal(self, state: GSM8kState) -> bool:
         # if the last subquestion is ended with ".", it's terminal
-        return len(state) > 1 and state[-2].sub_question.endswith('".')
+        return len(state) > 0 and state[-1].sub_question.endswith('"!')

@@ -43,11 +43,11 @@ class GSM8kConfig(SearchConfig):
 
     def get_actions(self, state: GSM8kState, ) -> list[GSM8kAction]:
         if len(state) > 0 and state[-1].sub_question.endswith('".'):
-            return [' "' + self.overall_question + '".']
+            return [' "' + self.overall_question + '"!']
 
         # if almost reach depth limit
         if len(state) >= self.depth_limit - 1:
-            return [' "' + self.overall_question + '".']
+            return [' "' + self.overall_question + '"!']
 
         with io.StringIO() as f:
             f.write(self.prompt["decomposition"]
