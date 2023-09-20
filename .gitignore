@@ -12,7 +12,6 @@ temp/
 scripts/
 gpt-plan-benchmark/
 LLMs-Planning/
-LLMs-Planning
 .DS_Store
 .vscode/
 dataset/

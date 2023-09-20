@@ -15,13 +15,13 @@ TODO:
 - Write a base class for all evaluator.
 
 ```bash
-CUDA_VISIBLE_DEVICES=2,3 python examples/rap_gsm8k_l2m/inference_new.py
---base_lm exllama
---exllama_model_dir $LLAMA2_CKPTS
---exllama_lora_dir None
---exllama_mem_map '[16,22]'
---n_iters 1
---depth_limit 5
---n_confidence 1
+CUDA_VISIBLE_DEVICES=2,3 python examples/rap_gsm8k_l2m/inference_new.py \
+--base_lm exllama \
+--exllama_model_dir $LLAMA2_CKPTS \
+--exllama_lora_dir None \
+--exllama_mem_map '[16,22]' \
+--n_iters 1 \
+--depth_limit 5 \
+--n_confidence 1 \
 --n_action 1
 ```
