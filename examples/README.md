@@ -12,7 +12,7 @@
   ```
 - ExLlama
   ```bash
-  CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --base_lm exllama --exllama_model_dir TheBloke/Llama-2-13B-GPTQ --exllama_lora_dir None --exllama_mem_map '[16,22]'
+  CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --base_lm exllama --exllama_model_dir TheBloke/Llama-2-70B-GPTQ --exllama_lora_dir None --exllama_mem_map '[16,22]'
   ```
 - Hugging Face
   ```bash

@@ -16,9 +16,9 @@
 ## ExLlama
 - We provide support for [ExLlama](https://github.com/turboderp/exllama) as a submodule.
 - Choose any quantized [models](https://github.com/turboderp/exllama/blob/master/doc/model_compatibility.md) available from Hugging Face. You can also use the path of a local quantized model in the same format as Hugging Face.
-- Example run:
+- Example run: Llama-2 70B on **2 * 24GB GPUs**:
   ```bash
-  CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --base_lm exllama --exllama_model_dir TheBloke/Llama-2-13B-GPTQ --exllama_lora_dir None --exllama_mem_map '[16,22]'
+  CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --base_lm exllama --exllama_model_dir TheBloke/Llama-2-70B-GPTQ --exllama_lora_dir None --exllama_mem_map '[16,22]'
   ```
 - If you clone our repo without `--recursive`, you can run `git submodule update --init` for ExLlama submodule to work.
 

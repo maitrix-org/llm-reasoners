@@ -8,7 +8,7 @@ Given any reasoning problem, simply define the reward function and an optional w
 
 ## News
 
-- Aug. 21, 2023: A batch of quantized Llama-2 models has arrived! BitsandBytes with huggingface API, GPT-Q with exllama are available. **You can now also deploy llama-2-70B with 2x24G/1x40G GPUs.**
+- Aug. 21, 2023: A batch of quantized Llama-2 models has arrived! BitsandBytes with huggingface API, GPT-Q with exllama are available. **Now you can try [llama-2-70B with 2 x 24G GPUs](https://github.com/Ber666/llm-reasoners/tree/main/reasoners/lm#exllama).**
 
 - Aug. 10, 2023: Llama-2 is supported! You can run [examples](https://github.com/Ber666/llm-reasoners/tree/main/examples) with Llama-2 now.
 
