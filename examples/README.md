@@ -83,14 +83,14 @@ CUDA_VISIBLE_DEVICES=0 python examples/rap_blockworld/inference.py -data_path 'e
 ## Game of 24
 > Note: You need to make a directory and put the game24 data in it. For example, examples/tot_game24/data/24.csv
 
-## Crosswords
-> Note: You need to make a directory and put the MiniCrosswords data in it. For example, examples/tot_crosswords/data/mini0505.json
-
 ### ToT (Beam Search)
 ```bash
 export OPENAI_API_KEY=YOUR_API_KEY
 python examples/tot_game24/inference.py --batch_size 2 --model gpt-3.5-turbo --temperature 0.7
 ```
+
+## Crosswords
+> Note: You need to make a directory and put the MiniCrosswords data in it. For example, examples/tot_crosswords/data/mini0505.json
 
 ### ToT (DFS on MiniCrosswords)
 ```bash
