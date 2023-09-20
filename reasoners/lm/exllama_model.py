@@ -174,7 +174,11 @@ class ExLlamaModel(LanguageModel):
             if output_log_probs:
                 warnings.warn("output_log_probs is temporarily not supported now by ExLlamaModel. Please refere to exllama's code")
             decoded_list.extend(decoded)
-
+        print("="*30 + "prompt" + "="*30)
+        print(inputs[0])
+        print("="*30 + "decoded" + "="*30)
+        print(decoded_list[0])
+        print("="*30 + "end" + "="*30)
         return GenerateOutput(decoded_list, log_prob_list)
 
     def generate_simple(self, generator, prompt, max_new_tokens = 128, eos_token_id = None):
@@ -194,6 +198,7 @@ class ExLlamaModel(LanguageModel):
         max_new_tokens = min(max_new_tokens, generator.model.config.max_seq_len - ids.shape[1])
 
         eos = torch.zeros((ids.shape[0],), dtype = torch.bool)
+        end_early = False
         for i in range(max_new_tokens):
             token = generator.gen_single_token(mask = mask)
             # for debugging
@@ -202,9 +207,16 @@ class ExLlamaModel(LanguageModel):
             for j in range(token.shape[0]):
                 if token[j, 0].item() in eos_token_id:
                     eos[j] = True
-            if eos.all(): break
-
+            if eos.all(): 
+                end_early = True
+                break
+        
         text = self.tokenizer.decode(generator.sequence)
+
+        if not end_early:
+            print("Warning: reach max_new_tokens but not reach eos_token_id, please check the model output")
+            print(f"output: {text}")
+
         return text
 
     @torch.no_grad()
