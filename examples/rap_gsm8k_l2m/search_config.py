@@ -73,9 +73,13 @@ class GSM8kConfig(SearchConfig):
                                                 hide_input=True,
                                                 do_sample=True,
                                                 temperature=temperature,
-                                                eos_token_id=[613, 1642]).text
+                                                eos_token_id=[613, 1642, 13]).text
         outputs = []
         for o in raw_outputs:
+            if o.endswith("\n"):
+                print("Warning: output ends with newline. Fixed it temporarily by adding a dot.")
+                print("Output:", o)
+                o = o[:-1] + '.'
             if not (o.endswith('".') or o.endswith('",')):
                 print("Warning: output does not end with quote mark, this may cause unexpected behavior")
                 print("Output:", o)
