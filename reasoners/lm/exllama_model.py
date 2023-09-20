@@ -110,7 +110,7 @@ class ExLlamaModel(LanguageModel):
         if max_length is not None:
             warnings.warn("max_length is not supported by ExLlamaModel for generation. Use max_new_tokens instead.")
         if max_new_tokens is None:
-            warnings.warn("max_new_tokens is not set, we will use the default value: {}".format(self.max_new_tokens))
+            warnings.warn(f"max_new_tokens is not set, we will use the default value: {self.max_new_tokens}")
             max_new_tokens = self.max_new_tokens
         if do_sample is False or temperature <= 0.0:
             warnings.warn("do_sample is False while the temperature is non-positive. We will use greedy decoding for Exllama")
@@ -175,11 +175,11 @@ class ExLlamaModel(LanguageModel):
                 warnings.warn("output_log_probs is temporarily not supported now by ExLlamaModel. Please refere to exllama's code")
             decoded_list.extend(decoded)
         
-        # print("="*30 + "prompt" + "="*30)
-        # print(inputs[0])
-        # print("="*30 + "decoded" + "="*30)
-        # print(decoded_list[0])
-        # print("="*30 + "end" + "="*30)
+        print("="*30 + "prompt" + "="*30)
+        print(inputs[0])
+        print("="*30 + "decoded" + "="*30)
+        print(decoded_list[0])
+        print("="*30 + "end" + "="*30)
         
         return GenerateOutput(decoded_list, log_prob_list)
 
