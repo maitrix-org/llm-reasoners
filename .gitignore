@@ -11,7 +11,7 @@ logs/
 temp/
 scripts/
 gpt-plan-benchmark/
-gpt-plan-benchmark
+LLMs-Planning/
 .DS_Store
 .vscode/
 dataset/
