@@ -46,9 +46,9 @@ class MATHConfig(SearchConfig):
         super().update_example(example)
         if self.force_overall_prompt_on_overall_question or self.force_overall_question_on_overall_prompt:
             # self.overall_question = re.match('.*((Calculate|calculate|how|How|what|What|Find|find|True or false).*)$',
-            #                                  self.example, re.MULTILINE)[1]
+            #                                  self.example, re.DOTALL)[1]
 
-            self.overall_question = re.match('.*((([A-Z].* (calculate|how|what|find|true or false))|((Calculate|How|What|Find|True or false))).*)$', self.example, flags=re.MULTILINE)[1]
+            self.overall_question = re.match('.*((([A-Z].* (calculate|how|what|find|true or false))|((Calculate|How|What|Find|True or false))).*)$', self.example, flags=re.DOTALL)[1]
 
     def get_actions(self, state: MATHState) -> list[MATHAction]:
         with io.StringIO() as f:
