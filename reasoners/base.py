@@ -90,7 +90,9 @@ class WorldModel(ABC, Generic[State, Action]):
     @abstractmethod
     def is_terminal(self, state: State) -> bool: ...
 
-    def update_example(self, example: Example) -> None:
+    def update_example(self, example: Example, prompt = None) -> None:        
+        if prompt != None:
+            self.prompt = prompt
         self.example = example
 
 
@@ -108,7 +110,9 @@ class SearchConfig(ABC, Generic[State, Action]):
     @abstractmethod
     def reward(self, state, action, **kwargs) -> tuple[float, dict]: ...
 
-    def update_example(self, example: Example) -> None:
+    def update_example(self, example: Example, prompt = None) -> None:
+        if prompt != None:
+            self.prompt = prompt
         self.example = example
 
 
@@ -133,7 +137,7 @@ class Reasoner(ABC, Generic[State, Action, Example]):
         self.search_config = search_config
         self.search_algo = search_algo
 
-    def __call__(self, example: Example, **kwargs) -> HasTerminalStateAndTrace[State]:
+    def __call__(self, example: Example, prompt = None, **kwargs) -> HasTerminalStateAndTrace[State]:
         self.world_model.update_example(example)
         self.search_config.update_example(example)
         return self.search_algo(self.world_model, self.search_config, **kwargs)

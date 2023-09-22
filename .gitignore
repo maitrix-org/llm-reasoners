@@ -18,6 +18,7 @@ dataset/
 *.json
 *.jsonl
 *.txt
+sas_plan
 build/
 examples/MATH
 *.csv
