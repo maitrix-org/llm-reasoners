@@ -36,17 +36,19 @@ class game24Config(SearchConfig):
         #print(f'propose prompt:{propose_prompt}')
         
         ## query with llama
-        # outputs = []
-        # for idx in range(0, self.n_actions, self.batch_size):
-        #     n_samples = min(self.n_actions - idx, self.batch_size)
-        #     outputs += self.base_model.generate([model_input] * n_samples, max_gen_len=512, end_token=")", hide_input=True).text
-        # outputs = self.base_model.generate([model_input] * 1, max_gen_len=256, end_token=")", hide_input=True).text[0]
+        # TOOD is this the right input?
+        model_input = propose_prompt
+        outputs = []
+        for idx in range(0, self.n_actions, self.batch_size):
+            n_samples = min(self.n_actions - idx, self.batch_size)
+            outputs += self.base_model.generate([model_input] * n_samples, max_gen_len=512, end_token=")", hide_input=True).text
+        outputs = self.base_model.generate([model_input] * 1, max_gen_len=256, end_token=")", hide_input=True).text[0]
         ## query with GPT
-        outputs = self.base_model.generate(propose_prompt, num_return_sequences=1, stop=None).text
+        # outputs = self.base_model.generate(propose_prompt, num_return_sequences=1, stop=None).text
 
         ######## post process for operation actions
         ## some post-process for llama
-        # outputs = outputs[0].split('Input: ')
+        outputs = outputs[0].split('Input: ')
         ## post-process for llama and gpt
         outputs = outputs[0].split('\n')
         #print(f'original actions: {outputs}')
@@ -74,30 +76,30 @@ class game24Config(SearchConfig):
             #print(f"-- duplicate state eval: {flatten_y}, \nvalue: {self.value_cache[value_prompt]}")
             return self.value_cache[value_prompt]
         #### query with llama
-        # value_outputs = []
-        # for idx in range(0, self.n_eval, self.batch_size):
-        #     n_samples = min(self.n_eval - idx, self.batch_size)
-        #     # value_outputs += self.base_model.generate([value_prompt] * n_samples, max_gen_len=256, hide_input=True).text
+        value_outputs = []
+        for idx in range(0, self.n_eval, self.batch_size):
+            n_samples = min(self.n_eval - idx, self.batch_size)
+            value_outputs += self.base_model.generate([value_prompt] * n_samples, max_gen_len=256, hide_input=True).text
         
         #### query with GPT
-        value_outputs = self.base_model.generate(value_prompt, num_return_sequences=self.n_eval, stop=None).text
+        # value_outputs = self.base_model.generate(value_prompt, num_return_sequences=self.n_eval, stop=None).text
         #print(f"reward output: {value_outputs}\n")
 
         ## postprocess for llama
         ## find the first value result: impossible/sure/likely + \n
         ## by locating \n + num num num
-        # pattern = r"\n\d+ \d+ \d+( \d+|\n)"
-        # for i, v_o in enumerate(value_outputs):
-        #     try:
-        #         value_outputs[i] = v_o[:re.search(pattern, v_o).start()]
-        #     except:
-        #         # print(f'no matching: {v_o}')
-        #         if 'sure' in v_o:
-        #             value_outputs[i] = 'sure'
-        #         elif 'likely' in v_o:
-        #             value_outputs[i] = 'likely'
-        #         else:
-        #             value_outputs[i] = 'impossible'
+        pattern = r"\n\d+ \d+ \d+( \d+|\n)"
+        for i, v_o in enumerate(value_outputs):
+            try:
+                value_outputs[i] = v_o[:re.search(pattern, v_o).start()]
+            except:
+                # print(f'no matching: {v_o}')
+                if 'sure' in v_o:
+                    value_outputs[i] = 'sure'
+                elif 'likely' in v_o:
+                    value_outputs[i] = 'likely'
+                else:
+                    value_outputs[i] = 'impossible'
         value = utils.value_outputs_unwrap(x, y, value_outputs)
         self.value_cache[value_prompt] = value
         flatten_y = y.strip().replace('\n', '->')

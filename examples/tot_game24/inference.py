@@ -50,11 +50,12 @@ def rap_game24(base_model: LanguageModel,
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
     ## test from 900-999
-    dataset = utils.read_data(file='./examples/game24/data/24.csv')[900:1000]
+    dataset = utils.read_data(file='./examples/tot_game24/data/24.csv')[900:1000]
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=len(dataset), initial=0, desc='game24')):
         print(f'\n======== example {i}: {example} ========')
-        base_model = GPTCompletionModel(model='gpt-3.5-turbo')
+        # TODO why is base model redefined here?
+        # base_model = GPTCompletionModel(model='gpt-3.5-turbo')
         reasoner.world_model = game24WorldModel(base_model=base_model, prompt=prompts,
                                   n_confidence=n_confidence, batch_size=batch_size)
         # reasoner.search_config.value_cache = {}
@@ -90,7 +91,7 @@ if __name__ == '__main__':
     import json
     import warnings
     import fire
-    from reasoners.lm import GPTCompletionModel
+    from reasoners.lm import GPTCompletionModel, Llama2Model, ExLlamaModel
     import random
     import torch
     import torch.backends.cudnn
@@ -110,10 +111,13 @@ if __name__ == '__main__':
              **kwargs):
         with open(prompts) as f:
             prompts = json.load(f)
-        # llama_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
+        # llama_model = Llama2Model(model, "13B", max_batch_size=batch_size)
         ## try GPT
-        openai_model = GPTCompletionModel(model=model, temperature=temperature)
-        rap_game24(base_model=openai_model,
+        # openai_model = GPTCompletionModel(model=model, temperature=temperature)
+        # hardcoding some exllama args for now TODO generalize main function for llama model params
+        base_model = ExLlamaModel(model, None, mem_map=[16,22],
+                                  max_batch_size=batch_size, max_new_tokens=200, max_seq_length=2048)
+        rap_game24(base_model=base_model,
                   prompts=prompts,
                   batch_size=batch_size,
                   n_select_sample=5,
