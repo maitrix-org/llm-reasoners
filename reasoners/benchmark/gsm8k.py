@@ -11,9 +11,12 @@ class GSM8KEvaluator():
     def __init__(self, 
                  output_extractor,
                  answer_extractor,
-                 init_prompt={},
+                 sample_prompt,
+                 init_prompt=None,
                  disable_log=False,
                  disable_tqdm=False) -> None:
+        if init_prompt is None:
+            init_prompt = {}
         self.init_prompt = init_prompt
         self.output_extractor = output_extractor
         self.answer_extractor = answer_extractor
@@ -21,19 +24,7 @@ class GSM8KEvaluator():
         self._dataset_name = 'gsm8k'
         self.disable_log = disable_log
         self.disable_tqdm = disable_tqdm
-
-    def sample_l2m_prompt(self, shuffle_prompt=True, num_shot=4):
-        prompt = {}
-        if shuffle_prompt:
-            decomp_examples = random.sample(self.init_prompt["decomposition_pool"], num_shot)
-            solv_examples = random.sample(self.init_prompt["solving_pool"], num_shot)
-        else:
-            decomp_examples = self.init_prompt["decomposition_pool"][:num_shot]
-            solv_examples = self.init_prompt["solving_pool"][:num_shot]
-        prompt["decomposition"] = "".join(decomp_examples) + self.init_prompt["composition_prefix"]
-        prompt["overall"] = "".join(decomp_examples) + self.init_prompt["overall_prefix"]
-        prompt["solving"] = "".join(solv_examples) + self.init_prompt["solving_prefix"]
-        return prompt
+        self.sample_prompt = sample_prompt
 
     def eval_output(self, answer, output):
         if output is None:
@@ -64,7 +55,7 @@ class GSM8KEvaluator():
         if log_dir is None:
             log_dir = f'logs/{self._dataset_name}_'\
                       f'{reasoner.search_algo.__class__.__name__}/'\
-                      f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
+                      f'{datetime.now().strftime("%Y%m%d-%H%M%S")}'
         
         os.makedirs(log_dir, exist_ok=resume > 0)
         os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
@@ -81,9 +72,7 @@ class GSM8KEvaluator():
                                          disable=self.disable_tqdm)):
             
             algo_output = reasoner(self.input_processor(example),
-                                   prompt=self.sample_l2m_prompt(
-                                       shuffle_prompt=shuffle_prompt,
-                                       num_shot=num_shot))
+                                   prompt=self.sample_prompt(self.init_prompt, num_shot))
             
             output = self.output_extractor(algo_output)
             answer = self.answer_extractor(example)

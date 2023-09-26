@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Union, NamedTuple, Protocol, Optional
+from typing import Generic, TypeVar, Union, NamedTuple, Protocol, Optional, runtime_checkable
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -80,6 +80,7 @@ class LanguageModel(ABC):
 class WorldModel(ABC, Generic[State, Action]):
     def __init__(self) -> None:
         self.example = None
+        self.prompt = None
 
     @abstractmethod
     def init_state(self) -> State: ...
@@ -91,7 +92,7 @@ class WorldModel(ABC, Generic[State, Action]):
     def is_terminal(self, state: State) -> bool: ...
 
     def update_example(self, example: Example, prompt = None) -> None:        
-        if prompt != None:
+        if prompt is not None:
             self.prompt = prompt
         self.example = example
 
@@ -99,6 +100,7 @@ class WorldModel(ABC, Generic[State, Action]):
 class SearchConfig(ABC, Generic[State, Action]):
     def __init__(self) -> None:
         self.example = None
+        self.prompt = None
 
     @abstractmethod
     def get_actions(self, state: State) -> list[Action]: ...
@@ -111,12 +113,13 @@ class SearchConfig(ABC, Generic[State, Action]):
     def reward(self, state, action, **kwargs) -> tuple[float, dict]: ...
 
     def update_example(self, example: Example, prompt = None) -> None:
-        if prompt != None:
+        if prompt is not None:
             self.prompt = prompt
         self.example = example
 
 
-class HasTerminalStateAndTrace(Protocol[State]):
+@runtime_checkable
+class AlgorithmOutput(Protocol[State]):
     terminal_state: State
     trace: Trace
 
@@ -125,7 +128,7 @@ class SearchAlgorithm(ABC):
     def __init__(self, **kwargs): ...
 
     @abstractmethod
-    def __call__(self, world_model: WorldModel, search_config: SearchConfig, **kwargs) -> HasTerminalStateAndTrace: ...
+    def __call__(self, world_model: WorldModel, search_config: SearchConfig, **kwargs) -> AlgorithmOutput: ...
 
 
 class Reasoner(ABC, Generic[State, Action, Example]):
@@ -137,7 +140,7 @@ class Reasoner(ABC, Generic[State, Action, Example]):
         self.search_config = search_config
         self.search_algo = search_algo
 
-    def __call__(self, example: Example, prompt = None, **kwargs) -> HasTerminalStateAndTrace[State]:
+    def __call__(self, example: Example, prompt = None, **kwargs) -> AlgorithmOutput[State]:
         self.world_model.update_example(example, prompt=prompt)
         self.search_config.update_example(example, prompt=prompt)
         return self.search_algo(self.world_model, self.search_config, **kwargs)
