@@ -38,7 +38,7 @@ class CrosswordsWorldModel(WorldModel):
     
     def prompt_status(self, env):
         count = {'sure': 0, 'maybe': 0, 'impossible': 0}
-        for ans, data, status in zip(env.ans, env.data, env.status):
+        for ans, data, status in zip(env.ans, env.original_prompt, env.status):
             # if status != 0: continue
             if ans.count('_') >= 4: continue
             ans = ' '.join(ans.lower())

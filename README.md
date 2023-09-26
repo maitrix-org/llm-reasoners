@@ -60,7 +60,7 @@ Let's start with a naive method for LLM reasoning: Prompted with a few examples 
 <pre>
 I am playing with a set of blocks where I need to arrange the blocks into stacks.
 
-<i>(Example problems and solutions * 4)</i>
+<i>(ProntoQAExample problems and solutions * 4)</i>
 
 [STATEMENT] 
 As initial conditions I have that, the red block is clear, the blue block is clear, the orange block is clear, the hand is empty, the red block is on the yellow block, the yellow block is on the table, the blue block is on the table and the orange block is on the table. My goal is to have that the orange block is on top of the blue block and the yellow block on top of the orange block.
