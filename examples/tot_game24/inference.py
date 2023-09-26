@@ -50,7 +50,7 @@ def rap_game24(base_model: LanguageModel,
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
     ## test from 900-999
-    dataset = utils.read_data(file='./examples/game24/data/24.csv')[900:1000]
+    dataset = utils.read_data(file='./examples/game24/original_prompt/24.csv')[900:1000]
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=len(dataset), initial=0, desc='game24')):
         print(f'\n======== example {i}: {example} ========')

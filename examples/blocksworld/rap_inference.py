@@ -15,7 +15,7 @@ from search_config import BWConfig
 def rap_bw(base_model: LanguageModel,
            prompt: dict,
            search_algo: Type[SearchAlgorithm] = MCTS,
-           data_path: str = 'data',
+           data_path: str = 'original_prompt',
            resume: int = 0,
            depth_limit: int = 6,
            reward_alpha: float = 0.5,
@@ -59,10 +59,10 @@ if __name__ == '__main__':
     torch.backends.cudnn.deterministic = True
     def llama_main(llama_size: str = '13B',
              prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
-             data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+             data_path: str = 'examples/rap_blocksworld/original_prompt/step_4.json',
              disable_log: bool = False,
-             config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
-             domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+             config_file: str = "examples/rap_blocksworld/original_prompt/bw_config.yaml",
+             domain_file: str = "examples/rap_blocksworld/original_prompt/generated_domain.pddl",
              lm_plan_file: str = 'lm_plan.tmp',
              depth_limit: int = 6,
              **kwargs):
@@ -86,13 +86,13 @@ if __name__ == '__main__':
 
 
     def llamacpp_main(
-            llama_path = '/home/shibo/llama.cpp/models/65B/ggml-model-q8_0.bin',
+            llama_path = '/Users/xiyan/Downloads/llama.cpp/models/llama-2-13b-chat.ggmlv3.q4_0.gguf.bin',
             prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
-            data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+            data_path: str = 'examples/rap_blocksworld/original_prompt/step_4.json',
             disable_log: bool = False,
-            config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
+            config_file: str = "examples/rap_blocksworld/original_prompt/bw_config.yaml",
             lm_plan_file: str = 'lm_plan.tmp',
-            domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+            domain_file: str = "examples/rap_blocksworld/original_prompt/generated_domain.pddl",
             depth_limit: int = 6,
             **kwargs):
 
@@ -110,13 +110,13 @@ if __name__ == '__main__':
                lm_plan_file=lm_plan_file, **kwargs)
 
     def llama_hf_main(
-            llama_path = '/data/haotian/RAP_tune/Llama-2-7b-hf',
+            llama_path = '/original_prompt/haotian/RAP_tune/Llama-2-7b-hf',
             peft_path = None,
             prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
-            data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+            data_path: str = 'examples/rap_blocksworld/original_prompt/step_4.json',
             disable_log: bool = False,
-            config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
-            domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+            config_file: str = "examples/rap_blocksworld/original_prompt/bw_config.yaml",
+            domain_file: str = "examples/rap_blocksworld/original_prompt/generated_domain.pddl",
             lm_plan_file: str = 'lm_plan.tmp',
             depth_limit: int = 6,
             quantized = "nf4", # awq, int8, fp4, nf4, None
@@ -138,13 +138,13 @@ if __name__ == '__main__':
                lm_plan_file=lm_plan_file, **kwargs)
     #for exllama use please refer to https://github.com/turboderp/exllama and put it under /llm-reasoners/
     def exllama_main(
-            model_dir = '/data/haotian/RAP_tune/Llama-2-13B-GPTQ',
+            model_dir = '/original_prompt/haotian/RAP_tune/Llama-2-13B-GPTQ',
             lora_dir = None,
             prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
-            data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+            data_path: str = 'examples/rap_blocksworld/original_prompt/step_4.json',
             disable_log: bool = False,
-            config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
-            domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+            config_file: str = "examples/rap_blocksworld/original_prompt/bw_config.yaml",
+            domain_file: str = "examples/rap_blocksworld/original_prompt/generated_domain.pddl",
             lm_plan_file: str = 'lm_plan.tmp',
             depth_limit: int = 6,
             batch_size: int = 1,
@@ -175,10 +175,10 @@ if __name__ == '__main__':
     
     def llama2_main(llama_size: str = '70B',
              prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
-             data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+             data_path: str = 'examples/rap_blocksworld/original_prompt/step_4.json',
              disable_log: bool = False,
-             config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
-             domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+             config_file: str = "examples/rap_blocksworld/original_prompt/bw_config.yaml",
+             domain_file: str = "examples/rap_blocksworld/original_prompt/generated_domain.pddl",
              lm_plan_file: str = 'lm_plan.tmp',
              depth_limit: int = 6,
              **kwargs):
@@ -199,4 +199,4 @@ if __name__ == '__main__':
                lm_plan_file=lm_plan_file, **kwargs)
 
 
-    fire.Fire(exllama_main) # user will need to switch the model in the code
+    fire.Fire(llamacpp_main) # user will need to switch the model in the code

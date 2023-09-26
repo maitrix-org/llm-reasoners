@@ -306,7 +306,7 @@ class DummyLLaMAModel(LanguageModel):
 
 
 if __name__ == '__main__':
-    model = LlamaModel("/data/haotian/RAP_tune/llama-ckpts",'7B')
+    model = LlamaModel("/original_prompt/haotian/RAP_tune/llama-ckpts",'7B')
     print(model.get_next_token_logits(['Smoking is harmful to health.'], candidates=[[' It']]))
     print(model.get_next_token_logits(['Smoking is harmful to health. It'], candidates=[[' is']]))
     print(model.get_next_token_logits(['Smoking is harmful to health. It is'], candidates=[[' the']]))
