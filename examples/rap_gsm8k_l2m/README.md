@@ -23,5 +23,18 @@ CUDA_VISIBLE_DEVICES=2,3 python examples/rap_gsm8k_l2m/inference_new.py \
 --n_iters 1 \
 --depth_limit 5 \
 --n_confidence 1 \
---n_action 1
+--n_action 1 | tee least-to-most.log
 ```
+
+accuracy: 0.421
+30/1319 outputs got `None`. A large portion is due to wrong format. A small portion is due to length limit. Only one case is due to wrong format specific to Least to most.
+
+```
+Warning: output ends with newline. Fixed it temporarily by adding a dot.
+Output:  "How many hours do the math teachers collectively spend sleeping in one day.".
+
+Warning: output does not end with quote mark, this may cause unexpected behavior
+Output:  "How many hours do the math teachers collectively spend sleeping in one day."..
+```
+
+Normally it should be a question in the quote. This wrong generation disabled my manual fix.

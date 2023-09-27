@@ -204,7 +204,7 @@ class ExLlamaModel(LanguageModel):
         for i in range(max_new_tokens):
             token = generator.gen_single_token(mask = mask)
             # for debugging
-            cur_token = token[0][0]
+            # cur_token = token[0][0]
             # print(f"token: {cur_token}, {self.tokenizer.decode(torch.tensor([cur_token]))}")
             for j in range(token.shape[0]):
                 if token[j, 0].item() in eos_token_id:

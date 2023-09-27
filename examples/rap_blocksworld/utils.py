@@ -5,6 +5,7 @@ import json
 import yaml
 import random
 import numpy as np
+from pathlib import Path
 
 try:
     from tarski.io import PDDLReader
@@ -14,7 +15,7 @@ except:
 
 # helper functions from https://github.com/karthikv792/LLMs-Planning
 
-def instance_to_text_blocksworld(problem, get_plan, data, shuffle=False):
+def instance_to_text_blocksworld(problem, get_plan, data, plan_code="", shuffle=False):
     """Function to make a blocksworld instance into human-readable format
     
     :param get_plan: Flag to return the plan as text as well
@@ -30,8 +31,11 @@ def instance_to_text_blocksworld(problem, get_plan, data, shuffle=False):
     plan_file = "sas_plan"
     if get_plan:
         PLAN = "\n"
-        with open(plan_file) as f:
-            plan = [line.rstrip() for line in f][:-1]
+        if plan_code != "":
+            plan = plan_code.split("\n")[:-1]
+        else:
+            with open(plan_file) as f:
+                plan = [line.rstrip() for line in f][:-1]
 
         for action in plan:
             action = action.strip("(").strip(")")
@@ -105,6 +109,19 @@ def get_problem(instance, domain):
 
 # defined for RAP
 
+def compute_plan(domain, instance, plan_file="sas_plan"):
+    fast_downward_path = os.getenv("FAST_DOWNWARD")
+    # Remove > /dev/null to see the output of fast-downward
+    assert os.path.exists(f"{fast_downward_path}/fast-downward.py")
+    cmd = f"{fast_downward_path}/fast-downward.py {domain} {instance} --search \"astar(lmcut())\" > /dev/null 2>&1"
+    os.system(cmd)
+
+    if not os.path.exists(plan_file):
+        raise Exception("Plan not found. Check PDDL Writer.")
+
+    return Path(plan_file).read_text()
+    
+
 def load_blocksworld(config_file, domain_file, data_file, prompt):
     config_data = read_config(config_file)
     domain_pddl = domain_file
@@ -113,11 +130,15 @@ def load_blocksworld(config_file, domain_file, data_file, prompt):
     for cur_instance in data_files:
         cur_data = {}
         problem = get_problem(cur_instance[0], domain_pddl)
-        gt_plan_text = cur_instance[1]
-        INIT, GOAL, PLAN = instance_to_text_blocksworld(problem, False, config_data)
-
+        gt_plan_code = cur_instance[1]
+        # compute_plan(domain_pddl, cur_instance[0], "sas_plan")
+        INIT, GOAL, PLAN = instance_to_text_blocksworld(problem, True, config_data, plan_code=gt_plan_code)
+        cur_data["init"] = INIT
+        cur_data["goal"] = GOAL
+        cur_data["plan"] = PLAN
         cur_data["icl"] = prompt["icl"]
-        # gt_plan = self.compute_plan(domain_pddl, cur_instance)
+        gt_plan = compute_plan(domain_pddl, cur_instance[0])
+        cur_data["gt_plan"] = gt_plan
         cur_data["question"] = fill_template(
             *instance_to_text_blocksworld(problem, False, config_data)) + "\n"
         cur_data["instance_file"] = cur_instance[0]
