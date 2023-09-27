@@ -58,12 +58,11 @@ if __name__ == '__main__':
 
 
     def prontoqa_node_data_factory(n: MCTSNode) -> NodeData:
-        return NodeData({"state": n.state if n.state.body else None,
-                         "satisfied": n.fast_reward_details if n.fast_reward_details else "Not expanded"})
+        return NodeData({"state": n.state.body if n.state else None})
 
 
-    def blocksworld_edge_data_factory(n: MCTSNode) -> EdgeData:
-        return EdgeData({"reward": n.reward})
+    def blocksworld_edge_data_factory(n: MCTSNode[ProntoQAState, ProntoQAAction]) -> EdgeData:
+        return EdgeData({"reward": n.reward, "action": n.action})
 
 
     visualize(result[0], node_data_factory=prontoqa_node_data_factory,

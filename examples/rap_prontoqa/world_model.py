@@ -37,7 +37,7 @@ class ProntoQAWorldModel(WorldModel[ProntoQAState, ProntoQAAction]):
 
         input_prompt = ""
 
-        match state:
+        match action:
             case "Finish.":  # transition to terminal state
                 input_prompt += prompts.output.EXAMPLES
                 input_prompt += prompts.output.QUERY_FORMAT.format(self.example.test_example.query)
