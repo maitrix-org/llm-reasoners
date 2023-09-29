@@ -64,7 +64,9 @@ class ExLlamaModel(LanguageModel):
 
         self.config = ExLlamaConfig(model_config_path)               # create config from config.json
         self.config.model_path = model_path                          # supply path to model weights file
-        self.config.max_seq_length = max_seq_length                  # set max sequence length
+        self.config.max_seq_len = max_seq_length                  # set max sequence length
+        self.config.max_input_len = max_seq_length
+        self.config.max_attention_size = max_seq_length**2
         if mem_map is not None:
             self.config.auto_map = mem_map
         else:
@@ -153,7 +155,8 @@ class ExLlamaModel(LanguageModel):
             end = min(start + self.max_batch_size, len(inputs))
             with torch.inference_mode():
                 p_time = time.time()
-                decoded = self.generate_simple(self.generator, inputs[start:end], max_new_tokens=self.max_new_tokens, eos_token_id=eos_token_id)
+                decoded = self.generate_simple(self.generator, inputs[start:end], max_new_tokens=max_new_tokens,
+                                               eos_token_id=eos_token_id, hide_input=hide_input)
                 f_time = time.time()
                 num_new_tokens = [
                     len(self.tokenizer.encode(d, add_bos=False, add_eos=False)[0])
@@ -165,11 +168,11 @@ class ExLlamaModel(LanguageModel):
                                f"(speed: {round(sum(num_new_tokens) / t, 2)} t/s)")
             if not isinstance(decoded, list):
                 decoded = [decoded]
-            if hide_input:
-                for i in range(end-start):
-                    decoded[i] = decoded[i][len(inputs[start+i]):]
-                    if isinstance(eos_token_id, str):
-                        decoded[i] = decoded[i].split(eos_token_id)[0]
+            # if hide_input:
+            #     for i in range(end-start):
+            #         decoded[i] = decoded[i][len(inputs[start+i]):]
+            #         if isinstance(eos_token_id, str):
+            #             decoded[i] = decoded[i].split(eos_token_id)[0]
             log_prob = None
             if output_log_probs:
                 warnings.warn("output_log_probs is temporarily not supported now by ExLlamaModel. Please refere to exllama's code")
@@ -177,7 +180,7 @@ class ExLlamaModel(LanguageModel):
 
         return GenerateOutput(decoded_list, log_prob_list)
 
-    def generate_simple(self, generator, prompt, max_new_tokens = 128, eos_token_id = None):
+    def generate_simple(self, generator, prompt, max_new_tokens = 128, eos_token_id = None, hide_input=False):
         # copied from exllama/generator.py
         # support customized eos_token_id
 
@@ -193,18 +196,25 @@ class ExLlamaModel(LanguageModel):
 
         max_new_tokens = min(max_new_tokens, generator.model.config.max_seq_len - ids.shape[1])
 
-        eos = torch.zeros((ids.shape[0],), dtype = torch.bool)
+        eos = [0] * ids.shape[0]
         for i in range(max_new_tokens):
             token = generator.gen_single_token(mask = mask)
             # for debugging
             cur_token = token[0][0]
             # print(f"token: {cur_token}, {self.tokenizer.decode(torch.tensor([cur_token]))}")
             for j in range(token.shape[0]):
-                if token[j, 0].item() in eos_token_id:
-                    eos[j] = True
-            if eos.all(): break
+                if eos[j] == 0 and token[j, 0].item() in eos_token_id:
+                    eos[j] = ids.shape[1] + i
+            if all(eos):
+                break
 
-        text = self.tokenizer.decode(generator.sequence)
+        sequence = generator.sequence
+        for i, eos_pos in enumerate(eos):
+            if eos_pos > 0:
+                sequence[i, eos_pos + 1:] = generator.tokenizer.pad_token_id
+        if hide_input:
+            sequence = sequence[:, ids.shape[1]:]
+        text = generator.tokenizer.decode(sequence)
         return text
 
     @torch.no_grad()

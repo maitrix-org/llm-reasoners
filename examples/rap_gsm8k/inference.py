@@ -62,8 +62,14 @@ def rap_gsm8k(base_model: LanguageModel,
     #     with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
     #         print(sys.argv, file=f)
 
+    if aggregate:
+        aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge')
+    else:
+        aggregator = None
+
     search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm,
-                           'output_trace_in_each_iter': output_trace_in_each_iter}
+                           'output_trace_in_each_iter': output_trace_in_each_iter,
+                           'node_visualizer': node_visualizer, 'aggregator': aggregator}
     world_model = GSM8kWorldModel(base_model=base_model,
                                   n_confidence=n_confidence, batch_size=batch_size, temperature=temperature,
                                   early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)

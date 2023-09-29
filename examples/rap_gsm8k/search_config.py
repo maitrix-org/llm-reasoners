@@ -129,7 +129,7 @@ class GSM8kConfig(SearchConfig):
     def reward(self, state: GSM8kState, action: GSM8kAction,
                r_useful: float = None,
                confidence: float = None) -> tuple[float, dict]:
-        return 0, {}
+        return confidence, {'r_conf': confidence}
         assert r_useful is not None, "useful_reward is required to calculate reward in this search config, consider passing it in fast_reward"
         assert confidence is not None, "confidence is required to calculate reward in this search config, consider passing it in world model's step"
         return self.calculate_reward(r_useful, confidence)

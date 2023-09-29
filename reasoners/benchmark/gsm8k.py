@@ -7,8 +7,9 @@ from datetime import datetime
 import sys
 import random
 
+
 class GSM8KEvaluator():
-    def __init__(self, 
+    def __init__(self,
                  output_extractor,
                  answer_extractor,
                  sample_prompt,
@@ -51,43 +52,43 @@ class GSM8KEvaluator():
                  log_dir=None):
 
         self.dataset = datasets.load_dataset("gsm8k", "main", split=f"test[{resume}:]")
-        
+
         if log_dir is None:
-            log_dir = f'logs/{self._dataset_name}_'\
-                      f'{reasoner.search_algo.__class__.__name__}/'\
+            log_dir = f'logs/{self._dataset_name}_' \
+                      f'{reasoner.search_algo.__class__.__name__}/' \
                       f'{datetime.now().strftime("%Y%m%d-%H%M%S")}'
-        
+
         os.makedirs(log_dir, exist_ok=resume > 0)
         os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
-        
+
         with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
             print(sys.argv, file=f)
 
-        correct_count = 0
+        correct_count = accuracy = 0
 
         for i, example in enumerate(tqdm(self.dataset,
                                          total=resume + len(self.dataset),
                                          initial=resume,
                                          desc=self._dataset_name,
                                          disable=self.disable_tqdm)):
-            
+
             algo_output = reasoner(self.input_processor(example),
-                                   prompt=self.sample_prompt(self.init_prompt, num_shot))
-            
+                                   prompt=self.sample_prompt(self.init_prompt, num_shot),
+                                   log_file=os.path.join(log_dir, 'algo_output', f'{resume + i + 1}'))
+
             output = self.output_extractor(algo_output)
             answer = self.answer_extractor(example)
             correct = self.eval_output(answer, output)
             correct_count += correct
             accuracy = correct_count / (i + 1)
-            log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=};'\
+            log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=}; ' \
                       f'{accuracy=:.3f} ({correct_count}/{i + 1})'
             tqdm.write(log_str)
 
             if not self.disable_log:
                 with open(os.path.join(log_dir, 'result.log'), 'a') as f:
                     print(log_str, file=f)
-            
-                with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb')  as f:
-                    pickle.dump(algo_output, f)
-        
+                # with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
+                #     pickle.dump(algo_output, f)
+
         return accuracy
