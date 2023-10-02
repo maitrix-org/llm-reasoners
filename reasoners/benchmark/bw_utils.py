@@ -1,4 +1,3 @@
-'''
 import re
 import os
 import torch
@@ -137,7 +136,7 @@ def load_blocksworld(config_file, domain_file, data_file, prompt):
         cur_data["init"] = INIT
         cur_data["goal"] = GOAL
         cur_data["plan"] = PLAN
-        cur_data["icl"] = prompt["icl"]
+        # cur_data["icl"] = prompt["icl"]
         gt_plan = compute_plan(domain_pddl, cur_instance[0])
         cur_data["gt_plan"] = gt_plan
         cur_data["question"] = fill_template(
@@ -384,7 +383,7 @@ def extract_init_state(example):
     
     :param example: example
     """
+    # print(example)
     init_statement = example["question"].split("[STATEMENT]\nAs initial conditions I have that, ")[1]\
         .split("My goal")[0].strip()
     return init_statement
-'''

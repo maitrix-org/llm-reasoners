@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from transformers import StoppingCriteriaList
-
-import os, datetime, sys, pickle
+from datetime import datetime
+import os, sys, pickle
 from tqdm import tqdm
 
 State = TypeVar("State")

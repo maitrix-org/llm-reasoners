@@ -1,6 +1,6 @@
 import numpy as np
 
-import utils
+import reasoners.benchmark.bw_utils as utils
 from world_model import BWState, BWAction
 from reasoners import SearchConfig, LanguageModel
 
