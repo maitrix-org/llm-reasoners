@@ -288,4 +288,12 @@ class ExLlamaModel(LanguageModel):
             for j in range(bsz):
                 if tokens[j, i] != self.tokenizer.pad_token_id:
                     acc_probs[j] += torch.log(probs[j, tokens[j, i]])
+
+        
+        print("="*30 + "prefix" + "="*30)
+        print(prefix)
+        print("="*30 + "candidates" + "="*30)
+        print(contents)
+        print("="*30 + "end" + "="*30)
+    
         return acc_probs.cpu().numpy()

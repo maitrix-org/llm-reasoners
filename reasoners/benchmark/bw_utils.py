@@ -362,6 +362,7 @@ def goal_check(goals, blocks_state):
     :param blocks_state: current blocks state
     """
     meetings = [g in blocks_state for g in goals]
+    print("Goal met:", meetings)
     if sum(meetings) == len(meetings):
         return True, 1.0
     return False, sum(meetings) / len(meetings)

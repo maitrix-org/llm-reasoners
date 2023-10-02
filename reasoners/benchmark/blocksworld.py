@@ -47,21 +47,18 @@ class BWEvaluator(Evaluator):
                 examples = random.sample(self.init_prompt["example_pool"], num_shot)
             else:
                 examples = self.init_prompt["example_pool"][:num_shot]
-            examples.append({
-                "init": "<init_state>",
-                "goal": "<goals>",
-                "plan": "\n<action>"
-            })
             icl = self.init_prompt["intro"] + \
-                    "\n".join([
-                        "[STATEMENT]\nAs initial conditions I have that, " + \
-                        example["init"] + \
-                        ".\nMy goal is to have that " +\
-                        example["goal"] + \
-                        ".\n\nMy plan is as follows:\n\n[PLAN]" + \
-                        example["plan"]
-                        for example in examples
-                    ])
+                "\n".join([
+                    "[STATEMENT]\nAs initial conditions I have that, " + \
+                    example["init"] + \
+                    ".\nMy goal is to have that " +\
+                    example["goal"] + \
+                    ".\n\nMy plan is as follows:\n\n[PLAN]" + \
+                    example["plan"]
+                    for example in examples
+                ])
+            icl += "\n[STATEMENT]\nAs initial conditions I have that, <init_state>\nMy goal is to <goals>\n\nMy plan is as follows:\n\n[PLAN]\n<action>"
+
             prompt = copy.deepcopy(self.init_prompt)
             prompt["icl"] = icl
         else:
