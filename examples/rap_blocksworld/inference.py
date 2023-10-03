@@ -46,7 +46,7 @@ def rap_bw(base_model: LanguageModel,
                       goal_reward_default=goal_reward_default)
     search_algo = search_algo(**search_algo_params)
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
-    dataset = utils.load_blocksworld(config_file, domain_file, data_path, prompt)  # [{"goal": str, "init": str}]
+    dataset = utils.load_blocksworld(config_file, domain_file, data_path)  # [{"goal": str, "init": str}]
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume, desc='Blocksworld')):
         algo_output = reasoner(example)

@@ -11,6 +11,20 @@ import copy
 
 import reasoners.benchmark.bw_utils as bw_utils
 
+def get_icl(init_prompt, examples):
+    icl = init_prompt["intro"] + \
+        "\n".join([
+            "[STATEMENT]\nAs initial conditions I have that, " + \
+            example["init"] + \
+            ".\nMy goal is to have that " +\
+            example["goal"] + \
+            ".\n\nMy plan is as follows:\n\n[PLAN]" + \
+            example["plan"]
+            for example in examples
+        ])
+    icl += "\n[STATEMENT]\nAs initial conditions I have that, <init_state>\nMy goal is to <goals>\n\nMy plan is as follows:\n\n[PLAN]\n<action>"
+    return icl
+
 class BWEvaluator(Evaluator):
     def __init__(self, 
                  config_file,
@@ -27,7 +41,7 @@ class BWEvaluator(Evaluator):
         self.output_extractor = output_extractor
         self.answer_extractor = answer_extractor
         self.input_processor = lambda x: x
-        self.full_dataset = bw_utils.load_blocksworld(config_file, domain_file, data_path, init_prompt)  # [{"goal": str, "init": str}]
+        self.full_dataset = bw_utils.load_blocksworld(config_file, domain_file, data_path)  # [{"goal": str, "init": str}]
         self._dataset_name = 'blocksworld'
         self.disable_log = disable_log
         self.disable_tqdm = disable_tqdm
@@ -47,23 +61,31 @@ class BWEvaluator(Evaluator):
                 examples = random.sample(self.init_prompt["example_pool"], num_shot)
             else:
                 examples = self.init_prompt["example_pool"][:num_shot]
-            icl = self.init_prompt["intro"] + \
-                "\n".join([
-                    "[STATEMENT]\nAs initial conditions I have that, " + \
-                    example["init"] + \
-                    ".\nMy goal is to have that " +\
-                    example["goal"] + \
-                    ".\n\nMy plan is as follows:\n\n[PLAN]" + \
-                    example["plan"]
-                    for example in examples
-                ])
-            icl += "\n[STATEMENT]\nAs initial conditions I have that, <init_state>\nMy goal is to <goals>\n\nMy plan is as follows:\n\n[PLAN]\n<action>"
 
+            icl = get_icl(self.init_prompt, examples)
+            
             prompt = copy.deepcopy(self.init_prompt)
             prompt["icl"] = icl
+            prompt["icl_list"] = [icl]
+            examples = copy.deepcopy(examples)
+            for i in range(5):
+                new_examples = []
+                for example in examples:
+                    if len(example["states"]) > 1:
+                        new_examples.append({
+                            "init": example["states"][0],
+                            "goal": example["goal"],
+                            "plan": "\n" + "\n".join(example["plan"].split("\n")[3:]),
+                            "states": example["states"][1:]
+                        })
+                    else:
+                        new_examples.append(example)
+                examples = copy.deepcopy(new_examples)
+                icl = get_icl(self.init_prompt, examples)
+                prompt["icl_list"].append(icl)
         else:
             raise NotImplementedError
-        print("ICL: '" + icl + "'")
+        print("prompt:",  prompt)
         return prompt
 
     def eval_output(self, answer, output):

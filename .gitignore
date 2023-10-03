@@ -19,3 +19,5 @@ dataset/
 *.txt
 sas_plan
 build/
+temp_plan
+temp_problem

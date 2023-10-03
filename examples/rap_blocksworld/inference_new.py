@@ -72,6 +72,8 @@ if __name__ == '__main__':
         with open(prompt_path) as f:
             prompt = json.load(f)
         llama_model = LlamaModel(llama_ckpts, llama_size, max_batch_size=2)
+
+
         rap_bw(llama_model,
                prompt,
                disable_log=disable_log or local_rank != 0,
@@ -196,4 +198,4 @@ if __name__ == '__main__':
                lm_plan_file=lm_plan_file, **kwargs)
 
 
-    fire.Fire(exllama_main) # user will need to switch the model in the code
+    fire.Fire(llama_main) # user will need to switch the model in the code

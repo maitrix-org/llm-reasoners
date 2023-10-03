@@ -33,7 +33,12 @@ class BWConfig(SearchConfig):
             # if action buffered
             current_blocks_state = state.last_blocks_state
         previous_action = state.buffered_action + "\n" if state.buffered_action != "" else ""
-        inputs = self.prompt["icl"].replace("<init_state>", current_blocks_state)\
+        
+        icl_template = self.prompt["icl_list"][state.step_idx // 2]
+        # every two step, we will deduct the icl prompt
+        # so that the distribution of step length is more reasonable
+        
+        inputs = icl_template.replace("<init_state>", current_blocks_state)\
             .replace("<goals>", utils.extract_goals(self.example, return_raw=True)).replace("<action>", previous_action)
         intuition = self.base_model.get_loglikelihood(inputs, [inputs + action])[0]
 

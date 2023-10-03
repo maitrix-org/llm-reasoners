@@ -6,6 +6,7 @@ from transformers import StoppingCriteriaList
 from datetime import datetime
 import os, sys, pickle
 from tqdm import tqdm
+import torch
 
 State = TypeVar("State")
 Action = TypeVar("Action")
@@ -169,20 +170,23 @@ class Evaluator():
             algo_name = reasoner.search_algo.__class__.__name__
         except:
             algo_name = "unknown"
-            
-        if log_dir is None:
-            log_dir = f'logs/{self._dataset_name}_'\
+
+        
+        if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
+            if log_dir is None:
+                log_dir = f'logs/{self._dataset_name}_'\
                         f'{algo_name}/'\
                         f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
+            os.makedirs(log_dir, exist_ok=resume > 0)
+            os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
         
-        os.makedirs(log_dir, exist_ok=resume > 0)
-        os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
-        
-        with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
-            print(sys.argv, file=f)
+            with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
+                print(sys.argv, file=f)
 
         correct_count = 0
 
+        disable_tqdm = self.disable_tqdm or \
+            (torch.distributed.is_initialized() and torch.distributed.get_rank() != 0)
         for i, example in enumerate(tqdm(self.dataset,
                                             total=resume + len(self.dataset),
                                             initial=resume,
@@ -204,7 +208,8 @@ class Evaluator():
                         f'{accuracy=:.3f} ({correct_count}/{i + 1})'
             tqdm.write(log_str)
 
-            if not self.disable_log:
+            if (not self.disable_log) and \
+                (not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0):
                 with open(os.path.join(log_dir, 'result.log'), 'a') as f:
                     print(log_str, file=f)
             
