@@ -3,6 +3,7 @@ from typing import NamedTuple, TypedDict
 from collections import defaultdict
 from reasoners import WorldModel, LanguageModel
 import utils
+from reasoners.base import Example
 
 
 class SubResult(NamedTuple):
@@ -15,12 +16,14 @@ GSM8kState = list[SubResult]
 GSM8kAction = str
 
 
-class GSM8kPrompt(TypedDict):
-    input: str
+class GSM8kPromptDict(TypedDict):
+    instruction: str
+    interactive_examples: list[str]
+    useful_examples: list[str]
     question_prefix: str
     subquestion_prefix: str
-    answer_prefix: str
     overall_question_prefix: str
+    answer_prefix: str
 
 
 class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
@@ -32,7 +35,6 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
 
     def __init__(self,
                  base_model: LanguageModel,
-                 prompt: dict,
                  n_confidence=8,
                  batch_size=2,
                  temperature=0.8,
@@ -40,12 +42,24 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                  early_stop_threshold=1.) -> None:
         super().__init__()
         self.base_model = base_model
-        self.prompt: GSM8kPrompt = prompt
         self.batch_size = batch_size
         self.n_confidence = n_confidence
         self.temperature = temperature
         self.early_stop_base = early_stop_base if early_stop_base is not None else n_confidence
         self.early_stop_threshold = early_stop_threshold
+        self.prompt_examples = ""
+        self.n_shots = 0
+
+    def update_example(self, example: Example, prompt: GSM8kPromptDict = None) -> None:
+        super().update_example(example, prompt)
+        assert prompt is not None
+        self.prompt = prompt
+        with io.StringIO() as f:
+            f.write(self.prompt['instruction'] + '\n\n')
+            for idx, example in enumerate(self.prompt['interactive_examples']):
+                f.write(example.format(idx=idx + 1) + '\n\n')
+            self.n_shots = len(self.prompt['interactive_examples'])
+            self.prompt_examples = f.getvalue()
 
     def init_state(self) -> list:
         return []
@@ -54,14 +68,17 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
         state = state.copy()
 
         with io.StringIO() as f:
-            f.write(self.prompt["input"])
-            f.write(self.prompt["question_prefix"] + self.example + "\n")
+            f.write(self.prompt_examples)
+            f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
             for idx, (q, a, _) in enumerate(state):
-                f.write(self.prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
-                f.write(self.prompt["answer_prefix"].format(idx + 1) + " " + a + "\n")
-            f.write(self.prompt["subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
-            f.write(self.prompt["answer_prefix"].format(len(state) + 1))
+                f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
+                f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
+            f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1) + " " + action + "\n")
+            f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
             model_input = f.getvalue()
+
+        # print(model_input)
+        # input(">")
 
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
         result = ""

@@ -1,11 +1,17 @@
 import re
 from typing import Optional, Union
 
+from reasoners.base import AlgorithmOutput
 
-def retrieve_answer(output: Union[list, str]) -> Optional[str]:
+
+def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
     '''
     output should be a world_model.GSM8kState if being a list
     '''
+    if isinstance(output, AlgorithmOutput):
+        if (result := getattr(output, 'aggregated_result', None)) is not None:
+            return result
+        output = output.terminal_state
     if isinstance(output, list):
         output = output[-1].sub_answer
     match = re.match(r'.*[Tt]he answer is .*?([ $.0-9,\-]+).*\..*', output)
@@ -17,7 +23,9 @@ def retrieve_answer(output: Union[list, str]) -> Optional[str]:
     return answer
 
 
-def retrieve_answer_from_dataset(answer: str) -> str:
+def retrieve_answer_from_dataset(answer: Union[str, dict]) -> str:
+    if isinstance(answer, dict):
+        answer = answer['answer']
     return re.match(r'[\S\s]*#### (.*)$', answer)[1]
 
 
