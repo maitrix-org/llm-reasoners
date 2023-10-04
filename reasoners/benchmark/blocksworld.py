@@ -85,7 +85,7 @@ class BWEvaluator(Evaluator):
                 prompt["icl_list"].append(icl)
         else:
             raise NotImplementedError
-        print("prompt:",  prompt)
+        # print("prompt:",  prompt)
         return prompt
 
     def eval_output(self, answer, output):
