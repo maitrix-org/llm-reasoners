@@ -6,6 +6,7 @@ import os, pickle
 from datetime import datetime
 import sys
 import random
+import copy
 from reasoners import Evaluator
 
 class GSM8KEvaluator(Evaluator):
@@ -51,6 +52,15 @@ class GSM8KEvaluator(Evaluator):
             else:
                 examples = self.init_prompt["cot_pool"][:num_shot]
             prompt["cot"] = "".join(examples) + self.init_prompt["prefix"]
+
+        elif sample_prompt_type == "rap":
+
+            ret = copy.deepcopy(self.init_prompt)
+            ret['interactive_examples'], ret['useful_examples'] = zip(*random.sample(list(zip(ret['interactive_examples'],
+                                                                                            ret['useful_examples'])),
+                                                                                    k=num_shot))
+            return ret
+
         else:
             raise NotImplementedError
         return prompt

@@ -24,13 +24,6 @@ def node_visualizer(x: MCTSNode[GSM8kState, GSM8kAction]):
     return {"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer}
 
 
-def sample_gsm8k_prompt(pool: GSM8kPromptDict, n_sample: int) -> GSM8kPromptDict:
-    ret = deepcopy(pool)
-    ret['interactive_examples'], ret['useful_examples'] = zip(*random.sample(list(zip(ret['interactive_examples'],
-                                                                                      ret['useful_examples'])),
-                                                                             k=n_sample))
-    return ret
-
 
 def rap_gsm8k(base_model: LanguageModel,
               prompt: GSM8kPromptDict,
@@ -83,7 +76,7 @@ def rap_gsm8k(base_model: LanguageModel,
     evaluator = GSM8KEvaluator(output_extractor=utils.retrieve_answer,
                                answer_extractor=utils.retrieve_answer_from_dataset,
                                init_prompt=prompt,
-                               sample_prompt=sample_gsm8k_prompt,
+                               sample_prompt_type="rap",
                                disable_log=disable_log,
                                disable_tqdm=disable_tqdm)
 
