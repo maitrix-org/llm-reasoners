@@ -26,7 +26,7 @@ def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
 def retrieve_answer_from_dataset(answer: Union[str, dict]) -> str:
     if isinstance(answer, dict):
         answer = answer['answer']
-    return re.match(r'[\S\s]*#### (.*)$', answer)[1]
+    return re.match(r'[\S\s]*#### (.*)$', answer)[1].replace(',', '').replace(' ', '')
 
 
 def judge_answer(output: Optional[str], answer: str) -> bool:
