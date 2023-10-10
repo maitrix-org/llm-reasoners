@@ -1,5 +1,4 @@
 import io
-from pyexpat import model
 from typing import NamedTuple, TypedDict
 from collections import defaultdict
 from reasoners import WorldModel, LanguageModel
@@ -17,11 +16,8 @@ MATHAction = str
 
 
 class MATHPrompt(TypedDict):
-    input: str
-    question_prefix: str
-    subquestion_prefix: str
-    answer_prefix: str
-    overall_question_prefix: str
+    decomposition: str
+    solving: str
 
 
 class MATHWorldModel(WorldModel[MATHState, MATHAction]):
@@ -50,19 +46,20 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
 
     def init_state(self) -> list:
         return []
-    
+
     def step(self, state: MATHState, action: MATHAction) -> tuple[MATHState, dict]:
         state = state.copy()
-
+        # print("In step")
+        # print("State:", state)
+        # print("Action:", action)
         with io.StringIO() as f:
-            f.write(self.prompt["input"])
-            f.write(self.prompt["question_prefix"] + self.example + "\n")
+            f.write(self.prompt["solving"].replace("{QUESTION}", self.example))
             for idx, (q, a, _) in enumerate(state):
-                f.write(self.prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
-                f.write(self.prompt["answer_prefix"].format(idx + 1) + " " + a + "\n")
-            f.write(self.prompt["subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
-            f.write(self.prompt["answer_prefix"].format(len(state) + 1))
+                q = q[2:-2] # remove quote
+                f.write("\n\nQ: " + q + "\nA: " + a)
+            f.write("\n\nQ: " + action[2:-2] + "\nA:")
             model_input = f.getvalue()
+        
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
         result = ""
         for start1 in range(0, self.n_confidence, self.early_stop_base):
@@ -80,12 +77,13 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                 for output in outputs:
                     result = output.strip()
                     answer = utils.retrieve_answer(result)
-                    answer_dict[answer].append(result)
+                    if answer is not None:
+                        answer_dict[answer].append(result)
+
             # Early stop if confidence is high enough
             if len(answer_dict) == 0:  # no answer yet
                 continue
             sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
-
             max_len = len(sorted_answer_dict[0][1])
             if max_len / stop1 >= self.early_stop_threshold:
                 if len(sorted_answer_dict) >= 2 and max_len == len(sorted_answer_dict[1][1]):
@@ -94,7 +92,9 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                     break
 
         if len(answer_dict) == 0:
-            confidence, answer = 0, result
+            print("Warning: no answer found")
+            print("Output:", result)
+            confidence, answer = 0, result  # No reasonable answer found. Fall back to choose the last response
         else:
             sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
             max_answer = sorted_answer_dict[0]
@@ -108,7 +108,5 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
         return state, aux
 
     def is_terminal(self, state: MATHState) -> bool:
-        if len(state) > 0 and "Now we can answer" in state[-1].sub_question:
-            return True
-        else:
-            return False
+        # if the last subquestion is ended with ".", it's terminal
+        return len(state) > 0 and state[-1].sub_question.endswith('"!')
