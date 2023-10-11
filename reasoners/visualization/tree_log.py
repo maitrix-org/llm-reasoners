@@ -96,14 +96,25 @@ class TreeLog:
             all_nodes(root)
             tree = TreeSnapshot(list(nodes.values()), edges)
 
-            # select edges with highest Q value
+            # select edges following the MCTS trace
+            if mcts_results.trace_in_each_iter:
+                trace = mcts_results.trace_in_each_iter[step]
+                for step_idx in range(len(trace) - 1):
+                    in_node_id = trace[step_idx].id
+                    out_node_id = trace[step_idx + 1].id
+                    for edges in tree.out_edges(in_node_id):
+                        if edges.target == out_node_id:
+                            nodes[in_node_id].selected_edge = edges.id
+                            break
+
+            # for all other nodes, select edges with highest Q
             for node in tree.nodes.values():
                 if node.selected_edge is None and tree.children(node.id):
                     node.selected_edge = max(
                         tree.out_edges(node.id),
                         key=lambda edge: edge.data.get("Q", -float("inf"))
                     ).id
-
+            
             snapshots.append(tree)
 
         return cls(snapshots)
