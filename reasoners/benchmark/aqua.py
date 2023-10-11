@@ -105,7 +105,6 @@ class AQuAEvaluator():
                                          desc=self.dataset_name,
                                          disable=self.disable_tqdm)):
             
-            flag = True
             try:
                 algo_output = reasoner(self.input_processor(example),
                                     prompt=self.sample_l2m_prompt(
@@ -114,7 +113,6 @@ class AQuAEvaluator():
             except AssertionError as e:
                 from reasoners.algorithm import MCTSResult
                 algo_output = MCTSResult(terminal_state=None, cum_reward=None, trace=None, trace_of_nodes=None, tree_state=None)
-                flag = False
             if algo_output.terminal_state is None:
                 output = None
             else:
