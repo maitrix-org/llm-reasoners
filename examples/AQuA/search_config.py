@@ -84,7 +84,7 @@ class MATHConfig(SearchConfig):
                 print("Warning: output does not end with quote mark, this may cause unexpected behavior")
                 print("Output:", o)
                 continue
-            elif not o.startswith(' "'):
+            elif not o.startswith('"'):
                 print("Warning: output does not start with quote mark, this may cause unexpected behavior")
                 print("Output:", o)
                 continue
