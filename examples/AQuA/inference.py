@@ -27,8 +27,6 @@ def node_visualizer(x: MCTSNode[MATHState, MATHAction]):
 
 
 def rap_AQuA(base_model: LanguageModel,
-              interactive_prompt: dict,
-              useful_prompt: dict,
               prompt: dict,
               search_algo: Type[SearchAlgorithm] = MCTS,
               resume: int = 0,
@@ -52,13 +50,16 @@ def rap_AQuA(base_model: LanguageModel,
     
 
     
-    world_model = MATHWorldModel(base_model=base_model, prompt=interactive_prompt,
-                                  n_confidence=n_confidence, batch_size=batch_size, temperature=temperature,
-                                  early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
-    config = MATHConfig(base_model=base_model, prompt=interactive_prompt, useful_prompt=useful_prompt,
-                         n_actions=n_action, batch_size=batch_size, temperature=temperature,
-                         reward_alpha=reward_alpha, reward_confidence_default=reward_confidence_default,
-                         force_terminating_on_depth_limit=force_terminating_on_depth_limit, depth_limit=depth_limit)
+    world_model = MATHWorldModel(
+        base_model=base_model, prompt={},
+        n_confidence=n_confidence, batch_size=batch_size, temperature=temperature,
+        early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
+    config = MATHConfig(
+        base_model=base_model, prompt={},
+        n_actions=n_action, batch_size=batch_size, temperature=temperature,
+        reward_alpha=reward_alpha, reward_confidence_default=reward_confidence_default,
+        force_terminating_on_depth_limit=force_terminating_on_depth_limit, depth_limit=depth_limit)
+    
     search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm, 'output_trace_in_each_iter': output_trace_in_each_iter}
     search_algo = search_algo(**search_algo_params)
     
@@ -127,8 +128,6 @@ if __name__ == '__main__':
         lora_dir = None,
         batch_size = 1,
         mem_map = [16,22],
-        interactive_prompt = "examples/AQuA/prompts/interactive_examples.json", # change to 3 shots
-        useful_prompt = "examples/AQuA/prompts/useful_examples.json", 
         prompt = "examples/AQuA/prompts/AQuA_example_pool.json",
         disable_log = False,
         disable_tqdm = False,
@@ -140,14 +139,9 @@ if __name__ == '__main__':
         print(os.getcwd())
         with open(prompt) as f:
             prompt = json.load(f)
-        '''with open(interactive_prompt) as f:
-            interactive_prompt = json.load(f)
-        with open(useful_prompt) as f:
-            useful_prompt = json.load(f)'''
+
         rap_AQuA(base_model=base_model,
                   prompt=prompt,
-                  interactive_prompt=interactive_prompt,
-                  useful_prompt=useful_prompt,
                   batch_size=batch_size,
                   disable_log=disable_log or local_rank != 0,
                   disable_tqdm=disable_tqdm or local_rank != 0,
