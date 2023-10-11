@@ -55,10 +55,14 @@ def rap_AQuA(base_model: LanguageModel,
         n_confidence=n_confidence, batch_size=batch_size, temperature=temperature,
         early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
     config = MATHConfig(
-        base_model=base_model, prompt={},
-        n_actions=n_action, batch_size=batch_size, temperature=temperature,
-        reward_alpha=reward_alpha, reward_confidence_default=reward_confidence_default,
-        force_terminating_on_depth_limit=force_terminating_on_depth_limit, depth_limit=depth_limit)
+        base_model=base_model, 
+        prompt={},
+        n_actions=n_action, 
+        batch_size=batch_size, 
+        temperature=temperature,
+        reward_alpha=reward_alpha, 
+        reward_confidence_default=reward_confidence_default,
+        depth_limit=depth_limit)
     
     search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm, 'output_trace_in_each_iter': output_trace_in_each_iter}
     search_algo = search_algo(**search_algo_params)
@@ -97,31 +101,6 @@ if __name__ == '__main__':
         sys.stdout = open(os.devnull, 'w')
         warnings.filterwarnings('ignore')
 
-    def main_hf(hf_path = "/data/haotian/RAP_tune/Llama-2-13b-hf",
-            batch_size = 1,
-            peft_path = None,
-            interactive_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/interactive_examples.json", 
-            useful_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/useful_examples.json",
-            disable_log = False,
-            disable_tqdm = False,
-            quantized = "nf4", # awq, int8, fp4, nf4, None
-            load_awq_pth = None,
-            **kwargs):
-        from reasoners.lm import HFModel
-        device = torch.device("cuda:0")
-        base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=512, peft_pth=peft_path, quantized=quantized, load_awq_pth=load_awq_pth)
-        with open(interactive_prompt) as f:
-            interactive_prompt = json.load(f)
-        with open(useful_prompt) as f:
-            useful_prompt = json.load(f)
-        rap_AQuA(base_model=base_model,
-                    interactive_prompt=interactive_prompt,
-                    useful_prompt=useful_prompt,
-                    batch_size=batch_size,
-                    disable_log=disable_log or local_rank != 0,
-                    disable_tqdm=disable_tqdm or local_rank != 0,
-                    **kwargs)
-
     def main_exllama(
         base_lm = 'exllama',
         model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
@@ -147,7 +126,37 @@ if __name__ == '__main__':
                   disable_tqdm=disable_tqdm or local_rank != 0,
                   **kwargs)
 
-
+    fire.Fire(main_exllama)
+    
+    
+    '''
+    def main_hf(hf_path = "/data/haotian/RAP_tune/Llama-2-13b-hf",
+            batch_size = 1,
+            peft_path = None,
+            interactive_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/interactive_examples.json", 
+            useful_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/useful_examples.json",
+            disable_log = False,
+            disable_tqdm = False,
+            quantized = "nf4", # awq, int8, fp4, nf4, None
+            load_awq_pth = None,
+            **kwargs):
+        from reasoners.lm import HFModel
+        device = torch.device("cuda:0")
+        base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=512, peft_pth=peft_path, quantized=quantized, load_awq_pth=load_awq_pth)
+        with open(interactive_prompt) as f:
+            interactive_prompt = json.load(f)
+        with open(useful_prompt) as f:
+            useful_prompt = json.load(f)
+        rap_AQuA(base_model=base_model,
+                    interactive_prompt=interactive_prompt,
+                    useful_prompt=useful_prompt,
+                    batch_size=batch_size,
+                    disable_log=disable_log or local_rank != 0,
+                    disable_tqdm=disable_tqdm or local_rank != 0,
+                    **kwargs)
+    '''
+    
+    """
     def main(base_lm: str = 'llama2', #llama means llama_v1 and llama2 means llama_v2
              llama_ckpt: str = llama_ckpts,
              llama_2_ckpt: str = llama_2_ckpts,
@@ -186,5 +195,4 @@ if __name__ == '__main__':
                   disable_tqdm=disable_tqdm or local_rank != 0,
                   **kwargs)
 
-
-    fire.Fire(main_exllama)
+    """
