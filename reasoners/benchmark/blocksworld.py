@@ -11,6 +11,15 @@ import copy
 
 import reasoners.benchmark.bw_utils as bw_utils
 
+def rap_bw_extractor(algo_output):
+    if torch.distributed.is_initialized():
+        torch.distributed.barrier()
+    # to make sure the plan is saved before evaluation in multi-process setting
+    if algo_output.trace is None:
+        print("No plan found")
+        return ""
+    else:
+        return "\n".join(algo_output.trace[1])
 def get_icl(init_prompt, examples):
     icl = init_prompt["intro"] + \
         "\n".join([
@@ -34,7 +43,7 @@ class BWEvaluator(Evaluator):
                  disable_log=False,
                  disable_tqdm=False,
                  output_extractor=lambda x:x,
-                 answer_extractor=lambda x:x,
+                 answer_extractor=rap_bw_extractor,
                  sample_prompt_type="rap") -> None:
 
         self.init_prompt = init_prompt
@@ -89,13 +98,6 @@ class BWEvaluator(Evaluator):
         return prompt
 
     def eval_output(self, answer, output):
-        if torch.distributed.is_initialized():
-                torch.distributed.barrier()
-        # to make sure the plan is saved before evaluation in multi-process setting
-        if output.trace is None:
-            print("No plan found")
-            correct = False
-        else:
-            bw_utils.text_to_plan_blocksworld("\n".join(output.trace[1]), answer["instance_file"], self.config_file, self.domain_file, self.lm_plan_file)
-            correct = bw_utils.validate_plan(self.domain_file, answer["instance_file"], self.lm_plan_file)[0]
+        bw_utils.text_to_plan_blocksworld(output, answer["instance_file"], self.config_file, self.domain_file, self.lm_plan_file)
+        correct = bw_utils.validate_plan(self.domain_file, answer["instance_file"], self.lm_plan_file)[0]
         return correct
