@@ -6,9 +6,6 @@ def retrieve_answer(output: Union[list, str]) -> Optional[str]:
     '''
     output should be a world_model.AMTHState if being a list
     '''
-    print('*******************')
-    print(output)
-    print('*******************')
     if isinstance(output, list):
         output = output[-1].sub_answer
     match = re.match(r'.*[Tt]he answer is.*?([A-E]).*?\.$', output, re.DOTALL)
