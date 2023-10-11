@@ -105,20 +105,19 @@ class AQuAEvaluator():
                                          desc=self.dataset_name,
                                          disable=self.disable_tqdm)):
             
-            flag = True
-            try:
-                algo_output = reasoner(self.input_processor(example),
+            #try:
+            algo_output = reasoner(self.input_processor(example),
                                     prompt=self.sample_l2m_prompt(
                                         shuffle_prompt=shuffle_prompt,
                                         num_shot=num_shot))
-            except AssertionError as e:
+            '''except AssertionError as e:
                 from reasoners.algorithm import MCTSResult
                 algo_output = MCTSResult(terminal_state=None, cum_reward=None, trace=None, trace_of_nodes=None, tree_state=None)
-                flag = False
             if algo_output.terminal_state is None:
                 output = None
             else:
-                output = self.output_extractor(algo_output.terminal_state[-1].sub_answer)
+                output = self.output_extractor(algo_output.terminal_state[-1].sub_answer)'''
+            output = self.output_extractor(algo_output)
 
             answer = self.answer_extractor(example)
             correct = self.eval_output(answer, output)
