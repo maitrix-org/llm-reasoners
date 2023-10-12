@@ -2,24 +2,26 @@ import re
 from typing import Optional, Union
 
 
-def retrieve_answer(output: Union[list, str]) -> Optional[str]:
+def retrieve_answer(output):
     '''
     output should be a world_model.AMTHState if being a list
     '''
+    print('retrieve_answer:', output)
     if isinstance(output, list):
         output = output[-1].sub_answer
-    match = re.match(r'.*[Tt]he answer is.*?([A-E]).*?\.$', output, re.DOTALL)
+    match = re.match(r'.*[Tt]he answer is.*?([A-E]).*?$', output, re.DOTALL)
+    
     if match is None:
+        print('match:', match)
         return None
-    answer = match[1].replace(',', '').replace('$', '').replace(' ', '')
-    if '=' in answer:
-        answer = answer[answer.rindex('=') + 1:]
+    print('match:', match[1].strip())
+    answer = match[1].strip()
+    
     return answer
 
 
 def retrieve_answer_from_dataset(answer: str) -> str:
-    return re.match(r'[\S\s]*#### (.*)$', answer)[1]
-
+    return answer.strip()
 
 def judge_answer(output: Optional[str], answer: str) -> bool:
     if output is None:

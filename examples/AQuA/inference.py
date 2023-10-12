@@ -68,7 +68,7 @@ def rap_AQuA(base_model: LanguageModel,
     search_algo = search_algo(**search_algo_params)
     
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
-    evaluator = AQuAEvaluator(output_extractor=utils.retrieve_answer,
+    evaluator = AQuAEvaluator(output_extractor=utils.rap_extractor,
                                answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"]),
                                init_prompt=prompt,
                                disable_log=disable_log,

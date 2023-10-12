@@ -95,16 +95,5 @@ class AQuAEvaluator(Evaluator):
     def eval_output(self, answer, output):
         if output is None:
             return False
-        try:
-            output = int(output)
-            answer = int(answer)
-            return output == answer
-        except ValueError:
-            pass
-        try:
-            output = float(output)
-            answer = float(answer)
-            return output == answer
-        except ValueError:
-            pass
-        return output == answer
+        
+        return output.lower() == answer.lower()
