@@ -33,7 +33,6 @@ def rap_AQuA(base_model: LanguageModel,
               n_action: int = 4,
               n_confidence: int = 8,
               depth_limit: int = 5,
-              force_terminating_on_depth_limit: bool = True,
               batch_size: int = 1,
               temperature: float = 0.8,
               early_stop_base: int = 2,
@@ -46,14 +45,17 @@ def rap_AQuA(base_model: LanguageModel,
               disable_log: bool = False,
               disable_tqdm: bool = False,
               output_trace_in_each_iter: bool = True,
+              aggregate: bool = True,
               **search_algo_params):
-    
-
     
     world_model = MATHWorldModel(
         base_model=base_model, prompt={},
-        n_confidence=n_confidence, batch_size=batch_size, temperature=temperature,
-        early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
+        n_confidence=n_confidence, 
+        batch_size=batch_size, 
+        temperature=temperature,
+        early_stop_base=early_stop_base, 
+        early_stop_threshold=early_stop_threshold)
+    
     config = MATHConfig(
         base_model=base_model, 
         prompt={},
@@ -64,7 +66,10 @@ def rap_AQuA(base_model: LanguageModel,
         reward_confidence_default=reward_confidence_default,
         depth_limit=depth_limit)
     
-    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm, 'output_trace_in_each_iter': output_trace_in_each_iter}
+    search_algo_params |= {'cum_reward': cum_reward, 
+                           'calc_q': calc_q, 
+                           'disable_tqdm': disable_tqdm, 
+                           'output_trace_in_each_iter': output_trace_in_each_iter}
     search_algo = search_algo(**search_algo_params)
     
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
@@ -73,7 +78,7 @@ def rap_AQuA(base_model: LanguageModel,
                                init_prompt=prompt,
                                disable_log=disable_log,
                                disable_tqdm=disable_tqdm)
-    accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=3, resume=resume, log_dir=log_dir)
+    accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
     print(f'accuracy: {accuracy:.4f}')
     return 0
 
@@ -114,7 +119,7 @@ if __name__ == '__main__':
         
         from reasoners.lm import ExLlamaModel
         device = torch.device("cuda:0")
-        base_model = ExLlamaModel(model_dir, lora_dir, device=device, max_batch_size=batch_size, max_new_tokens=512, max_seq_length=2048, mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
+        base_model = ExLlamaModel(model_dir, lora_dir, device=device, max_batch_size=batch_size, max_new_tokens=512, max_seq_length=4096, mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
         print(os.getcwd())
         with open(prompt) as f:
             prompt = json.load(f)
