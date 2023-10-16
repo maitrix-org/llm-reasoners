@@ -50,7 +50,9 @@ class MATHConfig(SearchConfig):
 
         if self.force_overall_prompt_on_overall_question or self.force_overall_question_on_overall_prompt:
             self.overall_question = re.match('.*((Calculate|calculate|how|How|what|What|Find|find|True or false).*)$',
-                                             self.example)[1]
+                                             self.example) # TODO
+            if self.overall_question is not None:
+                self.overall_question = self.overall_question[1]
 
     def get_actions(self, state: MATHState, ) -> list[MATHAction]:
         with io.StringIO() as f:
