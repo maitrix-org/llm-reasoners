@@ -4,7 +4,7 @@ from typing import Optional, Union
 
 def retrieve_answer(output):
     '''
-    output should be a world_model.AMTHState if being a list
+    output should be a world_model.MATHState if being a list
     '''
     print('retrieve_answer:', output)
     if isinstance(output, list):

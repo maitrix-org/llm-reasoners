@@ -49,9 +49,11 @@ class MATHConfig(SearchConfig):
             self.prompt_examples = f.getvalue()
 
         if self.force_overall_prompt_on_overall_question or self.force_overall_question_on_overall_prompt:
-            self.overall_question = re.match('.*((([A-Z].* (calculate|how|what|find|true or false))|((Calculate|How|What|Find|True or false))).*)$', self.example, flags=re.DOTALL)[1]
+            self.overall_question = re.match('.*((([A-Z].* (calculate|how|what|find|true or false))|((Calculate|How|What|Find|True or false))).*)$', self.example, flags=re.DOTALL)
             if self.overall_question is not None:
                 self.overall_question = self.overall_question[1]
+            else:
+                raise Error("Cannot find overall question in example")
 
     def get_actions(self, state: MATHState, ) -> list[MATHAction]:
         with io.StringIO() as f:

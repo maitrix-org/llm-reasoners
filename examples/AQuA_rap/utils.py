@@ -4,7 +4,7 @@ from reasoners.base import AlgorithmOutput
 
 def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
     '''
-    output should be a world_model.AMTHState if being a list
+    output should be a world_model.MATHState if being a list
     '''
     print('retrieve_answer:', output)
     if isinstance(output, AlgorithmOutput):
