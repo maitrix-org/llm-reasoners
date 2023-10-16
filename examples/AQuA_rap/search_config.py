@@ -53,7 +53,7 @@ class MATHConfig(SearchConfig):
             if self.overall_question is not None:
                 self.overall_question = self.overall_question[1]
             else:
-                raise Error("Cannot find overall question in example")
+                raise ValueError("Cannot find overall question in example")
 
     def get_actions(self, state: MATHState, ) -> list[MATHAction]:
         with io.StringIO() as f:
