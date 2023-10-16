@@ -1,12 +1,17 @@
 import re
 from typing import Optional, Union
+from reasoners.base import AlgorithmOutput
 
-
-def retrieve_answer(output):
+def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
     '''
     output should be a world_model.AMTHState if being a list
     '''
     print('retrieve_answer:', output)
+    if isinstance(output, AlgorithmOutput):
+        if (result := getattr(output, 'aggregated_result', None)) is not None:
+            return result
+        output = output.terminal_state
+        
     if isinstance(output, list):
         output = output[-1].sub_answer
     match = re.match(r'.*[Tt]he answer is.*?([A-E]).*?$', output, re.DOTALL)
@@ -18,7 +23,6 @@ def retrieve_answer(output):
     answer = match[1].strip()
     
     return answer
-
 
 def retrieve_answer_from_dataset(answer: str) -> str:
     return answer.strip()

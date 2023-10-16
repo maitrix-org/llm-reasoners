@@ -3,6 +3,7 @@ from typing import NamedTuple, TypedDict
 from collections import defaultdict
 from reasoners import WorldModel, LanguageModel
 import utils
+from reasoners.base import Example
 
 
 class SubResult(NamedTuple):
@@ -15,9 +16,14 @@ MATHState = list[SubResult]
 MATHAction = str
 
 
-class MATHPrompt(TypedDict):
-    decomposition: str
-    solving: str
+class MATHPromptDict(TypedDict):
+    instruction: str
+    interactive_examples: list[str]
+    useful_examples: list[str]
+    question_prefix: str
+    subquestion_prefix: str
+    overall_question_prefix: str
+    answer_prefix: str
 
 
 class MATHWorldModel(WorldModel[MATHState, MATHAction]):
@@ -29,7 +35,6 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
 
     def __init__(self,
                  base_model: LanguageModel,
-                 prompt: dict,
                  n_confidence=8,
                  batch_size=2,
                  temperature=0.8,
@@ -37,27 +42,39 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                  early_stop_threshold=1.) -> None:
         super().__init__()
         self.base_model = base_model
-        self.prompt: MATHPrompt = prompt
         self.batch_size = batch_size
         self.n_confidence = n_confidence
         self.temperature = temperature
         self.early_stop_base = early_stop_base if early_stop_base is not None else n_confidence
         self.early_stop_threshold = early_stop_threshold
+        self.prompt_examples = ""
+        self.n_shots = 0
 
+    def update_example(self, example: Example, prompt: MATHPromptDict = None) -> None:
+        super().update_example(example, prompt)
+        assert prompt is not None
+        self.prompt = prompt
+        with io.StringIO() as f:
+            f.write(self.prompt['instruction'] + '\n\n')
+            for idx, example in enumerate(self.prompt['interactive_examples']):
+                f.write(example.format(idx=idx + 1) + '\n\n')
+            self.n_shots = len(self.prompt['interactive_examples'])
+            self.prompt_examples = f.getvalue()
+    
     def init_state(self) -> list:
         return []
 
     def step(self, state: MATHState, action: MATHAction) -> tuple[MATHState, dict]:
         state = state.copy()
-        # print("In step")
-        # print("State:", state)
-        # print("Action:", action)
+
         with io.StringIO() as f:
-            f.write(self.prompt["solving"].replace("{QUESTION}", self.example))
+            f.write(self.prompt_examples)
+            f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
             for idx, (q, a, _) in enumerate(state):
-                q = q[2:-2] # remove quote
-                f.write("\n\nQ: " + q + "\nA: " + a)
-            f.write("\n\nQ: " + action[2:-2] + "\nA:")
+                f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
+                f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
+            f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1) + " " + action + "\n")
+            f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
             model_input = f.getvalue()
         
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
@@ -108,5 +125,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
         return state, aux
 
     def is_terminal(self, state: MATHState) -> bool:
-        # if the last subquestion is ended with ".", it's terminal
-        return len(state) > 0 and state[-1].sub_question.endswith('"!')
+        if len(state) > 0 and "Now we can answer" in state[-1].sub_question:
+            return True
+        else:
+            return False
