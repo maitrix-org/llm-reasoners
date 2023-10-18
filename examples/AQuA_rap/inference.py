@@ -59,7 +59,9 @@ def rap_AQuA(base_model: LanguageModel,
                            'disable_tqdm': disable_tqdm, 
                            'output_trace_in_each_iter': output_trace_in_each_iter,
                            'node_visualizer': node_visualizer, 
-                           'aggregator': aggregator}
+                           'aggregator': aggregator,
+                           'w_exp': 2.0,
+                           }
     
     world_model = MATHWorldModel(
         base_model=base_model,

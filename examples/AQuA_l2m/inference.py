@@ -112,7 +112,7 @@ if __name__ == '__main__':
         lora_dir = None,
         batch_size = 1,
         mem_map = [16,22],
-        prompt = "examples/AQuA/prompts/AQuA_example_pool.json",
+        prompt = "examples/AQuA_l2m/prompts/AQuA_example_pool.json",
         disable_log = False,
         disable_tqdm = False,
         **kwargs):
