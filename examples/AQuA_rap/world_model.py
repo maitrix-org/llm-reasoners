@@ -10,6 +10,7 @@ class SubResult(NamedTuple):
     sub_question: str
     sub_answer: str
     confidence: float
+    answer_list: list[str]
 
 
 MATHState = list[SubResult]
@@ -120,7 +121,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
             answer = max_answer_output_list[0]  # Here we simply choose the first appearance of the answer
             confidence = max_len / sum(len(v) for v in answer_dict.values())
 
-        state.append(SubResult(action, answer, confidence))
+        state.append(SubResult(action, answer, confidence, answer_dict.keys()))
         aux = {'confidence': confidence}
         return state, aux
 
