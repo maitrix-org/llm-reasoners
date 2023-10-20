@@ -93,7 +93,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                                                    eos_token_id='\n').text
                 for output in outputs:
                     result = output.strip()
-                    answer = utils.retrieve_answer(result)
+                    answer = utils.retrieve_answer_not_option(result)
                     if answer is not None:
                         answer_dict[answer].append(result)
 
