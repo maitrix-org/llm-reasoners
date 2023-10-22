@@ -20,6 +20,7 @@ def rap_bw_extractor(algo_output):
         return ""
     else:
         return "\n".join(algo_output.trace[1])
+
 def get_icl(init_prompt, examples):
     icl = init_prompt["intro"] + \
         "\n".join([
@@ -42,8 +43,8 @@ class BWEvaluator(Evaluator):
                  init_prompt,
                  disable_log=False,
                  disable_tqdm=False,
-                 output_extractor=lambda x:x,
-                 answer_extractor=rap_bw_extractor,
+                 output_extractor=rap_bw_extractor,
+                 answer_extractor=lambda x:x,
                  sample_prompt_type="rap") -> None:
 
         self.init_prompt = init_prompt

@@ -178,11 +178,11 @@ class ExLlamaModel(LanguageModel):
                 warnings.warn("output_log_probs is temporarily not supported now by ExLlamaModel. Please refere to exllama's code")
             decoded_list.extend(decoded)
         
-        # print("="*30 + "prompt" + "="*30)
-        # print(inputs[0])
-        # print("="*30 + "decoded" + "="*30)
-        # print(decoded_list[0])
-        # print("="*30 + "end" + "="*30)
+        print("="*30 + "prompt" + "="*30)
+        print(inputs[0])
+        print("="*30 + "decoded" + "="*30)
+        print(decoded_list[0])
+        print("="*30 + "end" + "="*30)
         
         return GenerateOutput(decoded_list, log_prob_list)
 

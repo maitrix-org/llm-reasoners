@@ -9,14 +9,14 @@ class CoTReasoner():
         self.base_model = base_model
         self.temperature = temperature
     def __call__(self, example, prompt=None):
-        inputs = prompt["cot"].replace("{QUESTION}", example)
+        inputs = prompt["icl"].replace("<init_state>", example["init"])\
+            .replace("<goals>", example["goal"]).replace("<action>", "")
         output = self.base_model.generate([inputs],
                                           hide_input=True,
                                           do_sample=True,
                                           temperature=self.temperature,
-                                          eos_token_id='[').text[0][:-1].strip()
-        ret = output.split("\n")[:-1]
-        return ret
+                                          eos_token_id='\n[').text[0][:-1].strip()
+        return output
 
 def main(exllama_model_dir, exllama_lora_dir, exllama_mem_map, data_path, prompt_path, disable_log=False, batch_size=1, config_file: str = "examples/rap_blocksworld/data/bw_config.yaml", domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl", resume=0, log_dir=None):
 

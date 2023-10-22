@@ -112,6 +112,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                     break
 
         if len(answer_dict) == 0:
+            print("Warning: no answer found")
             confidence, answer = 0, result  # No reasonable answer found. Fall back to choose the last response
         else:
             sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
