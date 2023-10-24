@@ -66,7 +66,7 @@ class MATHConfig(SearchConfig):
         with io.StringIO() as f:
             f.write(self.prompt_examples)
             f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
-            for idx, (q, a, _) in enumerate(state):
+            for idx, (q, a, *_) in enumerate(state):
                 f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
                 f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
             f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
@@ -111,7 +111,7 @@ class MATHConfig(SearchConfig):
         with io.StringIO() as f:
             f.write(self.useful_prompt["input"])
             f.write(self.useful_prompt["question_prefix"] + self.example + "\n")
-            for idx, (q, _, _) in enumerate(state):
+            for idx, (q, *_) in enumerate(state):
                 f.write(self.useful_prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
             f.write(self.useful_prompt["new_subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
             f.write(self.useful_prompt["useful_prefix"])

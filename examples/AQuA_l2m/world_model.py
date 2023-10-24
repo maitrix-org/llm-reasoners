@@ -54,7 +54,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
         # print("Action:", action)
         with io.StringIO() as f:
             f.write(self.prompt["solving"].replace("{QUESTION}", self.example))
-            for idx, (q, a, _) in enumerate(state):
+            for idx, (q, a, *_) in enumerate(state):
                 q = q[2:-2] # remove quote
                 f.write("\n\nQ: " + q + "\nA: " + a)
             f.write("\n\nQ: " + action[2:-2] + "\nA:")

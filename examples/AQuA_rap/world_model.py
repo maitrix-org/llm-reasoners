@@ -71,7 +71,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
         with io.StringIO() as f:
             f.write(self.prompt_examples)
             f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
-            for idx, (q, a, _) in enumerate(state):
+            for idx, (q, a, *_) in enumerate(state):
                 f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
                 f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
             f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1) + " " + action + "\n")
