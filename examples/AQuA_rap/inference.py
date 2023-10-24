@@ -28,6 +28,7 @@ def node_visualizer(x: MCTSNode[MATHState, MATHAction]):
 
 def rap_AQuA(base_model: LanguageModel,
               prompt: dict,
+              useful_prompt: dict,
               search_algo: Type[SearchAlgorithm] = MCTS,
               resume: int = 0,
               n_action: int = 4,
@@ -73,6 +74,7 @@ def rap_AQuA(base_model: LanguageModel,
     
     config = MATHConfig(
         base_model=base_model, 
+        useful_prompt=useful_prompt,
         n_actions=n_action, 
         batch_size=batch_size, 
         temperature=temperature,
@@ -125,6 +127,7 @@ if __name__ == '__main__':
         batch_size = 1,
         mem_map = [16,22],
         prompt = "examples/AQuA_rap/prompts/prompt_pool.json",
+        useful_prompt: str = 'examples/AQuA_rap/prompts/useful_examples.json',
         disable_log = False,
         disable_tqdm = False,
         **kwargs):
@@ -132,16 +135,19 @@ if __name__ == '__main__':
         from reasoners.lm import ExLlamaModel
         device = torch.device("cuda:0")
         base_model = ExLlamaModel(model_dir, lora_dir, device=device, max_batch_size=batch_size, max_new_tokens=512, max_seq_length=4096, mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
-        print(os.getcwd())
+        
         with open(prompt) as f:
             prompt = json.load(f)
-
-        rap_AQuA(base_model=base_model,
-                  prompt=prompt,
-                  batch_size=batch_size,
-                  disable_log=disable_log or local_rank != 0,
-                  disable_tqdm=disable_tqdm or local_rank != 0,
-                  **kwargs)
+        with open(useful_prompt) as f:
+            useful_prompt = json.load(f)
+        rap_AQuA(
+            base_model=base_model,
+            prompt=prompt,
+            useful_prompt=useful_prompt,
+            batch_size=batch_size,
+            disable_log=disable_log or local_rank != 0,
+            disable_tqdm=disable_tqdm or local_rank != 0,
+            **kwargs)
 
     fire.Fire(main_exllama)
     
