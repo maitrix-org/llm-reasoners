@@ -7,11 +7,17 @@ import numpy as np
 from world_model import MATHState, MATHAction, MATHPromptDict
 from reasoners import SearchConfig, LanguageModel
 
-
+class AQuAUsefulPrompt(TypedDict):
+    input: str
+    question_prefix: str
+    subquestion_prefix: str
+    new_subquestion_prefix: str
+    useful_prefix: str
 
 class MATHConfig(SearchConfig):
     def __init__(self,
                  base_model: LanguageModel,
+                 useful_prompt: dict,
                  n_actions=4,
                  batch_size=1,
                  temperature=0.8,
@@ -23,6 +29,7 @@ class MATHConfig(SearchConfig):
                  force_overall_question_on_overall_prompt=True) -> None:
         super().__init__()
         self.base_model = base_model
+        self.useful_prompt: AQuAUsefulPrompt = useful_prompt
         self.example = ''
         self.batch_size = batch_size
         self.temperature = temperature
@@ -98,9 +105,9 @@ class MATHConfig(SearchConfig):
         outputs = list(dict.fromkeys(outputs))
         return outputs
 
-    def fast_reward(self, state: MATHState, action: MATHAction) -> tuple[float, dict]:
-        '''return 0, {}
+    '''return 0, {}
         return 1, {'r_useful': 1} #TODO'''
+    def fast_reward(self, state, action) -> tuple[float, dict]:
         with io.StringIO() as f:
             f.write(self.useful_prompt["input"])
             f.write(self.useful_prompt["question_prefix"] + self.example + "\n")
