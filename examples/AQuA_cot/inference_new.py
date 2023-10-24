@@ -21,8 +21,9 @@ def main(exllama_model_dir= '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
          exllama_lora_dir = None, 
          exllama_mem_map = [16,22], 
          batch_size=1, 
-         prompt="examples/cot_AQuA/prompts/cot.json", 
+         prompt="examples/AQuA_cot/prompts/cot.json", 
          resume=0, 
+         temperature=0.8,
          log_dir=None):
 
     base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir,
@@ -33,7 +34,7 @@ def main(exllama_model_dir= '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
     with open(prompt) as f:
         prompt = json.load(f)
 
-    reasoner = CoTReasoner(base_model)
+    reasoner = CoTReasoner(base_model, temperature=temperature)
     evaluator = AQuAEvaluator(
                  output_extractor=utils.retrieve_answer,
                  answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"]),

@@ -99,8 +99,22 @@ class MATHConfig(SearchConfig):
         return outputs
 
     def fast_reward(self, state: MATHState, action: MATHAction) -> tuple[float, dict]:
-        return 0, {}
-        return 1, {'r_useful': 1} #TODO
+        '''return 0, {}
+        return 1, {'r_useful': 1} #TODO'''
+        with io.StringIO() as f:
+            f.write(self.useful_prompt["input"])
+            f.write(self.useful_prompt["question_prefix"] + self.example + "\n")
+            for idx, (q, _, _) in enumerate(state):
+                f.write(self.useful_prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
+            f.write(self.useful_prompt["new_subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
+            f.write(self.useful_prompt["useful_prefix"])
+            model_input = f.getvalue()
+
+        logits = self.base_model.get_next_token_logits(model_input, ["Yes", "No"])[0]
+        probs = np.exp(logits) / np.sum(np.exp(logits))
+        useful_prob = probs[0]
+        fast_reward, _ = self.calculate_reward(useful_prob)
+        return fast_reward, {'r_useful': useful_prob}
 
     def calculate_reward(self, r_useful, r_conf=None):
         if r_conf is None:
@@ -111,7 +125,7 @@ class MATHConfig(SearchConfig):
     def reward(self, state: MATHState, action: MATHAction,
                r_useful: float = None,
                confidence: float = None) -> tuple[float, dict]:
-        return confidence, {'r_conf': confidence}
+        #return confidence, {'r_conf': confidence}
         assert r_useful is not None, "useful_reward is required to calculate reward in this search config, consider passing it in fast_reward"
         assert confidence is not None, "confidence is required to calculate reward in this search config, consider passing it in world model's step"
         return self.calculate_reward(r_useful, confidence)
