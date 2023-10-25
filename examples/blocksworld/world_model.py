@@ -1,7 +1,7 @@
 """The world model for the Blocksworld."""
 
 from typing import NamedTuple
-import utils
+import reasoners.benchmark.bw_utils as utils
 from reasoners import WorldModel, LanguageModel
 import copy
 

@@ -1,30 +1,27 @@
+import pickle
 from typing import Type, Callable, Optional, Literal
 
 import numpy as np
-
-from reasoners.benchmark import GSM8KEvaluator
+from datasets import load_dataset
+from reasoners.visualization import TreeLog
+from tqdm import tqdm
+from datetime import datetime
 
 from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import MCTS, MCTSNode, MCTSAggregation
+from reasoners.benchmark import GSM8KEvaluator
 
-from world_model import GSM8kWorldModel, GSM8kState, GSM8kAction, GSM8kPromptDict
+from world_model import GSM8kWorldModel, GSM8kState, GSM8kAction
 from search_config import GSM8kConfig
 import utils
 
-
-def node_visualizer(x: MCTSNode[GSM8kState, GSM8kAction]):
-    if not x.state:
-        return {}
-    return {"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer}
-
 def rap_gsm8k(base_model: LanguageModel,
-              prompt: GSM8kPromptDict,
+              prompt: dict,
               search_algo: Type[SearchAlgorithm] = MCTS,
               resume: int = 0,
               n_action: int = 4,
               n_confidence: int = 8,
               depth_limit: int = 5,
-              force_terminating_on_depth_limit: bool = True,
               batch_size: int = 2,
               temperature: float = 0.8,
               early_stop_base: int = 2,
@@ -34,40 +31,34 @@ def rap_gsm8k(base_model: LanguageModel,
               cum_reward: Callable[[list[float]], float] = np.mean,
               calc_q: Callable[[list[float]], float] = max,
               log_dir: Optional[str] = None,
-              disable_log: bool = False,
               disable_tqdm: bool = False,
+              disable_log: bool = False,
               output_trace_in_each_iter: bool = True,
               aggregate: bool = True,
               **search_algo_params):
-
-    if aggregate:
-        aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge')
-    else:
-        aggregator = None
-
-    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm,
-                           'output_trace_in_each_iter': output_trace_in_each_iter,
-                           'node_visualizer': node_visualizer, 'aggregator': aggregator}
-    world_model = GSM8kWorldModel(base_model=base_model,
+    
+    # the prompt will be passed to world model and search config dynamically 
+    # no need to intialize them here
+    world_model = GSM8kWorldModel(base_model=base_model, prompt={},
                                   n_confidence=n_confidence, batch_size=batch_size, temperature=temperature,
                                   early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
-    config = GSM8kConfig(base_model=base_model,
+    config = GSM8kConfig(base_model=base_model, prompt={},
                          n_actions=n_action, batch_size=batch_size, temperature=temperature,
-                         reward_alpha=reward_alpha, reward_confidence_default=reward_confidence_default,
-                         force_terminating_on_depth_limit=force_terminating_on_depth_limit, depth_limit=depth_limit)
+                         reward_alpha=reward_alpha, reward_confidence_default=reward_confidence_default, depth_limit=depth_limit)
+    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm,
+                           'output_trace_in_each_iter': output_trace_in_each_iter}
     search_algo = search_algo(**search_algo_params)
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
-    evaluator = GSM8KEvaluator(output_extractor=utils.retrieve_answer,
-                               answer_extractor=utils.retrieve_answer_from_dataset,
+    evaluator = GSM8KEvaluator(output_extractor=utils.rap_extractor,
+                               answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"]),
                                init_prompt=prompt,
-                               sample_prompt_type="rap",
                                disable_log=disable_log,
                                disable_tqdm=disable_tqdm)
 
-    accuracy = evaluator.evaluate(reasoner, num_shot=4, resume=resume, log_dir=log_dir)
-    print(accuracy)
-
+    accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
+    print(f'accuracy: {accuracy:.4f}')
+    return 0
 
 if __name__ == '__main__':
     import os
@@ -84,7 +75,6 @@ if __name__ == '__main__':
         sys.stdout = open(os.devnull, 'w')
         warnings.filterwarnings('ignore')
 
-
     def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama'] = 'llama-2',
              llama_ckpts: str = llama_ckpts,
              llama_2_ckpts: str = llama_2_ckpts,
@@ -99,11 +89,10 @@ if __name__ == '__main__':
              exllama_lora_dir: Optional[str] = None,
              exllama_mem_map: Optional[str] = None,
              batch_size: int = 1,
-             prompt: str = 'examples/rap_gsm8k/prompts/prompt_pool.json',
+             prompt: str = 'examples/rap_gsm8k_l2m/prompts/l2m_standard.json',
              disable_log: bool = False,
              disable_tqdm: bool = False,
              **kwargs):
-
         with open(prompt) as f:
             prompt = json.load(f)
         if base_lm in ['llama', 'llama2']:
@@ -131,7 +120,7 @@ if __name__ == '__main__':
         elif base_lm == 'exllama':
             from reasoners.lm import ExLlamaModel
             base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir, mem_map=exllama_mem_map,
-                                      max_batch_size=batch_size, max_new_tokens=200, max_seq_length=3072)
+                                      max_batch_size=batch_size, max_new_tokens=200, max_seq_length=2048)
         else:
             assert False, f'cannot resolve {base_lm=}'
         rap_gsm8k(base_model=base_model,
@@ -140,6 +129,5 @@ if __name__ == '__main__':
                   disable_log=disable_log or local_rank != 0,
                   disable_tqdm=disable_tqdm or local_rank != 0,
                   **kwargs)
-
 
     fire.Fire(main)

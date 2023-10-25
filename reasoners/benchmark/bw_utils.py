@@ -5,16 +5,25 @@ import json
 import yaml
 import random
 import numpy as np
+from pathlib import Path
 
 try:
     from tarski.io import PDDLReader
 except:
     raise ImportError("To run experiments on blocksworld, please install tarski "
                       "with `pip install tarski`.")
+try:
+    from pddl.logic import Predicate, constants, variables
+    from pddl.core import Domain, Problem, Action, Requirements
+    from pddl.formatter import domain_to_string, problem_to_string
+    from pddl import parse_problem as parse_pddl_problem
+except:
+    raise ImportError("To run experiments on blocksworld, please install pddl "
+                      "with `pip install pddl`.")
 
 # helper functions from https://github.com/karthikv792/LLMs-Planning
 
-def instance_to_text_blocksworld(problem, get_plan, data, shuffle=False):
+def instance_to_text_blocksworld(problem, get_plan, data, plan_code="", shuffle=False):
     """Function to make a blocksworld instance into human-readable format
     
     :param get_plan: Flag to return the plan as text as well
@@ -30,8 +39,11 @@ def instance_to_text_blocksworld(problem, get_plan, data, shuffle=False):
     plan_file = "sas_plan"
     if get_plan:
         PLAN = "\n"
-        with open(plan_file) as f:
-            plan = [line.rstrip() for line in f][:-1]
+        if plan_code != "":
+            plan = plan_code.split("\n")[:-1]
+        else:
+            with open(plan_file) as f:
+                plan = [line.rstrip() for line in f][:-1]
 
         for action in plan:
             action = action.strip("(").strip(")")
@@ -105,19 +117,82 @@ def get_problem(instance, domain):
 
 # defined for RAP
 
-def load_blocksworld(config_file, domain_file, data_file, prompt):
+def compute_plan(domain, instance, plan_file="sas_plan"):
+    fast_downward_path = os.getenv("FAST_DOWNWARD")
+    # Remove > /dev/null to see the output of fast-downward
+    assert os.path.exists(f"{fast_downward_path}/fast-downward.py")
+    cmd = f"{fast_downward_path}/fast-downward.py {domain} {instance} --search \"astar(lmcut())\" > /dev/null 2>&1"
+    os.system(cmd)
+
+    if not os.path.exists(plan_file):
+        raise Exception("Plan not found. Check PDDL Writer.")
+
+    return Path(plan_file).read_text()
+    
+
+def get_intermediate_states(domain_path, instance, config_data, shuffle=False):
+    problem_path, plan_code, _ = instance
+    plan_path = "temp_plan"
+    temp_problem_path = "temp_problem"
+    with open(plan_path, "w") as f:
+        f.write(plan_code)
+    val_path = os.getenv("VAL")
+    cmd = f"{val_path}/validate -v {domain_path} {problem_path} {plan_path}"
+    response = os.popen(cmd).read()
+    change_str = response.split("-----------------------")[-1]\
+        .split("Plan executed successfully")[0]\
+        .strip().split("\n\n")
+    changes = []
+    for c in change_str:
+        changes.append(c.split("\n")[1:])
+    problem = parse_pddl_problem(problem_path)
+    # pddls = []
+    states = []
+    cur_state = problem.init
+    even = True
+    for change in changes:
+        even = not even
+        del_list = [c.replace("Deleting ", "") for c in change if "Deleting" in c]
+        add_list = [c.replace("Adding ", "") for c in change if "Adding" in c]
+        s = set()
+        for i in cur_state:
+            if str(i) not in del_list:
+                s.add(i)
+        for i in add_list:
+            s.add(Predicate(* i[1:-1].split(" ")))
+        p = Problem(name=problem.name, domain_name=problem.domain_name, requirements=problem.requirements, objects=problem.objects, init=s.copy(), goal=problem.goal)
+        with open(temp_problem_path, "w") as f:
+            f.write(problem_to_string(p))
+        temp_problem = get_problem(temp_problem_path, domain_path)
+        if even:
+            TEMP_INIT, TEMP_GOAL, TEMP_PLAN = instance_to_text_blocksworld(temp_problem, False, config_data, plan_code="")
+            states.append(TEMP_INIT)
+        # pddls.append(problem_to_string(p))
+        cur_state = s
+    return states
+
+def load_blocksworld(config_file, domain_file, data_file=None, data_list=None, return_intermediate=False):
+    assert data_file is not None and data_list is None or data_file is None and data_list is not None
+    if data_file is not None:
+        data_list = json.load(open(data_file, 'r'))
     config_data = read_config(config_file)
     domain_pddl = domain_file
-    data_files = json.load(open(data_file, 'r'))
     data = []
-    for cur_instance in data_files:
+    for cur_instance in data_list:
         cur_data = {}
         problem = get_problem(cur_instance[0], domain_pddl)
-        gt_plan_text = cur_instance[1]
-        INIT, GOAL, PLAN = instance_to_text_blocksworld(problem, False, config_data)
-
-        cur_data["icl"] = prompt["icl"]
-        # gt_plan = self.compute_plan(domain_pddl, cur_instance)
+        gt_plan_code = cur_instance[1]
+        # compute_plan(domain_pddl, cur_instance[0], "sas_plan")
+        INIT, GOAL, PLAN = instance_to_text_blocksworld(problem, True, config_data, plan_code=gt_plan_code)
+        cur_data["init"] = INIT
+        cur_data["goal"] = GOAL
+        cur_data["plan"] = PLAN
+        if return_intermediate:
+            states = get_intermediate_states(domain_pddl, cur_instance, config_data)
+            cur_data["states"] = states
+        # cur_data["icl"] = prompt["icl"]
+        # gt_plan = compute_plan(domain_pddl, cur_instance[0])
+        # cur_data["gt_plan"] = gt_plan
         cur_data["question"] = fill_template(
             *instance_to_text_blocksworld(problem, False, config_data)) + "\n"
         cur_data["instance_file"] = cur_instance[0]
@@ -341,6 +416,8 @@ def goal_check(goals, blocks_state):
     :param blocks_state: current blocks state
     """
     meetings = [g in blocks_state for g in goals]
+    # print("Goals:", goals)
+    # print("Goal met:", meetings)
     if sum(meetings) == len(meetings):
         return True, 1.0
     return False, sum(meetings) / len(meetings)
@@ -362,6 +439,7 @@ def extract_init_state(example):
     
     :param example: example
     """
+    # print(example)
     init_statement = example["question"].split("[STATEMENT]\nAs initial conditions I have that, ")[1]\
         .split("My goal")[0].strip()
     return init_statement

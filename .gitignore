@@ -17,4 +17,7 @@ LLMs-Planning/
 dataset/
 *.jsonl
 *.txt
+sas_plan
 build/
+temp_plan
+temp_problem

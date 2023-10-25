@@ -3,7 +3,6 @@ from typing import NamedTuple, TypedDict
 from collections import defaultdict
 from reasoners import WorldModel, LanguageModel
 import utils
-from reasoners.base import Example
 
 
 class SubResult(NamedTuple):
@@ -16,14 +15,9 @@ GSM8kState = list[SubResult]
 GSM8kAction = str
 
 
-class GSM8kPromptDict(TypedDict):
-    instruction: str
-    interactive_examples: list[str]
-    useful_examples: list[str]
-    question_prefix: str
-    subquestion_prefix: str
-    overall_question_prefix: str
-    answer_prefix: str
+class GSM8kPrompt(TypedDict):
+    decomposition: str
+    solving: str
 
 
 class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
@@ -35,6 +29,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
 
     def __init__(self,
                  base_model: LanguageModel,
+                 prompt: dict,
                  n_confidence=8,
                  batch_size=2,
                  temperature=0.8,
@@ -42,44 +37,29 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                  early_stop_threshold=1.) -> None:
         super().__init__()
         self.base_model = base_model
+        self.prompt: GSM8kPrompt = prompt
         self.batch_size = batch_size
         self.n_confidence = n_confidence
         self.temperature = temperature
         self.early_stop_base = early_stop_base if early_stop_base is not None else n_confidence
         self.early_stop_threshold = early_stop_threshold
-        self.prompt_examples = ""
-        self.n_shots = 0
-
-    def update_example(self, example: Example, prompt: GSM8kPromptDict = None) -> None:
-        super().update_example(example, prompt)
-        assert prompt is not None
-        self.prompt = prompt
-        with io.StringIO() as f:
-            f.write(self.prompt['instruction'] + '\n\n')
-            for idx, example in enumerate(self.prompt['interactive_examples']):
-                f.write(example.format(idx=idx + 1) + '\n\n')
-            self.n_shots = len(self.prompt['interactive_examples'])
-            self.prompt_examples = f.getvalue()
 
     def init_state(self) -> list:
         return []
 
     def step(self, state: GSM8kState, action: GSM8kAction) -> tuple[GSM8kState, dict]:
         state = state.copy()
-
+        # print("In step")
+        # print("State:", state)
+        # print("Action:", action)
         with io.StringIO() as f:
-            f.write(self.prompt_examples)
-            f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
+            f.write(self.prompt["solving"].replace("{QUESTION}", self.example))
             for idx, (q, a, _) in enumerate(state):
-                f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
-                f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
-            f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1) + " " + action + "\n")
-            f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
+                q = q[2:-2] # remove quote
+                f.write("\n\nQ: " + q + "\nA: " + a)
+            f.write("\n\nQ: " + action[2:-2] + "\nA:")
             model_input = f.getvalue()
-
-        # print(model_input)
-        # input(">")
-
+        
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
         result = ""
         for start1 in range(0, self.n_confidence, self.early_stop_base):
@@ -113,6 +93,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
 
         if len(answer_dict) == 0:
             print("Warning: no answer found")
+            print("Output:", result)
             confidence, answer = 0, result  # No reasonable answer found. Fall back to choose the last response
         else:
             sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
@@ -127,7 +108,5 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
         return state, aux
 
     def is_terminal(self, state: GSM8kState) -> bool:
-        if len(state) > 0 and "Now we can answer" in state[-1].sub_question:
-            return True
-        else:
-            return False
+        # if the last subquestion is ended with ".", it's terminal
+        return len(state) > 0 and state[-1].sub_question.endswith('"!')
