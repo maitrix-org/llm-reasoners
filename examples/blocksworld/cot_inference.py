@@ -36,13 +36,3 @@ def main(exllama_model_dir, exllama_lora_dir, exllama_mem_map, data_path, prompt
 
 if __name__ == '__main__':
     fire.Fire(main)
-    """
-CUDA_VISIBLE_DEVICES=6,7 python examples/rap_blocksworld/cot.py \
---exllama_model_dir $LLAMA2_CKPTS \
---exllama_lora_dir None \
---exllama_mem_map '[16,22]' \
---data_path 'examples/rap_blocksworld/data/split_v1/split_v1_step_4_data.json' \
---prompt_path 'examples/rap_blocksworld/prompts/pool_prompt_v1.json' \
---log_dir "logs/rap_blocksworld_cot/"
-    """
-

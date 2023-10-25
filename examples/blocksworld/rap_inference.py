@@ -6,11 +6,11 @@ from tqdm import tqdm
 from datetime import datetime
 
 from reasoners import LanguageModel, Reasoner, SearchAlgorithm
+from reasoners.benchmark import BWEvaluator
 from reasoners.algorithm import MCTS
 
 from world_model import BlocksWorldModel
 from search_config import BWConfig
-import utils
 
 def rap_bw(base_model: LanguageModel,
            prompt: dict,
@@ -31,14 +31,6 @@ def rap_bw(base_model: LanguageModel,
            lm_plan_file: str = 'lm_plan.tmp',
            **search_algo_params):
 
-    if not disable_log:
-        if log_dir is None:
-            log_dir = f'logs/bw_{search_algo.__name__}/{datetime.now().strftime("%m%d%Y-%H%M%S")}'
-        os.makedirs(log_dir, exist_ok=resume > 0)
-        os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
-        with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
-            print(sys.argv, file=f)
-
     search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, "depth_limit": depth_limit, "disable_tqdm": False}
     world_model = BlocksWorldModel(base_model=base_model, prompt=prompt, batch_size=batch_size, max_steps=depth_limit)
     config = BWConfig(base_model=base_model, prompt=prompt, batch_size=batch_size,
@@ -46,36 +38,9 @@ def rap_bw(base_model: LanguageModel,
                       goal_reward_default=goal_reward_default)
     search_algo = search_algo(**search_algo_params)
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
-    dataset = utils.load_blocksworld(config_file, domain_file, data_path)  # [{"goal": str, "init": str}]
-    correct_count = 0
-    for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume, desc='Blocksworld')):
-        algo_output = reasoner(example)
-
-        if torch.distributed.is_initialized():
-            torch.distributed.barrier()
-        # to make sure the plan is saved before evaluation in multi-process setting
-        if algo_output.trace is None:
-            print("No plan found")
-            correct = 0
-        else:
-            utils.text_to_plan_blocksworld("\n".join(algo_output.trace[1]), example["instance_file"], config_file, domain_file, lm_plan_file)
-            correct = utils.validate_plan(domain_file, example["instance_file"], lm_plan_file)[0]
-
-        correct_count += correct
-        accuracy = correct_count / (i + 1)
-        log_str = f'Case #{resume + i + 1}: {correct=}; '\
-          f'{accuracy=:.3f} ({correct_count}/{i + 1})'
-        tqdm.write(log_str)
-        if not disable_log:
-            with open(os.path.join(log_dir, 'result.log'), 'a') as f:
-                print(log_str, file=f)
-            with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
-                pickle.dump(algo_output, f)
-            question = {"goal": utils.extract_goals(example, return_raw=True), "init": utils.extract_init_state(example)}
-            # append the question to the jsonl file
-            with open(os.path.join(log_dir, 'questions.jsonl'), 'a') as f:
-                print(json.dumps(question), file=f)
-
+    evaluator = BWEvaluator(config_file=config_file, domain_file=domain_file, data_path=data_path, init_prompt=prompt, disable_log=disable_log)
+    accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
+    print(accuracy)
 
 if __name__ == '__main__':
     import os
@@ -108,6 +73,8 @@ if __name__ == '__main__':
         with open(prompt_path) as f:
             prompt = json.load(f)
         llama_model = LlamaModel(llama_ckpts, llama_size, max_batch_size=2)
+
+
         rap_bw(llama_model,
                prompt,
                disable_log=disable_log or local_rank != 0,
