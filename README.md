@@ -39,9 +39,8 @@ We tested different reasoning algorithms on the following benchmarks (to be upda
 
 |Method|Base LLM|[Blocksworld](https://arxiv.org/abs/2305.15771)|[Game of 24](https://arxiv.org/abs/2305.10601)|[Mini Crosswords](https://arxiv.org/abs/2305.10601)|[ProntoQA](https://arxiv.org/abs/2210.01240)|
 |-|-|-|-|-|-|
-|CoT|LLaMA-33B|0.03|-|-|0.65|
-|RAP|LLaMA-33B|0.64|-|-|0.79|
-|RAP|Llama2-70B|0.89|-|-|-|
+|CoT|Llama2-70B|0.08|-|-||
+|RAP|Llama2-70B|0.65|-|-|-|
 
 Our library has been tested against official repos of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601) and [Guided Decoding](https://arxiv.org/abs/2305.00633). We list the results reported in their paper /  reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
 |Method|Base LLM|GSM8k|
