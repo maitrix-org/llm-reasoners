@@ -38,6 +38,8 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                  n_confidence=8,
                  batch_size=2,
                  temperature=0.8,
+                 top_k=50,
+                 top_p=0.95,
                  early_stop_base=None,
                  early_stop_threshold=1.) -> None:
         super().__init__()
@@ -49,6 +51,8 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
         self.early_stop_threshold = early_stop_threshold
         self.prompt_examples = ""
         self.n_shots = 0
+        self.top_k = top_k
+        self.top_p = top_p
 
     def update_example(self, example: Example, prompt: GSM8kPromptDict = None) -> None:
         super().update_example(example, prompt)
@@ -71,9 +75,11 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
             f.write(self.prompt_examples)
             f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
             for idx, (q, a, _) in enumerate(state):
-                f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
+                f.write(
+                    self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
                 f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
-            f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1) + " " + action + "\n")
+            f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1,
+                                                             sub_idx=len(state) + 1) + " " + action + "\n")
             f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
             model_input = f.getvalue()
 
@@ -93,6 +99,8 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                                                    hide_input=True,
                                                    do_sample=True,
                                                    temperature=self.temperature,
+                                                   top_k=self.top_k,
+                                                   top_p=self.top_p,
                                                    eos_token_id='\n').text
                 for output in outputs:
                     result = output.strip()

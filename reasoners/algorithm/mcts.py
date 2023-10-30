@@ -321,12 +321,6 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                             tree_state=self.root,
                             trace_in_each_iter=trace_in_each_iter,
                             tree_state_after_each_iter=tree_state_after_each_iter)
-        if log_file is not None:
-            with open(log_file + '.json', 'w') as f:
-                from ..visualization import TreeLog
-                print(TreeLog.from_mcts_results(result, node_data_factory=self.node_visualizer), file=f)
-            with open(log_file + '.pkl', 'wb') as f:
-                pickle.dump(result, f)
         if self.aggregator is not None:
             result = MCTSResult(
                 terminal_state=result.terminal_state,
@@ -338,4 +332,10 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                 tree_state_after_each_iter=result.tree_state_after_each_iter,
                 aggregated_result=self.aggregator(result.tree_state),
             )
+        if log_file is not None:
+            with open(log_file + '.json', 'w') as f:
+                from ..visualization import TreeLog
+                print(TreeLog.from_mcts_results(result, node_data_factory=self.node_visualizer), file=f)
+            with open(log_file + '.pkl', 'wb') as f:
+                pickle.dump(result, f)
         return result
