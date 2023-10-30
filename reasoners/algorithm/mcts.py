@@ -1,7 +1,9 @@
 import math
 from copy import deepcopy
-from typing import Generic, Optional, NamedTuple, Callable
+from typing import Generic, Optional, NamedTuple, Callable, Hashable
 import itertools
+from abc import ABC, abstractmethod
+from collections import defaultdict
 
 import numpy as np
 from tqdm import trange
@@ -273,9 +275,41 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                           tree_state_after_each_iter=tree_state_after_each_iter)
 
 
-'''
-class MCTSAggregation(MCTS[State, Action]):
-    def __call__(self, init_state: State, output_trace: bool = False) -> State | list[tuple[Action, State]]:
-        # TODO: implement aggregate
-        pass
-'''
+class MCTSAggregation(MCTS[State, Action], ABC):
+    def __init__(self, retrieve_answer: Callable[[State], Hashable],
+                 weight_policy: str = 'edge'):
+        assert weight_policy in ['edge', 'edge_inverse_depth']
+        self.retrieve_answer = retrieve_answer
+        self.weight_policy = weight_policy
+
+    def __call__(self, tree_state: MCTSNode[State, Action]) -> Hashable:
+        answer_dict = defaultdict(lambda: 0)
+
+        def visit(cur: MCTSNode[State, Action]):
+            if cur.state is None:
+                return []
+            if cur.is_terminal:
+                answer = self.retrieve_answer(cur.state)
+                if self.weight_policy == 'edge':
+                    answer_dict[answer] += cur.reward
+                elif self.weight_policy == 'edge_inverse_depth':
+                    answer_dict[answer] += cur.reward / cur.depth
+                return [(answer, cur.depth)]
+            depth_list = defaultdict(list)
+            cur_list = []
+            for child in cur.children:
+                cur_list.extend(child_info := visit(child))
+                for answer, depth in child_info:
+                    depth_list[answer].append(depth)
+            for answer, depths in depth_list.items():
+                if self.weight_policy == 'edge':
+                    answer_dict[answer] += cur.reward
+                elif self.weight_policy == 'edge_inverse_depth':
+                    answer_dict[answer] += cur.reward / np.mean(depths)
+            return cur_list
+        
+        visit(tree_state)
+
+        if len(answer_dict) == 0:
+            return None
+        return max(answer_dict, key=lambda answer: answer_dict[answer])
