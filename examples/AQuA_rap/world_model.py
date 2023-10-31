@@ -10,7 +10,7 @@ class SubResult(NamedTuple):
     sub_question: str
     sub_answer: str
     confidence: float
-    answer_list: list[str]
+    answer_list: list[str] = None
 
 
 MATHState = list[SubResult]
