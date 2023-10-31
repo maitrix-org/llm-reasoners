@@ -10,7 +10,7 @@ class SubResult(NamedTuple):
     sub_question: str
     sub_answer: str
     confidence: float
-    answer_list: list[str]
+    answer_list: list[str] = None
 
 
 MATHState = list[SubResult]
@@ -71,7 +71,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
         with io.StringIO() as f:
             f.write(self.prompt_examples)
             f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
-            for idx, (q, a, _) in enumerate(state):
+            for idx, (q, a, *_) in enumerate(state):
                 f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
                 f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
             f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1) + " " + action + "\n")
@@ -121,7 +121,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
             answer = max_answer_output_list[0]  # Here we simply choose the first appearance of the answer
             confidence = max_len / sum(len(v) for v in answer_dict.values())
 
-        state.append(SubResult(action, answer, confidence, answer_dict.keys()))
+        state.append(SubResult(action, answer, confidence, list(answer_dict.keys())))
         aux = {'confidence': confidence}
         return state, aux
 

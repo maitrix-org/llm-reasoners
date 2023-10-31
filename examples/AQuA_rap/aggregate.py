@@ -35,7 +35,7 @@ def aggregate_AQuA(log_dir: str='/data/haotian/RAP_tune/llm-reasoners/logs/aqua_
     aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge_inverse_depth')
     files = glob.glob(f'{log_dir}/algo_output/*.pkl')
     indices = sorted(filter(lambda index: index >= start, (int(os.path.basename(f)[:-4]) for f in files)))
-    dataset = data_reader('/data/haotian/RAP_tune/llm-reasoners/dataset/AQuA/AQuA_clean.json')
+    dataset = data_reader("examples/AQuA_rap/dataset/AQuA/AQuA_clean.json")
     correct_count = 0
     for i, index in enumerate(tqdm(indices)):
         with open(f'{log_dir}/algo_output/{index}.pkl', 'rb') as f:
