@@ -1,5 +1,6 @@
 import sys
 from typing import Optional
+import torch 
 
 import prompts.finish
 import prompts.valid
@@ -53,11 +54,15 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction]):
 
         output_logits = self.world_model.base_model.get_next_token_logits(
             input_prompt,
-            candidates=["Yes", "No"],
-            postprocess="softmax"
+            candidates=["Yes", "No"]
+            # ,
+            # postprocess="softmax"
         )
 
-        reward: float = output_logits[0][0].item()
+
+        print(f"output_logits shape: {len(output_logits)} {len(output_logits[0])} {output_logits}")
+        # reward: float = output_logits[0][0].item()
+        reward:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
 
         print(input_prompt, file=sys.stderr, flush=True)
         match action:

@@ -37,12 +37,21 @@ if __name__ == '__main__':
     For testing purposes only. Will be removed.
     """
 
-    language_model = llama_cpp_model.LlamaCppModel(
-        path='/Users/xiyan/Downloads/llama.cpp/models/llama-2-13b-chat.ggmlv3.q4_0.gguf.bin'
-    )
+    # language_model = llama_cpp_model.LlamaCppModel(
+    #     path='/data/adithya/llama/llama-2-13b-chat/llama-2-13b-chat.Q4_0.gguf'
+    # )
+    import torch
+    # device = torch.device("cuda:6")
+    from reasoners.lm import ExLlamaModel 
+    language_model = ExLlamaModel('/data/haotian/RAP_tune/Llama-2-70B-GPTQ', 
+                                None, 
+                                max_batch_size=1, 
+                                max_new_tokens=200, 
+                                max_seq_length=2048, 
+                                mem_map=[16, 21])#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
 
     dataset = ProntoQADataset.from_file(
-        '/Users/xiyan/Downloads/345hop_random_true.json'
+        '/data/adithya/345hop_random_true.json'
     )
 
     evaluator = ProntoQAEvaluator(dataset=dataset, search_algo=algorithm.MCTS())
