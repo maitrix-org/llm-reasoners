@@ -1,24 +1,45 @@
 import re
 from typing import Optional, Union
+from reasoners.base import AlgorithmOutput
+from collections import Counter
 
-
-def retrieve_answer(output):
+def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
     '''
-    output should be a world_model.AMTHState if being a list
+    output should be a world_model.MATHState if being a list
     '''
-    print('retrieve_answer:', output)
-    if isinstance(output, list):
-        output = output[-1].sub_answer
-    match = re.match(r'.*[Tt]he answer is.*?([A-E]).*?$', output, re.DOTALL)
-    
-    if match is None:
-        print('match:', match)
-        return None
-    print('match:', match[1].strip())
-    answer = match[1].strip()
-    
+    print('output:', output)    
+    answers = []  
+    for output_i in output:
+        match = re.match(r'.*[Tt]he answer is.*?([A-E]).*?$', output_i, re.DOTALL)
+        
+        if match is None:
+            print('match:', match)
+            continue
+        answer = match[1].strip()
+        answers.append(answer)
+    counter = Counter(answers)
+    answer, _ = counter.most_common(1)[0]
+    print(f'retrived answer: {answer}')
+    print(f'answers: {answers}')
     return answer
 
+def retrieve_answer_not_option(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
+    '''
+    output should be a world_model.GSM8kState if being a list
+    '''
+    if isinstance(output, AlgorithmOutput):
+        if (result := getattr(output, 'aggregated_result', None)) is not None:
+            return result
+        output = output.terminal_state
+    if isinstance(output, list):
+        output = output[-1].sub_answer
+    match = re.match(r'.*[Tt]he answer is .*?([ $.0-9,\/\+\-A-Zx-z\u221a\u2013\u00d7\u2217\u2026\u2234\u2019\u2044\u21d2\u00f7\u00c3\u2014\u2018\u00b0]+).*\..*', output)
+    if match is None:
+        return None
+    answer = match[1].replace(',', '').replace('$', '').replace(' ', '')
+    if '=' in answer:
+        answer = answer[answer.rindex('=') + 1:]
+    return answer
 
 def retrieve_answer_from_dataset(answer: str) -> str:
     return answer.strip()
