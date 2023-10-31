@@ -96,6 +96,8 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                     result = output.strip()
                     answer = utils.retrieve_answer_not_option(result)
                     if answer is not None:
+                        print("I'm here !!!!!!!!!!!!!!!!!!")
+                        print(result)
                         answer_dict[answer].append(result)
 
             # Early stop if confidence is high enough
@@ -120,7 +122,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
             max_len = len(max_answer_output_list)
             answer = max_answer_output_list[0]  # Here we simply choose the first appearance of the answer
             confidence = max_len / sum(len(v) for v in answer_dict.values())
-
+        print(answer_dict.keys())
         state.append(SubResult(action, answer, confidence, list(answer_dict.keys())))
         aux = {'confidence': confidence}
         return state, aux
