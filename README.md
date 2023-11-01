@@ -28,7 +28,7 @@ Given any reasoning problem, simply define the reward function and an optional w
 ## Experiment Results
 We tested different reasoning algorithms on the following benchmarks (to be updated).
 
-|Method|Base LLM|[GSM8K](https://arxiv.org/abs/2110.14168)|[AQuA](https://arxiv.org/abs/2008.12520)|[SVAMP](https://arxiv.org/abs/2103.07191)|[ASDiv](https://arxiv.org/abs/2106.15772)|[CommonsenseQA](https://arxiv.org/abs/1811.00937)|[StrategyQA](https://arxiv.org/abs/2101.02235)|
+|Method|Base LLM|[GSM8K](https://arxiv.org/abs/2110.14168)|[AQuA](https://arxiv.org/abs/1705.04146)|[SVAMP](https://arxiv.org/abs/2103.07191)|[ASDiv](https://arxiv.org/abs/2106.15772)|[CommonsenseQA](https://arxiv.org/abs/1811.00937)|[StrategyQA](https://arxiv.org/abs/2101.02235)|
 |-|-|-|-|-|-|-|-|
 |[CoT](https://arxiv.org/abs/2201.11903)|LLaMA-33B|0.29|-|-|-|-|-|
 |CoT+[SC](https://arxiv.org/abs/2203.11171)|LLaMA-33B|0.47|-|-|-|-|-|
