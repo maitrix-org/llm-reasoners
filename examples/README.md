@@ -57,9 +57,13 @@ python examples/guided_gsm8k/inference.py --n_actions 16 --temperature 1 --rewar
     git checkout bf00a2196e92422d1000abc37dd050ef8186f2ab
     ```
 2. Set up `Val` for validation
-   1. Download from [here](https://www.fast-downward.org/SettingUpVal)
+   1. Install `Val` following this [link](https://github.com/karthikv792/LLMs-Planning/tree/34e6841f81ca7708f2f8b8241504bfe8a908e40b/planner_tools/VAL). Ideally you can directly use the executable files in this directory, and there is no need to build the tool yourself.
    2. Assign path of the folder to the environment variable VAL `export VAL=/path/to/val`
+
 ### RAP
+
+> Note: The commands below might be outdated. Please look at the scripts under `blocksworld` for updated commands.
+
 ```bash
 CUDA_VISIBLE_DEVICES=0,1,2,3 python -m torch.distributed.run --nproc_per_node 4 examples/rap_blocksworld/inference.py --llama_size "30B" --data_path 'examples/rap_blocksworld/data/step_4.json' --depth_limit 4 --output_trace_in_each_iter
 ```
