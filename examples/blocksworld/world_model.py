@@ -17,7 +17,7 @@ class BWState(NamedTuple):
     buffered_action: BWAction
 
 
-class BlocksWorldModel(WorldModel[BWState, BWAction]):
+class BlocksWorldModel(WorldModel):
     """Blocks World World Model
     State: (step_idx, last_blocks_state, blocks_state, buffered_action)
     Action: e.g. "put the red block on the green block"

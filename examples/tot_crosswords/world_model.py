@@ -9,7 +9,7 @@ CrosswordsState = Tuple[MiniCrosswordsEnv, List, dict]
 CrosswordsAction = Tuple[str, float]
 
 
-class CrosswordsWorldModel(WorldModel[CrosswordsState, CrosswordsAction]):
+class CrosswordsWorldModel(WorldModel):
     """
     crosswords World Model
     Input (x)   : a string of 4 numbers
