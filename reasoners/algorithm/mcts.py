@@ -10,7 +10,7 @@ from collections import defaultdict
 import numpy as np
 from tqdm import trange
 
-from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action, Trace
+from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action, Example, Trace
 
 
 class MCTSNode(Generic[State, Action]):
@@ -110,7 +110,7 @@ class MCTSAggregation(Generic[State, Action], ABC):
         return max(answer_dict, key=lambda answer: answer_dict[answer])
 
 
-class MCTS(SearchAlgorithm, Generic[State, Action]):
+class MCTS(SearchAlgorithm, Generic[State, Action, Example]):
     def __init__(self,
                  output_trace_in_each_iter: bool = False,
                  w_exp: float = 1.,
@@ -294,8 +294,8 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                 self._output_iter = None
 
     def __call__(self,
-                 world_model: WorldModel[State, Action],
-                 search_config: SearchConfig[State, Action],
+                 world_model: WorldModel[State, Action, Example],
+                 search_config: SearchConfig[State, Action, Example],
                  log_file: Optional[str] = None,
                  **kwargs) -> MCTSResult:
         MCTSNode.reset_id()

@@ -70,7 +70,7 @@ class ExLlamaModel(LanguageModel):
         if mem_map is not None:
             self.config.auto_map = mem_map
         else:
-            warnings.warn("mem_map is None, if you want model parallelism, please set mem_map like [16,22] for 2 GPUs")
+            warnings.warn("mem_map is None, if you want model parallelism, please set mem_map. E.g., to use in 2 * 24G GPUs, set mem_map=[16,22]")
         
         self.model = ExLlama(self.config)                                 # create ExLlama instance and load the weights
         self.tokenizer = ExLlamaTokenizer(tokenizer_path)            # create tokenizer from tokenizer model file
@@ -181,7 +181,7 @@ class ExLlamaModel(LanguageModel):
         print("="*30 + "prompt" + "="*30)
         print(inputs[0])
         print("="*30 + "decoded" + "="*30)
-        print(decoded_list[0])
+        print(decoded_list)
         print("="*30 + "end" + "="*30)
         
         return GenerateOutput(decoded_list, log_prob_list)
@@ -216,15 +216,15 @@ class ExLlamaModel(LanguageModel):
                 early_stop = True
                 break
 
-        
-
         sequence = generator.sequence
         for i, eos_pos in enumerate(eos):
             if eos_pos > 0:
                 sequence[i, eos_pos + 1:] = generator.tokenizer.pad_token_id
-        if hide_input:
-            sequence = sequence[:, ids.shape[1]:]
+        # if hide_input:
+        #     sequence = sequence[:, ids.shape[1]:]
         text = generator.tokenizer.decode(sequence)
+        if hide_input:
+            text = [text[i][len(prompt[i]):] for i in range(len(prompt))]
 
         if not early_stop:
             print("Warning: early stop not triggered:")

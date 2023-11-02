@@ -1,6 +1,6 @@
 import re
 from typing import Optional, Union
-
+from collections import Counter
 
 def retrieve_answer(output: Union[list, str]) -> Optional[str]:
     '''
@@ -50,3 +50,10 @@ def rap_extractor(algo_output, aggregate=True):
         else:
             output = retrieve_answer(algo_output.terminal_state)
     return output
+
+def cot_sc_extractor(algo_output, sc=True):
+    # aggregate the results from multiple reasoning chains with majority vote
+    answers = [retrieve_answer(x) for x in algo_output]
+    answers = [x for x in answers if x is not None]
+    counter = Counter(answers)
+    return counter.most_common(1)[0][0]
