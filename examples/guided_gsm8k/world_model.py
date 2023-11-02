@@ -17,9 +17,10 @@ class SubResult(NamedTuple):
 GSM8kState = list[SubResult]
 # action should include both the action and the action_prob
 GSM8kAction = (str, float, int) # (action, action_prob, action_length)
+GSM8kExample = str
 
 
-class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
+class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction, GSM8kExample]):
     """
     GSM8k World Model
     State: [(action, action_prob, evaluation, action_confidence), ...]
