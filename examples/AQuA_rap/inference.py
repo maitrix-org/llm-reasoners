@@ -50,6 +50,7 @@ def rap_AQuA(base_model: LanguageModel,
               aggregate: bool = True,
               **search_algo_params):
     
+    print(f'aggregate: {aggregate}')
     if aggregate:
         aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge')
     else:

@@ -23,4 +23,3 @@ sas_plan
 build/
 examples/MATH
 *.csv
-examples/AQuA_rap/visualize.ipynb
