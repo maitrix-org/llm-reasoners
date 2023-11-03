@@ -1,6 +1,6 @@
 import pickle
 from typing import Type, Callable, Optional
-
+import fire
 import os
 import numpy as np
 from datasets import load_dataset
@@ -97,7 +97,7 @@ def rap_AQuA(base_model: LanguageModel,
     print(f'accuracy: {accuracy:.4f}')
     return 0
 
-if __name__ == '__main__':
+def main():
     import os
     import sys
     import json
@@ -150,73 +150,87 @@ if __name__ == '__main__':
             disable_tqdm=disable_tqdm or local_rank != 0,
             **kwargs)
 
-    fire.Fire(main_exllama)
+
+def evaluate():
+    evaluator = AQuAEvaluator(output_extractor=utils.retrieve_answer,
+                               answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"]),
+                               init_prompt=None,
+                               sample_prompt_type="rap",
+                               disable_log=None,
+                               disable_tqdm=None)
+    evaluator.eval_non_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/10202023-063340/algo_output', resume_s=0, resume_e=1000)
+
+
+# fire.Fire(main())
+
+fire.Fire(evaluate())
+
+
     
-    
-    '''
-    def main_hf(hf_path = "/data/haotian/RAP_tune/Llama-2-13b-hf",
-            batch_size = 1,
-            peft_path = None,
-            interactive_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/interactive_examples.json", 
-            useful_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/useful_examples.json",
-            disable_log = False,
-            disable_tqdm = False,
-            quantized = "nf4", # awq, int8, fp4, nf4, None
-            load_awq_pth = None,
+'''
+def main_hf(hf_path = "/data/haotian/RAP_tune/Llama-2-13b-hf",
+        batch_size = 1,
+        peft_path = None,
+        interactive_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/interactive_examples.json", 
+        useful_prompt = "/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/useful_examples.json",
+        disable_log = False,
+        disable_tqdm = False,
+        quantized = "nf4", # awq, int8, fp4, nf4, None
+        load_awq_pth = None,
+        **kwargs):
+    from reasoners.lm import HFModel
+    device = torch.device("cuda:0")
+    base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=512, peft_pth=peft_path, quantized=quantized, load_awq_pth=load_awq_pth)
+    with open(interactive_prompt) as f:
+        interactive_prompt = json.load(f)
+    with open(useful_prompt) as f:
+        useful_prompt = json.load(f)
+    rap_AQuA(base_model=base_model,
+                interactive_prompt=interactive_prompt,
+                useful_prompt=useful_prompt,
+                batch_size=batch_size,
+                disable_log=disable_log or local_rank != 0,
+                disable_tqdm=disable_tqdm or local_rank != 0,
+                **kwargs)
+'''
+
+"""
+def main(base_lm: str = 'llama2', #llama means llama_v1 and llama2 means llama_v2
+            llama_ckpt: str = llama_ckpts,
+            llama_2_ckpt: str = llama_2_ckpts,
+            llama_size: str = '7B',
+            llama_cpp_path: str = None,
+            batch_size: int = 1,
+            interactive_prompt: str = '/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/interactive_examples.json',
+            useful_prompt: str = '/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/useful_examples.json',
+            disable_log: bool = False,
+            disable_tqdm: bool = False,
             **kwargs):
-        from reasoners.lm import HFModel
-        device = torch.device("cuda:0")
-        base_model = HFModel(hf_path, hf_path, device, max_batch_size=batch_size, max_new_tokens=512, peft_pth=peft_path, quantized=quantized, load_awq_pth=load_awq_pth)
-        with open(interactive_prompt) as f:
-            interactive_prompt = json.load(f)
-        with open(useful_prompt) as f:
-            useful_prompt = json.load(f)
-        rap_AQuA(base_model=base_model,
-                    interactive_prompt=interactive_prompt,
-                    useful_prompt=useful_prompt,
-                    batch_size=batch_size,
-                    disable_log=disable_log or local_rank != 0,
-                    disable_tqdm=disable_tqdm or local_rank != 0,
-                    **kwargs)
-    '''
-    
-    """
-    def main(base_lm: str = 'llama2', #llama means llama_v1 and llama2 means llama_v2
-             llama_ckpt: str = llama_ckpts,
-             llama_2_ckpt: str = llama_2_ckpts,
-             llama_size: str = '7B',
-             llama_cpp_path: str = None,
-             batch_size: int = 1,
-             interactive_prompt: str = '/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/interactive_examples.json',
-             useful_prompt: str = '/data/haotian/RAP_tune/llm-reasoners/examples/AQuA/prompts/useful_examples.json',
-             disable_log: bool = False,
-             disable_tqdm: bool = False,
-             **kwargs):
-        # set base_lm = 'llama' and llama_ckpt = '13B/30B/65B' to use llama with torchscale
-        # else set base_lm = 'llama.cpp' and llama_cpp_path = the checkpoint to use llama.cpp
+    # set base_lm = 'llama' and llama_ckpt = '13B/30B/65B' to use llama with torchscale
+    # else set base_lm = 'llama.cpp' and llama_cpp_path = the checkpoint to use llama.cpp
 
-        with open(interactive_prompt) as f:
-            interactive_prompt = json.load(f)
-        with open(useful_prompt) as f:
-            useful_prompt = json.load(f)
-        if base_lm == 'llama':
-            base_model = LlamaModel(llama_ckpt, llama_size, max_batch_size=batch_size) #LlamaModel
-        elif base_lm == 'llama.cpp':
-            base_model = LlamaCppModel(llama_cpp_path)
-        elif base_lm == 'llama2':
-            base_model = Llama2Model(llama_2_ckpt, llama_size, max_batch_size=batch_size) #Llama2Model
-        else:
-            assert False, f'cannot resolve {base_lm=}'
-        prompt_tokens = base_model.tokenizer.encode(interactive_prompt['input'],bos=False,eos=False)
-        if local_rank == 0:
-            with open('input.txt', 'w') as f:
-                print(len(prompt_tokens), file=f)
-        rap_AQuA(base_model=base_model,
-                  interactive_prompt=interactive_prompt,
-                  useful_prompt=useful_prompt,
-                  batch_size=batch_size,
-                  disable_log=disable_log or local_rank != 0,
-                  disable_tqdm=disable_tqdm or local_rank != 0,
-                  **kwargs)
+    with open(interactive_prompt) as f:
+        interactive_prompt = json.load(f)
+    with open(useful_prompt) as f:
+        useful_prompt = json.load(f)
+    if base_lm == 'llama':
+        base_model = LlamaModel(llama_ckpt, llama_size, max_batch_size=batch_size) #LlamaModel
+    elif base_lm == 'llama.cpp':
+        base_model = LlamaCppModel(llama_cpp_path)
+    elif base_lm == 'llama2':
+        base_model = Llama2Model(llama_2_ckpt, llama_size, max_batch_size=batch_size) #Llama2Model
+    else:
+        assert False, f'cannot resolve {base_lm=}'
+    prompt_tokens = base_model.tokenizer.encode(interactive_prompt['input'],bos=False,eos=False)
+    if local_rank == 0:
+        with open('input.txt', 'w') as f:
+            print(len(prompt_tokens), file=f)
+    rap_AQuA(base_model=base_model,
+                interactive_prompt=interactive_prompt,
+                useful_prompt=useful_prompt,
+                batch_size=batch_size,
+                disable_log=disable_log or local_rank != 0,
+                disable_tqdm=disable_tqdm or local_rank != 0,
+                **kwargs)
 
-    """
+"""
