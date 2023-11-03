@@ -7,7 +7,6 @@ from datetime import datetime
 import os, sys, pickle
 from tqdm import tqdm
 import torch
-
 State = TypeVar("State")
 Action = TypeVar("Action")
 Example = TypeVar("Example")
@@ -225,17 +224,4 @@ class Evaluator():
     def eval_output(self, answer, output):
         pass
 
-    def eval_non_aggregate(self, pkl_pth:str, resume_s:int, resume_e:int):
-        data = list(self.full_dataset)[resume_s:resume_e]
-        correct_count = 0
-        for i in range(resume_s, resume_e):
-            case_result_pure = pickle.load(open(os.path.join(pkl_pth, f'{i+1}.pkl'), 'rb'))
-            output = self.output_extractor(case_result_pure)
-            answer = self.answer_extractor(data[i])
-            correct = self.eval_output(answer, output)
-            correct_count += correct
-            accuracy = correct_count / (i + 1)
-            log_str = f'Case #{resume_s + i + 1}: {correct=}, {output=}, {answer=};'\
-                        f'{accuracy=:.3f} ({correct_count}/{i + 1})'
-            with open(os.path.join(pkl_pth, 'non_aggr_result.log'), 'a') as f:
-                print(log_str, file=f)
+    

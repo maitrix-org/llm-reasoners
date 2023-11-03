@@ -20,6 +20,61 @@ from search_config import MATHConfig
 import utils
 import re
 
+def eval_non_aggregate(pkl_pth:str, resume_s:int, resume_e:int):
+        evaluator = AQuAEvaluator(output_extractor=utils.retrieve_answer,
+                               answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"]),
+                               init_prompt=None,
+                               sample_prompt_type="rap",
+                               disable_log=None,
+                               disable_tqdm=None)
+        data = list(evaluator.full_dataset)[resume_s:resume_e]
+        correct_count = 0
+        for i in range(resume_s, resume_e):
+            case_result_pure = pickle.load(open(os.path.join(pkl_pth, f'{i+1}.pkl'), 'rb'))
+            output = evaluator.output_extractor(case_result_pure)
+            answer = evaluator.answer_extractor(data[i])
+            correct = evaluator.eval_output(answer, output)
+            correct_count += correct
+            accuracy = correct_count / (i + 1)
+            log_str = f'Case #{resume_s + i + 1}: {correct=}, {output=}, {answer=};'\
+                        f'{accuracy=:.3f} ({correct_count}/{i + 1})'
+            with open(os.path.join(pkl_pth, 'non_aggr_result.log'), 'a') as f:
+                print(log_str, file=f)
+def eval_aggregate(pkl_pth:str, resume_s:int, resume_e:int):
+    evaluator = AQuAEvaluator(output_extractor=utils.retrieve_answer,
+                        answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"]),
+                        init_prompt=None,
+                        sample_prompt_type="rap",
+                        disable_log=None,
+                        disable_tqdm=None)
+    data = list(evaluator.full_dataset)[resume_s:resume_e]
+    correct_count = 0
+    for i in range(resume_s, resume_e):
+        aggregator = MCTSAggregation(evaluator.output_extractor, weight_policy='edge')
+        case_result_pure = pickle.load(open(os.path.join(pkl_pth, f'{i+1}.pkl'), 'rb'))
+        aggr_result = MCTSResult(
+            terminal_state=case_result_pure.terminal_state,
+            cum_reward=case_result_pure.cum_reward,
+            trace=case_result_pure.trace,
+            trace_of_nodes=case_result_pure.trace_of_nodes,
+            tree_state=case_result_pure.tree_state,
+            trace_in_each_iter=case_result_pure.trace_in_each_iter,
+            tree_state_after_each_iter=case_result_pure.tree_state_after_each_iter,
+            aggregated_result=aggregator(case_result_pure.tree_state),
+        )
+        output = evaluator.output_extractor(aggr_result)
+        answer = evaluator.answer_extractor(data[i])
+        correct = evaluator.eval_output(answer, output)
+        correct_count += correct
+        accuracy = correct_count / (i + 1)
+        log_str = f'Case #{resume_s + i + 1}: {correct=}, {output=}, {answer=};'\
+                    f'{accuracy=:.3f} ({correct_count}/{i + 1})'
+        with open(os.path.join(pkl_pth, 'aggr_result.log'), 'a') as f:
+            print(log_str, file=f)
+
+
+
+
 def node_visualizer(x: MCTSNode[MATHState, MATHAction]):
     if not x.state:
         return {}
@@ -152,13 +207,8 @@ def main():
 
 
 def evaluate():
-    evaluator = AQuAEvaluator(output_extractor=utils.retrieve_answer,
-                               answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"]),
-                               init_prompt=None,
-                               sample_prompt_type="rap",
-                               disable_log=None,
-                               disable_tqdm=None)
-    evaluator.eval_non_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/10202023-063340/algo_output', resume_s=0, resume_e=1000)
+    # eval_non_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/10202023-063340/algo_output', resume_s=0, resume_e=1000)
+    eval_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/10202023-063340/algo_output', resume_s=0, resume_e=1000)
 
 
 # fire.Fire(main())
