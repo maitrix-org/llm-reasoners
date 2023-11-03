@@ -31,6 +31,17 @@ def eval_non_aggregate(pkl_pth:str, resume_s:int, resume_e:int):
         correct_count = 0
         for i in range(resume_s, resume_e):
             case_result_pure = pickle.load(open(os.path.join(pkl_pth, f'{i+1}.pkl'), 'rb'))
+            case_result_pure = MCTSResult(
+                terminal_state=case_result_pure.terminal_state,
+                cum_reward=case_result_pure.cum_reward,
+                trace=case_result_pure.trace,
+                trace_of_nodes=case_result_pure.trace_of_nodes,
+                tree_state=case_result_pure.tree_state,
+                trace_in_each_iter=case_result_pure.trace_in_each_iter,
+                tree_state_after_each_iter=case_result_pure.tree_state_after_each_iter,
+                aggregated_result=None,
+            )
+
             output = evaluator.output_extractor(case_result_pure)
             answer = evaluator.answer_extractor(data[i])
             correct = evaluator.eval_output(answer, output)
@@ -60,7 +71,7 @@ def eval_aggregate(pkl_pth:str, resume_s:int, resume_e:int):
             tree_state=case_result_pure.tree_state,
             trace_in_each_iter=case_result_pure.trace_in_each_iter,
             tree_state_after_each_iter=case_result_pure.tree_state_after_each_iter,
-            aggregated_result=aggregator(case_result_pure.tree_state),
+            aggregated_result=case_result_pure.aggregated_result,
         )
         output = evaluator.output_extractor(aggr_result)
         answer = evaluator.answer_extractor(data[i])
@@ -207,8 +218,8 @@ def main():
 
 
 def evaluate():
-    # eval_non_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/10202023-063340/algo_output', resume_s=0, resume_e=1000)
-    eval_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/10202023-063340/algo_output', resume_s=0, resume_e=1000)
+    eval_non_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/10252023-064332/algo_output', resume_s=0, resume_e=1000)
+    # eval_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/10252023-064332/algo_output', resume_s=0, resume_e=1000)
 
 
 # fire.Fire(main())

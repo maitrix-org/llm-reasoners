@@ -6,7 +6,7 @@ def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
     '''
     output should be a world_model.MATHState if being a list
     '''
-    print('retrieve_answer:', output)
+    # print('retrieve_answer:', output)
     if isinstance(output, AlgorithmOutput):
         if (result := getattr(output, 'aggregated_result', None)) is not None:
             return result
