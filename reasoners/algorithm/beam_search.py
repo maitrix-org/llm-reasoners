@@ -2,6 +2,7 @@ from typing import Generic
 from collections import defaultdict
 from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action, Example
 from typing import NamedTuple, List, Tuple, Callable, Any, Union, Optional
+from reasoners.base import Example
 import numpy as np
 import warnings
 import random
@@ -50,7 +51,7 @@ class BeamSearchResult(NamedTuple):
     trace: List[Tuple[Action, State, float]]
 
 
-class BeamSearch(SearchAlgorithm, Generic[State, Action]):
+class BeamSearch(SearchAlgorithm, Generic[State, Action, Example]):
     def __init__(self, 
                  beam_size: int, 
                  max_depth: int, 
