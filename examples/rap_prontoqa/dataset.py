@@ -48,6 +48,8 @@ class ProntoQADataset:
             in_context_examples = all_examples
 
             instance.examples[example_key] = ProntoQAExample(in_context_examples, test_example)
+            # print(f"example_key: {example_key}, in_context_examples: {in_context_examples} test_example: {test_example}")
+            # print("="*50)
 
         return instance
 

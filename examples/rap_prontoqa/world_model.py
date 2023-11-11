@@ -6,6 +6,7 @@ import prompts.output
 import prompts.transition
 from examples.rap_prontoqa.dataset import ProntoQAExample
 from reasoners import WorldModel, LanguageModel
+from reasoners.base import Example
 
 
 @dataclass
@@ -21,7 +22,7 @@ class ProntoQAState:
 ProntoQAAction = str
 
 
-class ProntoQAWorldModel(WorldModel[ProntoQAState, ProntoQAAction]):
+class ProntoQAWorldModel(WorldModel[ProntoQAState, ProntoQAAction, ProntoQAExample]):
     def __init__(self, base_model: LanguageModel) -> None:
         super().__init__()
         self.base_model = base_model

@@ -16,7 +16,7 @@ from .. import LanguageModel,GenerateOutput
 
 
 class ExLlamaModel(LanguageModel):
-    def __init__(self, model_dir, lora_dir, max_batch_size, max_new_tokens, max_seq_length, device='cuda:0', mem_map:list[int]=None, log_time=False):
+    def __init__(self, model_dir, lora_dir, max_batch_size, max_new_tokens, max_seq_length, device='cuda', mem_map:list[int]=None, log_time=False):
         """
         Initializes an ExLlamaModel instance.
 

@@ -4,12 +4,13 @@ import torch
 
 import prompts.finish
 import prompts.valid
+import prompts.next_step
 from examples.rap_prontoqa.dataset import ProntoQAExample
 from reasoners import SearchConfig
 from world_model import ProntoQAState, ProntoQAAction, ProntoQAWorldModel
 
 
-class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction]):
+class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction,ProntoQAExample]):
 
     def __init__(self, world_model: ProntoQAWorldModel):
         super().__init__()
@@ -22,12 +23,44 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction]):
 
         return facts
 
+    # OLD fast reward code
     def fast_reward(
             self,
             state: ProntoQAState,
             action: ProntoQAAction,
     ) -> tuple[float, dict]:
         return self.reward(state, action)
+    
+    def fast_reward_new(self, state: ProntoQAState, action: ProntoQAAction) -> tuple[float, dict]:
+        # TODO: currently trying to implement this
+        previous_action = state.buffered_action + "\n" if state.buffered_action != "" else ""
+
+        input_prompt=""
+        input_prompt += prompts.next_step.EXAMPLES
+        input_prompt += prompts.next_step.FACTS_FORMAT.format(state.last_state or "", action)
+        input_prompt += prompts.next_step.NEXT_STEP_FORMAT.format(state)
+        input_prompt += prompts.next_step.VALID_PREFIX
+        
+        icl_template = self.prompt["icl_list"][state.step_idx // 2]
+
+    
+        intuition = self.base_model.get_loglikelihood(input_prompt, [input_prompt + action])[0]
+
+
+
+        return self.calculate_reward(intuition, self_eval), {'intuition': intuition}
+
+
+    # using this from blocksworld to calculate reward, have to change.
+    def calculate_reward(self, intuition, self_eval, goal_reached=None):
+        # to provide a unified interface for reward and fast_reward
+        if goal_reached is None:
+            goal_reward = self.goal_reward_default
+        elif goal_reached[0]:
+            goal_reward = self.goal_reached_reward
+        else:
+            goal_reward = goal_reached[1]
+        return (intuition + self_eval) * self.reward_alpha + goal_reward * (1 - self.reward_alpha)
 
     def reward(self,
                state: ProntoQAState,
@@ -35,8 +68,8 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction]):
                **kwargs
                ) -> tuple[float, dict]:
 
-        if not state.last_state:
-            return 0, {}
+        # if not state.last_state:
+        #     return 0.1, {}
 
         input_prompt = ""
 
@@ -55,12 +88,9 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction]):
         output_logits = self.world_model.base_model.get_next_token_logits(
             input_prompt,
             candidates=["Yes", "No"]
-            # ,
-            # postprocess="softmax"
         )
 
 
-        print(f"output_logits shape: {len(output_logits)} {len(output_logits[0])} {output_logits}")
         # reward: float = output_logits[0][0].item()
         reward:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
 

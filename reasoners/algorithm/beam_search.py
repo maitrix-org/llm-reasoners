@@ -2,6 +2,7 @@ from typing import Generic
 from collections import defaultdict
 from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action
 from typing import NamedTuple, List, Tuple, Callable, Any, Union, Optional
+from reasoners.base import Example
 import numpy as np
 import warnings
 import random
@@ -49,7 +50,7 @@ class BeamSearchResult(NamedTuple):
     tree: BeamSearchNode
 
 
-class BeamSearch(SearchAlgorithm, Generic[State, Action]):
+class BeamSearch(SearchAlgorithm, Generic[State, Action, Example]):
     def __init__(self, 
                  beam_size: int, 
                  max_depth: int, 
@@ -201,7 +202,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             return [beam[i] for i in topk_beam_idx]
         
 
-    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action]):
+    def __call__(self, world: WorldModel[State, Action, Example], config: SearchConfig[State, Action, Example]):
         init_state = world.init_state()
         # root node
         root_node = BeamSearchNode(state=init_state, action=None, reward=0.0)
