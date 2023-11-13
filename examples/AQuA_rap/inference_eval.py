@@ -63,7 +63,17 @@ def eval_aggregate(pkl_pth:str, resume_s:int, resume_e:int):
     for i in range(resume_s, resume_e):
         aggregator = MCTSAggregation(evaluator.output_extractor, weight_policy='edge')
         case_result_pure = pickle.load(open(os.path.join(pkl_pth, f'{i+1}.pkl'), 'rb'))
-        output = aggregator(case_result_pure.tree_state)
+        aggr_result = MCTSResult(
+            terminal_state=case_result_pure.terminal_state,
+            cum_reward=case_result_pure.cum_reward,
+            trace=case_result_pure.trace,
+            trace_of_nodes=case_result_pure.trace_of_nodes,
+            tree_state=case_result_pure.tree_state,
+            trace_in_each_iter=case_result_pure.trace_in_each_iter,
+            tree_state_after_each_iter=case_result_pure.tree_state_after_each_iter,
+            aggregated_result=case_result_pure.aggregated_result,
+        )
+        output = evaluator.output_extractor(aggr_result)
         answer = evaluator.answer_extractor(data[i])
         correct = evaluator.eval_output(answer, output)
         correct_count += correct
@@ -153,7 +163,7 @@ def rap_AQuA(base_model: LanguageModel,
     print(f'accuracy: {accuracy:.4f}')
     return 0
 
-if __name__ == '__main__':
+def main():
     import os
     import sys
     import json
@@ -187,7 +197,6 @@ if __name__ == '__main__':
         useful_prompt: str = 'examples/AQuA_rap/prompts/useful_examples.json',
         disable_log = False,
         disable_tqdm = False,
-        reward_alpha = 0.5,
         **kwargs):
         
         from reasoners.lm import ExLlamaModel
@@ -205,18 +214,17 @@ if __name__ == '__main__':
             batch_size=batch_size,
             disable_log=disable_log or local_rank != 0,
             disable_tqdm=disable_tqdm or local_rank != 0,
-            reward_alpha = reward_alpha,
             **kwargs)
-    fire.Fire(main_exllama)
+
 
 def evaluate():
-    # eval_non_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/11062023-070513/algo_output', resume_s=0, resume_e=1000)
-    eval_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/11062023-070513/algo_output', resume_s=0, resume_e=209)
+    eval_non_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/10252023-064332/algo_output', resume_s=0, resume_e=1000)
+    # eval_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/10252023-064332/algo_output', resume_s=0, resume_e=1000)
 
 
+#fire.Fire(main())
 
-
-#fire.Fire(evaluate())
+fire.Fire(evaluate())
 
 
     
