@@ -84,7 +84,10 @@ class MCTSAggregation(Generic[State, Action], ABC):
             if cur.state is None:
                 return []
             if cur.is_terminal:
-                answer = self.retrieve_answer(cur.state)
+                answer = self.retrieve_answer(cur.state, flag = 0)
+                if answer is None:
+                    print("hihihi")
+                    return []
                 if self.weight_policy == 'edge':
                     answer_dict[answer] += cur.reward
                 elif self.weight_policy == 'edge_inverse_depth':
@@ -321,12 +324,12 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                             tree_state=self.root,
                             trace_in_each_iter=trace_in_each_iter,
                             tree_state_after_each_iter=tree_state_after_each_iter)
-        if log_file is not None:
-            with open(log_file + '.json', 'w') as f:
-                from ..visualization import TreeLog
-                print(TreeLog.from_mcts_results(result, node_data_factory=self.node_visualizer), file=f)
-            with open(log_file + '.pkl', 'wb') as f:
-                pickle.dump(result, f)
+        # if log_file is not None:
+        #     with open(log_file + '.json', 'w') as f:
+        #         from ..visualization import TreeLog
+        #         print(TreeLog.from_mcts_results(result, node_data_factory=self.node_visualizer), file=f)
+        #     with open(log_file + '.pkl', 'wb') as f:
+        #         pickle.dump(result, f)
         if self.aggregator is not None:
             result = MCTSResult(
                 terminal_state=result.terminal_state,

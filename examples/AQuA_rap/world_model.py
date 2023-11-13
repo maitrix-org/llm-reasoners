@@ -1,4 +1,5 @@
 import io
+from pyexpat import model
 from typing import NamedTuple, TypedDict
 from collections import defaultdict
 from reasoners import WorldModel, LanguageModel
@@ -94,7 +95,10 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                                                    eos_token_id='\n').text
                 for output in outputs:
                     result = output.strip()
-                    answer = utils.retrieve_answer_not_option(result)
+                    if "Now we can" in model_input:
+                        answer = utils.retrieve_answer(result)
+                    else:
+                        answer = utils.retrieve_answer_not_option(result)
                     if answer is not None:
                         print("I'm here !!!!!!!!!!!!!!!!!!")
                         print(result)

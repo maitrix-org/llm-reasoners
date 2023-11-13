@@ -2,13 +2,13 @@ import re
 from typing import Optional, Union
 from reasoners.base import AlgorithmOutput
 
-def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
+def retrieve_answer(output: Union[list, str, AlgorithmOutput], flag = 1) -> Optional[str]:
     '''
     output should be a world_model.MATHState if being a list
     '''
     # print('retrieve_answer:', output)
     if isinstance(output, AlgorithmOutput):
-        if (result := getattr(output, 'aggregated_result', None)) is not None:
+        if (result := getattr(output, 'aggregated_result', None)) is not None and flag:
             return result
         output = output.terminal_state
         
