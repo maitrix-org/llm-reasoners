@@ -135,7 +135,6 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
 
 
     def _sample(self, beam):
-
         if self.sampling_strategy == 'argmax':
             # sort the beam by reward
             beam.sort(key=lambda x: x[2], reverse=True)

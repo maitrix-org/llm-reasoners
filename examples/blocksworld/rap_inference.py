@@ -58,11 +58,11 @@ if __name__ == '__main__':
     torch.cuda.manual_seed(1)
     torch.backends.cudnn.deterministic = True
     def llama_main(llama_size: str = '13B',
-             prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
-             data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+             prompt_path: str = 'examples/blocksworld/prompts/prompt.json',
+             data_path: str = 'examples/blocksworld/data/step_4.json',
              disable_log: bool = False,
-             config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
-             domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+             config_file: str = "examples/blocksworld/data/bw_config.yaml",
+             domain_file: str = "examples/blocksworld/data/generated_domain.pddl",
              lm_plan_file: str = 'lm_plan.tmp',
              depth_limit: int = 6,
              **kwargs):
@@ -87,12 +87,12 @@ if __name__ == '__main__':
 
     def llamacpp_main(
             llama_path = '/home/shibo/llama.cpp/models/65B/ggml-model-q8_0.bin',
-            prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
-            data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+            prompt_path: str = 'examples/blocksworld/prompts/prompt.json',
+            data_path: str = 'examples/blocksworld/data/step_4.json',
             disable_log: bool = False,
-            config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
+            config_file: str = "examples/blocksworld/data/bw_config.yaml",
             lm_plan_file: str = 'lm_plan.tmp',
-            domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+            domain_file: str = "examples/blocksworld/data/generated_domain.pddl",
             depth_limit: int = 6,
             **kwargs):
 
@@ -112,11 +112,11 @@ if __name__ == '__main__':
     def llama_hf_main(
             llama_path = '/data/haotian/RAP_tune/Llama-2-7b-hf',
             peft_path = None,
-            prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
-            data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+            prompt_path: str = 'examples/blocksworld/prompts/prompt.json',
+            data_path: str = 'examples/blocksworld/data/step_4.json',
             disable_log: bool = False,
-            config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
-            domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+            config_file: str = "examples/blocksworld/data/bw_config.yaml",
+            domain_file: str = "examples/blocksworld/data/generated_domain.pddl",
             lm_plan_file: str = 'lm_plan.tmp',
             depth_limit: int = 6,
             quantized = "nf4", # awq, int8, fp4, nf4, None
@@ -140,11 +140,11 @@ if __name__ == '__main__':
     def exllama_main(
             model_dir = '/data/haotian/RAP_tune/Llama-2-13B-GPTQ',
             lora_dir = None,
-            prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
-            data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+            prompt_path: str = 'examples/blocksworld/prompts/prompt.json',
+            data_path: str = 'examples/blocksworld/data/step_4.json',
             disable_log: bool = False,
-            config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
-            domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+            config_file: str = "examples/blocksworld/data/bw_config.yaml",
+            domain_file: str = "examples/blocksworld/data/generated_domain.pddl",
             lm_plan_file: str = 'lm_plan.tmp',
             depth_limit: int = 6,
             batch_size: int = 1,
@@ -174,11 +174,11 @@ if __name__ == '__main__':
                batch_size=batch_size, **kwargs)
     
     def llama2_main(llama_size: str = '70B',
-             prompt_path: str = 'examples/rap_blocksworld/prompts/prompt.json',
-             data_path: str = 'examples/rap_blocksworld/data/step_4.json',
+             prompt_path: str = 'examples/blocksworld/prompts/prompt.json',
+             data_path: str = 'examples/blocksworld/data/step_4.json',
              disable_log: bool = False,
-             config_file: str = "examples/rap_blocksworld/data/bw_config.yaml",
-             domain_file: str = "examples/rap_blocksworld/data/generated_domain.pddl",
+             config_file: str = "examples/blocksworld/data/bw_config.yaml",
+             domain_file: str = "examples/blocksworld/data/generated_domain.pddl",
              lm_plan_file: str = 'lm_plan.tmp',
              depth_limit: int = 6,
              **kwargs):
