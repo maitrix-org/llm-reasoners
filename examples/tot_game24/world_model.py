@@ -15,7 +15,7 @@ game24State = list[SubResult]
 game24Action = str
 
 
-class game24WorldModel(WorldModel[game24State, game24Action]):
+class game24WorldModel(WorldModel):
     """
     game24 World Model
     Input (x)   : a string of 4 numbers

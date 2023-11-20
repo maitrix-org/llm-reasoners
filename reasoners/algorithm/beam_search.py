@@ -1,6 +1,6 @@
 from typing import Generic
 from collections import defaultdict
-from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action
+from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action, Example
 from typing import NamedTuple, List, Tuple, Callable, Any, Union, Optional
 import numpy as np
 import warnings
@@ -201,7 +201,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             return [beam[i] for i in topk_beam_idx]
         
 
-    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action]):
+    def __call__(self, world: WorldModel[State, Action, State], config: SearchConfig[State, Action, State]):
         init_state = world.init_state()
         # root node
         root_node = BeamSearchNode(state=init_state, action=None, reward=0.0)

@@ -1,14 +1,8 @@
-import pickle
-from copy import deepcopy
-from typing import Type, Callable, Optional, Literal, TypedDict
+from typing import Type, Callable, Optional, Literal
 
 import numpy as np
-from datasets import load_dataset
 
 from reasoners.benchmark import GSM8KEvaluator
-from reasoners.visualization import TreeLog
-from tqdm import tqdm
-from datetime import datetime
 
 from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import MCTS, MCTSNode, MCTSAggregation
@@ -22,15 +16,6 @@ def node_visualizer(x: MCTSNode[GSM8kState, GSM8kAction]):
     if not x.state:
         return {}
     return {"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer}
-
-
-def sample_gsm8k_prompt(pool: GSM8kPromptDict, n_sample: int) -> GSM8kPromptDict:
-    ret = deepcopy(pool)
-    ret['interactive_examples'], ret['useful_examples'] = zip(*random.sample(list(zip(ret['interactive_examples'],
-                                                                                      ret['useful_examples'])),
-                                                                             k=n_sample))
-    return ret
-
 
 def rap_gsm8k(base_model: LanguageModel,
               prompt: GSM8kPromptDict,
@@ -77,7 +62,7 @@ def rap_gsm8k(base_model: LanguageModel,
     evaluator = GSM8KEvaluator(output_extractor=utils.retrieve_answer,
                                answer_extractor=utils.retrieve_answer_from_dataset,
                                init_prompt=prompt,
-                               sample_prompt=sample_gsm8k_prompt,
+                               sample_prompt_type="rap",
                                disable_log=disable_log,
                                disable_tqdm=disable_tqdm)
 
@@ -115,14 +100,12 @@ if __name__ == '__main__':
              exllama_lora_dir: Optional[str] = None,
              exllama_mem_map: Optional[str] = None,
              batch_size: int = 1,
-             # interactive_prompt: str = 'examples/rap_gsm8k/prompts/interactive_examples.json',
              useful_prompt: str = 'examples/rap_gsm8k/prompts/useful_examples.json',
              prompt: str = 'examples/rap_gsm8k/prompts/prompt_pool.json',
              disable_log: bool = False,
              disable_tqdm: bool = False,
              **kwargs):
-        # with open(interactive_prompt) as f:
-        #     interactive_prompt = json.load(f)
+      
         with open(useful_prompt) as f:
             useful_prompt = json.load(f)
         with open(prompt) as f:

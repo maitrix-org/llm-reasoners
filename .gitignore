@@ -11,8 +11,6 @@ logs/
 temp/
 scripts/
 gpt-plan-benchmark/
-LLMs-Planning/
-LLMs-Planning
 .DS_Store
 .vscode/
 dataset/
@@ -20,3 +18,5 @@ dataset/
 *.txt
 sas_plan
 build/
+temp_plan
+temp_problem

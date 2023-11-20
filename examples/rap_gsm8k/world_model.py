@@ -14,6 +14,7 @@ class SubResult(NamedTuple):
 
 GSM8kState = list[SubResult]
 GSM8kAction = str
+GSM8kExample = str
 
 
 class GSM8kPromptDict(TypedDict):
@@ -26,7 +27,7 @@ class GSM8kPromptDict(TypedDict):
     answer_prefix: str
 
 
-class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
+class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction, GSM8kExample]):
     """
     GSM8k World Model
     State: [[sub_question_1, sub_answer_1, confidence_1], [sub_question_2, sub_answer_2, confidence_2], ...]
@@ -120,6 +121,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
                     break
 
         if len(answer_dict) == 0:
+            print("Warning: no answer found")
             confidence, answer = 0, result  # No reasonable answer found. Fall back to choose the last response
         else:
             sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)

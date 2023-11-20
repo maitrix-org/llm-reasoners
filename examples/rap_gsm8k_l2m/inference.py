@@ -9,17 +9,11 @@ from datetime import datetime
 
 from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import MCTS, MCTSNode, MCTSAggregation
+from reasoners.benchmark import GSM8KEvaluator
 
 from world_model import GSM8kWorldModel, GSM8kState, GSM8kAction
 from search_config import GSM8kConfig
 import utils
-
-
-def node_visualizer(x: MCTSNode[GSM8kState, GSM8kAction]):
-    if not x.state:
-        return {}
-    return {"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer}
-
 
 def rap_gsm8k(base_model: LanguageModel,
               prompt: dict,
@@ -37,63 +31,34 @@ def rap_gsm8k(base_model: LanguageModel,
               cum_reward: Callable[[list[float]], float] = np.mean,
               calc_q: Callable[[list[float]], float] = max,
               log_dir: Optional[str] = None,
-              disable_log: bool = False,
               disable_tqdm: bool = False,
+              disable_log: bool = False,
               output_trace_in_each_iter: bool = True,
               aggregate: bool = True,
               **search_algo_params):
-    if not disable_log:
-        if log_dir is None:
-            log_dir = f'logs/gsm8k_{search_algo.__name__}/{datetime.now().strftime("%m%d%Y-%H%M%S")}'
-        os.makedirs(log_dir, exist_ok=resume > 0)
-        os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
-        with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
-            print(sys.argv, file=f)
-
-    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm,
-                           'output_trace_in_each_iter': output_trace_in_each_iter}
-    world_model = GSM8kWorldModel(base_model=base_model, prompt=prompt,
+    
+    # the prompt will be passed to world model and search config dynamically 
+    # no need to intialize them here
+    world_model = GSM8kWorldModel(base_model=base_model, prompt={},
                                   n_confidence=n_confidence, batch_size=batch_size, temperature=temperature,
                                   early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
-    config = GSM8kConfig(base_model=base_model, prompt=prompt,
+    config = GSM8kConfig(base_model=base_model, prompt={},
                          n_actions=n_action, batch_size=batch_size, temperature=temperature,
                          reward_alpha=reward_alpha, reward_confidence_default=reward_confidence_default, depth_limit=depth_limit)
+    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, 'disable_tqdm': disable_tqdm,
+                           'output_trace_in_each_iter': output_trace_in_each_iter}
     search_algo = search_algo(**search_algo_params)
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
-    if aggregate:
-        aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge_inverse_depth')
-    else:
-        aggregator = None
+    evaluator = GSM8KEvaluator(output_extractor=utils.rap_extractor,
+                               answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"]),
+                               init_prompt=prompt,
+                               disable_log=disable_log,
+                               disable_tqdm=disable_tqdm)
 
-    dataset = load_dataset("gsm8k", "main", split=f'test[{resume}:]')
-    correct_count = 0
-    for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
-                                     desc='GSM8k', disable=disable_tqdm)):
-        algo_output = reasoner(example["question"])
-        if aggregate:
-            output = aggregator(algo_output.tree_state)
-        elif algo_output.terminal_state is None:
-            output = None
-        else:
-            output = utils.retrieve_answer(algo_output.terminal_state)
-        answer = utils.retrieve_answer_from_dataset(example["answer"])
-        correct = utils.judge_answer(output, answer)
-
-        correct_count += correct
-        accuracy = correct_count / (i + 1)
-        log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=} ; {accuracy=:.3f} ({correct_count}/{i + 1})'
-        tqdm.write(log_str)
-        if not disable_log:
-            with open(os.path.join(log_dir, 'result.log'), 'a') as f:
-                print(log_str, file=f)
-            with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
-                pickle.dump(algo_output, f)
-            if isinstance(search_algo, MCTS):
-                with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
-                    # noinspection PyTypeChecker
-                    print(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer), file=f)
-
+    accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
+    print(f'accuracy: {accuracy:.4f}')
+    return 0
 
 if __name__ == '__main__':
     import os
@@ -124,7 +89,7 @@ if __name__ == '__main__':
              exllama_lora_dir: Optional[str] = None,
              exllama_mem_map: Optional[str] = None,
              batch_size: int = 1,
-             prompt: str = 'examples/rap_gsm8k_l2m/prompts/l2m.json',
+             prompt: str = 'examples/rap_gsm8k_l2m/prompts/l2m_standard.json',
              disable_log: bool = False,
              disable_tqdm: bool = False,
              **kwargs):

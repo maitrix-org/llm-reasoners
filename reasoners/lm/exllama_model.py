@@ -70,7 +70,7 @@ class ExLlamaModel(LanguageModel):
         if mem_map is not None:
             self.config.auto_map = mem_map
         else:
-            warnings.warn("mem_map is None, if you want model parallelism, please set mem_map like [16,22] for 2 GPUs")
+            warnings.warn("mem_map is None, if you want model parallelism, please set mem_map. E.g., to use in 2 * 24G GPUs, set mem_map=[16,22]")
         
         self.model = ExLlama(self.config)                                 # create ExLlama instance and load the weights
         self.tokenizer = ExLlamaTokenizer(tokenizer_path)            # create tokenizer from tokenizer model file
@@ -112,7 +112,7 @@ class ExLlamaModel(LanguageModel):
         if max_length is not None:
             warnings.warn("max_length is not supported by ExLlamaModel for generation. Use max_new_tokens instead.")
         if max_new_tokens is None:
-            warnings.warn("max_new_tokens is not set, we will use the default value: {}".format(self.max_new_tokens))
+            warnings.warn(f"max_new_tokens is not set, we will use the default value: {self.max_new_tokens}")
             max_new_tokens = self.max_new_tokens
         if do_sample is False or temperature <= 0.0:
             warnings.warn("do_sample is False while the temperature is non-positive. We will use greedy decoding for Exllama")
@@ -177,7 +177,13 @@ class ExLlamaModel(LanguageModel):
             if output_log_probs:
                 warnings.warn("output_log_probs is temporarily not supported now by ExLlamaModel. Please refere to exllama's code")
             decoded_list.extend(decoded)
-
+        
+        print("="*30 + "prompt" + "="*30)
+        print(inputs[0])
+        print("="*30 + "decoded" + "="*30)
+        print(decoded_list)
+        print("="*30 + "end" + "="*30)
+        
         return GenerateOutput(decoded_list, log_prob_list)
 
     def generate_simple(self, generator, prompt, max_new_tokens = 128, eos_token_id = None, hide_input=False):
@@ -197,24 +203,36 @@ class ExLlamaModel(LanguageModel):
         max_new_tokens = min(max_new_tokens, generator.model.config.max_seq_len - ids.shape[1])
 
         eos = [0] * ids.shape[0]
+        early_stop = False
         for i in range(max_new_tokens):
             token = generator.gen_single_token(mask = mask)
             # for debugging
-            cur_token = token[0][0]
+            # cur_token = token[0][0]
             # print(f"token: {cur_token}, {self.tokenizer.decode(torch.tensor([cur_token]))}")
             for j in range(token.shape[0]):
                 if eos[j] == 0 and token[j, 0].item() in eos_token_id:
                     eos[j] = ids.shape[1] + i
             if all(eos):
+                early_stop = True
                 break
 
         sequence = generator.sequence
         for i, eos_pos in enumerate(eos):
             if eos_pos > 0:
                 sequence[i, eos_pos + 1:] = generator.tokenizer.pad_token_id
-        if hide_input:
-            sequence = sequence[:, ids.shape[1]:]
+        # if hide_input:
+        #     sequence = sequence[:, ids.shape[1]:]
         text = generator.tokenizer.decode(sequence)
+        if hide_input:
+            text = [text[i][len(prompt[i]):] for i in range(len(prompt))]
+
+        if not early_stop:
+            print("Warning: early stop not triggered:")
+            print("prompt:")
+            print(prompt)
+            print("output:")
+            print(text)
+
         return text
 
     @torch.no_grad()
@@ -284,4 +302,12 @@ class ExLlamaModel(LanguageModel):
             for j in range(bsz):
                 if tokens[j, i] != self.tokenizer.pad_token_id:
                     acc_probs[j] += torch.log(probs[j, tokens[j, i]])
+
+        
+        # print("="*30 + "prefix" + "="*30)
+        # print(prefix)
+        # print("="*30 + "candidates" + "="*30)
+        # print(contents)
+        # print("="*30 + "end" + "="*30)
+    
         return acc_probs.cpu().numpy()

@@ -13,14 +13,14 @@ class SubResult(NamedTuple):
 
 GSM8kState = list[SubResult]
 GSM8kAction = str
-
+GSM8kExample = str
 
 class GSM8kPrompt(TypedDict):
     decomposition: str
     solving: str
 
 
-class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction]):
+class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction, GSM8kExample]):
     """
     GSM8k World Model
     State: [[sub_question_1, sub_answer_1, confidence_1], [sub_question_2, sub_answer_2, confidence_2], ...]
