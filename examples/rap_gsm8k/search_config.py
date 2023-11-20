@@ -19,9 +19,12 @@ class GSM8kUsefulPrompt(TypedDict):
 class GSM8kConfig(SearchConfig):
     def __init__(self,
                  base_model: LanguageModel,
+                 useful_prompt: GSM8kUsefulPrompt,
                  n_actions=4,
                  batch_size=1,
                  temperature=0.8,
+                 top_k=50,
+                 top_p=0.95,
                  reward_alpha=0.5,
                  reward_confidence_default=0.8,
                  depth_limit=5,
@@ -30,9 +33,12 @@ class GSM8kConfig(SearchConfig):
                  force_overall_question_on_overall_prompt=True) -> None:
         super().__init__()
         self.base_model = base_model
+        self.useful_prompt = useful_prompt
         self.example = ''
         self.batch_size = batch_size
         self.temperature = temperature
+        self.top_k = top_k
+        self.top_p = top_p
         self.n_actions = n_actions
         self.force_terminating_on_depth_limit = force_terminating_on_depth_limit
         self.depth_limit = depth_limit
@@ -65,7 +71,8 @@ class GSM8kConfig(SearchConfig):
             f.write(self.prompt_examples)
             f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
             for idx, (q, a, _) in enumerate(state):
-                f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
+                f.write(
+                    self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
                 f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
             f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
             if at_depth_limit := self.force_terminating_on_depth_limit and len(state) + 1 >= self.depth_limit:
@@ -84,6 +91,8 @@ class GSM8kConfig(SearchConfig):
                                                 hide_input=True,
                                                 do_sample=True,
                                                 temperature=temperature,
+                                                top_k=self.top_k,
+                                                top_p=self.top_p,
                                                 eos_token_id='\n').text
 
         outputs = [output.strip() for output in outputs]
@@ -104,7 +113,6 @@ class GSM8kConfig(SearchConfig):
         return outputs
 
     def fast_reward(self, state: GSM8kState, action: GSM8kAction) -> tuple[float, dict]:
-        return 0, {}
         with io.StringIO() as f:
             f.write(self.useful_prompt["input"])
             f.write(self.useful_prompt["question_prefix"] + self.example + "\n")
@@ -129,7 +137,7 @@ class GSM8kConfig(SearchConfig):
     def reward(self, state: GSM8kState, action: GSM8kAction,
                r_useful: float = None,
                confidence: float = None) -> tuple[float, dict]:
-        return confidence, {'r_conf': confidence}
+        # return confidence, {'r_conf': confidence}
         assert r_useful is not None, "useful_reward is required to calculate reward in this search config, consider passing it in fast_reward"
         assert confidence is not None, "confidence is required to calculate reward in this search config, consider passing it in world model's step"
         return self.calculate_reward(r_useful, confidence)

@@ -14,7 +14,7 @@ def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
         output = output.terminal_state
     if isinstance(output, list):
         output = output[-1].sub_answer
-    match = re.match(r'.*[Tt]he answer is .*?([ $.0-9,\-]+).*\..*', output)
+    match = re.match(r'.*The answer is .*?([ $.0-9,\-=]+).*\..*', output)
     if match is None:
         return None
     answer = match[1].replace(',', '').replace('$', '').replace(' ', '')
@@ -26,7 +26,7 @@ def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
 def retrieve_answer_from_dataset(answer: Union[str, dict]) -> str:
     if isinstance(answer, dict):
         answer = answer['answer']
-    return re.match(r'[\S\s]*#### (.*)$', answer)[1]
+    return re.match(r'[\S\s]*#### (.*)$', answer)[1].replace(',', '').replace(' ', '')
 
 
 def judge_answer(output: Optional[str], answer: str) -> bool:

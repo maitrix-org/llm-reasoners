@@ -296,7 +296,6 @@ class MCTS(SearchAlgorithm, Generic[State, Action, Example]):
     def __call__(self,
                  world_model: WorldModel[State, Action, Example],
                  search_config: SearchConfig[State, Action, Example],
-                 log_file: Optional[str] = None,
                  **kwargs) -> MCTSResult:
         MCTSNode.reset_id()
         self.world_model = world_model

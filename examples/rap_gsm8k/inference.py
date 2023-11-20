@@ -8,7 +8,7 @@ from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import MCTS, MCTSNode, MCTSAggregation
 
 from world_model import GSM8kWorldModel, GSM8kState, GSM8kAction, GSM8kPromptDict
-from search_config import GSM8kConfig
+from search_config import GSM8kConfig, GSM8kUsefulPrompt
 import utils
 
 
@@ -19,6 +19,7 @@ def node_visualizer(x: MCTSNode[GSM8kState, GSM8kAction]):
 
 def rap_gsm8k(base_model: LanguageModel,
               prompt: GSM8kPromptDict,
+              useful_prompt: GSM8kUsefulPrompt,
               search_algo: Type[SearchAlgorithm] = MCTS,
               resume: int = 0,
               n_action: int = 4,
@@ -51,7 +52,7 @@ def rap_gsm8k(base_model: LanguageModel,
     world_model = GSM8kWorldModel(base_model=base_model,
                                   n_confidence=n_confidence, batch_size=batch_size, temperature=temperature,
                                   early_stop_base=early_stop_base, early_stop_threshold=early_stop_threshold)
-    config = GSM8kConfig(base_model=base_model,
+    config = GSM8kConfig(base_model=base_model, useful_prompt=useful_prompt,
                          n_actions=n_action, batch_size=batch_size, temperature=temperature,
                          reward_alpha=reward_alpha, reward_confidence_default=reward_confidence_default,
                          force_terminating_on_depth_limit=force_terminating_on_depth_limit, depth_limit=depth_limit)
@@ -99,11 +100,14 @@ if __name__ == '__main__':
              exllama_lora_dir: Optional[str] = None,
              exllama_mem_map: Optional[str] = None,
              batch_size: int = 1,
+             useful_prompt: str = 'examples/rap_gsm8k/prompts/useful_examples.json',
              prompt: str = 'examples/rap_gsm8k/prompts/prompt_pool.json',
              disable_log: bool = False,
              disable_tqdm: bool = False,
              **kwargs):
-
+      
+        with open(useful_prompt) as f:
+            useful_prompt = json.load(f)
         with open(prompt) as f:
             prompt = json.load(f)
         if base_lm in ['llama', 'llama2']:
@@ -135,6 +139,7 @@ if __name__ == '__main__':
         else:
             assert False, f'cannot resolve {base_lm=}'
         rap_gsm8k(base_model=base_model,
+                  useful_prompt=useful_prompt,
                   prompt=prompt,
                   batch_size=batch_size,
                   disable_log=disable_log or local_rank != 0,
