@@ -55,13 +55,6 @@ def rap_gsm8k(base_model: LanguageModel,
               output_trace_in_each_iter: bool = True,
               aggregate: bool = True,
               **search_algo_params):
-    # if not disable_log:
-    #     if log_dir is None:
-    #         log_dir = f'logs/gsm8k_{search_algo.__name__}/{datetime.now().strftime("%m%d%Y-%H%M%S")}'
-    #     os.makedirs(log_dir, exist_ok=resume > 0)
-    #     os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
-    #     with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
-    #         print(sys.argv, file=f)
 
     if aggregate:
         aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge')
@@ -90,38 +83,6 @@ def rap_gsm8k(base_model: LanguageModel,
 
     accuracy = evaluator.evaluate(reasoner, num_shot=4, resume=resume, log_dir=log_dir)
     print(accuracy)
-    # if aggregate:
-    #     aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge_inverse_depth')
-    # else:
-    #     aggregator = None
-    #
-    # dataset = load_dataset("gsm8k", "main", split=f'test[{resume}:]')
-    # correct_count = 0
-    # for i, example in enumerate(tqdm(dataset, total=resume + len(dataset), initial=resume,
-    #                                  desc='GSM8k', disable=disable_tqdm)):
-    #     algo_output = reasoner(example["question"])
-    #     if aggregate:
-    #         output = aggregator(algo_output.tree_state)
-    #     elif algo_output.terminal_state is None:
-    #         output = None
-    #     else:
-    #         output = utils.retrieve_answer(algo_output.terminal_state)
-    #     answer = utils.retrieve_answer_from_dataset(example["answer"])
-    #     correct = utils.judge_answer(output, answer)
-    #
-    #     correct_count += correct
-    #     accuracy = correct_count / (i + 1)
-    #     log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=} ; {accuracy=:.3f} ({correct_count}/{i + 1})'
-    #     tqdm.write(log_str)
-    #     if not disable_log:
-    #         with open(os.path.join(log_dir, 'result.log'), 'a') as f:
-    #             print(log_str, file=f)
-    #         with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb') as f:
-    #             pickle.dump(algo_output, f)
-    #         if isinstance(search_algo, MCTS):
-    #             with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.json'), 'w') as f:
-    #                 # noinspection PyTypeChecker
-    #                 print(TreeLog.from_mcts_results(algo_output, node_data_factory=node_visualizer), file=f)
 
 
 if __name__ == '__main__':
