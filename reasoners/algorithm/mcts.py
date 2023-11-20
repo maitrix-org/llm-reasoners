@@ -296,7 +296,6 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
     def __call__(self,
                  world_model: WorldModel[State, Action],
                  search_config: SearchConfig[State, Action],
-                 log_file: Optional[str] = None,
                  **kwargs) -> MCTSResult:
         MCTSNode.reset_id()
         self.world_model = world_model
@@ -332,10 +331,4 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                 tree_state_after_each_iter=result.tree_state_after_each_iter,
                 aggregated_result=self.aggregator(result.tree_state),
             )
-        if log_file is not None:
-            with open(log_file + '.json', 'w') as f:
-                from ..visualization import TreeLog
-                print(TreeLog.from_mcts_results(result, node_data_factory=self.node_visualizer), file=f)
-            with open(log_file + '.pkl', 'wb') as f:
-                pickle.dump(result, f)
         return result
