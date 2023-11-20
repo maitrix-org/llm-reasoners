@@ -13,7 +13,7 @@ import utils
 
 def aggregate_rap_gsm8k(log_dir: str,
                         start: int = 0):
-    aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge_inverse_depth')
+    aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge')
     files = glob.glob(f'{log_dir}/algo_output/*.pkl')
     indices = sorted(filter(lambda index: index >= start, (int(os.path.basename(f)[:-4]) for f in files)))
     dataset = load_dataset("gsm8k", "main", split=f'test')
@@ -22,6 +22,7 @@ def aggregate_rap_gsm8k(log_dir: str,
         with open(f'{log_dir}/algo_output/{index}.pkl', 'rb') as f:
             result: MCTSResult = pickle.load(f)
         output = aggregator(result.tree_state)
+        # output = utils.retrieve_answer(result.terminal_state)
         answer = utils.retrieve_answer_from_dataset(dataset[index - 1]['answer'])
         correct = utils.judge_answer(output, answer)
 
