@@ -24,13 +24,13 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
         self.terminals = []
         self.stat_cnt = 0
 
-    def __call__(self, world: WorldModel[State, Action], config: SearchConfig[State, Action], best_state: bool=True):
+    def __call__(self, world: WorldModel, config: SearchConfig, best_state: bool=True):
         init_state = world.init_state()
         self._reset()
         self.dfs(world, config, init_state, best_state=best_state)
         return self.terminals
 
-    def dfs(self, world: WorldModel[State, Action], config: SearchConfig[State, Action], cur_state: State, best_state: bool=True, early_terminate: bool=True):
+    def dfs(self, world: WorldModel, config: SearchConfig, cur_state: State, best_state: bool=True, early_terminate: bool=True):
         ## if it's terminal state
         if world.is_terminal(cur_state): # if is terminal
             self.terminals.append(cur_state) #change

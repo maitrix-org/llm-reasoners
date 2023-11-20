@@ -116,7 +116,6 @@ class SearchConfig(ABC, Generic[State, Action, Example]):
     @abstractmethod
     def get_actions(self, state: State) -> list[Action]: ...
 
-    @abstractmethod
     def fast_reward(self, state: State, action: Action) -> tuple[float, dict]:
         return 0, {}
 
