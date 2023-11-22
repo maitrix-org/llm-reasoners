@@ -128,7 +128,7 @@ class LlamaCppModel(LanguageModel):
 
 if __name__ == '__main__':
     from timeit import timeit
-    model = LlamaCppModel(path='/data/yi/llama.cpp/models/65B/ggml-model-q5_0.bin')
+    model = LlamaCppModel(path='/original_prompt/yi/llama.cpp/models/65B/ggml-model-q5_0.bin')
     print(model.get_next_token_logits(['Hello'], candidates=[[',']], postprocess='log_softmax'))
     print(model.get_next_token_logits(['Hello,'], candidates=[[' I']], postprocess='log_softmax'))
     print(model.get_next_token_logits(['Hello, I'], candidates=[[' am']], postprocess='log_softmax'))

@@ -37,7 +37,7 @@ We tested different reasoning algorithms on the following benchmarks (to be upda
 |[RAP (aggr)](https://arxiv.org/abs/2305.14992)|LLaMA-33B|0.52|-|-|-|-|-|
 
 
-|Method|Base LLM|[Blocksworld](https://arxiv.org/abs/2305.15771)|[Game of 24](https://arxiv.org/abs/2305.10601)|[Mini Crosswords](https://arxiv.org/abs/2305.10601)|[ProntoQA](https://arxiv.org/abs/2210.01240)|
+|Method|Base LLM|[Blocksworld](https://arxiv.org/abs/2305.15771)|[Game of 24](https://arxiv.org/abs/2305.10601)|[Mini Crosswords](https://arxiv.org/abs/2305.10601)|[ProntoQADataset](https://arxiv.org/abs/2210.01240)|
 |-|-|-|-|-|-|
 |CoT|Llama2-70B|0.08|-|-||
 |RAP|Llama2-70B|0.65|-|-|-|
@@ -66,7 +66,7 @@ Let's start with a naive method for LLM reasoning: Prompted with a few examples 
 <pre>
 I am playing with a set of blocks where I need to arrange the blocks into stacks.
 
-<i>(Example problems and solutions * 4)</i>
+<i>(ProntoQAExample problems and solutions * 4)</i>
 
 [STATEMENT] 
 As initial conditions I have that, the red block is clear, the blue block is clear, the orange block is clear, the hand is empty, the red block is on the yellow block, the yellow block is on the table, the blue block is on the table and the orange block is on the table. My goal is to have that the orange block is on top of the blue block and the yellow block on top of the orange block.
