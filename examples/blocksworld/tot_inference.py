@@ -50,16 +50,18 @@ class BWConfig(SearchConfig):
                                           do_sample=True,
                                           hide_input=True).text
         
-        return [output.split("\n")[0] for output in ouputs]
+        outputs = [output.split("\n")[0] for output in ouputs]
+        # deduplicate
+        outputs = list(dict.fromkeys(outputs))
+        return outputs
+
 
     def reward(self, state: BWState, action: BWAction) -> tuple[float, dict]:
-        
-        
-        inputs = self.prompt["icl"].replace("<action>", "\n".join([""] + state.action_history + [""])) \
+        inputs = self.prompt["icl"].replace("<action>", "\n".join(state.action_history)) \
             .replace("<init_state>", utils.extract_init_state(self.example)) \
-            .replace("<goals>", utils.extract_goals(self.example, return_raw=True))
+            .replace("<goals>", utils.extract_goals(self.example, return_raw=True))[:-1]
         
-        intuition = self.base_model.get_loglikelihood(inputs, [inputs + action])[0]
+        intuition = self.base_model.get_loglikelihood(inputs, [inputs + "\n" + action])[0]
 
         self_eval_prompt = self.prompt["self-eval"].replace("<init_state>", 
                                                             utils.extract_init_state(self.example)) \
@@ -68,7 +70,7 @@ class BWConfig(SearchConfig):
         self_eval = self.base_model.get_loglikelihood(self_eval_prompt, 
             [self_eval_prompt + "good"])[0]
 
-        return intuition + self_eval
+        return intuition + self_eval, {'intuition': intuition, "self_eval": self_eval}
 
     def update_example(self, example, prompt=None) -> None:
         super().update_example(example, prompt=prompt)
@@ -130,9 +132,11 @@ def dfs_bw(base_model: LanguageModel,
            config_file: str = "",
            lm_plan_file: str = 'lm_plan.tmp',
            temperature: float = 0.8,
+           early_terminate: bool = False,
+           reward_aggregator: str = "mean",
            **search_algo_params):
 
-    search_algo_params |= {"max_depth": depth_limit}
+    search_algo_params |= {"max_depth": depth_limit, "early_terminate": early_terminate, "reward_aggregator": reward_aggregator}
     world_model = BlocksWorldModel(base_model=base_model, prompt=prompt, max_steps=depth_limit)
     config = BWConfig(base_model=base_model, prompt=prompt, temperature=temperature)
     search_algo = search_algo(**search_algo_params)
@@ -184,7 +188,8 @@ if __name__ == '__main__':
                                    max_batch_size=1, 
                                    max_new_tokens=200, 
                                    max_seq_length=2048, 
-                                   mem_map=mem_map)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
+                                   mem_map=mem_map,
+                                   log_output=True)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
 
         dfs_bw(llama_model,
                prompt,

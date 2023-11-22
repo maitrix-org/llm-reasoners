@@ -20,7 +20,8 @@ class BeamSearchNode:
                  action: Action, 
                  reward: float, 
                  parent: Optional['BeamSearchNode'] = None, 
-                 children: Optional[List['BeamSearchNode']] = None
+                 children: Optional[List['BeamSearchNode']] = None,
+                 reward_details: Optional[dict] = None
                 ) -> None:
         
         self.id = next(BeamSearchNode.id_iter)  
@@ -28,6 +29,7 @@ class BeamSearchNode:
         self.action = action
         self.reward = reward
         self.parent = parent
+        self.reward_details = reward_details if reward_details is not None else {}
         self.children = children if children is not None else []
 
     def add_child(self, child: 'BeamSearchNode'):
@@ -243,7 +245,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                                                    'cur_action_prob', which is the current action probability.")
                         else:
                             reward = config.reward(state, action, **aux)
-
+                            reward_aux = {}
                             # if the reward is a tuple, then it is (reward, aux)
                             if isinstance(reward, tuple):
                                 reward, reward_aux = reward
@@ -255,7 +257,8 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                         new_reward = self.reward_aggregator(new_reward_list)
 
                         # Create new node
-                        new_node = BeamSearchNode(state=next_state, action=action, reward=reward, parent=node)
+
+                        new_node = BeamSearchNode(state=next_state, action=action, reward=reward, parent=node, reward_details=reward_aux)
 
                         # Add new node to children of current node
                         node.add_child(new_node)
