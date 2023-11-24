@@ -102,6 +102,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                     if answer is not None:
                         print("I'm here !!!!!!!!!!!!!!!!!!")
                         print(result)
+                        print(answer)
                         answer_dict[answer].append(result)
 
             # Early stop if confidence is high enough

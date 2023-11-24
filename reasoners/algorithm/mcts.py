@@ -84,7 +84,7 @@ class MCTSAggregation(Generic[State, Action], ABC):
             if cur.state is None:
                 return []
             if cur.is_terminal:
-                answer = self.retrieve_answer(cur.state, flag = 0)
+                answer = self.retrieve_answer(cur.state)
                 if answer is None:
                     print("hihihi")
                     return []
