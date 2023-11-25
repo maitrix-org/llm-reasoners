@@ -27,6 +27,6 @@ Output: True
 
 QUERY_FORMAT = "Query: {}\n"
 CLAIM_FORMAT = "Claim: {}\n"
-OUTPUT_PREFIX = "Output: "
+OUTPUT_PREFIX = "Output:"
 
 

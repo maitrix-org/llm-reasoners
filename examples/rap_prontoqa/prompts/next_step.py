@@ -66,7 +66,7 @@ Next 5.3: Real numbers are not imaginary.
 Claim 5.4: 7 is an integer.
 Next 5.4: Every integer is a real number.
 
-Facts 6: Spiders are not six-legged. Insects are six-legged. Insects are arthropods. Every animal is not unicellular. Invertebrates are animals. Lepidopterans are insects. Every arthropod is segmented. Arthropods are invertebrates. Every butterfly is a lepidopteran. Stella is a butterfly.
+Facts 6: Spiders are not six-legged. Insects are six-legged. Insects are arthropods. Every animal is not unicellular. Invertebrates are animals. Lepidopterans are insects. Every arthropod is segmented. Arthropods are invertebrates. Every butterfly is a lepidopteran.
 Query 6: True or false: Stella is six-legged.
 Claim 6.1: Stella is an insect.
 Next 6.1: Insects are six-legged.
@@ -83,5 +83,3 @@ FACTS_FORMAT = "Facts 7: {}\n"
 CLAIM_FORMAT = "Claim 7.1: {}\n"
 QUERY_FORMAT = "Query 7: {}\n"
 NEXT_STEP_PREFIX = "Next 7.1:"
-
-

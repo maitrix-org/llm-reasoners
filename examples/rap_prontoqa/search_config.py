@@ -6,22 +6,36 @@ import prompts.finish
 import prompts.valid
 import prompts.next_step
 from examples.rap_prontoqa.dataset import ProntoQAExample
-from reasoners import SearchConfig
+from reasoners import SearchConfig, LanguageModel
 from world_model import ProntoQAState, ProntoQAAction, ProntoQAWorldModel
 
 
 class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction,ProntoQAExample]):
 
-    def __init__(self, world_model: ProntoQAWorldModel):
+    def __init__(self, base_model: LanguageModel, temperature=0.8, n_candidates=4):
         super().__init__()
-        self.world_model = world_model
+        self.base_model = base_model
+        self.temperature = temperature
+        self.n_candidates = n_candidates
         self.example: ProntoQAExample = self.example
 
     def get_actions(self, state: ProntoQAState) -> list[ProntoQAAction]:
+        # *base_facts, init_state = self.example.test_example.question.split(". ")
+        # facts = base_facts + ["Finish."]
         *base_facts, init_state = self.example.test_example.question.split(". ")
-        facts = base_facts + ["Finish."]
 
-        return facts
+        input_prompt = ""
+        input_prompt += prompts.next_step.EXAMPLES
+        input_prompt += prompts.next_step.FACTS_FORMAT.format(". ".join(base_facts))
+        input_prompt += prompts.next_step.QUERY_FORMAT.format(self.example.test_example.query)
+        input_prompt += prompts.next_step.CLAIM_FORMAT.format(state)
+        input_prompt += prompts.next_step.NEXT_STEP_PREFIX
+        outputs = self.base_model.generate([input_prompt] * self.n_candidates, eos_token_id="\n", hide_input=True, temperature=self.temperature, do_sample=True).text
+        outputs = [output.strip() for output in outputs]
+        # deduplicate
+        outputs = list(dict.fromkeys(outputs))
+
+        return outputs
 
     # OLD fast reward code
     def fast_reward(
@@ -29,7 +43,53 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction,ProntoQAExample]
             state: ProntoQAState,
             action: ProntoQAAction,
     ) -> tuple[float, dict]:
-        return self.reward(state, action)
+        """
+        input_prompt = ""
+
+        match action:
+            case "Finish.":
+                input_prompt += prompts.finish.EXAMPLES
+                input_prompt += prompts.finish.TARGET_FORMAT.format(self.example.test_example.query)
+                input_prompt += prompts.finish.CLAIM_FORMAT.format(state)
+                input_prompt += prompts.finish.OUTPUT_PREFIX
+            case _:
+                input_prompt += prompts.valid.EXAMPLES
+                input_prompt += prompts.valid.FACTS_FORMAT.format(state.last_state or "", action)
+                input_prompt += prompts.valid.NEXT_STEP_FORMAT.format(state)
+                input_prompt += prompts.valid.VALID_PREFIX
+
+        output_logits = self.world_model.base_model.get_next_token_logits(
+            input_prompt,
+            candidates=["Yes", "No"]
+        )
+
+        
+
+        # reward: float = output_logits[0][0].item()
+        reward:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
+
+        print(input_prompt, file=sys.stderr, flush=True)
+        match action:
+            case "Finish.":
+                print(f"S[{state}] Q[{self.example.test_example.query}] -> R[{reward}]", flush=True)
+            case _:
+                print(f"S[{state.last_state}] A[{action}] S'[{state}] -> R[{reward}]", flush=True)
+        """
+        # intuition reward
+
+        *base_facts, init_state = self.example.test_example.question.split(". ")
+
+        input_prompt = ""
+        input_prompt += prompts.next_step.EXAMPLES
+        input_prompt += prompts.next_step.FACTS_FORMAT.format(". ".join(base_facts))
+        input_prompt += prompts.next_step.QUERY_FORMAT.format(self.example.test_example.query)
+        input_prompt += prompts.next_step.CLAIM_FORMAT.format(state)
+        input_prompt += prompts.next_step.NEXT_STEP_PREFIX
+        outputs = input_prompt + " " + action
+        intuition = self.base_model.get_loglikelihood(input_prompt, [outputs])[0]
+        print(intuition)
+
+        return intuition, {"self-eval": 0, "intuition": intuition}
     
     def fast_reward_new(self, state: ProntoQAState, action: ProntoQAAction) -> tuple[float, dict]:
         # TODO: currently trying to implement this
@@ -67,38 +127,8 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction,ProntoQAExample]
                action: ProntoQAAction,
                **kwargs
                ) -> tuple[float, dict]:
-
+        self_eval = kwargs["self-eval"]
+        intuition = kwargs["intuition"]
+        return intuition, {"self-eval": self_eval, "intuition": intuition}
         # if not state.last_state:
         #     return 0.1, {}
-
-        input_prompt = ""
-
-        match action:
-            case "Finish.":
-                input_prompt += prompts.finish.EXAMPLES
-                input_prompt += prompts.finish.TARGET_FORMAT.format(self.example.test_example.query)
-                input_prompt += prompts.finish.CLAIM_FORMAT.format(state)
-                input_prompt += prompts.finish.OUTPUT_PREFIX
-            case _:
-                input_prompt += prompts.valid.EXAMPLES
-                input_prompt += prompts.valid.FACTS_FORMAT.format(state.last_state or "", action)
-                input_prompt += prompts.valid.NEXT_STEP_FORMAT.format(state)
-                input_prompt += prompts.valid.VALID_PREFIX
-
-        output_logits = self.world_model.base_model.get_next_token_logits(
-            input_prompt,
-            candidates=["Yes", "No"]
-        )
-
-
-        # reward: float = output_logits[0][0].item()
-        reward:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
-
-        print(input_prompt, file=sys.stderr, flush=True)
-        match action:
-            case "Finish.":
-                print(f"S[{state}] Q[{self.example.test_example.query}] -> R[{reward}]", flush=True)
-            case _:
-                print(f"S[{state.last_state}] A[{action}] S'[{state}] -> R[{reward}]", flush=True)
-
-        return reward, {}

@@ -14,18 +14,19 @@ class ProntoQAProblem:
     answer: str
 
 
-
-
-
 @dataclass
 class ProntoQAExample:
     in_context_examples: Mapping[str, ProntoQAProblem]
     test_example: ProntoQAProblem = field(default=None)
+    """
+    ProntoQAProblem(question='Every cat is a feline. Mammals are vertebrates. Bilaterians are animals. Vertebrates are chordates. Carnivores are mammals. Mammals are not cold-blooded. Each chordate is a bilaterian. Every feline is a carnivore. Snakes are cold-blooded. Animals are not unicellular. Every carnivore is not herbivorous. Fae is a cat.', query='True or false: Fae is not cold-blooded.', chain_of_thought=['Fae is a cat.', 'Every cat is a feline.', 'Fae is a feline.', 'Every feline is a carnivore.', 'Fae is a carnivore.', 'Carnivores are mammals.', 'Fae is a mammal.', 'Mammals are not cold-blooded.', 'Fae is not cold-blooded.'], answer='True')"""
+
 
 
 @dataclass
 class ProntoQADataset:
     examples: Dict[str, ProntoQAExample] = field(default_factory=dict)
+    # "example1": ..., "example2": ..., ...
 
     @classmethod
     def from_file(cls, file_path: str) -> 'ProntoQADataset':
