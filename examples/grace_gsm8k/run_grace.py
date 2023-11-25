@@ -191,9 +191,6 @@ def main(args):
         #     break
         qn, gt_ans = inp['question'], (inp['answer'] if 'answer' in inp else inp['gt_sol'])
 
-        print(f"args.instruction {args.instruction}")
-        print(f"demos: {demos}")
-        print(f" qn: {qn}")
         qn_with_input = prepare_icl_input(qn, demos=demos, instruction=args.instruction)
         disc_input = qn
         if not disc_input.startswith(Q_DELIM):
@@ -222,8 +219,7 @@ def main(args):
             sol = results[0]
             gen_sols.append(sol)
         print(f"solution: {sol}")
-        if count >10:
-            print(f" final: {all_solutions}")
+        if count >5:
             raise Exception
         
         if not args.use_verifier: ## self-consistency
@@ -246,8 +242,6 @@ def main(args):
             assert gen_sol is not None
             if is_correct(gen_sol, gt_ans, task=args.task):
                 solve_rate += 1
-            
-            print(f" gen_sol {gen_sol}, gt_ans: {gt_ans}, is_correct: {is_correct(gen_sol, gt_ans, task=args.task)} ")
             text_table.add_data(qn, gt_ans, gen_sol)
         
         else:

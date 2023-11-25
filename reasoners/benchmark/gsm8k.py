@@ -66,6 +66,7 @@ class GSM8KEvaluator(Evaluator):
         return prompt
 
     def eval_output(self, answer, output):
+        print("hello in gsm8k evaluator")
         if output is None:
             return False
         try:
