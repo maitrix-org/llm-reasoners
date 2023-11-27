@@ -95,7 +95,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                                                    eos_token_id='\n').text
                 for output in outputs:
                     result = output.strip()
-                    if "Now we can" in model_input:
+                    if "Now we can" in action:
                         answer = utils.retrieve_answer(result)
                     else:
                         answer = utils.retrieve_answer_not_option(result)

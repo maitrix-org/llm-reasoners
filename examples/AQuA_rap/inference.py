@@ -189,6 +189,7 @@ def rap_AQuA_sc(base_model: LanguageModel,
                            'node_visualizer': node_visualizer, 
                            'aggregator': aggregator,
                            'w_exp': 1.0,
+                           'n_iters': 1,
                            }
     
     world_model = MATHWorldModel(
@@ -267,7 +268,16 @@ if __name__ == '__main__':
             prompt = json.load(f)
         with open(useful_prompt) as f:
             useful_prompt = json.load(f)
-        rap_AQuA(
+        # rap_AQuA(
+        #     base_model=base_model,
+        #     prompt=prompt,
+        #     useful_prompt=useful_prompt,
+        #     batch_size=batch_size,
+        #     disable_log=disable_log or local_rank != 0,
+        #     disable_tqdm=disable_tqdm or local_rank != 0,
+        #     reward_alpha = reward_alpha,
+        #     **kwargs)
+        rap_AQuA_sc(
             base_model=base_model,
             prompt=prompt,
             useful_prompt=useful_prompt,
