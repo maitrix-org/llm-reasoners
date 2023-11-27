@@ -147,7 +147,7 @@ class BlocksWorldModel(WorldModel):
 
 def tot_bw(base_model: LanguageModel,
            prompt: dict,
-           search_algo: Type[SearchAlgorithm] = BeamSearch,
+           search_algo: str = "beam",
            data_path: str = 'data',
            resume: int = 0,
            depth_limit: int = 6,
@@ -159,17 +159,24 @@ def tot_bw(base_model: LanguageModel,
            temperature: float = 0.8,
            **search_algo_params):
 
-    if search_algo == BeamSearch:
+    if search_algo == "beam":
         search_algo_params |= {"max_depth": depth_limit}
-    elif search_algo == DFS:
+    elif search_algo == "dfs":
         search_algo_params |= {"depth": depth_limit}
     else:
+        print("Unknown search algorithm", search_algo)
         raise NotImplementedError
     world_model = BlocksWorldModel(base_model=base_model, prompt=prompt, max_steps=depth_limit)
     config = BWConfig(base_model=base_model, prompt=prompt, temperature=temperature)
-    search_algo = search_algo(**search_algo_params)
+    
+    output_extractor = dfs_bw_extractor if search_algo == "dfs" else bfs_bw_extractor
+    if search_algo == "dfs":
+        search_algo = DFS(**search_algo_params)
+    elif search_algo == "beam":
+        search_algo = BeamSearch(**search_algo_params)
+    else:
+        raise NotImplementedError
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
-    output_extractor = dfs_bw_extractor if search_algo == DFS else bfs_bw_extractor
     evaluator = BWEvaluator(config_file=config_file, domain_file=domain_file, data_path=data_path, init_prompt=prompt, disable_log=disable_log, output_extractor=output_extractor)
     accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
     print(accuracy)
@@ -211,10 +218,6 @@ if __name__ == '__main__':
         with open(prompt_path) as f:
             prompt = json.load(f)
         device = torch.device("cuda:0")
-        if search_algo == "dfs":
-            search_algo = DFS
-        elif search_algo == "beam":
-            search_algo = BeamSearch
 
         llama_model = ExLlamaModel(model_dir, 
                                    lora_dir, 
@@ -240,7 +243,11 @@ if __name__ == '__main__':
 
 
 '''
-CUDA_VISIBLE_DEVICES=0,1 python examples/blocksworld/tot_inference.py --data_path 'examples/blocksworld/data/split_v1/split_v1_step_2_data.json' --mem_map "[16,22]" --depth_limit 2 --model_dir $LLAMA2_CKPTS --prompt_path examples/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/bfs_v1_step2_1 --beam_size 10 --temperature 0.8 --reward_aggregator mean | tee debug_bfs.log
 
-CUDA_VISIBLE_DEVICES=0,1 python examples/blocksworld/tot_inference.py --data_path 'examples/blocksworld/data/split_v1/split_v1_step_4_data.json' --mem_map "[16,22]" --depth_limit 4 --model_dir $LLAMA2_CKPTS --prompt_path examples/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/dfs_v1_step4_1 --temperature 0.8 --search_algo dfs | tee debug_dfs.log
+
+
+CUDA_VISIBLE_DEVICES=2,3 python examples/blocksworld/tot_inference.py --data_path 'examples/blocksworld/data/split_v1/split_v1_step_2_data.json' --mem_map "[16,22]" --depth_limit 2 --model_dir $LLAMA2_CKPTS --prompt_path examples/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/bfs_v1_step2_f --beam_size 10 --temperature 0.8 --reward_aggregator mean | tee debug_bfs.log
+CUDA_VISIBLE_DEVICES=2,3 python examples/blocksworld/tot_inference.py --data_path 'examples/blocksworld/data/split_v1/split_v1_step_4_data.json' --mem_map "[16,22]" --depth_limit 4 --model_dir $LLAMA2_CKPTS --prompt_path examples/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/bfs_v1_step4_f --beam_size 10 --temperature 0.8 --reward_aggregator mean | tee debug_bfs.log
+
+CUDA_VISIBLE_DEVICES=0,1 python examples/blocksworld/tot_inference.py --data_path 'examples/blocksworld/data/split_v1/split_v1_step_4_data.json' --mem_map "[16,22]" --depth_limit 4 --model_dir $LLAMA2_CKPTS --prompt_path examples/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/dfs_v1_step4_ff --temperature 0.8 --search_algo dfs | tee debug_dfs.log
 '''
