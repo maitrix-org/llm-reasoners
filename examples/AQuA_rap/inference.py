@@ -118,7 +118,7 @@ def rap_AQuA(base_model: LanguageModel,
                            'output_trace_in_each_iter': output_trace_in_each_iter,
                            'node_visualizer': node_visualizer, 
                            'aggregator': aggregator,
-                           'w_exp': 2.0,
+                           'w_exp': 1.0,
                            }
     
     world_model = MATHWorldModel(
