@@ -14,6 +14,26 @@ from reasoners import WorldModel, LanguageModel, SearchConfig
 from reasoners.benchmark import BWEvaluator
 from reasoners.algorithm import BeamSearch, DFS
 
+def bfs_bw_extractor(algo_output):
+    if torch.distributed.is_initialized():
+        torch.distributed.barrier()
+    # to make sure the plan is saved before evaluation in multi-process setting
+    try:
+        return "\n".join(algo_output.terminal_node.state.action_history)
+    except Exception as e:
+        print("Error in output extraction,", e)
+        return ""
+    
+def dfs_bw_extractor(algo_output):
+    if torch.distributed.is_initialized():
+        torch.distributed.barrier()
+    # to make sure the plan is saved before evaluation in multi-process setting
+    try:
+        return "\n".join(algo_output.terminal_state.action_history)
+    except Exception as e:
+        print("Error in output extraction,", e)
+        return ""
+
 BWAction = str
 class BWState(NamedTuple):
     """The state of the Blocksworld for ToT
@@ -30,7 +50,7 @@ class BWConfig(SearchConfig):
                  base_model: LanguageModel,
                  prompt: dict,
                  temperature: float = 0.8,
-                 n_candidate: int = 5) -> None:
+                 n_candidate: int = 4) -> None:
         super().__init__()
         self.base_model = base_model
         self.example = None
@@ -56,8 +76,8 @@ class BWConfig(SearchConfig):
         return outputs
 
 
-    def reward(self, state: BWState, action: BWAction) -> tuple[float, dict]:
-        inputs = self.prompt["icl"].replace("<action>", "\n".join(state.action_history)) \
+    def fast_reward(self, state: BWState, action: BWAction) -> tuple[float, dict]:
+        inputs = self.prompt["icl"].replace("<action>", "\n".join(state.action_history + [""])) \
             .replace("<init_state>", utils.extract_init_state(self.example)) \
             .replace("<goals>", utils.extract_goals(self.example, return_raw=True))[:-1]
         
@@ -70,6 +90,11 @@ class BWConfig(SearchConfig):
         self_eval = self.base_model.get_loglikelihood(self_eval_prompt, 
             [self_eval_prompt + "good"])[0]
 
+        return intuition + self_eval, {'intuition': intuition, "self_eval": self_eval}
+
+    def reward(self, state: BWState, action: BWAction, **kwargs) -> tuple[float, dict]:
+        # since these two rewards are fast, we can just return the reward
+        intuition, self_eval = kwargs['intuition'], kwargs['self_eval']
         return intuition + self_eval, {'intuition': intuition, "self_eval": self_eval}
 
     def update_example(self, example, prompt=None) -> None:
@@ -120,7 +145,7 @@ class BlocksWorldModel(WorldModel):
             return True
         return False
 
-def dfs_bw(base_model: LanguageModel,
+def tot_bw(base_model: LanguageModel,
            prompt: dict,
            search_algo: Type[SearchAlgorithm] = BeamSearch,
            data_path: str = 'data',
@@ -132,16 +157,20 @@ def dfs_bw(base_model: LanguageModel,
            config_file: str = "",
            lm_plan_file: str = 'lm_plan.tmp',
            temperature: float = 0.8,
-           early_terminate: bool = False,
-           reward_aggregator: str = "mean",
            **search_algo_params):
 
-    search_algo_params |= {"max_depth": depth_limit, "early_terminate": early_terminate, "reward_aggregator": reward_aggregator}
+    if search_algo == BeamSearch:
+        search_algo_params |= {"max_depth": depth_limit}
+    elif search_algo == DFS:
+        search_algo_params |= {"depth": depth_limit}
+    else:
+        raise NotImplementedError
     world_model = BlocksWorldModel(base_model=base_model, prompt=prompt, max_steps=depth_limit)
     config = BWConfig(base_model=base_model, prompt=prompt, temperature=temperature)
     search_algo = search_algo(**search_algo_params)
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
-    evaluator = BWEvaluator(config_file=config_file, domain_file=domain_file, data_path=data_path, init_prompt=prompt, disable_log=disable_log)
+    output_extractor = dfs_bw_extractor if search_algo == DFS else bfs_bw_extractor
+    evaluator = BWEvaluator(config_file=config_file, domain_file=domain_file, data_path=data_path, init_prompt=prompt, disable_log=disable_log, output_extractor=output_extractor)
     accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
     print(accuracy)
 
@@ -174,6 +203,7 @@ if __name__ == '__main__':
             depth_limit: int = 6,
             mem_map = None,
             temperature = 0.8,
+            search_algo = "beam",
             **kwargs
             ):
         print(model_dir)
@@ -181,7 +211,11 @@ if __name__ == '__main__':
         with open(prompt_path) as f:
             prompt = json.load(f)
         device = torch.device("cuda:0")
-        
+        if search_algo == "dfs":
+            search_algo = DFS
+        elif search_algo == "beam":
+            search_algo = BeamSearch
+
         llama_model = ExLlamaModel(model_dir, 
                                    lora_dir, 
                                    device=device, 
@@ -191,8 +225,9 @@ if __name__ == '__main__':
                                    mem_map=mem_map,
                                    log_output=True)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
 
-        dfs_bw(llama_model,
+        tot_bw(llama_model,
                prompt,
+               search_algo=search_algo,
                disable_log=disable_log,
                data_path=data_path,
                config_file=config_file,
@@ -205,5 +240,7 @@ if __name__ == '__main__':
 
 
 '''
-python examples/blocksworld/tot_inference.py --data_path 'examples/blocksworld/data/split_v1/split_v1_step_6_data.json' --depth_limit 6 --model_dir $LLAMA2_CKPTS --prompt_path examples/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/tot_v1_step6 --mem_map None --beam_size 5 --temperature 0.8
+CUDA_VISIBLE_DEVICES=0,1 python examples/blocksworld/tot_inference.py --data_path 'examples/blocksworld/data/split_v1/split_v1_step_2_data.json' --mem_map "[16,22]" --depth_limit 2 --model_dir $LLAMA2_CKPTS --prompt_path examples/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/bfs_v1_step2_1 --beam_size 10 --temperature 0.8 --reward_aggregator mean | tee debug_bfs.log
+
+CUDA_VISIBLE_DEVICES=0,1 python examples/blocksworld/tot_inference.py --data_path 'examples/blocksworld/data/split_v1/split_v1_step_4_data.json' --mem_map "[16,22]" --depth_limit 4 --model_dir $LLAMA2_CKPTS --prompt_path examples/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/dfs_v1_step4_1 --temperature 0.8 --search_algo dfs | tee debug_dfs.log
 '''
