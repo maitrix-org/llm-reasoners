@@ -79,7 +79,9 @@ Next 6.4: Finish.
 
 """
 
-FACTS_FORMAT = "Facts 7: {}\n"
-CLAIM_FORMAT = "Claim 7.1: {}\n"
-QUERY_FORMAT = "Query 7: {}\n"
-NEXT_STEP_PREFIX = "Next 7.1:"
+FACTS_FORMAT = "Facts {} : {}\n"
+CLAIM_FORMAT = "Claim {}.1: {}\n"
+QUERY_FORMAT = "Query {}: {}\n"
+NEXT_STEP_PREFIX = "Next {}.1:"
+EXAMPLES_FORMAT = """
+"""
