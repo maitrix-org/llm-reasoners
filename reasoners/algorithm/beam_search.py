@@ -211,16 +211,17 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action, Example]):
         # Initialize current beam with initial state
         cur_beam = [(root_node, [], 0.0)] # (node, reward_list, cum_reward)
         terminal_beam = []
-
-        for depth in range(self.max_depth):
+        for depth in range(self.max_depth + 1):
+            # when depth == max_depth, we need to add the cur_beam to terminal_beam
             new_beam = []
             cache_for_dedup = set()
-
             for beam_item in cur_beam:
                 node, reward_list, _ = beam_item[:3]
 
                 state = node.state
                 if self.early_terminate and world.is_terminal(state):
+                    terminal_beam.append(beam_item)
+                elif depth == self.max_depth:
                     terminal_beam.append(beam_item)
                 else:
                     actions = config.get_actions(state)
@@ -272,10 +273,11 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action, Example]):
                         else:
                             new_beam.append((new_node, new_reward_list, new_reward))
 
+                    '''
                     # check whether this is max_depth
                     if depth == self.max_depth - 1:
                         terminal_beam += new_beam
-
+                    '''
 
             # Sort new beam by reward
             new_beam.sort(key=lambda x: x[2], reverse=True)

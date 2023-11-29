@@ -58,7 +58,7 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
     """
 
     def __init__(self, 
-                 total_states: int = 100, 
+                 total_states: int = 10, 
                  max_per_state: int = 3, 
                  depth: int = 10,
                  prior: bool = True):

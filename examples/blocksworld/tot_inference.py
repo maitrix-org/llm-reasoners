@@ -247,7 +247,6 @@ if __name__ == '__main__':
 
 
 CUDA_VISIBLE_DEVICES=2,3 python examples/blocksworld/tot_inference.py --data_path 'examples/blocksworld/data/split_v1/split_v1_step_2_data.json' --mem_map "[16,22]" --depth_limit 2 --model_dir $LLAMA2_CKPTS --prompt_path examples/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/bfs_v1_step2_f --beam_size 10 --temperature 0.8 --reward_aggregator mean | tee debug_bfs.log
-CUDA_VISIBLE_DEVICES=2,3 python examples/blocksworld/tot_inference.py --data_path 'examples/blocksworld/data/split_v1/split_v1_step_4_data.json' --mem_map "[16,22]" --depth_limit 4 --model_dir $LLAMA2_CKPTS --prompt_path examples/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/bfs_v1_step4_f --beam_size 10 --temperature 0.8 --reward_aggregator mean | tee debug_bfs.log
 
-CUDA_VISIBLE_DEVICES=0,1 python examples/blocksworld/tot_inference.py --data_path 'examples/blocksworld/data/split_v1/split_v1_step_4_data.json' --mem_map "[16,22]" --depth_limit 4 --model_dir $LLAMA2_CKPTS --prompt_path examples/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/dfs_v1_step4_ff --temperature 0.8 --search_algo dfs | tee debug_dfs.log
+CUDA_VISIBLE_DEVICES=0,1 python examples/blocksworld/tot_inference.py --data_path 'examples/blocksworld/data/split_v1/split_v1_step_4_data.json' --mem_map "[16,22]" --depth_limit 4 --model_dir $LLAMA2_CKPTS --prompt_path examples/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/dfs_v1_step4_ff --temperature 0.8 --search_algo dfs --total_states 10 --max_per_state 3 | tee debug_dfs.log
 '''

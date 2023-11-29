@@ -1,7 +1,7 @@
 import json
 from typing import Sequence, Union
 
-from reasoners.algorithm import MCTSNode, MCTSResult, BeamSearchNode, BeamSearchResult, DFSNode
+from reasoners.algorithm import MCTSNode, MCTSResult, BeamSearchNode, BeamSearchResult, DFSNode, DFSResult
 from reasoners.visualization.tree_snapshot import NodeId, EdgeId, TreeSnapshot, NodeData, EdgeData
 
 
@@ -182,36 +182,58 @@ class TreeLog:
 
 
     @classmethod
-    def from_dfs_results(cls, dfs_results: Sequence[dict], node_data_factory: callable = None,
+    def from_dfs_results(cls, dfs_results: DFSResult, node_data_factory: callable = None,
                          edge_data_factory: callable = None) -> 'TreeLog':
 
-        def default_node_data_factory(n: DFSNode) -> NodeData:
-            return NodeData(n["state"])
+        def default_node_data_factory(n: BeamSearchNode) -> NodeData:
+            if not n.state:
+                return NodeData({})
+            # transform any object to dict
+            if hasattr(n.state, "_asdict"):
+                # if the state is a NamedTuple
+                state_dict = n.state._asdict()
+            elif isinstance(n.state, list):
+                state_dict = {idx: value for idx, value in enumerate(n.state)}
+            else:
+                try:
+                    state_dict = dict(n.state)
+                except TypeError:
+                    raise TypeError("The type of the state is not supported. "
+                                    "Please provide a node_data_factory function to transform the state to a dict.")
+            return NodeData(state_dict)
 
-        def default_edge_data_factory(n: dict) -> EdgeData:
-            return EdgeData(n["data"])
+        def default_edge_data_factory(n: BeamSearchNode) -> EdgeData:
+            return EdgeData({"reward": n.reward, "action": n.action})
 
         node_data_factory = node_data_factory or default_node_data_factory
         edge_data_factory = edge_data_factory or default_edge_data_factory
 
         snapshots = []
 
-        for step in range(len(dfs_results)):
-            edges = []
-            nodes = {}
+        edges = []
+        nodes = {}
 
-            root = dfs_results[step]["root"]
-            all_nodes(root)
-            tree = TreeSnapshot(list(nodes.values()), edges)
+        def all_nodes(node: BeamSearchNode):
+            node_id = NodeId(node.id)
+            nodes[node_id] = TreeSnapshot.Node(node_id, node_data_factory(node))
+            for child in node.children:
+                edge_id = EdgeId(len(edges))
+                edges.append(TreeSnapshot.Edge(edge_id, node.id, child.id, edge_data_factory(child)))
+                all_nodes(child)
 
-            # select edges with highest reward
-            for node in tree.nodes.values():
-                if node.selected_edge is None and tree.children(node.id):
-                    node.selected_edge = max(
-                        tree.out_edges(node.id),
-                        key=lambda edge: edge.data.get("reward", -float("inf"))
-                    ).id
 
-            snapshots.append(tree)
+        root = dfs_results.tree_state
+        all_nodes(root)
+        tree = TreeSnapshot(list(nodes.values()), edges)
+
+        # select edges with highest reward
+        for node in tree.nodes.values():
+            if node.selected_edge is None and tree.children(node.id):
+                node.selected_edge = max(
+                    tree.out_edges(node.id),
+                    key=lambda edge: edge.data.get("reward", -float("inf"))
+                ).id
+
+        snapshots.append(tree)
 
         return cls(snapshots)
