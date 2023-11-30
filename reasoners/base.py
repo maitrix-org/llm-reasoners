@@ -13,6 +13,10 @@ Action = TypeVar("Action")
 Example = TypeVar("Example")
 Trace = tuple[list[State], list[Action]]
 
+def create_directory_if_not_exists(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
 
 class GenerateOutput(NamedTuple):
     text: list[str]
@@ -173,6 +177,9 @@ class Evaluator():
                  num_shot=4,
                  resume=0,
                  log_dir=None):
+        
+        directory_path = "logs/pronto_debug"
+        create_directory_if_not_exists(directory_path)
 
         self.dataset = list(self.full_dataset)[resume:]
         try:
@@ -186,7 +193,7 @@ class Evaluator():
                 log_dir = f'logs/{self._dataset_name}_'\
                         f'{algo_name}/'\
                         f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
-            os.makedirs(log_dir, exist_ok=resume > 0)
+            os.makedirs(log_dir, exist_ok=True)
             os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
         
             with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
@@ -201,19 +208,31 @@ class Evaluator():
                                             initial=resume,
                                             desc=self._dataset_name,
                                             disable=self.disable_tqdm)):
-            
             algo_output = reasoner(self.input_processor(example),
                                     prompt=self.sample_prompt(
                                         shuffle_prompt=shuffle_prompt,
                                         num_shot=num_shot,
                                         sample_prompt_type=self.sample_prompt_type))
             
+     
+            file_path = os.path.join(directory_path, f"MCTS_{i+1}.pkl")
+            with open(file_path, 'wb') as file:
+                # Use pickle to dump the object to the file
+                pickle.dump(algo_output, file)
+            
+            
+            # print(f"Example: {example}")
+            # print(f"algo output: {algo_output}")
             output = self.output_extractor(algo_output)
             answer = self.answer_extractor(example)
+
+            print(f"index:{i, }anser: {answer}, output: {output} ")
+
             correct = self.eval_output(answer, output)
+
             correct_count += correct
             accuracy = correct_count / (i + 1)
-            log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=};'\
+            log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=}, Question: {example}, trace: {algo_output.trace[1] if algo_output.trace is not None else "" };'\
                         f'{accuracy=:.3f} ({correct_count}/{i + 1})'
             tqdm.write(log_str)
 
