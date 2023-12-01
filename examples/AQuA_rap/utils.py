@@ -34,7 +34,8 @@ def retrieve_answer_not_option(output: Union[list, str, AlgorithmOutput]) -> Opt
         output = output.terminal_state
     if isinstance(output, list):
         output = output[-1].sub_answer
-    match = re.match(r'.*[Tt]he answer is .*?([\*\=\(\) \$\.0-9,\/\+\-A-Za-z\u221a\u2013\u00d7\u2217\u2026\u2234\u2019\u2044\u21d2\u00f7\u00c3\u2014\u2018\u00b0]+).*?', output)
+    # match = re.match(r'.*[Tt]he answer is .*?([\*\=\(\) \$\.0-9,\/\+\-A-Za-z\u221a\u2013\u00d7\u2217\u2026\u2234\u2019\u2044\u21d2\u00f7\u00c3\u2014\u2018\u00b0]+).*?', output)
+    match = re.match(r'.*[Tt]he answer is (.*)', output)
     if match is None:
         print('no op:', match)
         return None
