@@ -24,3 +24,4 @@ build/
 examples/MATH
 *.csv
 *.ipynb
+examples/AQuA_rap/test.ipynb
