@@ -42,7 +42,7 @@ class AQuAEvaluator(Evaluator):
                  disable_tqdm=False,
                  sample_prompt_type="l2m",
                  datasetname: str = 'AQuA_clean',
-                 dataset_path: str = r"examples/AQuA_rap/dataset/AQuA",) -> None:
+                 dataset_path: str = r"/home/xinyuan/workspace/llm-reasoners/examples/AQuA_rap/dataset/AQuA",) -> None:
 
         self.init_prompt = init_prompt
         self.output_extractor = output_extractor
