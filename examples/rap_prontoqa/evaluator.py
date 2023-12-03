@@ -45,16 +45,8 @@ def create_directory_if_not_exists(directory):
 
 
 if __name__ == '__main__':
-    """
-    For testing purposes only. Will be removed.
-    """
-
-    # language_model = llama_cpp_model.LlamaCppModel(
-    #     path='/data/adithya/llama/llama-2-13b-chat/llama-2-13b-chat.Q4_0.gguf'
-    # )
     import torch, os
     import numpy as np
-    # device = torch.device("cuda:6")
     from reasoners.lm import ExLlamaModel 
     language_model = ExLlamaModel(os.environ['LLAMA2_CKPTS'],
                                 None, 
@@ -69,12 +61,8 @@ if __name__ == '__main__':
     )
 
     with open('data/example_next_steps.json') as f:
-            init_prompt = json.load(f)
+        init_prompt = json.load(f)
     
-    # evaluator = ProntoQAEvaluator(dataset=dataset, search_algo=MCTS(w_exp=2.5,n_iters=15,output_trace_in_each_iter=True, cum_reward=np.mean))
-
-
-
     world_model = ProntoQAWorldModel(base_model=language_model)
     search_config = ProntoQAConfig(base_model=language_model)
     search_algo = MCTS(w_exp=1.5,n_iters=15,output_trace_in_each_iter=True, cum_reward=np.mean)
@@ -84,57 +72,17 @@ if __name__ == '__main__':
             search_algo=search_algo
         )
 
-    evaluator = ProntoQAEvaluatorFinal(init_prompt=init_prompt['next_steps'],
-                               sample_prompt_type="rap",
-                               disable_log=False,
-                               disable_tqdm=False, dataset = ProntoQADataset.from_file(
-        'data/345hop_random_true.json'
-    )
+    evaluator = ProntoQAEvaluatorFinal(
+        init_prompt=init_prompt['next_steps'],
+        sample_prompt_type="rap",
+        disable_log=False,
+        disable_tqdm=False, dataset = ProntoQADataset.from_file(
+            'data/345hop_random_true.json'
+        )
     )
 
-    accuracy = evaluator.evaluate(reasoner, num_shot=4 ,log_dir="results/")
+    accuracy = evaluator.evaluate(reasoner, num_shot=4, log_dir="pronto_logs/")
     print(f"accuracy: {accuracy}")
- 
-
-
-    # result = evaluator.evaluate()
-    # correct=0
-    # n_test = 5
-
-    # directory_path = "logs/pronto_debug"
-    # create_directory_if_not_exists(directory_path)
-
-   
-    # for i in range(n_test):
-    #     print(f"{i}: {result[i]}")
-    #     file_path = os.path.join(directory_path, f"MCTS_{i}.pkl")
-    #     with open(file_path, 'wb') as file:
-    #         # Use pickle to dump the object to the file
-    #         pickle.dump(result[i], file)
-
-        
-    #     if(result[i].terminal_state is None):
-    #         print(f"{i} th query: {evaluator.queries[i] == None}")
-    #     else:
-    #         print(f"{i} th query: {evaluator.queries[i] == result[i].terminal_state.last_state}")
-    #         print(f"result[i].trace_of_nodes[-2].body : {result[i].trace_of_nodes[-2]}")
-    #         if evaluator.answers[i] == result[i].terminal_state.body:
-    #             correct+=1
-        
-    # print(f"accuracy: {(correct*100)/n_test}") 
 
     from reasoners.visualization.tree_snapshot import NodeData, EdgeData
     from reasoners.algorithm.mcts import MCTSNode
-    
-    '''
-    def prontoqa_node_data_factory(n: MCTSNode) -> NodeData:
-        return NodeData({"state": n.state.body if n.state else None})
-
-
-    def prontoqa_edge_data_factory(n: MCTSNode[ProntoQAState, ProntoQAAction,ProntoQAExample]) -> EdgeData:
-        return EdgeData({"Q": n.Q,"reward": n.reward, "action": n.action})
-
-
-    visualize(result[0], node_data_factory=prontoqa_node_data_factory,
-              edge_data_factory=prontoqa_edge_data_factory)
-    '''

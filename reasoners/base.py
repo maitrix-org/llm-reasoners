@@ -178,7 +178,7 @@ class Evaluator():
                  resume=0,
                  log_dir=None):
         
-        directory_path = "logs/pronto_debug"
+        directory_path = "logs/"
         create_directory_if_not_exists(directory_path)
 
         self.dataset = list(self.full_dataset)[resume:]
@@ -207,7 +207,7 @@ class Evaluator():
                                             total=resume + len(self.dataset),
                                             initial=resume,
                                             desc=self._dataset_name,
-                                            disable=self.disable_tqdm)):
+                                            disable=disable_tqdm)):
             algo_output = reasoner(self.input_processor(example),
                                     prompt=self.sample_prompt(
                                         shuffle_prompt=shuffle_prompt,
@@ -220,9 +220,6 @@ class Evaluator():
                 # Use pickle to dump the object to the file
                 pickle.dump(algo_output, file)
             
-            
-            # print(f"Example: {example}")
-            # print(f"algo output: {algo_output}")
             output = self.output_extractor(algo_output)
             answer = self.answer_extractor(example)
 
@@ -232,7 +229,8 @@ class Evaluator():
 
             correct_count += correct
             accuracy = correct_count / (i + 1)
-            log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=}, Question: {example}, trace: {algo_output.trace[1] if algo_output.trace is not None else "" };'\
+
+            log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=}, Question: {example}'\
                         f'{accuracy=:.3f} ({correct_count}/{i + 1})'
             tqdm.write(log_str)
 
