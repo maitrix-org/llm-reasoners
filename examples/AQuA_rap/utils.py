@@ -14,7 +14,7 @@ def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
         
     if isinstance(output, list):
         output = output[-1].sub_answer
-    match = re.match(r'.*[Tt]he answer is ([A-E]).*?$', output, re.DOTALL)
+    match = re.match(r'.*[Tt]he answer is ([A-Ea-e]).*?$', output, re.DOTALL)
     
     if match is None:
         print('match:', match)

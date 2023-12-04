@@ -109,7 +109,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                         print(f"model output: \n{result}")
                         print(f"retrieved answer: \n{answer}")
                         answer_dict[answer].append(result)
-                        print(f"result {answer_count}: \n{answer}")
+                        print(f"answer {answer_count}: \n{answer}")
                         answer_count += 1
                     print("------------------------------")
 
@@ -137,6 +137,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
             confidence = max_len / sum(len(v) for v in answer_dict.values())
         print(answer_dict.keys())
         state.append(SubResult(action, answer, confidence, list(answer_dict.keys()), list(answer_dict.values())))
+        print(f"action: \n{action}\nanswer:\n{answer}\nconfidence:{confidence}\n")
         aux = {'confidence': confidence}
         print("********************************")
         return state, aux
