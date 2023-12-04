@@ -12,8 +12,8 @@ import itertools
 
 class ProntoQAEvaluatorFinal(Evaluator):
     def __init__(self, 
-                 output_extractor= lambda x: x, 
-                 answer_extractor= lambda x: x,
+                 output_extractor= lambda x: x.terminal_state.body if x.terminal_state is not None else "",
+                 answer_extractor= lambda x: x.test_example.answer,
                  init_prompt=None,
                  disable_log=False,
                  disable_tqdm=False,
@@ -25,8 +25,8 @@ class ProntoQAEvaluatorFinal(Evaluator):
         self.dataset = iter(dataset_list)
         self.answers = [obj.test_example.answer for obj in dataset_list]
         self.init_prompt = init_prompt
-        self.output_extractor = lambda x: x.terminal_state.body if x.terminal_state is not None else ""
-        self.answer_extractor = lambda x:  x.test_example.answer
+        self.output_extractor = output_extractor
+        self.answer_extractor = answer_extractor
         self.input_processor = lambda x: x
         self.full_dataset = list(dataset_list)
         self._dataset_name = 'prontoqa'

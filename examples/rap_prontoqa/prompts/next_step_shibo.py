@@ -15,7 +15,6 @@ Claim 2.1: 127 is real.
 Next 2.1: Finish.
 Claim 2.1: The query is false.
 
-
 Facts 3: Lepidopterans are insects. Every animal is multicellular. Each insect is an arthropod. Each invertebrate is an animal. Insects are six-legged. Arthropods are small. Arthropods are invertebrates. Each butterfly is a lepidopteran. Whales are not small.
 Query 3: True or false: Polly is not small.
 Claim 3.1: Polly is a lepidopteran.

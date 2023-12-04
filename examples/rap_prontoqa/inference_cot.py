@@ -12,6 +12,10 @@ import pickle
 from dataset import ProntoQADataset, ProntoQAProblem, ProntoQAExample
 from reasoners import LanguageModel, SearchAlgorithm, Reasoner
 
+import prompts.finish
+import prompts.valid
+import prompts.next_step
+
 from reasoners.lm import llama_cpp_model
 from reasoners.visualization import visualize
 from search_config import ProntoQAConfig
@@ -19,6 +23,17 @@ from world_model import ProntoQAWorldModel, ProntoQAState, ProntoQAAction
 from reasoners.algorithm import MCTS
 from reasoners.benchmark import ProntoQAEvaluatorFinal
 
+def format_examples(sampled_data):
+    formatted_examples = ""
+    for i, entry in enumerate(sampled_data, 1):
+        facts = f"Facts {i}: {entry['Facts']}\n"
+        query = f"Query {i}: {entry['Query']}\n"
+        claims_and_next = ""
+        for j, (claim, next_step) in enumerate(zip(entry['claims'], entry['next_steps']), 1):
+            claims_and_next += f"Claim {i}.{j}: {claim}\nNext {i}.{j}: {next_step}\n"
+        formatted_examples += facts + query + claims_and_next + "\n"
+
+    return formatted_examples
 
 class CoTReasoner():
     def __init__(self, base_model, n_sc=1, temperature=0.8, bs=1):
@@ -29,42 +44,62 @@ class CoTReasoner():
         self.n_sc = n_sc
         self.bs = bs
     def __call__(self, example, prompt=None):
-        inputs = prompt["cot"].replace("{QUESTION}", example)
-        outputs = []
-        for i in range((self.n_sc - 1) // self.bs + 1):
-            local_bs = min(self.bs, self.n_sc - i * self.bs)
-            outputs += self.base_model.generate([inputs] * local_bs,
-                                            hide_input=True,
-                                            do_sample=True,
-                                            temperature=self.temperature,
-                                            eos_token_id=[13]).text
-        return [o.strip() for o in outputs]
+        *base_facts, init_state = example.test_example.question.split(". ")
+        input_prompt = ""
+        # input_prompt += prompts.next_step.EXAMPLES
+        input_prompt += format_examples(prompt)
+        input_prompt += prompts.next_step.FACTS_FORMAT.format(len(prompt),". ".join(base_facts))
+        input_prompt += prompts.next_step.QUERY_FORMAT.format(len(prompt), example.test_example.query)
+        input_prompt += prompts.next_step.CLAIM_FORMAT.format(len(prompt), init_state)
+        input_prompt += prompts.next_step.NEXT_STEP_PREFIX.format(len(prompt))
 
-def main(exllama_model_dir, exllama_lora_dir, exllama_mem_map, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0.8, n_sc=1):
+        print(f"input_prompt: '{input_prompt}'\n")
+        output = self.base_model.generate([input_prompt], eos_token_id=[4231], hide_input=True, temperature=self.temperature, do_sample=True).text[0]
+        # output = "Next 4.1:" + output
+        steps = [s.split(":")[-1].split("\n")[0].strip() for s in output.split("5.")[1:-1:2]]
+        # deduplicate
 
-    base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir,
-                          mem_map=exllama_mem_map, max_batch_size=batch_size,
-                          max_new_tokens=500, max_seq_length=2048)
+        return "\n".join(steps)
 
+def main():
 
-    with open(prompt) as f:
-        prompt = json.load(f)
+    import torch, os
+    import numpy as np
+    from reasoners.lm import ExLlamaModel 
+    language_model = ExLlamaModel(os.environ['LLAMA2_CKPTS'],
+                                None, 
+                                max_batch_size=1, 
+                                max_new_tokens=200, 
+                                max_seq_length=2048, 
+                                mem_map=None,
+                                log_output=True)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
 
-    reasoner = CoTReasoner(base_model, temperature=temperature, n_sc=n_sc, bs=batch_size)
-    evaluator = GSM8KEvaluator(
-                 output_extractor=utils.cot_sc_extractor,
-                 answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"]),
-                 init_prompt=prompt, # will update dynamically
-                 disable_log=False,
-                 disable_tqdm=False,
-                 sample_prompt_type="cot")
+    dataset = ProntoQADataset.from_file(
+        'examples/rap_prontoqa/data/345hop_random_true.json'
+    )
 
-    accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
-    print(f'accuracy: {accuracy:.4f}')
-    return 0
+    with open('examples/rap_prontoqa/data/example_next_steps.json') as f:
+        init_prompt = json.load(f)
+    
+    reasoner =  CoTReasoner(base_model=language_model)
+
+    evaluator = ProntoQAEvaluatorFinal(
+        init_prompt=init_prompt['next_steps'],
+        sample_prompt_type="rap",
+        disable_log=False,
+        disable_tqdm=False, dataset = ProntoQADataset.from_file(
+            'examples/rap_prontoqa/data/345hop_random_true.json'
+        ),
+        output_extractor=lambda x: x,
+        answer_extractor=lambda x: "\n".join(x.test_example.chain_of_thought[2::2])
+    )
+
+    accuracy = evaluator.evaluate(reasoner, num_shot=4, log_dir="pronto_logs/")
+    print(f"accuracy: {accuracy}")
 
 if __name__ == '__main__':
     fire.Fire(main)
+
     """
 CUDA_VISIBLE_DEVICES=2 python examples/cot_gsm8k/inference.py \
 --exllama_model_dir $LLAMA2_CKPTS \
