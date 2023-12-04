@@ -101,9 +101,8 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                     else:
                         answer = utils.retrieve_answer_not_option(result)
                     if answer is not None:
-                        print("I'm here !!!!!!!!!!!!!!!!!!")
-                        print(result)
-                        print(answer)
+                        print(f"model output: \n{result}")
+                        print(f"retrieved answer: \n{answer}")
                         answer_dict[answer].append(result)
 
             # Early stop if confidence is high enough
