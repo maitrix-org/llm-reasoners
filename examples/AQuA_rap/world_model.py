@@ -68,6 +68,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
         return []
 
     def step(self, state: MATHState, action: MATHAction) -> tuple[MATHState, dict]:
+        print("********* world model step *******")
         state = state.copy()
 
         with io.StringIO() as f:
@@ -82,6 +83,8 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
         
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
         result = ""
+        result_count = 0
+        answer_count = 0
         for start1 in range(0, self.n_confidence, self.early_stop_base):
             stop1 = min(start1 + self.early_stop_base, self.n_confidence)
 
@@ -96,6 +99,8 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                                                    eos_token_id='\n').text
                 for output in outputs:
                     result = output.strip()
+                    print(f"result {result_count}: \n{result}")
+                    result_count += 1
                     if "Now we can" in action:
                         answer = utils.retrieve_answer(result)
                     else:
@@ -104,6 +109,9 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                         print(f"model output: \n{result}")
                         print(f"retrieved answer: \n{answer}")
                         answer_dict[answer].append(result)
+                        print(f"result {answer_count}: \n{answer}")
+                        answer_count += 1
+                    print("------------------------------")
 
             # Early stop if confidence is high enough
             if len(answer_dict) == 0:  # no answer yet
@@ -130,6 +138,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
         print(answer_dict.keys())
         state.append(SubResult(action, answer, confidence, list(answer_dict.keys()), list(answer_dict.values())))
         aux = {'confidence': confidence}
+        print("********************************")
         return state, aux
 
     def is_terminal(self, state: MATHState) -> bool:
