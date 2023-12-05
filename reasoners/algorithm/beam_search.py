@@ -47,7 +47,7 @@ class BeamSearchResult(NamedTuple):
     terminal_node: BeamSearchNode
     cum_reward: float
     tree: BeamSearchNode
-
+    trace: List[Tuple[Action, State, float]]
 
 class BeamSearch(SearchAlgorithm, Generic[State, Action]):
     def __init__(self, 
