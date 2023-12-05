@@ -86,7 +86,7 @@ class MCTSAggregation(Generic[State, Action], ABC):
             if cur.is_terminal:
                 answer = self.retrieve_answer(cur.state)
                 if answer is None:
-                    print("hihihi")
+                    print("MCTSAggregation: no answer retrieved.")
                     return []
                 if self.weight_policy == 'edge':
                     answer_dict[answer] += cur.reward
