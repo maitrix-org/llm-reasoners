@@ -89,8 +89,9 @@ Is the sub-answer logically correct? Yes.
 The last subquestion is: {subquestion}
 The last subanswer is: {subanswer}
 Question: Is the sub-answer logically correct?
-Answer: 
-"""
+Answer:
+""".strip()
+
         '''
         1. Is the sub-answer logically correct?
         2. Is the subanswer's calculation correct?
