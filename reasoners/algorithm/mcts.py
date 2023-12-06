@@ -73,7 +73,7 @@ class MCTSResult(NamedTuple):
 class MCTSAggregation(Generic[State, Action], ABC):
     def __init__(self, retrieve_answer: Callable[[State], Hashable],
                  weight_policy: str = 'edge'):
-        assert weight_policy in ['edge', 'edge_inverse_depth']
+        assert weight_policy in ['edge', 'edge_inverse_depth', 'uniform']
         self.retrieve_answer = retrieve_answer
         self.weight_policy = weight_policy
 
@@ -92,6 +92,8 @@ class MCTSAggregation(Generic[State, Action], ABC):
                     answer_dict[answer] += cur.reward
                 elif self.weight_policy == 'edge_inverse_depth':
                     answer_dict[answer] += cur.reward / cur.depth
+                elif self.weight_policy == 'uniform':
+                    answer_dict[answer] += 1.0
                 return [(answer, cur.depth)]
             depth_list = defaultdict(list)
             cur_list = []

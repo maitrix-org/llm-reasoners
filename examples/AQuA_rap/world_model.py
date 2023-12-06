@@ -152,30 +152,30 @@ Answer:
                         answer = utils.retrieve_answer(result)
                     else:
                         answer = utils.retrieve_answer_not_option(result)
-                        '''if answer is not None:
-                            with io.StringIO() as f:
-                                f.write("Given a question, some sub-questions and sub-answers, determine whether the last sub-answer is logically correct. Output 'Yes' or 'No', and a reason.\n")
-                                f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
-                                for idx, (q, a, *_) in enumerate(state):
-                                    f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
-                                    f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
-                                f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1) + " " + action + "\n")
-                                f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
-                                model_input = f.getvalue()
-                            score_input = self.build_score_input(
-                                model_input=model_input,
-                                subquestion=action,
-                                subanswer=output,
-                                retrieved_answer=answer)
-                            print(f"score_input:\n{score_input}")
-                            score_output = self.base_model.generate(
-                                [score_input],
-                                hide_input=True,
-                                do_sample=True,
-                                temperature=0,
-                                eos_token_id='\n').text
-                            print(f"score_output:\n{score_output}")
-                            score = self.cal_score(score_output=score_output[0])'''
+                    '''if answer is not None:
+                        with io.StringIO() as f:
+                            f.write("Given a question, some sub-questions and sub-answers, determine whether the last sub-answer is logically correct. Output 'Yes' or 'No', and a reason.\n")
+                            f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
+                            for idx, (q, a, *_) in enumerate(state):
+                                f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
+                                f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
+                            f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1) + " " + action + "\n")
+                            f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
+                            model_input = f.getvalue()
+                        score_input = self.build_score_input(
+                            model_input=model_input,
+                            subquestion=action,
+                            subanswer=output,
+                            retrieved_answer=answer)
+                        print(f"score_input:\n{score_input}")
+                        score_output = self.base_model.generate(
+                            [score_input],
+                            hide_input=True,
+                            do_sample=True,
+                            temperature=0,
+                            eos_token_id='\n').text
+                        print(f"score_output:\n{score_output}")
+                        score = self.cal_score(score_output=score_output[0])'''
                     if answer is not None:
                         print(f"model output: \n{result}")
                         print(f"retrieved answer: \n{answer}")
