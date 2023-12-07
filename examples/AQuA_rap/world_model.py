@@ -6,7 +6,7 @@ from reasoners import WorldModel, LanguageModel
 import utils
 from reasoners.base import Example
 import re
-
+import json
 
 class SubResult(NamedTuple):
     sub_question: str
@@ -43,7 +43,9 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                  batch_size=2,
                  temperature=0.8,
                  early_stop_base=None,
-                 early_stop_threshold=1.) -> None:
+                 early_stop_threshold=1.,
+                 score_prompts = "/home/xinyuan/workspace/llm-reasoners/examples/AQuA_rap/prompts/score_examples.json"
+                 ) -> None:
         super().__init__()
         self.base_model = base_model
         self.batch_size = batch_size
@@ -53,6 +55,8 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
         self.early_stop_threshold = early_stop_threshold
         self.prompt_examples = ""
         self.n_shots = 0
+        with open(score_prompts) as f:
+            self.score_prompts = json.load(f)
 
     def update_example(self, example: Example, prompt: MATHPromptDict = None) -> None:
         super().update_example(example, prompt)
@@ -92,17 +96,12 @@ Question: Is the sub-answer logically correct?
 Answer:
 """.strip()
 
-        '''
-        1. Is the sub-answer logically correct?
-        2. Is the subanswer's calculation correct?
-        3. Is the final answer {retrieved_answer} correct?'''
-
         return score_rules_prompt.format(model_input=model_input.strip(),
                                          subquestion=subquestion.strip(),
                                          subanswer=subanswer.strip(),
                                          retrieved_answer=retrieved_answer.strip())
         
-    def cal_score(self, score_output):
+    def cal_score(self, state: MATHState, action: MATHAction, ):
         yes_matches = re.findall(r'\byes\b', score_output, re.IGNORECASE)
         no_matches = re.findall(r'\bno\b', score_output, re.IGNORECASE)
 
@@ -152,15 +151,16 @@ Answer:
                         answer = utils.retrieve_answer(result)
                     else:
                         answer = utils.retrieve_answer_not_option(result)
-                    '''if answer is not None:
+                        
+                    if answer is not None:
                         with io.StringIO() as f:
-                            f.write("Given a question, some sub-questions and sub-answers, determine whether the last sub-answer is logically correct. Output 'Yes' or 'No', and a reason.\n")
-                            f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
+                            f.write(self.useful_prompt["input"])
+                            f.write(self.useful_prompt["question_prefix"] + self.example + "\n")
                             for idx, (q, a, *_) in enumerate(state):
-                                f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
+                                f.write(self.useful_prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
                                 f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
-                            f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1) + " " + action + "\n")
-                            f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
+                            f.write(self.useful_prompt["new_subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
+                            f.write(self.useful_prompt["useful_prefix"])
                             model_input = f.getvalue()
                         score_input = self.build_score_input(
                             model_input=model_input,
@@ -175,7 +175,8 @@ Answer:
                             temperature=0,
                             eos_token_id='\n').text
                         print(f"score_output:\n{score_output}")
-                        score = self.cal_score(score_output=score_output[0])'''
+                        score = self.cal_score(score_output=score_output[0])
+                        
                     if answer is not None:
                         print(f"model output: \n{result}")
                         print(f"retrieved answer: \n{answer}")
