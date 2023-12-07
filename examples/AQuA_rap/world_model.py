@@ -90,6 +90,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
         
             
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
+        score_dict = defaultdict(list)
         result = ""
         result_count = 0
         answer_count = 0
@@ -117,14 +118,13 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                         answer = utils.retrieve_answer_not_option(result)
                         
                     if answer is not None:
-                        scores = []
-                        for score_prompt_index in range(len(self.us)):
+                        for score_prompt_index in range(len(self.score_prompts)):                            
                             with io.StringIO() as f:
                                 f.write(self.score_prompts[score_prompt_index]["input"])
                                 f.write(self.score_prompts[score_prompt_index]["question_prefix"] + self.example + "\n")
                                 for idx, (q, a, *_) in enumerate(state):
                                     f.write(self.score_prompts[score_prompt_index]["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
-                                    f.write(self.score_prompts[score_prompt_index]["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
+                                    f.write(self.score_prompts[score_prompt_index]["subanswer_prefix"].format(len(idx) + 1) + " " +  a + "\n")
                                 f.write(self.score_prompts[score_prompt_index]["subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
                                 f.write(self.score_prompts[score_prompt_index]["new_subanswer_prefix"].format(len(state) + 1) + " " + result + "\n")
                                 f.write(self.score_prompts[score_prompt_index]["score_prefix"])
@@ -134,8 +134,10 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                             logits = self.base_model.get_next_token_logits(score_input, ["Yes", "No"])[0]
                             probs = np.exp(logits) / np.sum(np.exp(logits))
                             score = probs[0]
-                            scores.append(score)
-                            print(f"score:\n{score}")
+                            
+                            if len(score_dict[(answer, result)])<len(self.score_prompts):
+                                score_dict[(answer, result)].append(score)
+                                print(f"score:\n{score}")
                         
                     if answer is not None:
                         print(f"model output: \n{result}")
@@ -162,12 +164,17 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
             print("Output:", result)
             confidence, answer = 0, result  # No reasonable answer found. Fall back to choose the last response
         else:
-            sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
+            result_dict = defaultdict(float)
+            print(score_dict)
+            print('+++++++++++++++++++++++++++++')
+            for answer_tuple in score_dict:
+                result_dict[answer_tuple] = np.mean(score_dict[answer_tuple]) + len(answer_dict[answer_tuple[0]]) / answer_count
+            print(result_dict)
+            sorted_answer_dict = sorted(result_dict.items(), key=lambda p: p[1], reverse=True)
+            
             max_answer = sorted_answer_dict[0]
-            max_answer_output_list = max_answer[1]
-            max_len = len(max_answer_output_list)
-            answer = max_answer_output_list[0]  # Here we simply choose the first appearance of the answer
-            confidence = max_len / sum(len(v) for v in answer_dict.values())
+            answer = max_answer[0][1]  # Here we simply choose the first appearance of the answer
+            confidence = max_answer[1]
         print(answer_dict.keys())
         state.append(SubResult(action, answer, confidence, list(answer_dict.keys()), list(answer_dict.values())))
         print(f"action: \n{action}\nanswer:\n{answer}\nconfidence:{confidence}\n")
