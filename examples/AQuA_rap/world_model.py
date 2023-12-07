@@ -7,6 +7,8 @@ import utils
 from reasoners.base import Example
 import re
 import json
+import numpy as np
+
 
 class SubResult(NamedTuple):
     sub_question: str
@@ -71,44 +73,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
     
     def init_state(self) -> list:
         return []
-    """
-    Question 4: If q is the square of a positive integer, which of the following must be equal to the square of the next positive integer? Options: A) √n + 1, B) n + 1, C) n^2 + 1, D) q + 2√q + 1, E)n^2 + 2n + 1.
-    Question 4.1: How to represent the positive integer using q?\nAnswer 4.1: The positive integer is the square root of q. The answer is √q.
-    Question 4.2: What is the next positive integer\nAnswer 4.2: The next integer is the positive integer plus 1. The answer is √q+1.\nQuestion {idx}.3: Now we can answer the question with an option from A to E: What is the square of the next integer?\nAnswer {idx}.3: The square of the next integer is (√q+1)^2=q + 2√q + 1. The answer is D.
-    {model_input} {subanswer}\n
-    The last subquestion is: {subquestion}
-    The last subanswer is: {subanswer}
-    Question: Is the sub-answer logically correct?
-    Answer: 
-    """
 
-    def build_score_input(self, model_input, subquestion, subanswer, retrieved_answer):
-        score_rules_prompt = """
-Question 4: If q is the square of a positive integer, which of the following must be equal to the square of the next positive integer? Options: A) √n + 1, B) n + 1, C) n^2 + 1, D) q + 2√q + 1, E)n^2 + 2n + 1.
-Question 4.1: How to represent the positive integer using q?\nAnswer 4.1: The positive integer is the square root of q. The answer is √q.
-Question 4.2: What is the next positive integer\nAnswer 4.2: The next integer is the positive integer plus 1. The answer is √q+1.
-Is the sub-answer logically correct? Yes. 
-
-{model_input} {subanswer}\n
-The last subquestion is: {subquestion}
-The last subanswer is: {subanswer}
-Question: Is the sub-answer logically correct?
-Answer:
-""".strip()
-
-        return score_rules_prompt.format(model_input=model_input.strip(),
-                                         subquestion=subquestion.strip(),
-                                         subanswer=subanswer.strip(),
-                                         retrieved_answer=retrieved_answer.strip())
-        
-    def cal_score(self, state: MATHState, action: MATHAction, ):
-        yes_matches = re.findall(r'\byes\b', score_output, re.IGNORECASE)
-        no_matches = re.findall(r'\bno\b', score_output, re.IGNORECASE)
-
-        yes_count = len(yes_matches)
-        no_count = len(no_matches)
-        return {yes_count, no_count}
-    
     def step(self, state: MATHState, action: MATHAction) -> tuple[MATHState, dict]:
         print("********* world model step *******")
         state = state.copy()
@@ -128,7 +93,6 @@ Answer:
         result = ""
         result_count = 0
         answer_count = 0
-        
         
         for start1 in range(0, self.n_confidence, self.early_stop_base):
             stop1 = min(start1 + self.early_stop_base, self.n_confidence)
@@ -153,29 +117,25 @@ Answer:
                         answer = utils.retrieve_answer_not_option(result)
                         
                     if answer is not None:
-                        with io.StringIO() as f:
-                            f.write(self.useful_prompt["input"])
-                            f.write(self.useful_prompt["question_prefix"] + self.example + "\n")
-                            for idx, (q, a, *_) in enumerate(state):
-                                f.write(self.useful_prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
-                                f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
-                            f.write(self.useful_prompt["new_subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
-                            f.write(self.useful_prompt["useful_prefix"])
-                            model_input = f.getvalue()
-                        score_input = self.build_score_input(
-                            model_input=model_input,
-                            subquestion=action,
-                            subanswer=output,
-                            retrieved_answer=answer)
-                        print(f"score_input:\n{score_input}")
-                        score_output = self.base_model.generate(
-                            [score_input],
-                            hide_input=True,
-                            do_sample=True,
-                            temperature=0,
-                            eos_token_id='\n').text
-                        print(f"score_output:\n{score_output}")
-                        score = self.cal_score(score_output=score_output[0])
+                        scores = []
+                        for score_prompt_index in range(len(self.us)):
+                            with io.StringIO() as f:
+                                f.write(self.score_prompts[score_prompt_index]["input"])
+                                f.write(self.score_prompts[score_prompt_index]["question_prefix"] + self.example + "\n")
+                                for idx, (q, a, *_) in enumerate(state):
+                                    f.write(self.score_prompts[score_prompt_index]["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
+                                    f.write(self.score_prompts[score_prompt_index]["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
+                                f.write(self.score_prompts[score_prompt_index]["subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
+                                f.write(self.score_prompts[score_prompt_index]["new_subanswer_prefix"].format(len(state) + 1) + " " + result + "\n")
+                                f.write(self.score_prompts[score_prompt_index]["score_prefix"])
+                                score_input = f.getvalue()
+                            print(f"score_input:\n{score_input}")
+                            
+                            logits = self.base_model.get_next_token_logits(score_input, ["Yes", "No"])[0]
+                            probs = np.exp(logits) / np.sum(np.exp(logits))
+                            score = probs[0]
+                            scores.append(score)
+                            print(f"score:\n{score}")
                         
                     if answer is not None:
                         print(f"model output: \n{result}")
@@ -183,8 +143,6 @@ Answer:
                         answer_dict[answer].append(result)
                         print(f"answer {answer_count}: \n{answer}")
                         answer_count += 1
-                        
-                        
                     print("------------------------------")
                     
 
