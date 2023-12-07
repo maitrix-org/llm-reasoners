@@ -124,7 +124,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                                 f.write(self.score_prompts[score_prompt_index]["question_prefix"] + self.example + "\n")
                                 for idx, (q, a, *_) in enumerate(state):
                                     f.write(self.score_prompts[score_prompt_index]["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
-                                    f.write(self.score_prompts[score_prompt_index]["subanswer_prefix"].format(len(idx) + 1) + " " +  a + "\n")
+                                    f.write(self.score_prompts[score_prompt_index]["subanswer_prefix"].format(idx + 1) + " " +  a + "\n")
                                 f.write(self.score_prompts[score_prompt_index]["subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
                                 f.write(self.score_prompts[score_prompt_index]["new_subanswer_prefix"].format(len(state) + 1) + " " + result + "\n")
                                 f.write(self.score_prompts[score_prompt_index]["score_prefix"])
