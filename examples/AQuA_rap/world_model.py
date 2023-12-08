@@ -88,12 +88,12 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
             f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
             model_input = f.getvalue()
         
-            
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
         score_dict = defaultdict(list)
         result = ""
         result_count = 0
         answer_count = 0
+        none_count = 0
         
         for start1 in range(0, self.n_confidence, self.early_stop_base):
             stop1 = min(start1 + self.early_stop_base, self.n_confidence)
@@ -108,9 +108,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                                                    temperature=self.temperature,
                                                    eos_token_id='\n').text
                 for output in outputs:
-                    print(f"action: \n{action}")
                     result = output.strip()
-                    print(f"result {result_count}: \n{result}")
                     result_count += 1
                     if "Now we can" in action:
                         answer = utils.retrieve_answer(result)
@@ -118,33 +116,35 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
                         answer = utils.retrieve_answer_not_option(result)
                         
                     if answer is not None:
-                        for score_prompt_index in range(len(self.score_prompts)):                            
-                            with io.StringIO() as f:
-                                f.write(self.score_prompts[score_prompt_index]["input"])
-                                f.write(self.score_prompts[score_prompt_index]["question_prefix"] + self.example + "\n")
-                                for idx, (q, a, *_) in enumerate(state):
-                                    f.write(self.score_prompts[score_prompt_index]["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
-                                    f.write(self.score_prompts[score_prompt_index]["subanswer_prefix"].format(idx + 1) + " " +  a + "\n")
-                                f.write(self.score_prompts[score_prompt_index]["subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
-                                f.write(self.score_prompts[score_prompt_index]["new_subanswer_prefix"].format(len(state) + 1) + " " + result + "\n")
-                                f.write(self.score_prompts[score_prompt_index]["score_prefix"])
-                                score_input = f.getvalue()
-                            print(f"score_input:\n{score_input}")
-                            
-                            logits = self.base_model.get_next_token_logits(score_input, ["Yes", "No"])[0]
-                            probs = np.exp(logits) / np.sum(np.exp(logits))
-                            score = probs[0]
-                            
-                            if len(score_dict[(answer, result)])<len(self.score_prompts):
+                        if len(score_dict[(answer, result)])<len(self.score_prompts):
+                            for score_prompt_index in range(len(self.score_prompts)):                            
+                                with io.StringIO() as f:
+                                    f.write(self.score_prompts[score_prompt_index]["input"]+"\n\n")
+                                    f.write(self.score_prompts[score_prompt_index]["question_prefix"] + self.example + "\n")
+                                    for idx, (q, a, *_) in enumerate(state):
+                                        f.write(self.score_prompts[score_prompt_index]["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
+                                        f.write(self.score_prompts[score_prompt_index]["subanswer_prefix"].format(idx + 1) + " " +  a + "\n")
+                                    f.write(self.score_prompts[score_prompt_index]["subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
+                                    f.write(self.score_prompts[score_prompt_index]["new_subanswer_prefix"].format(len(state) + 1) + " " + result + "\n")
+                                    f.write(self.score_prompts[score_prompt_index]["score_prefix"])
+                                    score_input = f.getvalue()
+                                    
+                                print(f"score_input: {score_input}")
+                                
+                                logits = self.base_model.get_next_token_logits(score_input, ["Yes", "No"])[0]
+                                probs = np.exp(logits) / np.sum(np.exp(logits))
+                                score = probs[0]
                                 score_dict[(answer, result)].append(score)
-                                print(f"score:\n{score}")
+                                print(f"score:\n{score}\n")
                         
-                    if answer is not None:
                         print(f"model output: \n{result}")
                         print(f"retrieved answer: \n{answer}")
                         answer_dict[answer].append(result)
                         print(f"answer {answer_count}: \n{answer}")
                         answer_count += 1
+                    else:
+                        none_count += 1
+                        
                     print("------------------------------")
                     
 
@@ -165,17 +165,17 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
             confidence, answer = 0, result  # No reasonable answer found. Fall back to choose the last response
         else:
             result_dict = defaultdict(float)
-            print(score_dict)
-            print('+++++++++++++++++++++++++++++')
+
             for answer_tuple in score_dict:
-                result_dict[answer_tuple] = np.mean(score_dict[answer_tuple]) + len(answer_dict[answer_tuple[0]]) / answer_count
-            print(result_dict)
-            sorted_answer_dict = sorted(result_dict.items(), key=lambda p: p[1], reverse=True)
+                result_dict[answer_tuple] = (np.mean(score_dict[answer_tuple]) + len(answer_dict[answer_tuple[0]]) / answer_count) / 2
             
+            sorted_answer_dict = sorted(result_dict.items(), key=lambda p: p[1], reverse=True)
+            for answer_tuple in sorted_answer_dict:
+                print(answer_tuple)
             max_answer = sorted_answer_dict[0]
             answer = max_answer[0][1]  # Here we simply choose the first appearance of the answer
             confidence = max_answer[1]
-        print(answer_dict.keys())
+        
         state.append(SubResult(action, answer, confidence, list(answer_dict.keys()), list(answer_dict.values())))
         print(f"action: \n{action}\nanswer:\n{answer}\nconfidence:{confidence}\n")
         aux = {'confidence': confidence}
