@@ -103,11 +103,12 @@ def rap_AQuA(base_model: LanguageModel,
               disable_tqdm: bool = False,
               output_trace_in_each_iter: bool = True,
               aggregate: bool = True,
+              weight_policy:str = 'edge',
               **search_algo_params):
     
-    print(f'aggregate: {aggregate}')
+    print(f'aggregate: {aggregate}, weight_policy: {weight_policy}')
     if aggregate:
-        aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge')
+        aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy=weight_policy)
     else:
         aggregator = None
     
@@ -187,6 +188,7 @@ if __name__ == '__main__':
         disable_log = False,
         disable_tqdm = False,
         reward_alpha = 0.5,
+        weight_policy:str = 'edge',
         **kwargs):
         
         from reasoners.lm import ExLlamaModel
@@ -205,6 +207,7 @@ if __name__ == '__main__':
              disable_log=disable_log or local_rank != 0,
              disable_tqdm=disable_tqdm or local_rank != 0,
              reward_alpha = reward_alpha,
+             weight_policy=weight_policy,
              **kwargs)
 
     fire.Fire(main_exllama)
