@@ -154,7 +154,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
             sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
             max_len = len(sorted_answer_dict[0][1])
             if max_len / stop1 >= self.early_stop_threshold:
-                if len(sorted_answer_dict) >= 2 and max_len == len(sorted_answer_dict[1][1]):
+                if len(sorted_answer_dict) >= 4 and max_len == len(sorted_answer_dict[1][1]): # change from 2 to 4
                     pass  # Tie with the second best answer
                 else:
                     break
