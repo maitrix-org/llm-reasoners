@@ -167,7 +167,7 @@ class MATHWorldModel(WorldModel[MATHState, MATHAction]):
             result_dict = defaultdict(float)
 
             for answer_tuple in score_dict:
-                result_dict[answer_tuple] = np.mean(score_dict[answer_tuple]) + (len(answer_dict[answer_tuple[0]]) / answer_count) / 2 # test only divide confidence
+                result_dict[answer_tuple] = (np.sum(score_dict[answer_tuple]) + len(answer_dict[answer_tuple[0]]) / answer_count) / 3 # test only divide confidence
             
             sorted_answer_dict = sorted(result_dict.items(), key=lambda p: p[1], reverse=True)
             for answer_tuple in sorted_answer_dict:
