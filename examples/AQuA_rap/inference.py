@@ -189,6 +189,7 @@ if __name__ == '__main__':
         disable_tqdm = False,
         reward_alpha = 0.5,
         weight_policy:str = 'edge',
+        resume:int = 0,
         **kwargs):
         
         from reasoners.lm import ExLlamaModel
@@ -208,6 +209,7 @@ if __name__ == '__main__':
              disable_tqdm=disable_tqdm or local_rank != 0,
              reward_alpha = reward_alpha,
              weight_policy=weight_policy,
+             resume=resume,
              **kwargs)
 
     fire.Fire(main_exllama)
