@@ -10,7 +10,6 @@ from reasoners.algorithm import MCTS
 
 from world_model import BlocksWorldModel
 from search_config import BWConfig
-import utils
 
 def rap_bw(base_model: LanguageModel,
            prompt: dict,
@@ -22,8 +21,6 @@ def rap_bw(base_model: LanguageModel,
            batch_size = 1,
            goal_reached_reward = 100,
            goal_reward_default = 0.,
-           cum_reward: Callable[[list[float]], float] = sum,
-           calc_q: Callable[[list[float]], float] = np.mean,
            log_dir: Optional[str] = None,
            disable_log: bool = False,
            domain_file: str = "",
@@ -39,7 +36,12 @@ def rap_bw(base_model: LanguageModel,
         with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
             print(sys.argv, file=f)
 
-    search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, "depth_limit": depth_limit}
+
+    if search_algo == "beam":
+        search_algo_params |= {"max_depth": depth_limit}
+    elif search_algo == "dfs":
+        search_algo_params |= {"depth": depth_limit}
+    # search_algo_params |= {'cum_reward': cum_reward, 'calc_q': calc_q, "depth_limit": depth_limit}
     world_model = BlocksWorldModel(base_model=base_model, prompt=prompt, batch_size=batch_size, max_steps=depth_limit)
     config = BWConfig(base_model=base_model, prompt=prompt, batch_size=batch_size,
                       reward_alpha=reward_alpha, goal_reached_reward=goal_reached_reward,
@@ -209,3 +211,7 @@ if __name__ == '__main__':
 
 
     fire.Fire(llamacpp_main) # user will need to switch the model in the code
+
+# python examples/rap_prontoqa/tot_inference.py --depth_limit 10 --model_dir /data/yi/Llama-2-70B-GPTQ/ --beam_size 10 --temperature 0.8 --reward_aggregator mean --search_algo beam
+
+# python examples/rap_prontoqa/tot_inference.py --depth_limit 10 --model_dir /data/yi/Llama-2-70B-GPTQ/ --total_states 10 --temperature 0.8 --search_algo dfs --max_per_state 3 > debug_dfs.log

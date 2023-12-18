@@ -105,7 +105,17 @@ def main(model_dir: str,
             return ""
     
     def dfs_bw_extractor(algo_output):
-        pass
+        if torch.distributed.is_initialized():
+            torch.distributed.barrier()
+        # to make sure the plan is saved before evaluation in multi-process setting
+        try:
+            answer = "\n".join(algo_output.terminal_state[2::2])
+            answer = answer.replace("So ", "")
+            return answer
+
+        except Exception as e:
+            print("Error in output extraction,", e)
+            return ""
 
     base_model = ExLlamaModel(model_dir, 
                               lora_dir=None, 
@@ -149,3 +159,5 @@ if __name__ == '__main__':
     fire.Fire(main)
 
 # CUDA_VISIBLE_DEVICES=0 python examples/rap_prontoqa/inference_tot.py --depth_limit 10 --model_dir $LLAMA2_CKPTS --beam_size 10 --temperature 0.8 --reward_aggregator mean --search_algo beam > debug_bfs.log
+
+# python examples/rap_prontoqa/tot_inference.py --depth_limit 10 --model_dir /data/yi/Llama-2-70B-GPTQ/ --total_states 10 --temperature 0.8 --search_algo dfs --max_per_state 3 > debug_dfs.log
