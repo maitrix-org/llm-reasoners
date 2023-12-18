@@ -10,6 +10,18 @@ import copy
 from reasoners import Evaluator
 import itertools
 
+
+def get_cot_prompt(sampled_data):
+    formatted_examples = ""
+    for i, entry in enumerate(sampled_data, 1):
+        formatted_examples += f"Q: {entry['Facts']} {entry['claims'][0]} {entry['Query']}\n"
+        formatted_examples += f"A: {entry['claims'][0]} "
+        for j, (claim, next_step) in enumerate(zip(entry['claims'][1:], entry['next_steps'][:-1]), 1):
+            formatted_examples += f"{next_step} So {claim} "
+        tf = not (("not" in entry['claims'][-1]) ^ ("not" in entry['Query']))
+        formatted_examples += f"The answer is {'true' if tf else 'false'}.\n\n"
+    return formatted_examples
+
 class ProntoQAEvaluatorFinal(Evaluator):
     def __init__(self, 
                  output_extractor= lambda x: x.terminal_state.body if x.terminal_state is not None else "",
@@ -20,7 +32,6 @@ class ProntoQAEvaluatorFinal(Evaluator):
                  sample_prompt_type="l2m", dataset=None) -> None:
 
         dataset_list = list(dataset)
-        dataset_list= dataset_list[:60]
         self.queries = [obj.test_example.query.split(':', 1)[1].strip() for obj in dataset_list]
         self.dataset = iter(dataset_list)
         self.answers = [obj.test_example.answer for obj in dataset_list]
@@ -36,17 +47,18 @@ class ProntoQAEvaluatorFinal(Evaluator):
 
     def sample_prompt(self,
                       shuffle_prompt=True,
-                      num_shot=6,
-                      sample_prompt_type="rap"):
+                      num_shot=6):
 
-        if sample_prompt_type == "rap":
+        if self.sample_prompt_type == "rap":
 
             ret = random.sample(list(self.init_prompt), k=num_shot)
             return ret
             # return []
 
-        else:
-            raise NotImplementedError
+        elif self.sample_prompt_type == "cot":
+            # cot or tot
+            ret = random.sample(list(self.init_prompt), k=num_shot)
+            return get_cot_prompt(ret)
 
 
     def eval_output(self, answer, output):

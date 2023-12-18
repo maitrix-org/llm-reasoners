@@ -46,7 +46,7 @@ class ProntoQADataset:
             }
 
             test_example = all_examples.pop('test_example', None)
-            in_context_examples = all_examples
+            in_context_examples = []
 
             instance.examples[example_key] = ProntoQAExample(in_context_examples, test_example)
 

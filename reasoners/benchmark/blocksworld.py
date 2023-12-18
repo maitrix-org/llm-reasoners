@@ -67,9 +67,9 @@ class BWEvaluator(Evaluator):
 
     def sample_prompt(self,
                       shuffle_prompt=True,
-                      num_shot=4,
-                      sample_prompt_type="rap"):
+                      num_shot=4):
 
+        sample_prompt_type = self.sample_prompt_type
         if sample_prompt_type == "rap":
             if shuffle_prompt:
                 examples = random.sample(self.init_prompt["example_pool"], num_shot)

@@ -114,7 +114,7 @@ class BlocksWorldModel(WorldModel):
         super().__init__()
         self.max_steps = max_steps
         self.base_model = base_model
-        self.prompt = prompt
+        self.prompt = prompt  # need to check if this is necessary
         self.batch_size = batch_size
 
     def init_state(self) -> BWState:

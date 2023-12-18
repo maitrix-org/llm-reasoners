@@ -211,8 +211,7 @@ class Evaluator():
             algo_output = reasoner(self.input_processor(example),
                                     prompt=self.sample_prompt(
                                         shuffle_prompt=shuffle_prompt,
-                                        num_shot=num_shot,
-                                        sample_prompt_type=self.sample_prompt_type))
+                                        num_shot=num_shot))
             
      
             file_path = os.path.join(directory_path, f"MCTS_{i+1}.pkl")
@@ -222,9 +221,6 @@ class Evaluator():
             
             output = self.output_extractor(algo_output)
             answer = self.answer_extractor(example)
-
-            print(f"index:{i, }anser: {answer}, output: {output} ")
-
             correct = self.eval_output(answer, output)
 
             correct_count += correct
