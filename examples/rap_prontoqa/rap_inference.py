@@ -1,7 +1,8 @@
 import itertools
 import os
-from typing import Sequence, Any
+from typing import Optional, Sequence, Any
 import json
+import fire
 from tqdm import tqdm
 import pickle
 
