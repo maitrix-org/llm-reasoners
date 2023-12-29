@@ -19,17 +19,20 @@ def create_directory_if_not_exists(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-
-if __name__ == '__main__':
+def main(model_dir: str=  os.environ['LLAMA2_CKPTS'],
+           resume: int = 0,
+           log_dir: Optional[str] = None,
+           mem_map: str = [16, 22],
+           **search_algo_params):
     import torch, os
     import numpy as np
     from reasoners.lm import ExLlamaModel 
-    language_model = ExLlamaModel(os.environ['LLAMA2_CKPTS'],
-                                None, 
+    language_model = ExLlamaModel(model_dir,
+                                lora_dir=None, 
                                 max_batch_size=1, 
                                 max_new_tokens=200, 
                                 max_seq_length=2048, 
-                                mem_map=[16,22],
+                                mem_map=mem_map,
                                 log_output=True)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
 
     dataset = ProntoQADataset.from_file(
@@ -41,7 +44,7 @@ if __name__ == '__main__':
     
     world_model = ProntoQAWorldModel(base_model=language_model)
     search_config = ProntoQAConfig(base_model=language_model)
-    search_algo = MCTS(w_exp=1.5,n_iters=15,output_trace_in_each_iter=True, cum_reward=np.mean)
+    search_algo = MCTS( w_exp=1.5, n_iters=15, output_trace_in_each_iter=True, cum_reward=np.mean,  **search_algo_params)
     reasoner =  Reasoner(
             world_model=world_model,
             search_config=search_config,
@@ -59,3 +62,7 @@ if __name__ == '__main__':
 
     accuracy = evaluator.evaluate(reasoner, num_shot=4, log_dir="pronto_logs/")
     print(f"accuracy: {accuracy}")
+
+
+if __name__ == '__main__':
+    fire.Fire(main)

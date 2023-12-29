@@ -67,11 +67,49 @@ class ProntoQAToTSearchConfig(SearchConfig[ProntoQAState, ProntoQAAction, Pronto
         candidate = input_prompt + " " + action
         intuition = self.base_model.get_loglikelihood(input_prompt, 
             [candidate])[0]
-        return intuition, {"intuition": intuition}
+        
+        # print(f" prompt: {self.prompt}")
+        # print(f"action: {action}")
+        # print(f"input_prompt: {input_prompt}")
+        # print("hello")
+        # print(f"state: {state}")
+        
+        # # Self evaluation reward
+        input_prompt = ""
+
+        if state==[]:
+            self_eval_state=""
+        else:
+            self_eval_state= state[-1]
+        match action:
+            case "Finish.":
+                input_prompt += prompts.finish.EXAMPLES
+                input_prompt += prompts.finish.TARGET_FORMAT.format(self.example.test_example.query)
+                input_prompt += prompts.finish.CLAIM_FORMAT.format(self_eval_state)
+                input_prompt += prompts.finish.OUTPUT_PREFIX
+            case _:
+                input_prompt += prompts.valid.EXAMPLES
+                input_prompt += prompts.valid.FACTS_FORMAT.format(self_eval_state or "", action)
+                input_prompt += prompts.valid.NEXT_STEP_FORMAT.format(self_eval_state)
+                input_prompt += prompts.valid.VALID_PREFIX
+
+        output_logits = self.base_model.get_next_token_logits(
+            input_prompt,
+            candidates=["Yes", "No"]
+        )
+
+
+        reward: float = output_logits[0][0].item()
+        reward:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
+
+        self_eval = reward  
+        print(f" input_prompt: {input_prompt}, reward: {reward}")
+        return intuition, {"intuition": intuition, "self_eval":self_eval}
 
     def reward(self, state, action, **kwargs) -> tuple[float, dict]:
         intuition = kwargs["intuition"]
-        return intuition, {"intuition": intuition}
+        self_eval = kwargs["self_eval"]
+        return intuition*0.5 + self_eval*0.5, {"intuition": intuition, "self_eval":self_eval}
 
 def main(model_dir: str,
            search_algo: str = "beam",
@@ -79,7 +117,7 @@ def main(model_dir: str,
            depth_limit: int = 6,
            log_dir: Optional[str] = None,
            temperature: float = 0.8,
-           mem_map: str = None,
+           mem_map: str = [16, 22],
            **search_algo_params):
 
     if search_algo == "beam":
