@@ -104,9 +104,10 @@ class ProntoQAToTSearchConfig(SearchConfig[ProntoQAState, ProntoQAAction, Pronto
 
         self_eval = reward  
         print(f" input_prompt: {input_prompt}, reward: {reward}")
-        return intuition, {"intuition": intuition, "self_eval":self_eval}
+        return intuition*0.5 + self_eval*0.5, {"intuition": intuition, "self_eval":self_eval}
 
     def reward(self, state, action, **kwargs) -> tuple[float, dict]:
+        # how correct is this last action
         intuition = kwargs["intuition"]
         self_eval = kwargs["self_eval"]
         return intuition*0.5 + self_eval*0.5, {"intuition": intuition, "self_eval":self_eval}
