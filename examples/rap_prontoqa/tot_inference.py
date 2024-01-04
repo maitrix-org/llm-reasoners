@@ -68,43 +68,49 @@ class ProntoQAToTSearchConfig(SearchConfig[ProntoQAState, ProntoQAAction, Pronto
         intuition = self.base_model.get_loglikelihood(input_prompt, 
             [candidate])[0]
         
-        # print(f" prompt: {self.prompt}")
-        # print(f"action: {action}")
-        # print(f"input_prompt: {input_prompt}")
-        # print("hello")
-        # print(f"state: {state}")
+        print(f" prompt: {self.prompt}")
+        print(f"action: {action}")
+        print(f"input_prompt: {input_prompt}")
+        print("hello")
+        print(f"state: {state}")
+        # if len(state)>3:
+        #     raise Exception
         
         # # Self evaluation reward
         input_prompt = ""
 
-        if state==[]:
-            self_eval_state=""
+        if state==[] or len(state)<3 or len(state)%2==0:
+            reward = 0.0
         else:
-            self_eval_state= state[-1]
-        match action:
-            case "Finish.":
-                input_prompt += prompts.finish.EXAMPLES
-                input_prompt += prompts.finish.TARGET_FORMAT.format(self.example.test_example.query)
-                input_prompt += prompts.finish.CLAIM_FORMAT.format(self_eval_state)
-                input_prompt += prompts.finish.OUTPUT_PREFIX
-            case _:
-                input_prompt += prompts.valid.EXAMPLES
-                input_prompt += prompts.valid.FACTS_FORMAT.format(self_eval_state or "", action)
-                input_prompt += prompts.valid.NEXT_STEP_FORMAT.format(self_eval_state)
-                input_prompt += prompts.valid.VALID_PREFIX
 
-        output_logits = self.base_model.get_next_token_logits(
-            input_prompt,
-            candidates=["Yes", "No"]
-        )
+            self_eval_state= state[-3].lstrip("So ")
+            curr_action = state[-2].lstrip("So ")
+            next_eval_state = state[-1].lstrip("So ")
+            match action:
+                case "Finish.":
+                    input_prompt += prompts.finish.EXAMPLES
+                    input_prompt += prompts.finish.TARGET_FORMAT.format(self.example.test_example.query)
+                    input_prompt += prompts.finish.CLAIM_FORMAT.format(next_eval_state)
+                    input_prompt += prompts.finish.OUTPUT_PREFIX
+                case _:
+                    input_prompt += prompts.valid.EXAMPLES
+                    input_prompt += prompts.valid.FACTS_FORMAT.format(self_eval_state or "", curr_action)
+                    input_prompt += prompts.valid.NEXT_STEP_FORMAT.format(next_eval_state)
+                    input_prompt += prompts.valid.VALID_PREFIX
+
+            output_logits = self.base_model.get_next_token_logits(
+                input_prompt,
+                candidates=["Yes", "No"]
+            )
 
 
-        reward: float = output_logits[0][0].item()
-        reward:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
+            reward: float = output_logits[0][0].item()
+            reward:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
+            print(f" input_prompt: {input_prompt}, reward: {reward}")
 
         self_eval = reward  
-        print(f" input_prompt: {input_prompt}, reward: {reward}")
-        return intuition*0.5 + self_eval*0.5, {"intuition": intuition, "self_eval":self_eval}
+        print(f" intuition: {intuition}, self_eval: {self_eval}")
+        return intuition*.5 + self_eval*0.5, {"intuition": intuition, "self_eval":self_eval}
 
     def reward(self, state, action, **kwargs) -> tuple[float, dict]:
         # how correct is this last action

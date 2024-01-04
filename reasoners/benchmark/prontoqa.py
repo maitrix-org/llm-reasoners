@@ -32,7 +32,7 @@ class ProntoQAEvaluatorFinal(Evaluator):
                  sample_prompt_type="l2m", dataset=None) -> None:
 
         dataset_list = list(dataset)
-        dataset_list = dataset_list[:70]
+        dataset_list = dataset_list
         self.queries = [obj.test_example.query.split(':', 1)[1].strip() for obj in dataset_list]
         self.dataset = iter(dataset_list)
         self.answers = [obj.test_example.answer for obj in dataset_list]
