@@ -11,9 +11,9 @@ from prompts.game24 import *
 Input (x)   : a string of 4 numbers
 Output (y)  : a trajectory of 3 steps to reach 24
 Reward (r)  : 0 or 1, depending on whether the trajectory is correct
-Input ProntoQAExample: 
+Input Example: 
     1 2 3 4
-Output ProntoQAExample: 
+Output Example: 
     1 + 2 = 3 (left: 3 3 4)
     3 + 3 = 6 (left: 4 6)
     6 * 4 = 24 (left: 24)

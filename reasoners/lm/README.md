@@ -1,7 +1,7 @@
 # Language Models
 ## LLaMA
 - Please follow MetaAI's [instruction](https://github.com/facebookresearch/llama) to get the models and set up the environment.
-- ProntoQAExample run:
+- Example run:
   - LLaMA
     ```bash
     CUDA_VISIBLE_DEVICES=0,1 torchrun --nproc-per-node 2 --master-port 6666 examples/rap_gsm8k/inference.py --base_lm llama --llama_ckpt /path/to/llama_ckpts --llama_size 13B
@@ -16,7 +16,7 @@
 ## ExLlama
 - We provide support for [ExLlama](https://github.com/turboderp/exllama) as a submodule.
 - Choose any quantized [models](https://github.com/turboderp/exllama/blob/master/doc/model_compatibility.md) available from Hugging Face. You can also use the path of a local quantized model in the same format as Hugging Face.
-- ProntoQAExample run: Llama-2 70B on **2 * 24GB GPUs**:
+- Example run: Llama-2 70B on **2 * 24GB GPUs**:
   ```bash
   CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --base_lm exllama --exllama_model_dir TheBloke/Llama-2-70B-GPTQ --exllama_lora_dir None --exllama_mem_map '[16,22]'
   ```
@@ -26,7 +26,7 @@
 - We provide a wrapper for Hugging Face models
 - We support `8bit`, `nf4`, `fp4`, or `awq` as optional quantization method
   - Additional dependencies are requried to use `awq`, which can be installed by running `pip install -e '.[awq]'` under the root of this repository
-- ProntoQAExample run:
+- Example run:
   ```bash
   CUDA_VISIBLE_DEVICES=0,1 python examples/rap_gsm8k/inference.py --base_lm hf --hf_path meta-llama/Llama-2-70b-hf --hf_peft_path None --hf_quantized 'nf4'
   ```
@@ -46,7 +46,7 @@ For how to quantize LLaMA, refer to [llama.cpp](https://github.com/ggerganov/lla
     conda install -c "nvidia/label/cuda-12.0.0" libcublas cuda-toolkit
     ```
 - For more details and troubleshooting, please refer to [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) and [llama.cpp](https://github.com/ggerganov/llama.cpp).
-- ProntoQAExample run:
+- Example run:
   ```bash
   CUDA_VISIBLE_DEVICES=0 python examples/rap_gsm8k/inference.py --base_lm llama.cpp --llama_cpp_path /path/to/13B/ggml-model-q5_0.gguf
   ```
