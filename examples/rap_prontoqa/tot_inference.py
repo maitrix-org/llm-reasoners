@@ -56,6 +56,8 @@ class ProntoQAToTSearchConfig(SearchConfig[ProntoQAState, ProntoQAAction, Pronto
         input_prompt += "".join([" " + s for s in state])
         output = self.base_model.generate([input_prompt] * self.n_actions, eos_token_id=29889, hide_input=True, temperature=self.temperature, do_sample=True).text
         ret = [o.strip() for o in output]
+        print(f"Input prompt to model.generate: {input_prompt}")
+        print(f"model generated actions: {ret}")
         # deduplicate
         ret = dict.fromkeys(ret).keys()
         return ret
@@ -79,34 +81,44 @@ class ProntoQAToTSearchConfig(SearchConfig[ProntoQAState, ProntoQAAction, Pronto
         # # Self evaluation reward
         input_prompt = ""
 
-        if state==[] or len(state)<3 or len(state)%2==0:
-            reward = 0.0
-        else:
+        # if state==[] or len(state)<3 or len(state)%2==0:
+        #     reward = 0.0
+        # else:
 
-            self_eval_state= state[-3].lstrip("So ")
-            curr_action = state[-2].lstrip("So ")
-            next_eval_state = state[-1].lstrip("So ")
-            match action:
-                case "Finish.":
-                    input_prompt += prompts.finish.EXAMPLES
-                    input_prompt += prompts.finish.TARGET_FORMAT.format(self.example.test_example.query)
-                    input_prompt += prompts.finish.CLAIM_FORMAT.format(next_eval_state)
-                    input_prompt += prompts.finish.OUTPUT_PREFIX
-                case _:
-                    input_prompt += prompts.valid.EXAMPLES
-                    input_prompt += prompts.valid.FACTS_FORMAT.format(self_eval_state or "", curr_action)
-                    input_prompt += prompts.valid.NEXT_STEP_FORMAT.format(next_eval_state)
-                    input_prompt += prompts.valid.VALID_PREFIX
+        #     self_eval_state= state[-3].lstrip("So ")
+        #     curr_action = state[-2].lstrip("So ")
+        #     next_eval_state = state[-1].lstrip("So ")
+        #     match action:
+        #         case "Finish.":
+        #             input_prompt += prompts.finish.EXAMPLES
+        #             input_prompt += prompts.finish.TARGET_FORMAT.format(self.example.test_example.query)
+        #             input_prompt += prompts.finish.CLAIM_FORMAT.format(next_eval_state)
+        #             input_prompt += prompts.finish.OUTPUT_PREFIX
+        #         case _:
+        #             input_prompt += prompts.valid.EXAMPLES
+        #             input_prompt += prompts.valid.FACTS_FORMAT.format(self_eval_state or "", curr_action)
+        #             input_prompt += prompts.valid.NEXT_STEP_FORMAT.format(next_eval_state)
+        #             input_prompt += prompts.valid.VALID_PREFIX
 
-            output_logits = self.base_model.get_next_token_logits(
-                input_prompt,
-                candidates=["Yes", "No"]
-            )
+        #     output_logits = self.base_model.get_next_token_logits(
+        #         input_prompt,
+        #         candidates=["Yes", "No"]
+        #     )
 
+        input_prompt += prompts.valid.EXAMPLES
+        input_prompt += prompts.valid.FACTS_FORMAT.format(self.example.test_example.question or "", self.example.test_example.query)
+        input_prompt += prompts.valid.NEXT_STEP_FORMAT.format(','.join(state))
+        input_prompt += prompts.valid.VALID_PREFIX
 
-            reward: float = output_logits[0][0].item()
-            reward:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
-            print(f" input_prompt: {input_prompt}, reward: {reward}")
+        output_logits = self.base_model.get_next_token_logits(
+            input_prompt,
+            candidates=["Yes", "No"]
+        )
+
+        print(f"input_prompt: {input_prompt}")
+        reward: float = output_logits[0][0].item()
+        reward:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
+        print(f" reward: {reward}")
 
         self_eval = reward  
         print(f" intuition: {intuition}, self_eval: {self_eval}")
@@ -168,8 +180,7 @@ def main(model_dir: str,
                               max_batch_size=1, 
                               max_new_tokens=200, 
                               max_seq_length=2048, 
-                              mem_map=mem_map,
-                              log_output=True)
+                              mem_map=mem_map)
 
     world_model = ProntoQAToTWorldModel()
     search_config = ProntoQAToTSearchConfig(base_model=base_model, temperature=temperature)
