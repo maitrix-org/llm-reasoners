@@ -28,7 +28,7 @@ def read_data(file='24.csv'):
     return data
 
 def get_input(self, idx: int) -> str:
-    return self.original_prompt[idx]
+    return self.data[idx]
 
 def test_output(question: str, output: str):
     expression = output.strip().split('\n')[-1].lower().replace('answer: ', '').split('=')[0]
