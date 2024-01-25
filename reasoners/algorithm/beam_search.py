@@ -203,6 +203,9 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         
 
     def __call__(self, world: WorldModel[State, Action, State], config: SearchConfig[State, Action, State]):
+        # reset id
+        BeamSearchNode.reset_id()
+        
         init_state = world.init_state()
         # root node
         root_node = BeamSearchNode(state=init_state, action=None, reward=0.0)

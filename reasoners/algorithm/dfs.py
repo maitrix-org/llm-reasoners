@@ -71,6 +71,9 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
         self.stat_cnt = 0
 
     def __call__(self, world: WorldModel, config: SearchConfig):
+        # reset id
+        DFSNode.reset_id()
+        
         init_state = world.init_state()
         self._reset()
         init_node = DFSNode(state=init_state, action=None, parent=None, fast_reward=0., fast_reward_details=None, is_terminal=False)
