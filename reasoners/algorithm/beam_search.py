@@ -47,6 +47,7 @@ class BeamSearchResult(NamedTuple):
     terminal_node: BeamSearchNode
     cum_reward: float
     tree: BeamSearchNode
+    trace: List[Tuple[Action, State, float]]
 
 
 class BeamSearch(SearchAlgorithm, Generic[State, Action]):
@@ -202,6 +203,9 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         
 
     def __call__(self, world: WorldModel[State, Action, State], config: SearchConfig[State, Action, State]):
+        # reset id
+        BeamSearchNode.reset_id()
+        
         init_state = world.init_state()
         # root node
         root_node = BeamSearchNode(state=init_state, action=None, reward=0.0)
@@ -209,7 +213,8 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         cur_beam = [(root_node, [], 0.0)] # (node, reward_list, cum_reward)
         terminal_beam = []
 
-        for depth in range(self.max_depth):
+        for depth in range(self.max_depth + 1):
+            # when depth == max_depth, we need to add the cur_beam to terminal_beam
             new_beam = []
             cache_for_dedup = set()
 
@@ -226,6 +231,9 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                         # deduplicate the actions
                         actions = [a for a in actions if a not in cache_for_dedup]
                         cache_for_dedup.update(actions)
+                        
+                    elif depth == self.max_depth:
+                        terminal_beam.append(beam_item)
                     
                     for action in actions:
                         next_state, aux = world.step(state, action)
@@ -233,7 +241,8 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                         if self.unbiased and self.sampling_strategy == 'stochastic':
                             # the action should have action.action_prob
                             try:
-                                reward, reward_aux = config.reward(state, action, **aux)
+                                fast_reward, fast_reward_aux = config.fast_reward(state, action)
+                                reward, reward_aux = config.reward(state, action, **aux, **fast_reward_aux)
                                 acc_action_prob = reward_aux['acc_action_prob']
                                 cur_action_prob = reward_aux['cur_action_prob']
                             except:
@@ -243,7 +252,8 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                                                    is the accumulated action probability, and \
                                                    'cur_action_prob', which is the current action probability.")
                         else:
-                            reward = config.reward(state, action, **aux)
+                            fast_reward, fast_reward_aux = config.fast_reward(state, action)
+                            reward = config.reward(state, action, **aux, **fast_reward_aux)
 
                             # if the reward is a tuple, then it is (reward, aux)
                             if isinstance(reward, tuple):
@@ -265,10 +275,6 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                             new_beam.append((new_node, new_reward_list, new_reward, (acc_action_prob, cur_action_prob)))
                         else:
                             new_beam.append((new_node, new_reward_list, new_reward))
-
-                    # check whether this is max_depth
-                    if depth == self.max_depth - 1:
-                        terminal_beam.append(beam_item)
 
 
             # Sort new beam by reward
@@ -293,6 +299,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             terminal_beam = [BeamSearchResult(
                                 terminal_node=item[0],
                                 cum_reward=item[2],  # Use the precomputed cum_reward
+                                trace=item[0].get_trace(),
                                 tree=root_node
                                 ) for item in terminal_beam]
             
@@ -303,6 +310,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         result = BeamSearchResult(
             terminal_node=best_result[0],
             cum_reward=best_result[2],  # Use the precomputed cum_reward
+            trace=best_result[0].get_trace(),
             tree=root_node
             )
 
