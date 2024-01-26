@@ -28,19 +28,13 @@ Given any reasoning problem, simply define the reward function and an optional w
 ## Experiment Results
 We tested different reasoning algorithms on the following benchmarks (to be updated).
 
-|Method|Base LLM|[GSM8K](https://arxiv.org/abs/2110.14168)|[AQuA](https://arxiv.org/abs/1705.04146)|[SVAMP](https://arxiv.org/abs/2103.07191)|[ASDiv](https://arxiv.org/abs/2106.15772)|[CommonsenseQA](https://arxiv.org/abs/1811.00937)|[StrategyQA](https://arxiv.org/abs/2101.02235)|
-|-|-|-|-|-|-|-|-|
-|[CoT](https://arxiv.org/abs/2201.11903)|LLaMA-33B|0.29|-|-|-|-|-|
-|CoT+[SC](https://arxiv.org/abs/2203.11171)|LLaMA-33B|0.47|-|-|-|-|-|
-|[Least-to-Most](https://arxiv.org/abs/2205.10625)+SC|LLaMA-33B|0.43|-|-|-|-|-|
-|[RAP](https://arxiv.org/abs/2305.14992)|LLaMA-33B|0.49|-|-|-|-|-|
-|[RAP (aggr)](https://arxiv.org/abs/2305.14992)|LLaMA-33B|0.52|-|-|-|-|-|
+|Method|Base LLM|[GSM8K](https://arxiv.org/abs/2110.14168)|[AQuA](https://arxiv.org/abs/1705.04146)|[Blocksworld](https://arxiv.org/abs/2305.15771)|[Game of 24](https://arxiv.org/abs/2305.10601)|[StrategyQA](https://arxiv.org/abs/2101.02235)|
+|-|-|-|-|-|-|-|
+|[CoT](https://arxiv.org/abs/2201.11903)|Llama-2 70B|0.54|0.34|0.05|-|0.76|
+|[ToT (BFS)](https://arxiv.org/abs/2305.10601)|Llama-2 70B|0.58|0.42|0.09|0.04|0.76|
+|[RAP](https://arxiv.org/abs/2305.14992)|Llama-2 70B|0.61|0.47|0.51|0.07|0.77|
+|[RAP (aggr)](https://arxiv.org/abs/2305.14992)|Llama-2 70B|0.64|0.51|-|-|0.82|
 
-
-|Method|Base LLM|[Blocksworld](https://arxiv.org/abs/2305.15771)|[Game of 24](https://arxiv.org/abs/2305.10601)|[Mini Crosswords](https://arxiv.org/abs/2305.10601)|[ProntoQA](https://arxiv.org/abs/2210.01240)|
-|-|-|-|-|-|-|
-|CoT|Llama2-70B|0.08|-|-||
-|RAP|Llama2-70B|0.65|-|-|-|
 
 Our library has been tested against official repos of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601) and [Guided Decoding](https://arxiv.org/abs/2305.00633). We list the results reported in their paper /  reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
 |Method|Base LLM|GSM8k|
