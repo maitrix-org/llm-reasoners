@@ -13,7 +13,7 @@ from tqdm import trange
 from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action, Example, Trace
 
 
-class MCTSNode(Generic[State, Action]):
+class MCTSNode(Generic[State, Action, Example]):
     id_iter = itertools.count()
 
     @classmethod
@@ -70,14 +70,14 @@ class MCTSResult(NamedTuple):
     aggregated_result: Optional[Hashable] = None
 
 
-class MCTSAggregation(Generic[State, Action], ABC):
+class MCTSAggregation(Generic[State, Action, Example], ABC):
     def __init__(self, retrieve_answer: Callable[[State], Hashable],
                  weight_policy: str = 'edge'):
         assert weight_policy in ['edge', 'edge_inverse_depth']
         self.retrieve_answer = retrieve_answer
         self.weight_policy = weight_policy
 
-    def __call__(self, tree_state: MCTSNode[State, Action]) -> Optional[Hashable]:
+    def __call__(self, tree_state: MCTSNode[State, Action, Example]) -> Optional[Hashable]:
         answer_dict = defaultdict(lambda: 0)
 
         def visit(cur: MCTSNode[State, Action]):

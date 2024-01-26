@@ -275,7 +275,7 @@ class LlamaModel(LanguageModel):
 
 class DummyLLaMAModel(LanguageModel):
     def __init__(self, path, size, max_batch_size=1, max_seq_len=2048,
-                 local_rank=-1, world_size=-1):
+                 local_rank=-1, world_size=-1, **kwargs):
         super().__init__()
 
     @torch.no_grad()
@@ -287,6 +287,7 @@ class DummyLLaMAModel(LanguageModel):
             top_p: float = 0.95,
             end_token: str = "",  # TODO: change this to a function
             hide_input: bool = False,
+            **kwargs
     ) -> GenerateOutput:
         return GenerateOutput(inputs, np.zeros(len(inputs)))
 

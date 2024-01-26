@@ -17,7 +17,7 @@ from .. import LanguageModel, GenerateOutput
 
 class ExLlamaModel(LanguageModel):
     def __init__(self, model_dir, lora_dir, max_batch_size, max_new_tokens, max_seq_length, device='cuda:0',
-                 mem_map: list[int] = None, log_time=False):
+                 mem_map: list[int] = None, log_time=False, log_output=False):
         """
         Initializes an ExLlamaModel instance.
 
@@ -94,7 +94,7 @@ class ExLlamaModel(LanguageModel):
         self.max_batch_size = max_batch_size
         self.max_new_tokens = max_new_tokens
         self.max_seq_length = max_seq_length
-
+        self.log_output = log_output
         self.log_time = log_time
 
     def generate(
@@ -173,16 +173,17 @@ class ExLlamaModel(LanguageModel):
                                f"(speed: {round(sum(num_new_tokens) / t, 2)} t/s)")
             if not isinstance(decoded, list):
                 decoded = [decoded]
-            # if hide_input:
-            #     for i in range(end-start):
-            #         decoded[i] = decoded[i][len(inputs[start+i]):]
-            #         if isinstance(eos_token_id, str):
-            #             decoded[i] = decoded[i].split(eos_token_id)[0]
-            log_prob = None
             if output_log_probs:
                 warnings.warn(
                     "output_log_probs is temporarily not supported now by ExLlamaModel. Please refere to exllama's code")
             decoded_list.extend(decoded)
+
+        if self.log_output:
+            print("="*30 + "input" + "="*30)
+            print(inputs)
+            print("="*30 + "output" + "="*30)
+            print(decoded_list)
+            print("="*30 + "end" + "="*30)
 
         return GenerateOutput(decoded_list, log_prob_list)
 
@@ -215,8 +216,6 @@ class ExLlamaModel(LanguageModel):
         for i, eos_pos in enumerate(eos):
             if eos_pos > 0:
                 sequence[i, eos_pos + 1:] = generator.tokenizer.pad_token_id
-        # if hide_input:
-        #     sequence = sequence[:, ids.shape[1]:]
         text = generator.tokenizer.decode(sequence)
         if hide_input:
             text = [text[i][len(prompt[i]):] for i in range(len(prompt))]
@@ -261,6 +260,13 @@ class ExLlamaModel(LanguageModel):
         logits = []
         for case_logits, cand in zip(all_logits, cand_tokens):
             logits.append(case_logits[cand].cpu().numpy())
+
+        if self.log_output:
+            print("="*30 + "prefix" + "="*30)
+            print(prompt)
+            print("="*30 + "candidates" + "="*30)
+            print(candidates)
+            print("="*30 + "end" + "="*30)
         return logits
 
     @torch.no_grad()
@@ -290,4 +296,11 @@ class ExLlamaModel(LanguageModel):
                 if tokens[j, i] != self.tokenizer.pad_token_id:
                     acc_probs[j] += torch.log(probs[j, tokens[j, i]])
 
+        if self.log_output:
+            print("="*30 + "prefix" + "="*30)
+            print(prefix)
+            print("="*30 + "candidates" + "="*30)
+            print(contents)
+            print("="*30 + "end" + "="*30)
+        
         return acc_probs.cpu().numpy()

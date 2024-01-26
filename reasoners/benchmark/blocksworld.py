@@ -15,11 +15,15 @@ def rap_bw_extractor(algo_output):
     if torch.distributed.is_initialized():
         torch.distributed.barrier()
     # to make sure the plan is saved before evaluation in multi-process setting
-    if algo_output.trace is None:
-        print("No plan found")
+    try:
+        if algo_output.trace is None:
+            print("No plan found")
+            return ""
+        else:
+            return "\n".join(algo_output.trace[1])
+    except Exception as e:
+        print("Error in output extraction,", e)
         return ""
-    else:
-        return "\n".join(algo_output.trace[1])
 
 def get_icl(init_prompt, examples):
     icl = init_prompt["intro"] + \
@@ -63,9 +67,9 @@ class BWEvaluator(Evaluator):
 
     def sample_prompt(self,
                       shuffle_prompt=True,
-                      num_shot=4,
-                      sample_prompt_type="rap"):
+                      num_shot=4):
 
+        sample_prompt_type = self.sample_prompt_type
         if sample_prompt_type == "rap":
             if shuffle_prompt:
                 examples = random.sample(self.init_prompt["example_pool"], num_shot)
