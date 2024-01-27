@@ -105,10 +105,10 @@ Mammals are vertebrates. Carnivores are mammals. Bilaterians are animals. Verteb
 True or false: Sam is warm-blooded.
 [ACTIONS]
 "Sam is a tabby.",
-    "Tabbies are cats.",
-    "Sam is a cat.",
-    "Cats are felines.",
-    "Sam is a cat."
+"Tabbies are cats.",
+"Sam is a cat.",
+"Cats are felines.",
+"Sam is a cat."
 [EVALUATION] Is the last action good?
 No, Sam is a cat is being repeated.
 
@@ -119,8 +119,8 @@ FACTS_FORMAT = """[FACTS]
 [QUERY]
 True or false: {}
 """
-NEXT_STEP_FORMAT = "[ACTIONS]
+NEXT_STEP_FORMAT = """[ACTIONS]
 {}
-"
-VALID_PREFIX = "[EVALUATION] Is this reasoning step correct?
-"
+"""
+VALID_PREFIX = """[EVALUATION] Is this reasoning step correct?
+"""

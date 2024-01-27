@@ -216,7 +216,6 @@ class Evaluator():
      
             file_path = os.path.join(directory_path, f"MCTS_{i+1}.pkl")
             with open(file_path, 'wb') as file:
-                # Use pickle to dump the object to the file
                 pickle.dump(algo_output, file)
             
             output = self.output_extractor(algo_output)
