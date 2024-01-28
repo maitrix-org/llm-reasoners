@@ -1,30 +1,29 @@
 from reasoners.lm import ExLlamaModel
 import json
 import fire
-import itertools
-import os
 from typing import Sequence, Any
 import json
 from tqdm import tqdm
-import pickle
 from typing import Type, Callable, Optional
 
-from dataset import ProntoQADataset, ProntoQAProblem, ProntoQAExample
-from reasoners import LanguageModel, SearchAlgorithm, Reasoner
+from dataset import ProntoQADataset, ProntoQAExample
+from reasoners import Reasoner
 import torch
 import prompts.finish
-import prompts.valid
 import prompts.next_step
+import prompts.valid_new
 
 from reasoners import WorldModel, SearchConfig
-from reasoners.lm import llama_cpp_model
-from reasoners.visualization import visualize
-from search_config import ProntoQAConfig
 from reasoners.algorithm import MCTS, BeamSearch, DFS
 from reasoners.benchmark import ProntoQAEvaluatorFinal
 
 ProntoQAState = list[str]
 ProntoQAAction = str
+
+def remove_so_prefix(s):
+    if s.startswith('So '):
+        return s[3:]
+    return s
 
 class ProntoQAToTWorldModel(WorldModel[ProntoQAState, ProntoQAAction, ProntoQAExample]):
     def __init__(self) -> None:
@@ -56,61 +55,47 @@ class ProntoQAToTSearchConfig(SearchConfig[ProntoQAState, ProntoQAAction, Pronto
         input_prompt += "".join([" " + s for s in state])
         output = self.base_model.generate([input_prompt] * self.n_actions, eos_token_id=29889, hide_input=True, temperature=self.temperature, do_sample=True).text
         ret = [o.strip() for o in output]
+        print(f"Input prompt to model.generate: {input_prompt}")
+        print(f"model generated actions: {ret}")
         # deduplicate
         ret = dict.fromkeys(ret).keys()
         return ret
 
     def fast_reward(self, state: ProntoQAState, action: ProntoQAAction) -> tuple[float, dict]:
+        processed_state = [remove_so_prefix(s) for s in state]
+        processed_action = remove_so_prefix(action)
         input_prompt = self.prompt
         input_prompt += "Q: " + self.example.test_example.question + " " + self.example.test_example.query + "\nA:"
-        input_prompt += "".join([" " + s for s in state])
-        candidate = input_prompt + " " + action
+        input_prompt += "".join([" " + s for s in processed_state])
+        candidate = input_prompt + " " + processed_action
         intuition = self.base_model.get_loglikelihood(input_prompt, 
             [candidate])[0]
         
         print(f" prompt: {self.prompt}")
-        print(f"action: {action}")
+        print(f"action: {processed_action}")
         print(f"input_prompt: {input_prompt}")
         print("hello")
-        print(f"state: {state}")
-        # if len(state)>3:
-        #     raise Exception
-        
-        # # Self evaluation reward
+        print(f"state: {processed_state}")
+
         input_prompt = ""
+        input_prompt += prompts.valid_new.EXAMPLES
+        input_prompt += prompts.valid_new.FACTS_FORMAT.format(self.example.test_example.question or "", self.example.test_example.query)
+        input_prompt += prompts.valid_new.NEXT_STEP_FORMAT.format(',\n'.join(f'"{statement}"' for statement in processed_state))
+        input_prompt += prompts.valid_new.VALID_PREFIX
 
-        if state==[] or len(state)<3 or len(state)%2==0:
-            reward = 0.0
-        else:
+        output_logits = self.base_model.get_next_token_logits(
+            input_prompt,
+            candidates=["Yes", "No"]
+        )
 
-            self_eval_state= state[-3].lstrip("So ")
-            curr_action = state[-2].lstrip("So ")
-            next_eval_state = state[-1].lstrip("So ")
-            match action:
-                case "Finish.":
-                    input_prompt += prompts.finish.EXAMPLES
-                    input_prompt += prompts.finish.TARGET_FORMAT.format(self.example.test_example.query)
-                    input_prompt += prompts.finish.CLAIM_FORMAT.format(next_eval_state)
-                    input_prompt += prompts.finish.OUTPUT_PREFIX
-                case _:
-                    input_prompt += prompts.valid.EXAMPLES
-                    input_prompt += prompts.valid.FACTS_FORMAT.format(self_eval_state or "", curr_action)
-                    input_prompt += prompts.valid.NEXT_STEP_FORMAT.format(next_eval_state)
-                    input_prompt += prompts.valid.VALID_PREFIX
-
-            output_logits = self.base_model.get_next_token_logits(
-                input_prompt,
-                candidates=["Yes", "No"]
-            )
-
-
-            reward: float = output_logits[0][0].item()
-            reward:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
-            print(f" input_prompt: {input_prompt}, reward: {reward}")
+        print(f"input_prompt: {input_prompt}")
+        reward: float = output_logits[0][0].item()
+        reward:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
+        print(f" reward: {reward}")
 
         self_eval = reward  
         print(f" intuition: {intuition}, self_eval: {self_eval}")
-        return intuition*.5 + self_eval*0.5, {"intuition": intuition, "self_eval":self_eval}
+        return intuition*0.5 + self_eval*0.5, {"intuition": intuition, "self_eval":self_eval}
 
     def reward(self, state, action, **kwargs) -> tuple[float, dict]:
         # how correct is this last action
@@ -168,8 +153,7 @@ def main(model_dir: str,
                               max_batch_size=1, 
                               max_new_tokens=200, 
                               max_seq_length=2048, 
-                              mem_map=mem_map,
-                              log_output=True)
+                              mem_map=mem_map)
 
     world_model = ProntoQAToTWorldModel()
     search_config = ProntoQAToTSearchConfig(base_model=base_model, temperature=temperature)
@@ -206,3 +190,5 @@ if __name__ == '__main__':
 # CUDA_VISIBLE_DEVICES=0 python examples/rap_prontoqa/inference_tot.py --depth_limit 10 --model_dir $LLAMA2_CKPTS --beam_size 10 --temperature 0.8 --reward_aggregator mean --search_algo beam > debug_bfs.log
 
 # python examples/rap_prontoqa/tot_inference.py --depth_limit 10 --model_dir /data/yi/Llama-2-70B-GPTQ/ --total_states 10 --temperature 0.8 --search_algo dfs --max_per_state 3 > debug_dfs.log
+    
+    # TODO: 1) remove total state, depth limit 2) 
