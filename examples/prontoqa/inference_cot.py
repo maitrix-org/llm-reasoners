@@ -58,10 +58,10 @@ def main(temperature=0.0, log_name="name"):
                                 log_output=True) #please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
 
     # dataset = ProntoQADataset.from_file(
-    #     'examples/rap_prontoqa/data/345hop_random_true.json'
+    #     'examples/prontoqa/data/345hop_random_true.json'
     # )
 
-    with open('examples/rap_prontoqa/data/example_next_steps.json') as f:
+    with open('examples/prontoqa/data/example_next_steps.json') as f:
         init_prompt = json.load(f)
     
     reasoner =  CoTReasoner(base_model=language_model)
@@ -71,7 +71,7 @@ def main(temperature=0.0, log_name="name"):
         sample_prompt_type="cot",
         disable_log=False,
         disable_tqdm=False, dataset = ProntoQADataset.from_file(
-            'examples/rap_prontoqa/data/345hop_random_true.json'
+            'examples/prontoqa/data/345hop_random_true.json'
         ),
         output_extractor=lambda x: x,
         answer_extractor=lambda x: "\n".join(x.test_example.chain_of_thought[2::2])
@@ -83,4 +83,4 @@ def main(temperature=0.0, log_name="name"):
 if __name__ == '__main__':
     fire.Fire(main)
 
-# CUDA_VISIBLE_DEVICES=1 python examples/rap_prontoqa/inference_cot.py --temperature 0.0
+# CUDA_VISIBLE_DEVICES=1 python examples/prontoqa/inference_cot.py --temperature 0.0

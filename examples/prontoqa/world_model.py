@@ -4,10 +4,9 @@ from typing import Optional
 
 import prompts.output
 import prompts.transition
-from examples.rap_prontoqa.dataset import ProntoQAExample
 from reasoners import WorldModel, LanguageModel
 from reasoners.base import Example
-
+from examples.prontoqa.dataset import ProntoQAExample
 
 @dataclass
 class ProntoQAState:
