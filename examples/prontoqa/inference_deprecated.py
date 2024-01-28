@@ -212,6 +212,6 @@ if __name__ == '__main__':
 
     fire.Fire(llamacpp_main) # user will need to switch the model in the code
 
-# python examples/rap_prontoqa/tot_inference.py --depth_limit 10 --model_dir /data/yi/Llama-2-70B-GPTQ/ --beam_size 10 --temperature 0.8 --reward_aggregator mean --search_algo beam
+# python examples/prontoqa/tot_inference.py --depth_limit 10 --model_dir /data/yi/Llama-2-70B-GPTQ/ --beam_size 10 --temperature 0.8 --reward_aggregator mean --search_algo beam
 
-# python examples/rap_prontoqa/tot_inference.py --depth_limit 10 --model_dir /data/yi/Llama-2-70B-GPTQ/ --total_states 10 --temperature 0.8 --search_algo dfs --max_per_state 3 > debug_dfs.log
+# python examples/prontoqa/tot_inference.py --depth_limit 10 --model_dir /data/yi/Llama-2-70B-GPTQ/ --total_states 10 --temperature 0.8 --search_algo dfs --max_per_state 3 > debug_dfs.log

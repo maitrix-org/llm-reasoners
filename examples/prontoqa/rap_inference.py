@@ -21,8 +21,6 @@ def create_directory_if_not_exists(directory):
         os.makedirs(directory)
 
 def main(model_dir: str=  os.environ['LLAMA2_CKPTS'],
-           resume: int = 0,
-           log_dir: Optional[str] = None,
            mem_map: str = [16, 22],
            **search_algo_params):
     import torch, os
@@ -36,16 +34,12 @@ def main(model_dir: str=  os.environ['LLAMA2_CKPTS'],
                                 mem_map=mem_map,
                                 log_output=True)#please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
 
-    dataset = ProntoQADataset.from_file(
-        'examples/rap_prontoqa/data/345hop_random_true.json'
-    )
-
-    with open('examples/rap_prontoqa/data/example_next_steps.json') as f:
+    with open('examples/prontoqa/data/example_next_steps.json') as f:
         init_prompt = json.load(f)
     
     world_model = ProntoQAWorldModel(base_model=language_model)
     search_config = ProntoQAConfig(base_model=language_model)
-    search_algo = MCTS( w_exp=1.5, n_iters=15, output_trace_in_each_iter=True, cum_reward=np.mean,  **search_algo_params)
+    search_algo = MCTS(output_trace_in_each_iter=True, cum_reward=np.mean, **search_algo_params)
     reasoner =  Reasoner(
             world_model=world_model,
             search_config=search_config,
@@ -57,7 +51,7 @@ def main(model_dir: str=  os.environ['LLAMA2_CKPTS'],
         sample_prompt_type="rap",
         disable_log=False,
         disable_tqdm=False, dataset = ProntoQADataset.from_file(
-            'examples/rap_prontoqa/data/345hop_random_true.json'
+            'examples/prontoqa/data/345hop_random_true.json'
         )
     )
 

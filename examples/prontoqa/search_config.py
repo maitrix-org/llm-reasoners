@@ -5,7 +5,7 @@ import torch
 import prompts.finish
 import prompts.valid
 import prompts.next_step
-from examples.rap_prontoqa.dataset import ProntoQAExample
+from examples.prontoqa.dataset import ProntoQAExample
 from reasoners import SearchConfig, LanguageModel
 from world_model import ProntoQAState, ProntoQAAction, ProntoQAWorldModel
 

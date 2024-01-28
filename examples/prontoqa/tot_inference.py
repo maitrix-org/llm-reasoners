@@ -166,7 +166,7 @@ def main(model_dir: str,
     else:
         raise NotImplementedError
    
-    with open('examples/rap_prontoqa/data/example_next_steps.json') as f:
+    with open('examples/prontoqa/data/example_next_steps.json') as f:
         init_prompt = json.load(f)
     
     reasoner = Reasoner(world_model=world_model, search_config=search_config, search_algo=search_algo)
@@ -175,7 +175,7 @@ def main(model_dir: str,
         sample_prompt_type="cot",
         disable_log=False,
         disable_tqdm=False, dataset = ProntoQADataset.from_file(
-            'examples/rap_prontoqa/data/345hop_random_true.json'
+            'examples/prontoqa/data/345hop_random_true.json'
         ),
         output_extractor=output_extractor,
         answer_extractor=lambda x: "\n".join(x.test_example.chain_of_thought[2::2])
@@ -187,8 +187,9 @@ def main(model_dir: str,
 if __name__ == '__main__':
     fire.Fire(main)
 
-# CUDA_VISIBLE_DEVICES=0 python examples/rap_prontoqa/inference_tot.py --depth_limit 10 --model_dir $LLAMA2_CKPTS --beam_size 10 --temperature 0.8 --reward_aggregator mean --search_algo beam > debug_bfs.log
+# CUDA_VISIBLE_DEVICES=0 python examples/prontoqa/inference_tot.py --depth_limit 10 --model_dir $LLAMA2_CKPTS --beam_size 10 --temperature 0.8 --reward_aggregator mean --search_algo beam > debug_bfs.log
 
 # python examples/rap_prontoqa/tot_inference.py --depth_limit 10 --model_dir /data/yi/Llama-2-70B-GPTQ/ --total_states 10 --temperature 0.8 --search_algo dfs --max_per_state 3 > debug_dfs.log
     
     # TODO: 1) remove total state, depth limit 2) 
+# python examples/prontoqa/tot_inference.py --depth_limit 10 --model_dir /data/yi/Llama-2-70B-GPTQ/ --total_states 10 --temperature 0.8 --search_algo dfs --max_per_state 3 > debug_dfs.log
