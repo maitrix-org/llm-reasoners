@@ -3,7 +3,7 @@ from typing import Optional
 import torch 
 
 import prompts.finish
-import prompts.valid
+import prompts.valid_rap
 import prompts.next_step
 from examples.prontoqa.dataset import ProntoQAExample
 from reasoners import SearchConfig, LanguageModel
@@ -35,16 +35,14 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction,ProntoQAExample]
         self.example: ProntoQAExample = self.example
 
     def get_actions(self, state: ProntoQAState) -> list[ProntoQAAction]:
-        # *base_facts, init_state = self.example.test_example.question.split(". ")
-        # facts = base_facts + ["Finish."]
+        
         *base_facts, init_state = self.example.test_example.question.split(". ")
 
         input_prompt = ""
-        # input_prompt += prompts.next_step.EXAMPLES
         input_prompt += format_examples(self.prompt)
         input_prompt += prompts.next_step.FACTS_FORMAT.format(len(self.prompt) + 1,". ".join(base_facts))
         input_prompt += prompts.next_step.QUERY_FORMAT.format(len(self.prompt) + 1, self.example.test_example.query)
-        input_prompt += prompts.next_step.CLAIM_FORMAT.format(len(self.prompt) + 1,state)
+        input_prompt += prompts.next_step.CLAIM_FORMAT.format(len(self.prompt) + 1, state)
         input_prompt += prompts.next_step.NEXT_STEP_PREFIX.format(len(self.prompt) + 1)
 
         # print(f"input_prompt: {input_prompt}")
@@ -61,9 +59,8 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction,ProntoQAExample]
             state: ProntoQAState,
             action: ProntoQAAction,
     ) -> tuple[float, dict]:
-        
+        *base_facts, init_state = self.example.test_example.question.split(". ")
         input_prompt = ""
-
         match action:
             case "Finish.":
                 input_prompt += prompts.finish.EXAMPLES
@@ -71,19 +68,19 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction,ProntoQAExample]
                 input_prompt += prompts.finish.CLAIM_FORMAT.format(state)
                 input_prompt += prompts.finish.OUTPUT_PREFIX
             case _:
-                input_prompt += prompts.valid.EXAMPLES
-                input_prompt += prompts.valid.FACTS_FORMAT.format(state.last_state or "", action)
-                input_prompt += prompts.valid.NEXT_STEP_FORMAT.format(state)
-                input_prompt += prompts.valid.VALID_PREFIX
+                input_prompt = prompts.valid_rap.TEMPLATE.replace("[[STATE]]", state.body)\
+                    .replace("[[ACTION]]", action)\
+                    .replace("[[QUERY]]", self.example.test_example.query)\
+                    .replace("[[FACTS]]", ". ".join(base_facts) + ".")
 
         output_logits = self.base_model.get_next_token_logits(
             input_prompt,
             candidates=["Yes", "No"]
         )
+        print("output_logits: ", output_logits)
+        # self_eval:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
+        self_eval:float = output_logits[0][0].item()
 
-        # reward: float = output_logits[0][0].item()
-        self_eval:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
-        
         # intuition reward
 
         *base_facts, init_state = self.example.test_example.question.split(". ")

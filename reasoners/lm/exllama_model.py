@@ -264,7 +264,7 @@ class ExLlamaModel(LanguageModel):
         if self.log_output:
             print("="*30 + "prefix" + "="*30)
             print(prompt)
-            print("="*30 + "candidates" + "="*30)
+            print("="*30 + "candidate next token" + "="*30)
             print(candidates)
             print("="*30 + "end" + "="*30)
         return logits

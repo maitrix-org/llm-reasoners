@@ -62,3 +62,5 @@ def main(model_dir: str=  os.environ['LLAMA2_CKPTS'],
 if __name__ == '__main__':
     fire.Fire(main)
 # CUDA_VISIBLE_DEVICES=0,1 python examples/prontoqa/rap_inference.py --mem_map "[16, 22]" --depth_limit 6 | tee debug_rap.log
+    
+# CUDA_VISIBLE_DEVICES=0,1 python examples/prontoqa/rap_inference.py --mem_map "[16, 22]" --depth_limit 6 --w_exp 2 | tee debug_rap_2.log

@@ -11,7 +11,7 @@ from reasoners import Reasoner
 import torch
 import prompts.finish
 import prompts.next_step
-import prompts.valid_new
+import prompts.valid_tot
 
 from reasoners import WorldModel, SearchConfig
 from reasoners.algorithm import MCTS, BeamSearch, DFS
@@ -78,10 +78,10 @@ class ProntoQAToTSearchConfig(SearchConfig[ProntoQAState, ProntoQAAction, Pronto
         print(f"state: {processed_state}")
 
         input_prompt = ""
-        input_prompt += prompts.valid_new.EXAMPLES
-        input_prompt += prompts.valid_new.FACTS_FORMAT.format(self.example.test_example.question or "", self.example.test_example.query)
-        input_prompt += prompts.valid_new.NEXT_STEP_FORMAT.format(',\n'.join(f'"{statement}"' for statement in processed_state))
-        input_prompt += prompts.valid_new.VALID_PREFIX
+        input_prompt += prompts.valid_tot.EXAMPLES
+        input_prompt += prompts.valid_tot.FACTS_FORMAT.format(self.example.test_example.question or "", self.example.test_example.query)
+        input_prompt += prompts.valid_tot.NEXT_STEP_FORMAT.format(',\n'.join(f'"{statement}"' for statement in processed_state))
+        input_prompt += prompts.valid_tot.VALID_PREFIX
 
         output_logits = self.base_model.get_next_token_logits(
             input_prompt,

@@ -1,5 +1,4 @@
-EXAMPLES = """
-[FACTS]
+EXAMPLES = """[FACTS]
 Each lepidopteran is an insect. Each arthropod is a protostome. Every animal is multicellular. Protostomes are invertebrates. Each whale is bony. Each painted lady is a butterfly. Invertebrates are animals. Butterflies are lepidopterans. Every insect is six-legged. Every insect is an arthropod. Arthropods are not bony. Sally is a painted lady.
 [QUERY]
 True or false: Sally is not bony.
