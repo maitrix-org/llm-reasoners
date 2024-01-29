@@ -42,10 +42,10 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction,ProntoQAExample]
         input_prompt = ""
         # input_prompt += prompts.next_step.EXAMPLES
         input_prompt += format_examples(self.prompt)
-        input_prompt += prompts.next_step.FACTS_FORMAT.format(len(self.prompt),". ".join(base_facts))
-        input_prompt += prompts.next_step.QUERY_FORMAT.format(len(self.prompt), self.example.test_example.query)
-        input_prompt += prompts.next_step.CLAIM_FORMAT.format(len(self.prompt),state)
-        input_prompt += prompts.next_step.NEXT_STEP_PREFIX.format(len(self.prompt))
+        input_prompt += prompts.next_step.FACTS_FORMAT.format(len(self.prompt) + 1,". ".join(base_facts))
+        input_prompt += prompts.next_step.QUERY_FORMAT.format(len(self.prompt) + 1, self.example.test_example.query)
+        input_prompt += prompts.next_step.CLAIM_FORMAT.format(len(self.prompt) + 1,state)
+        input_prompt += prompts.next_step.NEXT_STEP_PREFIX.format(len(self.prompt) + 1)
 
         # print(f"input_prompt: {input_prompt}")
         outputs = self.base_model.generate([input_prompt] * self.n_candidates, eos_token_id="\n", hide_input=True, temperature=self.temperature, do_sample=True).text
@@ -61,7 +61,7 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction,ProntoQAExample]
             state: ProntoQAState,
             action: ProntoQAAction,
     ) -> tuple[float, dict]:
-        """
+        
         input_prompt = ""
 
         match action:
@@ -76,23 +76,14 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction,ProntoQAExample]
                 input_prompt += prompts.valid.NEXT_STEP_FORMAT.format(state)
                 input_prompt += prompts.valid.VALID_PREFIX
 
-        output_logits = self.world_model.base_model.get_next_token_logits(
+        output_logits = self.base_model.get_next_token_logits(
             input_prompt,
             candidates=["Yes", "No"]
         )
 
-        
-
         # reward: float = output_logits[0][0].item()
-        reward:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
-
-        print(input_prompt, file=sys.stderr, flush=True)
-        match action:
-            case "Finish.":
-                print(f"S[{state}] Q[{self.example.test_example.query}] -> R[{reward}]", flush=True)
-            case _:
-                print(f"S[{state.last_state}] A[{action}] S'[{state}] -> R[{reward}]", flush=True)
-        """
+        self_eval:float = torch.softmax(torch.tensor(output_logits[0]), dim=0)[0].item()
+        
         # intuition reward
 
         *base_facts, init_state = self.example.test_example.question.split(". ")
@@ -100,47 +91,20 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction,ProntoQAExample]
         input_prompt = ""
         # input_prompt += prompts.next_step.EXAMPLES
         input_prompt += format_examples(self.prompt)
-        input_prompt += prompts.next_step.FACTS_FORMAT.format(len(self.prompt),". ".join(base_facts))
-        input_prompt += prompts.next_step.QUERY_FORMAT.format(len(self.prompt),self.example.test_example.query)
-        input_prompt += prompts.next_step.CLAIM_FORMAT.format(len(self.prompt),state)
-        input_prompt += prompts.next_step.NEXT_STEP_PREFIX.format(len(self.prompt))
+        input_prompt += prompts.next_step.FACTS_FORMAT.format(len(self.prompt) + 1,". ".join(base_facts))
+        input_prompt += prompts.next_step.QUERY_FORMAT.format(len(self.prompt) + 1, self.example.test_example.query)
+        input_prompt += prompts.next_step.CLAIM_FORMAT.format(len(self.prompt) + 1, state)
+        input_prompt += prompts.next_step.NEXT_STEP_PREFIX.format(len(self.prompt) + 1)
         outputs = input_prompt + " " + action
         intuition = self.base_model.get_loglikelihood(input_prompt, [outputs])[0]
 
+        match action:
+            case "Finish.":
+                print(f"S[{state}] Q[{self.example.test_example.query}] -> Self-eval[{self_eval}] Intuition[{intuition}]", flush=True)
+            case _:
+                print(f"S[{state.last_state}] A[{action}] S'[{state}] -> Self-eval[{self_eval}] Intuition[{intuition}]", flush=True)
 
-        return intuition, {"self-eval": 0, "intuition": intuition}
-    
-    def fast_reward_new(self, state: ProntoQAState, action: ProntoQAAction) -> tuple[float, dict]:
-        # TODO: currently trying to implement this
-        previous_action = state.buffered_action + "\n" if state.buffered_action != "" else ""
-
-        input_prompt=""
-        # input_prompt += prompts.next_step.EXAMPLES
-        input_prompt += format_examples(self.prompt)
-        input_prompt += prompts.next_step.FACTS_FORMAT.format(state.last_state or "", action)
-        input_prompt += prompts.next_step.NEXT_STEP_FORMAT.format(state)
-        input_prompt += prompts.next_step.VALID_PREFIX
-        
-        icl_template = self.prompt["icl_list"][state.step_idx // 2]
-
-    
-        intuition = self.base_model.get_loglikelihood(input_prompt, [input_prompt + action])[0]
-
-
-
-        return self.calculate_reward(intuition, self_eval), {'intuition': intuition}
-
-
-    # using this from blocksworld to calculate reward, have to change.
-    def calculate_reward(self, intuition, self_eval, goal_reached=None):
-        # to provide a unified interface for reward and fast_reward
-        if goal_reached is None:
-            goal_reward = self.goal_reward_default
-        elif goal_reached[0]:
-            goal_reward = self.goal_reached_reward
-        else:
-            goal_reward = goal_reached[1]
-        return (intuition + self_eval) * self.reward_alpha + goal_reward * (1 - self.reward_alpha)
+        return intuition + self_eval, {"self-eval": self_eval, "intuition": intuition}
 
     def reward(self,
                state: ProntoQAState,
@@ -149,6 +113,4 @@ class ProntoQAConfig(SearchConfig[ProntoQAState, ProntoQAAction,ProntoQAExample]
                ) -> tuple[float, dict]:
         self_eval = kwargs["self-eval"]
         intuition = kwargs["intuition"]
-        return intuition, {"self-eval": self_eval, "intuition": intuition}
-        # if not state.last_state:
-        #     return 0.1, {}
+        return intuition + self_eval, {"self-eval": self_eval, "intuition": intuition}

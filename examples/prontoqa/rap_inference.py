@@ -1,29 +1,27 @@
 import itertools
 import os
-from typing import Optional, Sequence, Any
 import json
 import fire
-from tqdm import tqdm
-import pickle
 
-from dataset import ProntoQADataset, ProntoQAProblem, ProntoQAExample
-from reasoners import LanguageModel, SearchAlgorithm, Reasoner
+from dataset import ProntoQADataset
+from reasoners import Reasoner
 
-from reasoners.lm import llama_cpp_model
-from reasoners.visualization import visualize
 from search_config import ProntoQAConfig
-from world_model import ProntoQAWorldModel, ProntoQAState, ProntoQAAction
+from world_model import ProntoQAWorldModel, ProntoQAAction
 from reasoners.algorithm import MCTS
 from reasoners.benchmark import ProntoQAEvaluatorFinal
-
+def rap_answer_extractor(mcts_result):
+    if mcts_result.trace is None:
+        return ""
+    else:
+        return "\n".join([mcts_result.trace[0][i].body for i in range(1, len(mcts_result.trace[0]) - 1)])
 def create_directory_if_not_exists(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
 def main(model_dir: str=  os.environ['LLAMA2_CKPTS'],
-           mem_map: str = [16, 22],
+           mem_map: str = "[16, 22]",
            **search_algo_params):
-    import torch, os
     import numpy as np
     from reasoners.lm import ExLlamaModel 
     language_model = ExLlamaModel(model_dir,
@@ -50,14 +48,17 @@ def main(model_dir: str=  os.environ['LLAMA2_CKPTS'],
         init_prompt=init_prompt['next_steps'],
         sample_prompt_type="rap",
         disable_log=False,
+        output_extractor=rap_answer_extractor,
+        answer_extractor=lambda x: "\n".join(x.test_example.chain_of_thought[2::2]),
         disable_tqdm=False, dataset = ProntoQADataset.from_file(
             'examples/prontoqa/data/345hop_random_true.json'
         )
     )
 
-    accuracy = evaluator.evaluate(reasoner, num_shot=4, log_dir="pronto_logs/")
+    accuracy = evaluator.evaluate(reasoner, num_shot=4)
     print(f"accuracy: {accuracy}")
 
 
 if __name__ == '__main__':
     fire.Fire(main)
+# CUDA_VISIBLE_DEVICES=0,1 python examples/prontoqa/rap_inference.py --mem_map "[16, 22]" --depth_limit 6 | tee debug_rap.log

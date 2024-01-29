@@ -29,7 +29,7 @@ class ProntoQAEvaluatorFinal(Evaluator):
                  init_prompt=None,
                  disable_log=False,
                  disable_tqdm=False,
-                 sample_prompt_type="l2m", dataset=None) -> None:
+                 sample_prompt_type="cot", dataset=None) -> None:
 
         dataset_list = list(dataset)
         dataset_list = dataset_list
@@ -48,19 +48,20 @@ class ProntoQAEvaluatorFinal(Evaluator):
 
     def sample_prompt(self,
                       shuffle_prompt=True,
-                      num_shot=6):
+                      num_shot=4):
+        if shuffle_prompt:
+            ret = random.sample(list(self.init_prompt), k=num_shot)
+        else:
+            ret = self.init_prompt[:num_shot]
 
         if self.sample_prompt_type == "rap":
-
-            ret = random.sample(list(self.init_prompt), k=num_shot)
             return ret
-            # return []
 
         elif self.sample_prompt_type == "cot":
             # cot or tot
-            ret = random.sample(list(self.init_prompt), k=num_shot)
             return get_cot_prompt(ret)
-
+        else:
+            raise NotImplementedError
 
     def eval_output(self, answer, output):
         if output is None:

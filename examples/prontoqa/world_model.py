@@ -43,14 +43,12 @@ class ProntoQAWorldModel(WorldModel[ProntoQAState, ProntoQAAction, ProntoQAExamp
                 input_prompt += prompts.output.QUERY_FORMAT.format(self.example.test_example.query)
                 input_prompt += prompts.output.CLAIM_FORMAT.format(state)
                 input_prompt += prompts.output.OUTPUT_PREFIX
-
                 print("Reached terminal state.")
 
             case _:  # transition to non-terminal state
                 input_prompt += prompts.transition.EXAMPLES
                 input_prompt += prompts.transition.FACTS_FORMAT.format(state, action)
                 input_prompt += prompts.transition.NEXT_CLAIM_PREFIX
-
                 print("Reached non-terminal state.")
 
         output = self.base_model.generate([input_prompt], eos_token_id="\n", hide_input=True, temperature=0).text[
@@ -58,7 +56,6 @@ class ProntoQAWorldModel(WorldModel[ProntoQAState, ProntoQAAction, ProntoQAExamp
 
         print(input_prompt, file=sys.stderr, flush=True)
         print(f"S[{state}] A[{action}] -> S'[{output}]", flush=True)
-
         return ProntoQAState(body=output, last_state=state, last_action=action), {}
 
     def is_terminal(self, state: ProntoQAState) -> bool:
