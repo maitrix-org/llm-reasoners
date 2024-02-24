@@ -6,7 +6,7 @@ from reasoners.lm.hf_model import HFModel
 from sklearn import base
 import utils
 import fire
-
+import transformers
 class CoTReasoner():
     def __init__(self, base_model, n_sc=1, temperature=0.8, bs=1):
         assert n_sc == 1 or temperature > 0, \
@@ -23,6 +23,11 @@ class CoTReasoner():
             print("Greedy decoding is not supported by HFModel. Using temperature = 1.0 instead.")
             self.temperature == 1.0
             do_sample = False
+        if isinstance(self.base_model.model, transformers.GemmaForCausalLM):
+            eos_token_id = [108]
+        else:
+            assert isinstance(self.base_model.model, transformers.LlamaForCausalLM)
+            eos_token_id = [13]
         for i in range((self.n_sc - 1) // self.bs + 1):
             local_bs = min(self.bs, self.n_sc - i * self.bs)
             outputs += self.base_model.generate([inputs] * local_bs,
@@ -30,7 +35,7 @@ class CoTReasoner():
                                             do_sample=do_sample,
                                             temperature=self.temperature,
                                             # eos_token_id=[13]).text #gemma的词表换了\n是108
-                                            eos_token_id=[108]).text
+                                            eos_token_id=eos_token_id).text
         return [o.strip() for o in outputs]
 
 def main(exllama_model_dir, exllama_lora_dir, exllama_mem_map, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0.8, n_sc=1):
