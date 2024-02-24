@@ -1,4 +1,5 @@
 from typing import Generic, TypeVar, Union, NamedTuple, Protocol, Optional, runtime_checkable, Tuple
+from typing import Generic, TypeVar, Union, NamedTuple, Protocol, Optional, runtime_checkable
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -8,6 +9,10 @@ import os, sys, pickle
 from tqdm import tqdm
 import torch
 
+from datetime import datetime
+import os, sys, pickle
+from tqdm import tqdm
+import torch
 State = TypeVar("State")
 Action = TypeVar("Action")
 Example = TypeVar("Example")
@@ -177,9 +182,6 @@ class Evaluator():
                  num_shot=4,
                  resume=0,
                  log_dir=None):
-        
-        directory_path = "logs/"
-        create_directory_if_not_exists(directory_path)
 
         self.dataset = list(self.full_dataset)[resume:]
         try:
@@ -193,7 +195,7 @@ class Evaluator():
                 log_dir = f'logs/{self._dataset_name}_'\
                         f'{algo_name}/'\
                         f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
-            os.makedirs(log_dir, exist_ok=True)
+            os.makedirs(log_dir, exist_ok=resume > 0)
             os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
         
             with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
@@ -207,20 +209,20 @@ class Evaluator():
                                             total=resume + len(self.dataset),
                                             initial=resume,
                                             desc=self._dataset_name,
-                                            disable=disable_tqdm)):
+                                            disable=self.disable_tqdm)):
+            
             algo_output = reasoner(self.input_processor(example),
                                     prompt=self.sample_prompt(
                                         shuffle_prompt=shuffle_prompt,
-                                        num_shot=num_shot))
+                                        num_shot=num_shot,
+                                        sample_prompt_type=self.sample_prompt_type))
             
             output = self.output_extractor(algo_output)
             answer = self.answer_extractor(example)
             correct = self.eval_output(answer, output)
-
             correct_count += correct
             accuracy = correct_count / (i + 1)
-
-            log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=}, Question: {example}'\
+            log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=};'\
                         f'{accuracy=:.3f} ({correct_count}/{i + 1})'
             tqdm.write(log_str)
 
@@ -234,6 +236,78 @@ class Evaluator():
         
         return accuracy
 
+    def evaluate_sc(self,
+                 reasoner,
+                 shuffle_prompt=True,
+                 num_shot=4,
+                 resume=0,
+                 n_sc = 10,
+                 log_dir=None):
+
+        self.dataset = list(self.full_dataset)[resume:]
+        try:
+            algo_name = reasoner.search_algo.__class__.__name__
+        except:
+            algo_name = "unknown"
+
+        
+        if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
+            if log_dir is None:
+                log_dir = f'logs/{self._dataset_name}_'\
+                        f'{algo_name}/'\
+                        f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
+            os.makedirs(log_dir, exist_ok=resume > 0)
+            os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
+        
+            with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
+                print(sys.argv, file=f)
+
+        correct_count = 0
+
+        disable_tqdm = self.disable_tqdm or \
+            (torch.distributed.is_initialized() and torch.distributed.get_rank() != 0)
+        for i, example in enumerate(tqdm(self.dataset,
+                                            total=resume + len(self.dataset),
+                                            initial=resume,
+                                            desc=self._dataset_name,
+                                            disable=self.disable_tqdm)):
+            
+            prompt = self.sample_prompt(
+                            shuffle_prompt=shuffle_prompt,
+                            num_shot=num_shot,
+                            sample_prompt_type=self.sample_prompt_type)
+            output_list = []
+            save_list = []
+            for j in range(n_sc):
+                algo_output = reasoner(self.input_processor(example),
+                                    prompt=prompt)
+                terminal_state = algo_output.terminal_state
+                path = ""
+                for k in range(len(terminal_state)):
+                    path += terminal_state[k].sub_question + " " + terminal_state[k].sub_answer + " "
+                save_list.append(path)
+                output = self.output_extractor(algo_output)
+                output_list.append(output)
+                answer = self.answer_extractor(example)
+            from collections import Counter
+            output = Counter(output_list).most_common(1)[0][0]
+            correct = self.eval_output(answer, output)
+            correct_count += correct
+            accuracy = correct_count / (i + 1)
+            log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=};'\
+                        f'{accuracy=:.3f} ({correct_count}/{i + 1})'
+            tqdm.write(log_str)
+
+            if (not self.disable_log) and \
+                (not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0):
+                with open(os.path.join(log_dir, 'result.log'), 'a') as f:
+                    print(log_str, file=f)
+                with open(os.path.join(log_dir, 'algo_output.txt'),'a') as f1:
+                    print(save_list, file=f1)
+        
+        return accuracy
     @abstractmethod
     def eval_output(self, answer, output):
         pass
+
+    

@@ -128,6 +128,11 @@ class HFModel(LanguageModel):
         eos_token_id_input = copy.deepcopy(eos_token_id)
         eos_token_id = []
 
+        if not do_sample or temperature == 0.0:
+            warnings.warn('temperature=0.0 is equivalent to greedy search, ')
+            do_sample = False
+            temperature = 1.0
+            top_k = 1 
         if eos_token_id_input is not None:
             if not isinstance(eos_token_id_input, list):
                 eos_token_id_input = [eos_token_id_input]

@@ -1,28 +1,27 @@
 import io
 import re
 from typing import TypedDict, Optional
+
 import numpy as np
 
-from world_model import GSM8kState, GSM8kAction, GSM8kPromptDict
+from world_model import MATHState, MATHAction, MATHPromptDict
 from reasoners import SearchConfig, LanguageModel
 
-class GSM8kUsefulPrompt(TypedDict):
+class AQuAUsefulPrompt(TypedDict):
     input: str
     question_prefix: str
     subquestion_prefix: str
     new_subquestion_prefix: str
     useful_prefix: str
 
-class GSM8kConfig(SearchConfig):
+class MATHConfig(SearchConfig):
     def __init__(self,
                  base_model: LanguageModel,
-                 useful_prompt: GSM8kUsefulPrompt,
+                 useful_prompt: dict,
                  n_actions=4,
                  batch_size=1,
                  temperature=0.8,
-                 top_k=50,
-                 top_p=0.95,
-                 reward_alpha=0.5,
+                 reward_alpha=0,
                  reward_confidence_default=0.8,
                  depth_limit=5,
                  force_terminating_on_depth_limit=True,
@@ -30,12 +29,10 @@ class GSM8kConfig(SearchConfig):
                  force_overall_question_on_overall_prompt=True) -> None:
         super().__init__()
         self.base_model = base_model
-        self.useful_prompt = useful_prompt
+        self.useful_prompt: AQuAUsefulPrompt = useful_prompt
         self.example = ''
         self.batch_size = batch_size
         self.temperature = temperature
-        self.top_k = top_k
-        self.top_p = top_p
         self.n_actions = n_actions
         self.force_terminating_on_depth_limit = force_terminating_on_depth_limit
         self.depth_limit = depth_limit
@@ -47,9 +44,8 @@ class GSM8kConfig(SearchConfig):
         self.prompt_examples = ""
         self.n_shots = 0
 
-    def update_example(self, example: str, prompt: GSM8kPromptDict = None) -> None:
+    def update_example(self, example: str, prompt: MATHPromptDict = None) -> None:
         super().update_example(example, prompt=prompt)
-
         assert prompt is not None
         self.prompt = prompt
         with io.StringIO() as f:
@@ -60,18 +56,18 @@ class GSM8kConfig(SearchConfig):
             self.prompt_examples = f.getvalue()
 
         if self.force_overall_prompt_on_overall_question or self.force_overall_question_on_overall_prompt:
-            print(self.example)
-            # self.overall_question = re.match('.*((Calculate|calculate|how|How|what|What|Find|find|True or false).*)$',
-            #                                  self.example, flags=re.DOTALL)[1]
-            self.overall_question = re.match('.*((([A-Z].* (calculate|how|what|find|true or false))|((Calculate|How|What|Find|True or false))).*)$', self.example, flags=re.DOTALL)[1]
+            self.overall_question = re.match('.*((([A-Z].* (calculate|how|what|find|true or false))|((Calculate|How|What|Find|True or false))).*)$', self.example, flags=re.DOTALL)
+            if self.overall_question is not None:
+                self.overall_question = self.overall_question[1]
+            else:
+                raise ValueError("Cannot find overall question in example")
 
-    def get_actions(self, state: GSM8kState, ) -> list[GSM8kAction]:
+    def get_actions(self, state: MATHState, ) -> list[MATHAction]:
         with io.StringIO() as f:
             f.write(self.prompt_examples)
             f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
-            for idx, (q, a, _) in enumerate(state):
-                f.write(
-                    self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
+            for idx, (q, a, *_) in enumerate(state):
+                f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
                 f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
             f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
             if at_depth_limit := self.force_terminating_on_depth_limit and len(state) + 1 >= self.depth_limit:
@@ -90,8 +86,6 @@ class GSM8kConfig(SearchConfig):
                                                 hide_input=True,
                                                 do_sample=True,
                                                 temperature=temperature,
-                                                top_k=self.top_k,
-                                                top_p=self.top_p,
                                                 eos_token_id='\n').text
 
         outputs = [output.strip() for output in outputs]
@@ -111,11 +105,13 @@ class GSM8kConfig(SearchConfig):
         outputs = list(dict.fromkeys(outputs))
         return outputs
 
-    def fast_reward(self, state: GSM8kState, action: GSM8kAction) -> tuple[float, dict]:
+    '''return 0, {}
+        return 1, {'r_useful': 1} #TODO'''
+    def fast_reward(self, state, action) -> tuple[float, dict]:
         with io.StringIO() as f:
             f.write(self.useful_prompt["input"])
             f.write(self.useful_prompt["question_prefix"] + self.example + "\n")
-            for idx, (q, _, _) in enumerate(state):
+            for idx, (q, *_) in enumerate(state):
                 f.write(self.useful_prompt["subquestion_prefix"].format(idx + 1) + " " + q + "\n")
             f.write(self.useful_prompt["new_subquestion_prefix"].format(len(state) + 1) + " " + action + "\n")
             f.write(self.useful_prompt["useful_prefix"])
@@ -133,10 +129,10 @@ class GSM8kConfig(SearchConfig):
         return r_useful ** self.reward_alpha * r_conf ** (1 - self.reward_alpha), {'r_useful': r_useful,
                                                                                    'r_conf': r_conf}
 
-    def reward(self, state: GSM8kState, action: GSM8kAction,
+    def reward(self, state: MATHState, action: MATHAction,
                r_useful: float = None,
                confidence: float = None) -> tuple[float, dict]:
-        # return confidence, {'r_conf': confidence}
+        #return confidence, {'r_conf': confidence}
         assert r_useful is not None, "useful_reward is required to calculate reward in this search config, consider passing it in fast_reward"
         assert confidence is not None, "confidence is required to calculate reward in this search config, consider passing it in world model's step"
         return self.calculate_reward(r_useful, confidence)

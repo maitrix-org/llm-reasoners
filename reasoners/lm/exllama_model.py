@@ -203,9 +203,15 @@ class ExLlamaModel(LanguageModel):
 
         eos = [0] * ids.shape[0]
         early_stop = False
+        eos = [0] * ids.shape[0]
+        early_stop = False
         for i in range(max_new_tokens):
             token = generator.gen_single_token(mask=mask)
             for j in range(token.shape[0]):
+                if eos[j] == 0 and token[j, 0].item() in eos_token_id:
+                    eos[j] = ids.shape[1] + i
+            if all(eos):
+                early_stop = True
                 if eos[j] == 0 and token[j, 0].item() in eos_token_id:
                     eos[j] = ids.shape[1] + i
             if all(eos):

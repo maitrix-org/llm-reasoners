@@ -138,7 +138,7 @@ if __name__ == '__main__':
                lm_plan_file=lm_plan_file, **kwargs)
     #for exllama use please refer to https://github.com/turboderp/exllama and put it under /llm-reasoners/
     def exllama_main(
-            model_dir = '/data/haotian/RAP_tune/Llama-2-13B-GPTQ',
+            model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
             lora_dir = None,
             prompt_path: str = 'examples/blocksworld/prompts/prompt.json',
             data_path: str = 'examples/blocksworld/data/step_4.json',
