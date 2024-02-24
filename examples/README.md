@@ -90,6 +90,15 @@ for huggingface llama
 ```bash
 CUDA_VISIBLE_DEVICES=0 python examples/rap_blockworld/inference.py -data_path 'examples/rap_blocksworld/data/step_4.json' --depth_limit 4 --hf_path 'path/to/hf/model/dir' --peft_path None --batch_size 1 --quantized 'nf4' --output_trace_in_each_iter
 ```
+
+## StrategyQA
+### RAP
+user need to switch the main function for Fire()
+
+```bash
+python -m torch.distributed.run --nproc_per_node 4 examples/rap_strategyQA/inference.py --llama_size "30B" --interactive_prompt $interactive_prompt --useful_prompt $useful_prompt --decompose_prompt $decompose_prompt --output_trace_in_each_iter
+```
+
 ## Game of 24
 > Note: You need to make a directory and put the game24 data in it. For example, examples/tot_game24/data/24.csv
 
