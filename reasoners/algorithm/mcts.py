@@ -73,17 +73,17 @@ class MCTSResult(NamedTuple):
     aggregated_result: Optional[Hashable] = None
 
 
-class MCTSAggregation(Generic[State, Action], ABC):
+class MCTSAggregation(Generic[State, Action, Example], ABC):
     def __init__(self, retrieve_answer: Callable[[State], Hashable],
                  weight_policy: str = 'edge'):
         assert weight_policy in ['edge', 'edge_inverse_depth', 'uniform']
         self.retrieve_answer = retrieve_answer
         self.weight_policy = weight_policy
 
-    def __call__(self, tree_state: MCTSNode[State, Action]) -> Optional[Hashable]:
+    def __call__(self, tree_state: MCTSNode[State, Action,Example]) -> Optional[Hashable]:
         answer_dict = defaultdict(lambda: 0)
 
-        def visit(cur: MCTSNode[State, Action]):
+        def visit(cur: MCTSNode[State, Action, Example]):
             if cur.state is None:
                 return []
             if cur.is_terminal:
@@ -117,17 +117,17 @@ class MCTSAggregation(Generic[State, Action], ABC):
             return None
         return max(answer_dict, key=lambda answer: answer_dict[answer])
 
-class MCTS_SC(Generic[State, Action], ABC):
+class MCTS_SC(Generic[State, Action,Example], ABC):
     def __init__(self, retrieve_answer: Callable[[State], Hashable],
                  weight_policy: str = 'edge'):
         assert weight_policy in ['edge', 'edge_inverse_depth']
         self.retrieve_answer = retrieve_answer
         self.weight_policy = weight_policy
 
-    def __call__(self, tree_state: MCTSNode[State, Action]) -> Optional[Hashable]:
+    def __call__(self, tree_state: MCTSNode[State, Action, Example]) -> Optional[Hashable]:
         answer_dict = defaultdict(lambda: 0)
 
-        def visit(cur: MCTSNode[State, Action]):
+        def visit(cur: MCTSNode[State, Action,Example]):
             if cur.state is None:
                 return []
             if cur.is_terminal:
@@ -146,7 +146,7 @@ class MCTS_SC(Generic[State, Action], ABC):
             return None
         return max(answer_dict, key=lambda answer: answer_dict[answer])
 
-class MCTS(SearchAlgorithm, Generic[State, Action]):
+class MCTS(SearchAlgorithm, Generic[State, Action, Example]):
     def __init__(self,
                  output_trace_in_each_iter: bool = False,
                  w_exp: float = 1.,
@@ -157,9 +157,6 @@ class MCTS(SearchAlgorithm, Generic[State, Action]):
                  simulate_strategy: str | Callable[[list[float]], int] = 'max',
                  output_strategy: str = 'max_reward',
                  uct_with_fast_reward: bool = True,
-                 aggregator: Optional[MCTSAggregation] = None,
-                 disable_tqdm: bool = True,
-                 node_visualizer: Callable[[MCTSNode], dict] = lambda x: x.__dict__):
                  aggregator: Optional[MCTSAggregation] = None,
                  disable_tqdm: bool = True,
                  node_visualizer: Callable[[MCTSNode], dict] = lambda x: x.__dict__):

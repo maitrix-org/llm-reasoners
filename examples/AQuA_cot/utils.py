@@ -18,6 +18,8 @@ def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
         answer = match[1].strip()
         answers.append(answer)
     counter = Counter(answers)
+    if counter == {}:
+        return None
     answer, _ = counter.most_common(1)[0]
     print(f'retrived answer: {answer}')
     print(f'answers: {answers}')

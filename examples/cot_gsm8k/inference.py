@@ -68,8 +68,8 @@ def calculate_acc():
     answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"])
     evaluator = GSM8KEvaluator(output_extractor=output_extractor,answer_extractor=answer_extractor,init_prompt=None,disable_log=False,disable_tqdm=False,sample_prompt_type="cot")
     correct_count = 0
-    for i in range(1,300):
-        mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02222024-110436/algo_output/{i}.pkl', 'rb'))
+    for i in range(1,1319):
+        mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02232024-164842/algo_output/{i}.pkl', 'rb'))
         output = output_extractor(mcts_result)
         answer = answer_extractor(data['test'][i-1])
         correct = evaluator.eval_output(answer, output)
@@ -77,8 +77,8 @@ def calculate_acc():
         accuracy = correct_count / (i + 1)
     print(f'accuracy: {accuracy:.4f}')
 if __name__ == '__main__':
-    fire.Fire(main)
-    # fire.Fire(calculate_acc)
+    # fire.Fire(main)
+    fire.Fire(calculate_acc)
     """
 CUDA_VISIBLE_DEVICES=2 python examples/cot_gsm8k/inference.py \
 --exllama_model_dir $Gemma_ckpts \ 这里gemma我用的非instruction tuning模型
