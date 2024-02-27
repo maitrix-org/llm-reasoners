@@ -57,9 +57,8 @@ class AQuAEvaluator(Evaluator):
 
     def sample_prompt(self,
                       shuffle_prompt=True,
-                      num_shot=4,
-                      sample_prompt_type="l2m"):
-
+                      num_shot=4):
+        sample_prompt_type = self.sample_prompt_type
         if sample_prompt_type == "l2m":
             prompt = {}
             if shuffle_prompt:

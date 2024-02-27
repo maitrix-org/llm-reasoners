@@ -214,8 +214,7 @@ class Evaluator():
             algo_output = reasoner(self.input_processor(example),
                                     prompt=self.sample_prompt(
                                         shuffle_prompt=shuffle_prompt,
-                                        num_shot=num_shot,
-                                        sample_prompt_type=self.sample_prompt_type))
+                                        num_shot=num_shot))
             
             output = self.output_extractor(algo_output)
             answer = self.answer_extractor(example)
@@ -274,8 +273,7 @@ class Evaluator():
             
             prompt = self.sample_prompt(
                             shuffle_prompt=shuffle_prompt,
-                            num_shot=num_shot,
-                            sample_prompt_type=self.sample_prompt_type)
+                            num_shot=num_shot)
             output_list = []
             save_list = []
             for j in range(n_sc):

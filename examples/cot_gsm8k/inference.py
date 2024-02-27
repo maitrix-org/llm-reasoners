@@ -8,7 +8,7 @@ import utils
 import fire
 import transformers
 class CoTReasoner():
-    def __init__(self, base_model, n_sc=1, temperature=0.8, bs=1):
+    def __init__(self, base_model, n_sc=1, temperature=0, bs=1):
         assert n_sc == 1 or temperature > 0, \
             "Temperature = 0 indicates greedy decoding. There is no point running multiple chains (n_sc > 1)"
         self.base_model = base_model
@@ -25,8 +25,10 @@ class CoTReasoner():
             do_sample = False
         if isinstance(self.base_model.model, transformers.GemmaForCausalLM):
             eos_token_id = [108]
+        elif isinstance(self.base_model.model, transformers.MistralForCausalLM):
+            eos_token_id = [13]
         else:
-            assert isinstance(self.base_model.model, transformers.LlamaForCausalLM)
+            assert isinstance(self.base_model.model, transformers.LlamaForCausalLM)###need to be modified for other model
             eos_token_id = [13]
         for i in range((self.n_sc - 1) // self.bs + 1):
             local_bs = min(self.bs, self.n_sc - i * self.bs)
@@ -34,11 +36,11 @@ class CoTReasoner():
                                             hide_input=True,
                                             do_sample=do_sample,
                                             temperature=self.temperature,
-                                            # eos_token_id=[13]).text #gemma的词表换了\n是108
+                                            # eos_token_id=[13]).text #gemma的词表换了\n是108#\n\n是109
                                             eos_token_id=eos_token_id).text
         return [o.strip() for o in outputs]
 
-def main(exllama_model_dir, exllama_lora_dir, exllama_mem_map, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0.8, n_sc=1):
+def main(exllama_model_dir, exllama_lora_dir=None, exllama_mem_map=None, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0, n_sc=1):
 
     # base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir,
     #                       mem_map=exllama_mem_map, max_batch_size=batch_size,
@@ -77,14 +79,11 @@ def calculate_acc():
         accuracy = correct_count / (i + 1)
     print(f'accuracy: {accuracy:.4f}')
 if __name__ == '__main__':
-    # fire.Fire(main)
-    fire.Fire(calculate_acc)
+    fire.Fire(main)
+    # fire.Fire(calculate_acc)
     """
 CUDA_VISIBLE_DEVICES=2 python examples/cot_gsm8k/inference.py \
 --exllama_model_dir $Gemma_ckpts \ 这里gemma我用的非instruction tuning模型
---exllama_lora_dir None \
---exllama_mem_map None \
---temperature 0.0
-    """
+"""
 
 

@@ -22,7 +22,9 @@ class CoTReasoner():
             self.temperature == 1.0
             do_sample = False
         if isinstance(self.base_model.model, transformers.GemmaForCausalLM):
-            eos_token_id = [109]
+            eos_token_id = [109]###since here is \n\n in prompt
+        elif isinstance(self.base_model.model, transformers.MistralForCausalLM):
+            eos_token_id = [13]
         else:
             assert isinstance(self.base_model.model, transformers.LlamaForCausalLM)
             eos_token_id = [13]
@@ -79,7 +81,5 @@ if __name__ == '__main__':
     """
 CUDA_VISIBLE_DEVICES=0,1 python examples/cot_gsm8k/inference_new.py \
 --exllama_model_dir $LLAMA2_CKPTS \
---exllama_lora_dir None \
---exllama_mem_map '[16,22]'
-    """
+"""
 

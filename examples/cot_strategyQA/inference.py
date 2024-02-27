@@ -102,6 +102,8 @@ def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama'] = 'h
     import pickle
     if isinstance(base_model.model, transformers.GemmaForCausalLM):
         eos_token_id = [108,109]
+    elif isinstance(base_model.model, transformers.MistralForCausalLM):
+        eos_token_id = [13]
     else:
         assert isinstance(base_model.model, transformers.LlamaForCausalLM)
         eos_token_id = [13]
@@ -182,3 +184,7 @@ def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama'] = 'h
 
 if __name__ == '__main__':
     fire.Fire(main)
+
+"""
+CUDA_VISIBLE_DEVICES=7 python examples/cot_strategyQA/inference.py --exllama_model_dir /data/haotian/RAP_tune/Mistral-7B-v0.1
+"""
