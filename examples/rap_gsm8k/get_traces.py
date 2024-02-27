@@ -10,10 +10,35 @@ from reasoners.algorithm.mcts import MCTSNode
 from datasets import load_dataset
 import pandas as pd
 df = pd.DataFrame(columns=['question', 'cot'])
-data = load_dataset('gsm8k','main','test')
-for i in range(1,300): 
-    mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/11012023-143556/algo_output/{i}.pkl', 'rb'))
-    question = data['test'][i-1]['question']
+# data = load_dataset('gsm8k','main','test')
+from datasets import Dataset
+def data_reader(dataset, dataset_path, split=None, sample_size=None):
+    questions = []
+    answers = []
+    options = []
+    filename = os.path.join(dataset_path, f'{dataset}.json')
+    lines = Dataset.from_json(filename)
+    if split is not None:
+        start, end = split
+        lines = lines[start:end]
+    for i in range(len(lines)):
+        data = lines[i]
+        if isinstance(data, dict):
+            options_list = data['options']
+            question_with_options = data['question'] + " Options: " + (" ".join(data['options'])).replace('A)','A) ').replace('B)','B) ').replace('C)','C) ').replace('D)','D) ').replace('E)','E) ') + "."
+            questions.append(question_with_options)
+            answers.append(data['correct'])
+            options.append(options_list)
+        else:
+            raise ValueError("Unexpected data format")
+    return Dataset.from_dict({"question": questions, "answer": answers, "options":options})
+# data = data_reader('AQuA','/data/haotian/RAP_tune/llm-reasoners/dataset/AQuA')
+import json
+with open('/data/haotian/RAP_tune/llm-reasoners/examples/rap_strategyQA/data/strategyqa_test.json', 'r') as f:
+    data = json.load(f)
+for i in range(1,len(data)+1): 
+    mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02242024-163810_Llama-2-13b-hf/algo_output/{i}.pkl', 'rb'))
+    question = data[i-1]['question']
     cot = mcts_result
     cot = cot.split('Q:')[0]
     cot_steps = cot.split('. ')
@@ -21,6 +46,7 @@ for i in range(1,300):
     cot_final = ""
     for j in range(len(cot_steps)):
         cot_final += f'Step {j+1}: ' + cot_steps[j] + ".\n"
+    cot_final = cot_final.rstrip('\n')
     df.loc[i-1] = [question, cot_final]
 
-df.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/11012023-143556/cot.json')
+df.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02242024-163810_Llama-2-13b-hf/cot.json')
