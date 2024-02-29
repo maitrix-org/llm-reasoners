@@ -1,8 +1,10 @@
 from curses.ascii import GS
 from reasoners.lm import ExLlamaModel
 import json
+from reasoners.lm.openai_model import GPTCompletionModel
 from reasoners.benchmark import GSM8KEvaluator
 from reasoners.lm.hf_model import HFModel
+from reasoners.lm.gemini_model import BardCompletionModel
 from sklearn import base
 import utils
 import fire
@@ -23,10 +25,16 @@ class CoTReasoner():
             print("Greedy decoding is not supported by HFModel. Using temperature = 1.0 instead.")
             self.temperature == 1.0
             do_sample = False
-        if isinstance(self.base_model.model, transformers.GemmaForCausalLM):
+        if isinstance(self.base_model, GPTCompletionModel) or isinstance(self.base_model, BardCompletionModel):
+            eos_token_id = []
+        elif isinstance(self.base_model.model, transformers.GemmaForCausalLM):
             eos_token_id = [108]
-        elif isinstance(self.base_model.model, transformers.MistralForCausalLM):
+        elif isinstance(self.base_model.model, transformers.MistralForCausalLM) or isinstance(self.base_model.model, transformers.MixtralForCausalLM):
             eos_token_id = [13]
+        elif self.base_model.model.config.architectures[0] == 'InternLM2ForCausalLM':
+            eos_token_id = [364,402,512,756]
+        elif self.base_model.model.config.architectures[0] == 'Qwen2ForCausalLM':
+            eos_token_id = [198,271,382,624,151645]
         else:
             assert isinstance(self.base_model.model, transformers.LlamaForCausalLM)###need to be modified for other model
             eos_token_id = [13]
@@ -40,12 +48,17 @@ class CoTReasoner():
                                             eos_token_id=eos_token_id).text
         return [o.strip() for o in outputs]
 
-def main(exllama_model_dir, exllama_lora_dir=None, exllama_mem_map=None, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0, n_sc=1):
+def main(exllama_model_dir, exllama_lora_dir=None, exllama_mem_map=None, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0, n_sc=1, quantized='int8'):
 
     # base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir,
     #                       mem_map=exllama_mem_map, max_batch_size=batch_size,
     #                       max_new_tokens=500, max_seq_length=2048)
-    base_model = HFModel(exllama_model_dir, exllama_model_dir,quantized='int8')
+    if exllama_model_dir == "openai":
+        base_model = GPTCompletionModel("gpt-4-1106-preview")
+    elif exllama_model_dir == "google":
+        base_model = BardCompletionModel("gemini-pro")
+    else:
+        base_model = HFModel(exllama_model_dir, exllama_model_dir,quantized=quantized)
 
     with open(prompt) as f:
         prompt = json.load(f)

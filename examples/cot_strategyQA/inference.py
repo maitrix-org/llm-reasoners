@@ -10,7 +10,8 @@ import torch
 import torch.backends.cudnn
 from tqdm import tqdm
 from utils import extract_final_answer, eval_output
-
+from reasoners.lm.openai_model import GPTCompletionModel
+from reasoners.lm.gemini_model import BardCompletionModel
 # llama_ckpts = os.environ.get("LLAMA_CKPTS", None)
 # llama_2_ckpts = os.environ.get("LLAMA_2_CKPTS", None)
 # exllama_ckpt = os.environ.get("EXLLAMA_CKPT", None)
@@ -20,7 +21,7 @@ from utils import extract_final_answer, eval_output
 #     warnings.filterwarnings('ignore')
 
 
-def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama'] = 'hf',
+def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','openai','google'] = 'hf',
             llama_ckpt: str = None,
             llama_2_ckpt: str = None,
             exllama_model_dir: str = None,
@@ -37,6 +38,7 @@ def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama'] = 'h
             resume: int = 0,
             log_dir: str = None,
             temperature: float = 0,
+            quantized = 'int8',
             **kwargs):
     # set base_lm = 'llama' and llama_ckpt = '13B/30B/65B' to use llama with torchscale
     # else set base_lm = 'llama.cpp' and llama_cpp_path = the checkpoint to use llama.cpp
@@ -59,7 +61,11 @@ def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama'] = 'h
             mem_map = mem_map
         )
     elif base_lm == 'hf':
-        base_model = HFModel(exllama_model_dir, exllama_model_dir,quantized='int8')
+        base_model = HFModel(exllama_model_dir, exllama_model_dir,quantized=quantized)
+    elif base_lm == 'openai':
+        base_model = GPTCompletionModel("gpt-4-1106-preview")
+    elif base_lm == 'google':
+        base_model = BardCompletionModel("gemini-pro")
     from datetime import datetime
     log_dir =  f'logs/strategyqa_'\
                         f'cot/'\
@@ -100,10 +106,18 @@ def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama'] = 'h
         do_sample = False
     import transformers
     import pickle
-    if isinstance(base_model.model, transformers.GemmaForCausalLM):
+    print("----------------")
+    # print(base_model.model.config.architectures[0])
+    if isinstance(base_model, GPTCompletionModel) or isinstance(base_model, BardCompletionModel):
+        eos_token_id = []
+    elif isinstance(base_model.model, transformers.GemmaForCausalLM):
         eos_token_id = [108,109]
-    elif isinstance(base_model.model, transformers.MistralForCausalLM):
+    elif isinstance(base_model.model, transformers.MistralForCausalLM) or isinstance(base_model.model, transformers.MixtralForCausalLM):
         eos_token_id = [13]
+    elif base_model.model.config.architectures[0] == 'InternLM2ForCausalLM':
+        eos_token_id = [364,402,512,756]
+    elif base_model.model.config.architectures[0] == 'Qwen2ForCausalLM':
+        eos_token_id = [198,271,382,624,151645]
     else:
         assert isinstance(base_model.model, transformers.LlamaForCausalLM)
         eos_token_id = [13]
@@ -181,9 +195,37 @@ def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama'] = 'h
         with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb')  as f:
             pickle.dump(output, f)
 
+def eval_output(answer, output):
+    if output is None:
+        return False
+    
+    # False vs no and True vs yes
+    answer = "no" if not answer else "yes"
+    
+    return answer == output.strip().lower()
+def calculate_acc():
+    import pickle
+    with open("examples/rap_strategyQA/data/strategyqa_test.json", 'r') as f:
+        data = json.load(f)
+    import re
+
+    correct_count = 0
+    print(len(data))
+    for i in range(1,2291):
+        mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/algo_output/{i}.pkl', 'rb'))
+        output = re.match(r'.*[Tt]he answer is .*(yes|no|Yes|No).*\..*', mcts_result, re.DOTALL)
+        # print(output[1])
+        if output is None:
+            continue
+        print(data[i-1]['answer'])
+        correct = eval_output(data[i-1]['answer'], output[1])
+        correct_count += correct
+    accuracy = correct_count / (i + 1)
+    print(f'accuracy: {accuracy:.4f}')
 
 if __name__ == '__main__':
     fire.Fire(main)
+    # fire.Fire(calculate_acc)
 
 """
 CUDA_VISIBLE_DEVICES=7 python examples/cot_strategyQA/inference.py --exllama_model_dir /data/haotian/RAP_tune/Mistral-7B-v0.1
