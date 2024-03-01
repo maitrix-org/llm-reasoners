@@ -1,14 +1,7 @@
-import datasets
-import json
 from tqdm import tqdm
-import torch
-import os, pickle
 from datetime import datetime
-import sys
 import random
-import copy
 from reasoners import Evaluator
-import itertools
 
 
 def get_cot_prompt(sampled_data):

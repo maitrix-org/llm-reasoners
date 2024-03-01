@@ -1,16 +1,15 @@
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=7
 
-export model_dir="/data/haotian/RAP_tune/internlm2-7b"
-export log_name="internlm2-7b"
-# export model_dir="/data/haotian/RAP_tune/gemma-7b"
-# export log_name="gemma"
 
-# python examples/blocksworld/cot_inference.py \
-# --model_dir $model_dir \
-# --data_path 'examples/blocksworld/data/split_v1/split_v1_step_2_data.json' \
-# --log_dir "logs/${log_name}_blocksworld_cot_v1_step2/" \
-# --prompt_path "examples/blocksworld/prompts/pool_prompt_v1.json" \
-# --temperature 0.0
+export model_dir="/data/haotian/RAP_tune/Llama-2-13b-hf"
+export log_name="llama-13b"
+
+python examples/blocksworld/cot_inference.py \
+--model_dir $model_dir \
+--data_path 'examples/blocksworld/data/split_v1/split_v1_step_2_data.json' \
+--log_dir "logs/${log_name}_blocksworld_cot_v1_step2/" \
+--prompt_path "examples/blocksworld/prompts/pool_prompt_v1.json" \
+--temperature 0.0
 
 python examples/blocksworld/cot_inference.py \
 --model_dir $model_dir \

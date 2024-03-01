@@ -2,7 +2,8 @@ from reasoners.lm import ExLlamaModel, HFModel
 import json
 from reasoners.benchmark import BWEvaluator
 import fire
-import transformers
+from reasoners.lm.openai_model import GPTCompletionModel
+from reasoners.lm.gemini_model import BardCompletionModel
 class CoTReasoner():
     def __init__(self, base_model, temperature=0.8):
         self.base_model = base_model
@@ -24,7 +25,10 @@ def main(model_dir, data_path, prompt_path, disable_log=False, batch_size=1, con
                         #   max_new_tokens=300, max_seq_length=2048)
 
     base_model = HFModel(model_pth=model_dir, tokenizer_pth=model_dir, quantized='int8')
-
+    if model_dir == "google":
+        base_model = BardCompletionModel("gemini-pro")
+    elif model_dir == "openai":
+        base_model = GPTCompletionModel("gpt-4-1106-preview")
     with open(prompt_path) as f:
         prompt = json.load(f)
 
