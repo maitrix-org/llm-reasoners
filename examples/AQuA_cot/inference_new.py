@@ -97,7 +97,7 @@ def main(exllama_model_dir= None,
 if __name__ == '__main__':
     fire.Fire(main)
     """
-CUDA_VISIBLE_DEVICES=0,1 python examples/cot_gsm8k/inference_new.py \
---exllama_model_dir $LLAMA2_CKPTS \
+CUDA_VISIBLE_DEVICES=0 python examples/cot_gsm8k/inference_new.py \
+--exllama_model_dir $MODEL_CKPTS --quantized 'int8'\
 """
 
