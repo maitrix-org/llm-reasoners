@@ -53,7 +53,7 @@ def main(exllama_model_dir= None,
     # base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir,
     #                       mem_map=exllama_mem_map, max_batch_size=batch_size,
     #                       max_new_tokens=500, max_seq_length=2048)
-    base_model = HFModel(exllama_model_dir, exllama_model_dir,quantized='int8')
+    base_model = HFModel(exllama_model_dir, exllama_model_dir, quantized='int8')
 
     with open(prompt) as f:
         prompt = json.load(f)

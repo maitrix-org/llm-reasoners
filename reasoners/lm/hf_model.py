@@ -29,7 +29,7 @@ class HFModel(LanguageModel):
             peft_pth (str, optional): The path to the directory containing the pre-trained PEFT model. Defaults to None.
             load_awq_pth (str, optional): The path to the directory containing the pre-trained AWQ model. Defaults to None.
         """
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_pth, lagacy=False)
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_pth, lagacy=False, trust_remote_code=True)
 
         if quantized == "int8":
             print("int8 quantizing.............................")
@@ -37,7 +37,8 @@ class HFModel(LanguageModel):
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_pth,
                 quantization_config=quantization_config,
-                device_map="auto",                                    
+                device_map="auto",
+                trust_remote_code=True
             )
         elif quantized == "nf4" or quantized  == "fp4":
             bnb_config = BitsAndBytesConfig(
@@ -53,6 +54,7 @@ class HFModel(LanguageModel):
                 model_pth,
                 quantization_config=bnb_config,
                 device_map="auto",
+                trust_remote_code=True
             )
         
         elif quantized == "awq":
@@ -84,6 +86,7 @@ class HFModel(LanguageModel):
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_pth,
                 device_map="auto",
+                trust_remote_code=True
             )
         if peft_pth is not None:
             self.model = PeftModel.from_pretrained(
