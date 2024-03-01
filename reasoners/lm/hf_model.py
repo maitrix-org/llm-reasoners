@@ -13,7 +13,7 @@ from .. import LanguageModel,GenerateOutput
 
 
 class HFModel(LanguageModel):
-    def __init__(self, model_pth, tokenizer_pth, device='cuda:0', max_batch_size=1, max_new_tokens=None, max_length=2048, quantized=None, peft_pth=None, load_awq_pth=None):
+    def __init__(self, model_pth, tokenizer_pth, device='cuda:0', max_batch_size=1, max_new_tokens=None, max_length=2048, quantized=None, peft_pth=None, load_awq_pth=None,device_map=None, **kwargs):
         super().__init__()
         """
         Initializes a new instance of the `HFModel` class.
@@ -37,8 +37,8 @@ class HFModel(LanguageModel):
             self.model = AutoModelForCausalLM.from_pretrained(
                 model_pth,
                 quantization_config=quantization_config,
-                device_map="auto",
-                trust_remote_code=True
+                trust_remote_code=True,
+                device_map="auto" if device_map is None else device_map,                                    
             )
         elif quantized == "nf4" or quantized  == "fp4":
             bnb_config = BitsAndBytesConfig(
