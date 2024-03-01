@@ -40,7 +40,6 @@ class BardCompletionModel(LanguageModel):
                     time.sleep(60 / rate_limit_per_min)
                 config = genai.GenerationConfig(
                     temperature=gpt_temperature,
-                    top_p=top_p
                 )
                 messages = [{"role": "user", "parts": prompt}]
                 # safety_settings={'HARASSMENT':'BLOCK_NONE','HATE_SPEECH':'BLOCK_NONE','DANGEROUS_CONTENT':'BLOCK_NONE','SEXUALLY_EXPLICIT':'BLOCK_NONE'}
@@ -53,7 +52,7 @@ class BardCompletionModel(LanguageModel):
                 response = self.model.generate_content(
                     contents=messages,
                     safety_settings=safety_settings,
-                    generation_config=config,
+                    # generation_config=config,
                 )
                 # print(response.prompt_feedback)
                 '''print('-----------------------------------------')

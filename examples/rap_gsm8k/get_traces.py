@@ -42,7 +42,7 @@ def get_trace_gsm8k():
     #     data = json.load(f)
     data = load_dataset('gsm8k','main','test')
     for i in range(1,len(data['test'])+1): 
-        mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02292024-025642/algo_output/{i}.pkl', 'rb'))
+        mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02282024-032904/algo_output/{i}.pkl', 'rb'))
         question = data['test'][i-1]['question']
         cot = mcts_result[0]
         cot = cot.split('Q:')[0]
@@ -55,7 +55,7 @@ def get_trace_gsm8k():
         cot_final = cot_final.rstrip('\n')
         df.loc[i-1] = [question, cot_final]
 
-    df.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02292024-025642/cot.json')
+    df.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02282024-032904/cot.json')
 
 def get_trace_sq():
     # data = data_reader('AQuA','/data/haotian/RAP_tune/llm-reasoners/dataset/AQuA')
@@ -64,7 +64,7 @@ def get_trace_sq():
         data = json.load(f)
     # data = load_dataset('gsm8k','main','test')
     for i in range(1,len(data)+1): 
-        mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02272024-123854_internlm2-7b/algo_output/{i}.pkl', 'rb'))
+        mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/algo_output/{i}.pkl', 'rb'))
         question = data[i-1]['question']
         cot = mcts_result
         cot = cot.split('Q:')[0]
@@ -77,8 +77,8 @@ def get_trace_sq():
         cot_final = cot_final.rstrip('\n')
         df.loc[i-1] = [question, cot_final]
 
-    df.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02272024-123854_internlm2-7b/cot.json')
+    df.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/cot.json')
 
 
-# fire.Fire(get_trace_sq)
-fire.Fire(get_trace_gsm8k)
+fire.Fire(get_trace_sq)
+# fire.Fire(get_trace_gsm8k)
