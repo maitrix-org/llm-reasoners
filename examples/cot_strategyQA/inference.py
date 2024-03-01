@@ -228,5 +228,5 @@ if __name__ == '__main__':
     # fire.Fire(calculate_acc)
 
 """
-CUDA_VISIBLE_DEVICES=7 python examples/cot_strategyQA/inference.py --exllama_model_dir /data/haotian/RAP_tune/Mistral-7B-v0.1
+CUDA_VISIBLE_DEVICES=6,7 python examples/cot_strategyQA/inference.py --base_lm hf --exllama_model_dir /data/haotian/RAP_tune/Mixtral-8x7B-v0.1 --quantized 'nf4'
 """
