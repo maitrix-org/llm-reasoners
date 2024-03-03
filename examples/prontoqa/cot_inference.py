@@ -48,7 +48,7 @@ class CoTReasoner():
         
         return "\n".join(steps)
 
-def main(model_dir=None, temperature=0.0, log_dir="name"):
+def main(model_dir=None, temperature=0.0, log_dir="name", quantized="int8"):
 
     import torch, os
     import numpy as np
@@ -63,7 +63,7 @@ def main(model_dir=None, temperature=0.0, log_dir="name"):
                                     mem_map=[16,22],
                                     log_output=True) #please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
     else:
-        language_model = HFModel(model_pth=model_dir, tokenizer_pth=model_dir, quantized='int8')
+        language_model = HFModel(model_pth=model_dir, tokenizer_pth=model_dir, quantized=quantized)
         if model_dir == "google":
             language_model = BardCompletionModel("gemini-pro")
         elif model_dir == "openai":
@@ -100,4 +100,4 @@ if __name__ == '__main__':
 # CUDA_VISIBLE_DEVICES=7 python examples/prontoqa/cot_inference.py --model_dir "/data/haotian/RAP_tune/internlm2-7b" --temperature 0.0 --log_dir "logs/prontoqa_internlm2-7b-cot"
 # CUDA_VISIBLE_DEVICES=4 python examples/prontoqa/cot_inference.py --model_dir "/data/haotian/RAP_tune/Mistral-7B-v0.1" --temperature 0.0 --log_dir "logs/prontoqa_mistral-7b-cot"
 # CUDA_VISIBLE_DEVICES=4 python examples/prontoqa/cot_inference.py --model_dir "/data/haotian/RAP_tune/Qwen1.5-7B" --temperature 0.0 --log_dir "logs/prontoqa_qwen-7b-cot"
-
+# CUDA_VISIBLE_DEVICES=3,4 python examples/prontoqa/cot_inference.py --model_dir "/data/haotian/RAP_tune/Mixtral-8x7B-v0.1" --temperature 0.0 --log_dir "logs/prontoqa_mixtral-cot" --quantized 'nf4'

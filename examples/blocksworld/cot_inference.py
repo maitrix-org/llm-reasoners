@@ -18,13 +18,13 @@ class CoTReasoner():
                                           eos_token_id='\n[').text[0][:-1].strip()
         return output
 
-def main(model_dir, data_path, prompt_path, disable_log=False, batch_size=1, config_file: str = "examples/blocksworld/data/bw_config.yaml", domain_file: str = "examples/blocksworld/data/generated_domain.pddl", resume=0, log_dir=None, temperature=0.8, exllama_mem_map: str = None):
+def main(model_dir, data_path, prompt_path, disable_log=False, batch_size=1, config_file: str = "examples/blocksworld/data/bw_config.yaml", domain_file: str = "examples/blocksworld/data/generated_domain.pddl", resume=0, log_dir=None, temperature=0.8, exllama_mem_map: str = None, quantized="int8"):
 
     # base_model = ExLlamaModel(model_dir,
                         #   mem_map=exllama_mem_map, max_batch_size=batch_size,
                         #   max_new_tokens=300, max_seq_length=2048)
 
-    base_model = HFModel(model_pth=model_dir, tokenizer_pth=model_dir, quantized='int8')
+    base_model = HFModel(model_pth=model_dir, tokenizer_pth=model_dir, quantized=quantized)
     if model_dir == "google":
         base_model = BardCompletionModel("gemini-pro")
     elif model_dir == "openai":

@@ -53,6 +53,7 @@ def main(exllama_model_dir, exllama_lora_dir=None, exllama_mem_map=None, batch_s
     # base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir,
     #                       mem_map=exllama_mem_map, max_batch_size=batch_size,
     #                       max_new_tokens=500, max_seq_length=2048)
+
     if exllama_model_dir == "openai":
         base_model = GPTCompletionModel("gpt-4-1106-preview")
     elif exllama_model_dir == "google":
@@ -62,7 +63,7 @@ def main(exllama_model_dir, exllama_lora_dir=None, exllama_mem_map=None, batch_s
 
     with open(prompt) as f:
         prompt = json.load(f)
-    
+
     reasoner = CoTReasoner(base_model, temperature=temperature, n_sc=n_sc, bs=batch_size)
     evaluator = GSM8KEvaluator(
                  output_extractor=utils.cot_sc_extractor,
@@ -75,6 +76,7 @@ def main(exllama_model_dir, exllama_lora_dir=None, exllama_mem_map=None, batch_s
     accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
     print(f'accuracy: {accuracy:.4f}')
     return 0
+
 def calculate_acc():
     import pickle
     from datasets import load_dataset
