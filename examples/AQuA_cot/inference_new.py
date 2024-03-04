@@ -66,9 +66,9 @@ def main(exllama_model_dir= None,
     #                       mem_map=exllama_mem_map, max_batch_size=batch_size,
     #                       max_new_tokens=500, max_seq_length=2048)
     if exllama_model_dir == "google":
-        base_model = BardCompletionModel("gemini-pro")
+        base_model = BardCompletionModel("gemini-pro", additional_prompt="ANSWER")
     elif exllama_model_dir == "openai":
-        base_model = GPTCompletionModel("gpt-4-1106-preview")
+        base_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="ANSWER")
     else:
         base_model = HFModel(exllama_model_dir, exllama_model_dir,quantized=quantized)
 

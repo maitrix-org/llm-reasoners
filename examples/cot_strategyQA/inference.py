@@ -44,7 +44,7 @@ def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','open
     # else set base_lm = 'llama.cpp' and llama_cpp_path = the checkpoint to use llama.cpp
 
     if base_lm == 'llama':
-        base_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size, max_seq_len=max_seq_len)
+        base_model = LlamaModel(llama_ckpt, llama_size, max_batch_size=batch_size, max_seq_len=max_seq_len)
     elif base_lm == 'llama.cpp':
         base_model = LlamaCppModel(llama_cpp_path)
     elif base_lm == 'llama2':
@@ -63,9 +63,9 @@ def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','open
     elif base_lm == 'hf':
         base_model = HFModel(exllama_model_dir, exllama_model_dir,quantized=quantized)
     elif base_lm == 'openai':
-        base_model = GPTCompletionModel("gpt-4-1106-preview")
+        base_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="ANSWER")
     elif base_lm == 'google':
-        base_model = BardCompletionModel("gemini-pro")
+        base_model = BardCompletionModel("gemini-pro", additional_prompt="ANSWER")
     from datetime import datetime
     log_dir =  f'logs/strategyqa_'\
                         f'cot/'\

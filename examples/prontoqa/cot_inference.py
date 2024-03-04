@@ -5,7 +5,7 @@ import json
 import transformers
 
 from dataset import ProntoQADataset
-from reasoners.lm import ExLlamaModel, HFModel, BardCompletionModel, GPTCompletionModel
+from reasoners.lm import ExLlamaModel, HFModel, BardCompletionModel, GPTCompletionModel, ClaudeModel
 from reasoners.algorithm import MCTS
 from reasoners.benchmark import ProntoQAEvaluatorFinal
 
@@ -28,7 +28,9 @@ class CoTReasoner():
         input_prompt += "Q: " + example.test_example.question + " " + example.test_example.query + "\nA:"
         print(f"input_prompt: '{input_prompt}'\n")
 
-        if isinstance(self.base_model, GPTCompletionModel) or isinstance(self.base_model, BardCompletionModel):
+        if isinstance(self.base_model, GPTCompletionModel) or \
+                isinstance(self.base_model, BardCompletionModel) or \
+                isinstance(self.base_model, ClaudeModel):
             eos_token_id = []
         elif isinstance(self.base_model.model, transformers.GemmaForCausalLM):
             eos_token_id = [108,109]
@@ -63,11 +65,15 @@ def main(model_dir=None, temperature=0.0, log_dir="name", quantized="int8"):
                                     mem_map=[16,22],
                                     log_output=True) #please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
     else:
-        language_model = HFModel(model_pth=model_dir, tokenizer_pth=model_dir, quantized=quantized)
         if model_dir == "google":
-            language_model = BardCompletionModel("gemini-pro")
+            language_model = BardCompletionModel("gemini-pro", additional_prompt="CONTINUE")
         elif model_dir == "openai":
-            language_model = GPTCompletionModel("gpt-4-1106-preview")
+            language_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="CONTINUE")
+        elif model_dir == "anthropic":
+            language_model = ClaudeModel("claude-3-opus-20240229", additional_prompt="CONTINUE")
+            
+        else:
+            language_model = HFModel(model_pth=model_dir, tokenizer_pth=model_dir, quantized=quantized)
         # dataset = ProntoQADataset.from_file(
         #     'examples/prontoqa/data/345hop_random_true.json'
         # )
@@ -101,3 +107,6 @@ if __name__ == '__main__':
 # CUDA_VISIBLE_DEVICES=4 python examples/prontoqa/cot_inference.py --model_dir "/data/haotian/RAP_tune/Mistral-7B-v0.1" --temperature 0.0 --log_dir "logs/prontoqa_mistral-7b-cot"
 # CUDA_VISIBLE_DEVICES=4 python examples/prontoqa/cot_inference.py --model_dir "/data/haotian/RAP_tune/Qwen1.5-7B" --temperature 0.0 --log_dir "logs/prontoqa_qwen-7b-cot"
 # CUDA_VISIBLE_DEVICES=3,4 python examples/prontoqa/cot_inference.py --model_dir "/data/haotian/RAP_tune/Mixtral-8x7B-v0.1" --temperature 0.0 --log_dir "logs/prontoqa_mixtral-cot" --quantized 'nf4'
+# python examples/prontoqa/cot_inference.py --model_dir "google" --temperature 0.0 --log_dir "logs/prontoqa_gemini-cot"
+# python examples/prontoqa/cot_inference.py --model_dir "openai" --temperature 0.0 --log_dir "logs/prontoqa_gpt-cot"
+# python examples/prontoqa/cot_inference.py --model_dir "anthropic" --temperature 0.0 --log_dir "logs/prontoqa_claude-cot"
