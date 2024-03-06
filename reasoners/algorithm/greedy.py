@@ -44,7 +44,7 @@ class GreedySearchNode:
         return path
 
 class GreedySearchResult(NamedTuple):
-    terminal_node: GreedySearchNode
+    terminal_state: GreedySearchNode
     cum_reward: float
     tree: GreedySearchNode
     trace: List[Tuple[Action, State, float]]
@@ -135,6 +135,7 @@ class GreedySearch(SearchAlgorithm, Generic[State, Action]):
                 # reject the samples with reward less than the reject_min_reward
                 beam = [x for x in beam if x[2] >= self.reject_min_reward]
             # return the top k
+            print(f" inside sample : {beam}")
             return beam[0]
 
         
@@ -155,6 +156,8 @@ class GreedySearch(SearchAlgorithm, Generic[State, Action]):
             new_beam = []
             cache_for_dedup = set()
 
+            print("--"*20)
+            print("new depth \n \n ")
             for beam_item in cur_beam:
                 node, reward_list, _ = beam_item[:3]
 
@@ -218,8 +221,12 @@ class GreedySearch(SearchAlgorithm, Generic[State, Action]):
             new_beam.sort(key=lambda x: x[2], reverse=True)
 
             # Sample from new beam
-            cur_beam = self._sample(new_beam)
+            if(len(new_beam)==0):
+                break
+            cur_beam = [self._sample(new_beam)]
 
+            print(f" new_beam: {new_beam}")
+            print(f"selected action: {cur_beam[0][0].state}")
             # Decay the temperature
             if self.temperature_decay:
                 self.temperature *= self.temperature_decay
@@ -245,10 +252,9 @@ class GreedySearch(SearchAlgorithm, Generic[State, Action]):
 
         best_result = terminal_beam[0]
         result = GreedySearchResult(
-            terminal_node=best_result[0],
+            terminal_state=best_result[0],
             cum_reward=best_result[2],  # Use the precomputed cum_reward
             trace=best_result[0].get_trace(),
             tree=root_node
             )
-
         return result

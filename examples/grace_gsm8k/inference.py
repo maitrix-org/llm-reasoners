@@ -348,16 +348,14 @@ if __name__ == '__main__':
             from reasoners.lm import ExLlamaModel
             base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir, mem_map=exllama_mem_map,
                                       max_batch_size=batch_size, max_new_tokens=200, max_seq_length=3072)
-        elif base_lm == "google/flan-t5-large":
-            from reasoners.lm import FlanT5Model
+        elif  "flan-t5" in base_lm:
+            from flan_t5 import FlanT5Model
             base_model = FlanT5Model()
 
         else:
             assert False, f'cannot resolve {base_lm=}'
 
         grace_gsm8k(base_model=base_model,
-                  useful_prompt=useful_prompt,
-                  prompt=prompt,
                   batch_size=batch_size,
                   disable_log=disable_log or local_rank != 0,
                   disable_tqdm=disable_tqdm or local_rank != 0,

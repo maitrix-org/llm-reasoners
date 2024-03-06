@@ -2,6 +2,60 @@ import re
 from typing import Optional
 import io
 from collections import Counter
+from typing import Optional, Union
+
+from reasoners.base import AlgorithmOutput
+
+ANS_RE = re.compile(r"#### (\-?[0-9\.\,]+)")
+LLC_ANS_RE = re.compile(r"#### ([a-zA-Z]+)")
+
+INVALID_ANS = "[invalid]"
+
+def extract_answer(completion):
+    match = ANS_RE.search(completion)
+    if match:
+        match_str = match.group(1).strip()
+        match_str = match_str.replace(",", "")
+        return match_str
+    else:
+        return INVALID_ANS
+    
+
+
+def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
+    '''
+    output should be a world_model.GSM8kState if being a list
+    '''
+    if isinstance(output, AlgorithmOutput):
+        if (result := getattr(output, 'aggregated_result', None)) is not None:
+            return result
+        output = output.terminal_state
+        print("hello")
+    if isinstance(output, list):
+        output = output[-1].sub_answer
+
+    print(f" inside answer retrieval: {output.action[0]}")
+    print(f" grace answer extractor: {extract_answer(output.action[0])}")
+    # return ""
+    match = re.match(r'.*The answer is .*?([ $.0-9,\-=]+).*\..*', output.action[0])
+    if match is None:
+        print(f"og answer extractor: {None}")
+        return extract_answer(output.action[0])
+        return None
+    answer = match[1].replace(',', '').replace('$', '').replace(' ', '')
+    if '=' in answer:
+        answer = answer[answer.rindex('=') + 1:]
+
+    print(f"og answer extractor: {answer}")
+    
+    return extract_answer(output.action[0])
+
+
+def retrieve_answer_from_dataset(answer: Union[str, dict]) -> str:
+    if isinstance(answer, dict):
+        answer = answer['answer']
+    return re.match(r'[\S\s]*#### (.*)$', answer)[1].replace(',', '').replace(' ', '')
+
 
 def majority_voting(outputs):
     # filter out non-numeric strings
@@ -48,8 +102,9 @@ def construct_full_solution(state, execute=True):
         return full_output
 
 
-def retrieve_answer_from_dataset(answer: str) -> str:
-    return re.match(r'[\S\s]*#### (.*)$', answer)[1]
+def retrieve_answer_from_dataset(example: str) -> str:
+    print(f" answer: {example['answer']}")
+    return re.match(r'[\S\s]*#### (.*)$', example["answer"])[1]
 
 
 def judge_answer(output: Optional[str], answer: str) -> bool:

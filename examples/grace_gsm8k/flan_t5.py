@@ -10,6 +10,7 @@ import glob
 import time
 
 import torch
+from torch.nn.functional import log_softmax
 import numpy as np
 from tqdm import tqdm
 from huggingface_hub import snapshot_download
@@ -17,25 +18,53 @@ from huggingface_hub import snapshot_download
 from reasoners import LanguageModel, GenerateOutput
 
 class FlanT5Model:
-    def __init__(self, model_name='google/flan-t5-large'):
+    def __init__(self, model_name='mkhalifa/flan-t5-large-gsm8k'):
         self.tokenizer = T5Tokenizer.from_pretrained(model_name)
         self.model = T5ForConditionalGeneration.from_pretrained(model_name)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
+
+    @torch.no_grad()
+    def get_log_probs(self, inputs: list[str], generated_sequences: list[str]):
+        log_probs = []
+        for input_text, gen_seq in zip(inputs, generated_sequences):
+            # print(f" inside logprobs")
+            input_ids = self.tokenizer(input_text, return_tensors="pt", truncation=True, padding="max_length", max_length=self.model.config.max_length).input_ids.to(self.device)
+            gen_ids = self.tokenizer(gen_seq, return_tensors="pt", truncation=True, padding="max_length", max_length=self.model.config.max_length).input_ids.to(self.device)
+            
+            outputs = self.model(input_ids=input_ids, labels=gen_ids)
+            logits = outputs.logits  # [batch_size, sequence_length, config.vocab_size]
+            
+            # Shift logits and labels to align for calculating log_probs of generated tokens
+            shift_logits = logits[..., :-1, :].contiguous()
+            shift_labels = gen_ids[..., 1:].contiguous()
+            
+            # Flatten the logits and labels to calculate log_probs easily
+            flat_shift_logits = shift_logits.view(-1, shift_logits.size(-1))
+            flat_shift_labels = shift_labels.view(-1)
+            
+            # Calculate log probabilities
+            log_probs_seq = log_softmax(flat_shift_logits, dim=1)
+            flat_log_probs = log_probs_seq.gather(dim=1, index=flat_shift_labels.unsqueeze(-1)).squeeze(-1)
+            
+            # Reshape log_probs back to [batch_size, sequence_length]
+            log_probs.append(flat_log_probs.view(shift_logits.size(0), shift_logits.size(1)).sum(1))
+        
+        return log_probs
 
     def generate(
             self,
             inputs: list[str],
             max_length: Optional[int] = None,
             max_new_tokens: Optional[int] = None,
-            do_sample: bool = False,
-            temperature: float = 1.0,
-            top_k: int = 50,
-            top_p: float = 1.0,
-            num_return_sequences: int = 1,
+            do_sample: bool = True,
+            temperature: float = 0.8,
+            top_k: int = None,
+            top_p: float = 0.95,
+            num_return_sequences: int = 5,
             eos_token_id: Union[None, str, int, list[Union[str, int]]] = None,
-            hide_input: bool = True,
-            output_log_probs: bool = False,
+            hide_input: bool = False,
+            output_log_probs: bool = True,
             **kwargs,
     ) -> GenerateOutput:
         if max_length is not None:
@@ -53,30 +82,70 @@ class FlanT5Model:
             eos_token_ids = [self.tokenizer.eos_token_id]
 
         # Prepare inputs
-        encoded_inputs = self.tokenizer(inputs, return_tensors="pt", padding=True, truncation=True, max_length=self.model.config.max_length).to(self.device)
-        input_ids = encoded_inputs['input_ids']
+        model_inputs = inputs[0]  
+        cur_prefix = inputs[1]
+        
+    
+        print(f" model_inputs: {model_inputs}")  
+        print(f" cur_prefix: {cur_prefix}") 
+        model_encoded_inputs = self.tokenizer(model_inputs, return_tensors="pt").to(self.device)
+        model_input_ids = model_encoded_inputs['input_ids']
+        
+        if len(cur_prefix)==0:
+            cur_prefix_input_ids = torch.LongTensor([[self.tokenizer.pad_token_id]] * 1).to(self.device)
+        else:
+            cur_prefix_encoded_inputs = self.tokenizer(cur_prefix, return_tensors="pt").to(self.device)
+            cur_prefix_input_ids = cur_prefix_encoded_inputs['input_ids']
+            cur_prefix_input_ids = cur_prefix_input_ids[:, :-1]
+            cur_prefix_input_ids= torch.cat((torch.LongTensor([[self.tokenizer.pad_token_id]] * 1).to(self.device), cur_prefix_input_ids), dim=1)
+
+
+        input_generated_sequences = []
+        input_generated_sequences += [self.tokenizer.decode(g, skip_special_tokens=True) for g in model_input_ids]
+        # print(f" input_generated_sequences: {input_generated_sequences}")
+        input_generated_sequences = []
+        input_generated_sequences += [self.tokenizer.decode(g, skip_special_tokens=True) for g in cur_prefix_input_ids]
+        # print(f" input_generated_sequences prefix: {input_generated_sequences}")
+ 
 
         # Generate outputs
         generated_sequences = []
+        total_generated_ids = []
         for _ in range(num_return_sequences):
+
             generated_ids = self.model.generate(
-                input_ids=input_ids,
-                max_length=max_length or self.model.config.max_length,
+                decoder_input_ids=cur_prefix_input_ids ,
+                input_ids=model_input_ids,
+                attention_mask=model_input_ids.new_ones(model_input_ids.shape),
                 max_new_tokens=max_new_tokens,
                 do_sample=do_sample,
+                repetition_penalty=1.0,
+                # bad_words_ids = [[0]],
+                no_repeat_ngram_size=0,
+            
+                sample_calc=True,
                 temperature=temperature,
-                top_k=top_k,
-                top_p=top_p,
-                eos_token_id=eos_token_ids[0],  # Assumes single EOS token ID for simplicity
+                output_scores=True,
+                top_k=None,
+                top_p=0.95,
+                eos_token_id=[1820],  # Assumes single EOS token ID for simplicity
+                tokenizer=self.tokenizer,
                 **kwargs
             )
+
+            total_generated_ids.append(generated_ids)
             generated_sequences += [self.tokenizer.decode(g, skip_special_tokens=True) for g in generated_ids]
-        
+
+        print(f"  generated sequence {generated_sequences}")
+        print()
         if hide_input:
-            generated_sequences = [seq[len(input_text):] for seq, input_text in zip(generated_sequences, inputs*num_return_sequences)]
+            generated_sequences = [seq[len(input_text)-1:] for seq, input_text in zip(generated_sequences, inputs*num_return_sequences)]
         
-        # Log probabilities are not directly supported in this implementation
-        log_probs = None if not output_log_probs else [0] * len(generated_sequences)  # Placeholder for actual log probabilities
+        # If log probabilities are requested
+        if output_log_probs:
+            log_probs = self.get_log_probs(inputs[0], generated_sequences)
+        else:
+            log_probs = None
 
         return GenerateOutput(generated_sequences, log_probs)
 
@@ -138,6 +207,3 @@ if __name__ == "__main__":
     generated_texts = flan_t5_model.generate(input_text, num_return_sequences=1)
     for text in generated_texts:
         print(text)
-
-    # For get_next_token_logits and get_loglikelihood, you would call them with appropriate inputs,
-    # but note that their implementations here are simplified and might need adjustment for specific use cases.
