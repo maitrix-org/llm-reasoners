@@ -4,6 +4,7 @@ from reasoners.benchmark import BWEvaluator
 import fire
 from reasoners.lm.openai_model import GPTCompletionModel
 from reasoners.lm.gemini_model import BardCompletionModel
+from reasoners.lm.anthropic_model import ClaudeModel
 class CoTReasoner():
     def __init__(self, base_model, temperature=0.8, model_type="completion"):
         self.base_model = base_model
@@ -38,12 +39,14 @@ def main(model_dir, data_path, prompt_path, disable_log=False, batch_size=1, con
         base_model = BardCompletionModel("gemini-pro", additional_prompt="CONTINUE")
     elif model_dir == "openai":
         base_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="CONTINUE")
+    elif model_dir == "anthropic":
+        base_model = ClaudeModel("claude-3-opus-20240229", additional_prompt="CONTINUE")
     else:
         base_model = HFModel(model_pth=model_dir, tokenizer_pth=model_dir, quantized=quantized)
     with open(prompt_path) as f:
         prompt = json.load(f)
 
-    reasoner = CoTReasoner(base_model, temperature=temperature, model_type="chat" if model_dir in ["openai", "google"] else "completion")
+    reasoner = CoTReasoner(base_model, temperature=temperature, model_type="chat" if model_dir in ["openai", "google", "claude"] else "completion")
     evaluator = BWEvaluator(config_file=config_file, domain_file=domain_file, data_path=data_path, init_prompt=prompt, disable_log=disable_log, output_extractor=lambda x:x, sample_prompt_type="rap") # rap prompt includes cot
     accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
     print(f'accuracy: {accuracy:.4f}')

@@ -49,16 +49,12 @@ class CoTReasoner():
 
 def main(exllama_model_dir, exllama_lora_dir=None, exllama_mem_map=None, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0, n_sc=1, quantized='int8'):
 
-    # base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir,
-    #                       mem_map=exllama_mem_map, max_batch_size=batch_size,
-    #                       max_new_tokens=500, max_seq_length=2048)
-
     if exllama_model_dir == "openai":
         base_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="ANSWER")
     elif exllama_model_dir == "google":
         base_model = BardCompletionModel("gemini-pro", additional_prompt="ANSWER")
     else:
-        base_model = HFModel(exllama_model_dir, exllama_model_dir,quantized=quantized)
+        base_model = HFModel(exllama_model_dir, exllama_model_dir, quantized=quantized)
 
     with open(prompt) as f:
         prompt = json.load(f)
@@ -76,25 +72,8 @@ def main(exllama_model_dir, exllama_lora_dir=None, exllama_mem_map=None, batch_s
     print(f'accuracy: {accuracy:.4f}')
     return 0
 
-def calculate_acc():
-    import pickle
-    from datasets import load_dataset
-    data = load_dataset('gsm8k','main','test')
-    output_extractor=utils.cot_sc_extractor
-    answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"])
-    evaluator = GSM8KEvaluator(output_extractor=output_extractor,answer_extractor=answer_extractor,init_prompt=None,disable_log=False,disable_tqdm=False,sample_prompt_type="cot")
-    correct_count = 0
-    for i in range(1,1319):
-        mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02232024-164842/algo_output/{i}.pkl', 'rb'))
-        output = output_extractor(mcts_result)
-        answer = answer_extractor(data['test'][i-1])
-        correct = evaluator.eval_output(answer, output)
-        correct_count += correct
-        accuracy = correct_count / (i + 1)
-    print(f'accuracy: {accuracy:.4f}')
 if __name__ == '__main__':
     fire.Fire(main)
-    # fire.Fire(calculate_acc)
     """
 CUDA_VISIBLE_DEVICES=2 python examples/cot_gsm8k/inference.py \
 --exllama_model_dir $Gemma_ckpts \ 这里gemma我用的非instruction tuning模型
