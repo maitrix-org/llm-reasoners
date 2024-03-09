@@ -49,10 +49,6 @@ class CoTReasoner():
 
 def main(exllama_model_dir, exllama_lora_dir=None, exllama_mem_map=None, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0, n_sc=1, quantized='int8'):
 
-    # base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir,
-    #                       mem_map=exllama_mem_map, max_batch_size=batch_size,
-    #                       max_new_tokens=500, max_seq_length=2048)
-
     if exllama_model_dir == "openai":
         base_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="ANSWER")
     elif exllama_model_dir == "google":
@@ -60,7 +56,7 @@ def main(exllama_model_dir, exllama_lora_dir=None, exllama_mem_map=None, batch_s
     elif exllama_model_dir == "anthropic":
         base_model = ClaudeModel("claude-3-opus-20240229", additional_prompt="ANSWER")
     else:
-        base_model = HFModel(exllama_model_dir, exllama_model_dir,quantized=quantized)
+        base_model = HFModel(exllama_model_dir, exllama_model_dir, quantized=quantized)
 
     with open(prompt) as f:
         prompt = json.load(f)
