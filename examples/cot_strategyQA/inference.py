@@ -3,7 +3,7 @@ import sys
 import json
 import warnings
 import fire
-from reasoners.lm import LlamaCppModel, LlamaModel, ExLlamaModel, HFModel, Llama2Model
+from reasoners.lm import LlamaCppModel, LlamaModel, ExLlamaModel, HFModel, Llama2Model, ClaudeModel
 import random
 from typing import Literal
 import torch
@@ -21,7 +21,7 @@ from reasoners.lm.gemini_model import BardCompletionModel
 #     warnings.filterwarnings('ignore')
 
 
-def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','openai','google'] = 'hf',
+def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','openai','google','anthropic'] = 'hf',
             llama_ckpt: str = None,
             llama_2_ckpt: str = None,
             exllama_model_dir: str = None,
@@ -66,6 +66,8 @@ def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','open
         base_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="ANSWER")
     elif base_lm == 'google':
         base_model = BardCompletionModel("gemini-pro", additional_prompt="ANSWER")
+    elif base_lm == 'anthropic':
+        base_model = ClaudeModel("claude-3-opus-20240229", additional_prompt="ANSWER")
     from datetime import datetime
     log_dir =  f'logs/strategyqa_'\
                         f'cot/'\
@@ -108,7 +110,7 @@ def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','open
     import pickle
     print("----------------")
     # print(base_model.model.config.architectures[0])
-    if isinstance(base_model, GPTCompletionModel) or isinstance(base_model, BardCompletionModel):
+    if isinstance(base_model, GPTCompletionModel) or isinstance(base_model, BardCompletionModel) or isinstance(base_model, ClaudeModel):
         eos_token_id = []
     elif isinstance(base_model.model, transformers.GemmaForCausalLM):
         eos_token_id = [108,109]
@@ -208,24 +210,40 @@ def calculate_acc():
     with open("examples/rap_strategyQA/data/strategyqa_test.json", 'r') as f:
         data = json.load(f)
     import re
-
+    clean_path = '/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/GPT-4-turbo_cleaned.jsonl'
     correct_count = 0
+    import pandas as pd
+    df = pd.read_json(clean_path, lines=True)
+
     print(len(data))
+    cnt = 0
     for i in range(1,2291):
         mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/algo_output/{i}.pkl', 'rb'))
         output = re.match(r'.*[Tt]he answer is .*(yes|no|Yes|No).*\..*', mcts_result, re.DOTALL)
         # print(output[1])
+        output_new = re.match(r'.*[Tt]he answer is .*(yes|no|Yes|No).*\..*', df.loc[i-1,'metadata_generation']+'.', re.DOTALL)
+        print(data[i-1]['answer'])
+        if output_new is None and output is not None:
+            cnt += 1
+            continue
         if output is None:
             continue
-        print(data[i-1]['answer'])
         correct = eval_output(data[i-1]['answer'], output[1])
+        correct_new = eval_output(data[i-1]['answer'], output_new[1])
+        if correct_new != correct:
+            print(i)
+            print(mcts_result)
+            print(df.loc[i-1,'metadata_generation'])
+            print(data[i-1]['answer'])
+            cnt += 1
         correct_count += correct
+    print(cnt)
     accuracy = correct_count / (i + 1)
     print(f'accuracy: {accuracy:.4f}')
 
 if __name__ == '__main__':
-    fire.Fire(main)
-    # fire.Fire(calculate_acc)
+    # fire.Fire(main)
+    fire.Fire(calculate_acc)
 
 """
 CUDA_VISIBLE_DEVICES=6,7 python examples/cot_strategyQA/inference.py --base_lm hf --exllama_model_dir /data/haotian/RAP_tune/Mixtral-8x7B-v0.1 --quantized 'nf4'

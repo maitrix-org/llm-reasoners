@@ -11,7 +11,7 @@ PROMPT_TEMPLATE_ANSWER = "Your response need to be ended with \"So the answer is
 PROMPT_TEMPLATE_CONTINUE = "Please continue to answer the last question, following the format of previous examples. Don't say any other words.\n\n"
 
 class ClaudeModel(LanguageModel):
-    def __init__(self, model:str, max_tokens:int = 2048, temperature=0.0, additional_prompt=None):
+    def __init__(self, model:str, max_tokens:int = 1024, temperature=0.0, additional_prompt=None):
         self.client = anthropic.Anthropic(api_key=os.environ['ANTHROPIC_API_KEY'])
         self.model = model
         self.max_tokens = max_tokens
@@ -69,7 +69,7 @@ class ClaudeModel(LanguageModel):
             
             except Exception as e:
                 print(f"An Error Occured: {e}, sleeping for {i} seconds")
-                time.sleep(i)
+                time.sleep(i^2)
 
         raise RuntimeError("ClaudeModel failed to generate output, even after 64 tries")
     
