@@ -1,5 +1,5 @@
 import pickle
-from typing import Type, Optional
+from typing import Type, Optional, Literal
 
 import numpy as np
 from tqdm import tqdm
@@ -10,7 +10,7 @@ from reasoners.algorithm import BeamSearch, MCTS, MCTSNode
 from reasoners.visualization import TreeLog
 
 from world_model import Game24WorldModel, Game24State, Game24Action
-from search_config import Game24config
+from search_config import Game24Config
 import utils
 
 
@@ -30,15 +30,13 @@ def rap_game24(base_model: LanguageModel,
                search_algo: Type[SearchAlgorithm] = BeamSearch,
                resume: int = 0,
                n_action: int = 4,
-               n_confidence: int = 8,
-               n_select_sample: int = 5,
+               n_beam: int = 5,
                n_eval: int = 3,
                depth_limit: int = 4,
-               force_terminating_on_depth_limit: bool = True,
                batch_size: int = 3,
-               reward_confidence_default: float = 0.8,
                log_dir: Optional[str] = None,
                disable_log: bool = False,
+               calc_reward: Literal['sampling', 'logits'] = 'sampling',
                **search_algo_params):
     if not disable_log:
         if log_dir is None:
@@ -50,23 +48,20 @@ def rap_game24(base_model: LanguageModel,
 
     ## keep the best 5 candidates, need at most 4 steps to solve
     ## following ToT, eval step will consider number of times to prompt for state evaluation
-    # search_algo_params |= {'beam_size': n_select_sample, 'max_depth': depth_limit}
-    search_algo_params |= {'output_trace_in_each_iter': True, 'depth_limit': depth_limit, 'disable_tqdm': False,
-                           'n_iters': 10}
-    world_model = Game24WorldModel(base_model=base_model, prompt=prompts,
-                                   n_confidence=n_confidence, batch_size=batch_size)
-    config = Game24config(base_model=base_model, prompt=prompts,
+    # search_algo_params |= {'beam_size': n_beam, 'max_depth': depth_limit}
+    search_algo_params |= {'output_trace_in_each_iter': True, 'depth_limit': depth_limit, 'disable_tqdm': False}
+    world_model = Game24WorldModel(base_model=base_model, prompt=prompts, batch_size=batch_size)
+    config = Game24Config(base_model=base_model, prompt=prompts, calc_reward=calc_reward,
                           n_actions=n_action, n_eval=n_eval, batch_size=batch_size, depth_limit=depth_limit,)
     search_algo = search_algo(**search_algo_params)
     reasoner = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
     # test from 900-999
-    dataset = utils.read_data(file='./examples/tot_game24/data/24.csv')[900:1000][:2]
+    dataset = utils.read_data(file='./examples/tot_game24/data/24.csv')[900:1000]
     correct_count = 0
     for i, example in enumerate(tqdm(dataset, total=len(dataset), initial=0, desc='game24')):
         # print(f'\n======== example {i}: {example} ========')
-        reasoner.world_model = Game24WorldModel(base_model=base_model, prompt=prompts,
-                                                n_confidence=n_confidence, batch_size=batch_size)
+        reasoner.world_model = Game24WorldModel(base_model=base_model, prompt=prompts, batch_size=batch_size)
         # algo_output = reasoner(example, action_dedup=True, return_beam=True, early_terminate=False,
         #                        reward_strategy='last_iter')
         algo_output = reasoner(example)
@@ -95,39 +90,67 @@ if __name__ == '__main__':
     import json
     import warnings
     import fire
-    from reasoners.lm import OpenAIModel, LLaMAModel
     import random
-    import torch
-    import torch.backends.cudnn
-
-    np.random.seed(0)
-    random.seed(0)
-    torch.manual_seed(0)
-    torch.cuda.manual_seed(0)
-    torch.backends.cudnn.deterministic = True
 
     llama_ckpts = os.environ.get("LLAMA_CKPTS", None)
-    local_rank = int(os.environ.get("LOCAL_RANK", "0"))
+    llama_2_ckpts = os.environ.get("LLAMA_2_CKPTS", None)
+    local_rank = int(os.environ.get("LOCAL_RANK", 0))
     if local_rank != 0:
-        sys.stdout = sys.stderr = open(os.devnull, 'w')
+        sys.stdout = open(os.devnull, 'w')
         warnings.filterwarnings('ignore')
 
-
-    def main(llama_ckpt: str = llama_ckpts,
+    def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama'] = 'llama-2',
+             llama_ckpts: str = llama_ckpts,
+             llama_2_ckpts: str = llama_2_ckpts,
              llama_size: str = '13B',
-             batch_size: int = 2,
+             llama_cpp_path: str = None,
+             llama_cpp_n_batch: int = 512,
+             hf_path: str = 'meta-llama/Llama-2-13b-hf',
+             hf_peft_path: Optional[str] = None,
+             hf_quantized: Optional[Literal['awq', 'int8', 'fp4', 'nf4']] = None,
+             hf_load_awq_path: Optional[str] = None,
+             exllama_model_dir: str = 'WizardMath-13B-V1.0-GPTQ',
+             exllama_lora_dir: Optional[str] = None,
+             exllama_mem_map: Optional[str] = None,
+             batch_size: int = 1,
              prompts: str = 'examples/tot_game24/prompts/game24.json',
              disable_log: bool = False,
+             disable_tqdm: bool = False,
              **kwargs):
         with open(prompts) as f:
             prompts = json.load(f)
-        # base_model = LLaMAModel(llama_ckpt, llama_size, max_batch_size=batch_size)
-        ## try GPT
-        base_model = OpenAIModel(model='gpt-3.5-turbo')
+        if base_lm in ['llama', 'llama2']:
+            import torch
+            import torch.backends.cudnn
+            np.random.seed(0)
+            random.seed(0)
+            torch.manual_seed(0)
+            torch.cuda.manual_seed(0)
+            torch.backends.cudnn.deterministic = True
+
+        if base_lm == 'llama':
+            from reasoners.lm import LlamaModel
+            base_model = LlamaModel(llama_ckpts, llama_size, max_batch_size=batch_size)
+        elif base_lm == 'llama.cpp':
+            from reasoners.lm import LlamaCppModel
+            base_model = LlamaCppModel(llama_cpp_path, n_batch=llama_cpp_n_batch)
+        elif base_lm == 'llama-2':
+            from reasoners.lm import Llama2Model
+            base_model = Llama2Model(llama_2_ckpts, llama_size, max_batch_size=batch_size)
+        elif base_lm == 'hf':
+            from reasoners.lm import HFModel
+            base_model = HFModel(hf_path, hf_path, max_batch_size=batch_size, max_new_tokens=512,
+                                 peft_pth=hf_peft_path, quantized=hf_quantized, load_awq_pth=hf_load_awq_path)
+        elif base_lm == 'exllama':
+            from reasoners.lm import ExLlamaModel
+            base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir, mem_map=exllama_mem_map,
+                                      max_batch_size=batch_size, max_new_tokens=512, max_seq_length=2048)
+        else:
+            assert False, f'cannot resolve {base_lm=}'
         rap_game24(base_model=base_model,
                    prompts=prompts,
                    batch_size=batch_size,
-                   n_select_sample=5,
+                   n_beam=5,
                    disable_log=disable_log or local_rank != 0,
                    search_algo=MCTS,
                    **kwargs)

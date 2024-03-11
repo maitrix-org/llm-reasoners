@@ -1,5 +1,10 @@
 import copy
 import re
+from typing import Literal
+
+import numpy as np
+import scipy
+import torch
 
 from reasoners import SearchConfig, LanguageModel
 from world_model import Game24State, Game24Action
@@ -7,7 +12,7 @@ from world_model import Game24State, Game24Action
 from prompts.game24 import output_prompt, propose_prompt, value_prompt, value_last_step_prompt, value_map
 
 
-class Game24config(SearchConfig[Game24State, Game24Action]):
+class Game24Config(SearchConfig[Game24State, Game24Action]):
     def __init__(self,
                  base_model: LanguageModel,
                  prompt: dict,
@@ -15,7 +20,8 @@ class Game24config(SearchConfig[Game24State, Game24Action]):
                  batch_size=2,
                  depth_limit=4,
                  temperature=0.7,
-                 n_eval=5) -> None:
+                 n_eval=5,
+                 calc_reward: Literal['sampling', 'logits'] = 'sampling') -> None:
         super().__init__()
         self.base_model = base_model
         self.example = None
@@ -26,6 +32,7 @@ class Game24config(SearchConfig[Game24State, Game24Action]):
         self.value_cache = {}
         self.depth_limit = depth_limit
         self.temperature = temperature
+        self.calc_reward = calc_reward
 
     @staticmethod
     def output_prompt_wrap(state: Game24State) -> str:
@@ -50,20 +57,34 @@ class Game24config(SearchConfig[Game24State, Game24Action]):
         return value
 
     def get_actions(self, state: Game24State) -> list[Game24Action]:
+        if state.current == '':
+            return []
+        # print(f'Generating actions for {state}')
         if state.current == '24':
             prompt = self.output_prompt_wrap(state)
+            output = \
+            self.base_model.generate([prompt], num_return_sequences=1, do_sample=False, eos_token_id='\n').text[0]
+            output = 'Answer: ' + output.strip()
+            return [output]
+        elif ' ' not in state.current:
+            return []
         else:
             prompt = self.propose_prompt_wrap(state)
-        output = self.base_model.generate([prompt], num_return_sequences=1).text[0]
-
-        actions = output.split('\n')
-
-        # set does not guarantee order, but dict does guarantee
-        # we cannot use set here because torch.distributed in LLaMA requires the same order across all processes
-        actions = list(dict.fromkeys(actions))
-        return actions
+            output = \
+            self.base_model.generate([prompt], num_return_sequences=1, do_sample=False, eos_token_id='Input').text[0]
+            output = output.strip()
+            if '\n\n' in output:
+                output = output.split('\n\n')[0]
+            output = output.split('\n')
+            actions = [x for x in output if 'left' in x]
+            # set does not guarantee order, but dict does guarantee
+            # we cannot use set here because torch.distributed in LLaMA requires the same order across all processes
+            actions = list(dict.fromkeys(actions))
+            return actions
 
     def _reward(self, state: Game24State, action: Game24Action) -> float:
+        if state.current == '':
+            return 0.
         next_state = copy.deepcopy(state)
         if 'Answer' in action:
             match = re.match(r'Answer: (.*)', action)
@@ -82,14 +103,25 @@ class Game24config(SearchConfig[Game24State, Game24Action]):
         if prompt in self.value_cache:
             return self.value_cache[prompt]
 
-        value_outputs = []
-        for idx in range(0, self.n_eval, self.batch_size):
-            n_samples = min(self.n_eval - idx, self.batch_size)
-            value_outputs += self.base_model.generate([prompt], do_sample=True, temperature=self.temperature,
-                                                      num_return_sequences=n_samples).text
+        if self.calc_reward == 'sampling':
+            value_outputs = []
+            for idx in range(0, self.n_eval, self.batch_size):
+                n_samples = min(self.n_eval - idx, self.batch_size)
+                output = self.base_model.generate([prompt], do_sample=True, temperature=self.temperature,
+                                                  num_return_sequences=n_samples).text
+                value_outputs += [o.strip().split('\n\n')[0] for o in output]
+            # print(value_outputs)
+            value = self.retrieve_value(value_outputs)
+        elif self.calc_reward == 'logits':
+            value_keys = list(value_map.keys())
+            logits = self.base_model.get_next_token_logits([prompt], value_keys)[0]
+            logits = scipy.special.softmax(logits)
+            value = np.sum(logits * np.array(list(value_map.values())))
+        else:
+            raise NotImplementedError
 
-        value = self.retrieve_value(value_outputs)
-        self.value_cache[value_prompt] = value
+        self.value_cache[prompt] = value
+        # print(f'Reward of {state}, {action=} is {value:.5f}')
         return value
 
     def fast_reward(self, state: Game24State, action: Game24Action) -> tuple[float, dict]:
@@ -97,6 +129,5 @@ class Game24config(SearchConfig[Game24State, Game24Action]):
         return reward, {'reward': reward}
 
     # We calculate the full reward in fast_reward in Game24SearchConfig, direct return it
-    def reward(self, state: Game24State, action: Game24Action,
-               reward: float = None, **kwargs) -> tuple[float, dict]:
-        return reward, {}
+    def reward(self, state: Game24State, action: Game24Action, **kwargs) -> tuple[float, dict]:
+        return self.fast_reward(state, action)

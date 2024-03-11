@@ -58,7 +58,7 @@ def test_output(question: str, output: str):
     if sorted(numbers) != sorted(question_numbers):
         return False
     try:
-        return abs(sympy.simplify(expression) - 24) < 1e-6
+        return abs(float(sympy.simplify(expression)) - 24) < 1e-6
     except ValueError:
         return False
 

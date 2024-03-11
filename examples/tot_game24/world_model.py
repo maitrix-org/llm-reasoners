@@ -12,6 +12,12 @@ class Game24State:
     history: list[str]
     output: Optional[str] = None
 
+    def __str__(self):
+        if self.output is None:
+            return f'Game24State({repr(self.current)})'
+        else:
+            return f'Game24State({repr(self.current)}, output={repr(self.output)})'
+
 
 Game24Action = str
 
@@ -32,15 +38,16 @@ class Game24WorldModel(WorldModel[Game24State, Game24Action]):
         return Game24State(self.example, self.example, [])
 
     def step(self, state: Game24State, action: Game24Action) -> tuple[Game24State, dict]:
-        state = copy.deepcopy(state)
+        next_state = copy.deepcopy(state)
         if 'Answer' in action:
             match = re.match(r'Answer: (.*)', action)
-            state.output = match[1] if match is not None else ''
+            next_state.output = match[1] if match is not None else ''
         else:
             match = re.match(r'.*\(left: (.*)\)', action)
-            state.current = match[1] if match is not None else ''
-            state.history.append(action)
-        return state, {'next_state': state}
+            next_state.current = match[1] if match is not None else ''
+            next_state.history.append(action)
+        # print(f'Stepping {state} with {action=} to {next_state}')
+        return next_state, {'next_state': next_state}
 
     def is_terminal(self, state: Game24State) -> bool:
         return state.output is not None
