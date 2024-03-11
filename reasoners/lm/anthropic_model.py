@@ -21,8 +21,6 @@ class ClaudeModel(LanguageModel):
     def generate(self,
                 prompt: Optional[Union[str, list[str]]],
                 max_tokens: int = None,
-                top_p: float = 1.0,
-                rate_limit_per_min: Optional[int] = None,
                 temperature = None,
                 additional_prompt=None,
                 retry = 64,
@@ -70,7 +68,7 @@ class ClaudeModel(LanguageModel):
             except Exception as e:
                 print(f"An Error Occured: {e}, sleeping for {i} seconds")
                 time.sleep(i^2)
-
+                #request exceed is common, so set square sleep time
         raise RuntimeError("ClaudeModel failed to generate output, even after 64 tries")
     
     def get_next_token_logits(self,

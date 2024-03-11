@@ -18,7 +18,7 @@ class GPTCompletionModel(LanguageModel):
         self.temperature = temperature
         self.client = OpenAI(
             api_key = os.getenv("OPENAI_API_KEY", None),
-            # organization='org-vEqqgGhqCUXNYuFXPIeVg2ME',
+            # organization='',
         )
         self.additional_prompt = additional_prompt
     

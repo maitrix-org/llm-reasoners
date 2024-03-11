@@ -82,16 +82,18 @@ def calculate_acc():
     answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"])
     evaluator = GSM8KEvaluator(output_extractor=output_extractor,answer_extractor=answer_extractor,init_prompt=None,disable_log=False,disable_tqdm=False,sample_prompt_type="cot")
     correct_count = 0
-    clean_path = '/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02292024-025642/GPT-4-turbo_fixed.jsonl'
+    clean_path = '/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/03052024-061622/Claude3_new.json'
     import pandas as pd
     df = pd.read_json(clean_path, lines=True)
     cnt = 0
     df_c = pd.DataFrame(columns=['question', 'cot','index_ap'])
     for i in range(1,1319):
-        mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02292024-025642/algo_output/{i}.pkl', 'rb'))[-1]
+        mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/03052024-061622/algo_output/{i}.pkl', 'rb'))[-1]
         
         output_real = output_extractor(mcts_result)
         output_clean = df.loc[i-1,'metadata_generation'] + '.'
+        print(output_clean)
+        print(data['test'][i-1]['answer'])
         output = output_extractor(output_clean)
         answer = answer_extractor(data['test'][i-1])
         correct = evaluator.eval_output(answer, output)
@@ -113,7 +115,7 @@ def calculate_acc():
             print(answer)
             cnt += 1
         correct_count += correct
-        accuracy = correct_count / (i + 1)
+    accuracy = correct_count / (i + 1)
     print(cnt)
     print(f'accuracy: {accuracy:.4f}')
     # df_c.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02292024-025642/cot_ap.json')

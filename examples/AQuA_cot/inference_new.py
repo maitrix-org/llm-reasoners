@@ -28,13 +28,13 @@ class CoTReasoner():
         if isinstance(self.base_model, GPTCompletionModel) or isinstance(self.base_model, BardCompletionModel) or isinstance(self.base_model, ClaudeModel):
             eos_token_id = []
         elif isinstance(self.base_model.model, transformers.GemmaForCausalLM):
-            eos_token_id = [109]###since here is \n\n in prompt
+            eos_token_id = [109]#Gemma use 109 for \n\n
         elif isinstance(self.base_model.model, transformers.MistralForCausalLM) or isinstance(self.base_model.model, transformers.MixtralForCausalLM):
             eos_token_id = [13]
         elif self.base_model.model.config.architectures[0] == 'InternLM2ForCausalLM':
-            eos_token_id = [364,402,512,756]
+            eos_token_id = [364,402,512,756]#\n, \n\n, .\n, .\n\n
         elif self.base_model.model.config.architectures[0] == 'Qwen2ForCausalLM':
-            eos_token_id = [198,271,382,624,151645]
+            eos_token_id = [198,271,382,624,151645]#same as above
         else:
             print(self.base_model.model.__class__)
             print(self.base_model.model.config.architectures[0])

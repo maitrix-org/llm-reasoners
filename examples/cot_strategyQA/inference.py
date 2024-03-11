@@ -210,20 +210,29 @@ def calculate_acc():
     with open("examples/rap_strategyQA/data/strategyqa_test.json", 'r') as f:
         data = json.load(f)
     import re
-    clean_path = '/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/GPT-4-turbo_cleaned.jsonl'
+    clean_path = '/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/GPT-4-turbo_fixed.jsonl'
     correct_count = 0
     import pandas as pd
     df = pd.read_json(clean_path, lines=True)
-
+    df_c = pd.DataFrame(columns=['question', 'cot','index_ap'])
     print(len(data))
     cnt = 0
     for i in range(1,2291):
         mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/algo_output/{i}.pkl', 'rb'))
-        output = re.match(r'.*[Tt]he answer is .*(yes|no|Yes|No).*\..*', mcts_result, re.DOTALL)
+        output = re.match(r'.*[Tt]he answer is .*(yes|no|Yes|No).*.*', mcts_result, re.DOTALL)
         # print(output[1])
-        output_new = re.match(r'.*[Tt]he answer is .*(yes|no|Yes|No).*\..*', df.loc[i-1,'metadata_generation']+'.', re.DOTALL)
+        output_new = re.match(r'.*[Tt]he answer is .*(yes|no|Yes|No).*.*', df.loc[i-1,'metadata_generation']+'.', re.DOTALL)
+        question = data[i-1]['question']
+        cot = mcts_result
+        cot = cot.split('Q:')[0]
+        cot_steps = cot.split('. ')
+        cot_final = ""
+        for j in range(len(cot_steps)):
+            cot_final += f'Step {j+1}: ' + cot_steps[j] + ".\n"
+        cot_final = cot_final.rstrip('\n')
         print(data[i-1]['answer'])
         if output_new is None and output is not None:
+            df_c.loc[cnt] = [question, cot_final, i-1]
             cnt += 1
             continue
         if output is None:
@@ -231,6 +240,7 @@ def calculate_acc():
         correct = eval_output(data[i-1]['answer'], output[1])
         correct_new = eval_output(data[i-1]['answer'], output_new[1])
         if correct_new != correct:
+            df_c.loc[cnt] = [question, cot_final, i-1]
             print(i)
             print(mcts_result)
             print(df.loc[i-1,'metadata_generation'])
@@ -240,10 +250,28 @@ def calculate_acc():
     print(cnt)
     accuracy = correct_count / (i + 1)
     print(f'accuracy: {accuracy:.4f}')
+    df_c.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/cot_ap.json')
+
+def fix_append():
+    import pandas as pd
+    ap_id_path = "/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/cot_ap.json"
+    ap_path = "/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/GPT-4_ap.json"
+    bug_path = "/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/GPT-4-turbo_cleaned.jsonl"
+    df_id_ap = pd.read_json(ap_id_path)
+    df_ap = pd.read_json(ap_path, lines=True)
+    df_bug = pd.read_json(bug_path, lines=True)
+    for i in range(len(df_ap)):
+        bug_id = df_id_ap.loc[i,'index_ap']
+        ap_metadata_generation = df_ap.loc[i,'metadata_generation']
+        ap_text = df_ap.loc[i,'text']
+        df_bug.loc[bug_id,'metadata_generation'] = ap_metadata_generation
+        df_bug.loc[bug_id,'text'] = ap_text
+    df_bug.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/GPT-4-turbo_fixed.jsonl', orient='records', lines=True)
 
 if __name__ == '__main__':
     # fire.Fire(main)
     fire.Fire(calculate_acc)
+    # fire.Fire(fix_append)
 
 """
 CUDA_VISIBLE_DEVICES=6,7 python examples/cot_strategyQA/inference.py --base_lm hf --exllama_model_dir /data/haotian/RAP_tune/Mixtral-8x7B-v0.1 --quantized 'nf4'

@@ -6,7 +6,7 @@ import time
 import google.generativeai as genai
 from .. import LanguageModel, GenerateOutput
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
-GEMINI_KEY = os.getenv("GEMINI_KEY", None)
+GEMINI_KEY = os.getenv("GEMINI_KEY", None)#user need to set the environment variable GEMINI_KEY
 genai.configure(api_key=GEMINI_KEY)
 
 PROMPT_TEMPLATE_ANSWER = "Your response need to be ended with \"So the answer is\"\n\n"
@@ -21,15 +21,11 @@ class BardCompletionModel(LanguageModel):
     def generate(self,
                 prompt: Optional[Union[str, list[str]]],
                 max_tokens: int = None,
-                top_p: float = 1.0,
                 rate_limit_per_min: Optional[int] = 60,
-                temperature = None,
                 additional_prompt=None,
                 retry = 64,
                 **kwargs) -> GenerateOutput:
         
-        gpt_temperature = self.temperature if temperature is None else temperature
-
         if isinstance(prompt, list):
             assert len(prompt) == 1
             prompt = prompt[0]
@@ -53,11 +49,8 @@ class BardCompletionModel(LanguageModel):
                 # sleep several seconds to avoid rate limit
                 if rate_limit_per_min is not None:
                     time.sleep(60 / rate_limit_per_min)
-                config = genai.GenerationConfig(
-                    temperature=gpt_temperature,
-                )
+                
                 messages = [{"role": "user", "parts": prompt}]
-                # safety_settings={'HARASSMENT':'BLOCK_NONE','HATE_SPEECH':'BLOCK_NONE','DANGEROUS_CONTENT':'BLOCK_NONE','SEXUALLY_EXPLICIT':'BLOCK_NONE'}
                 safety_settings={
                     HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
                     HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
@@ -67,18 +60,7 @@ class BardCompletionModel(LanguageModel):
                 response = self.model.generate_content(
                     contents=messages,
                     safety_settings=safety_settings,
-                    # generation_config=config,
                 )
-                # print(response.prompt_feedback)
-                '''print('-----------------------------------------')
-                print(f'Prompt:\n{prompt}')
-                print('-------------prompt end------------------')
-                print('-----------------------------------------')
-                print('Response:')
-                for i, choice in enumerate(response["choices"]):
-                    print(f'---------response {i}------------')
-                    print(choice["message"]["content"])
-                print('-------------response end----------------') '''
 
                 return GenerateOutput(
                     text=[response.text],
