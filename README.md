@@ -6,6 +6,8 @@
 
 Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Reasoning Algorithms, Visualization, LLM calling, and more!
 
+The library also includes a new metric for **<u>R</u>eason<u>i</u>ng <u>C</u>hain <u>E</u>valuation ([RICE](https://github.com/Ber666/llm-reasoners/tree/main/reasoners/rice))**.
+
 ## News
 - Oct. 25, 2023: A [video tutorial](https://www.youtube.com/watch?v=5QfOxtiw_ZU) on the visualizer of LLM Reasoners are available.
 
@@ -20,20 +22,20 @@ Given any reasoning problem, simply define the reward function and an optional w
 
 - **Cutting-Edge Reasoning Algorithms**: We offer the most up-to-date search algorithms for reasoning with LLMs, such as [RAP-MCTS](https://arxiv.org/abs/2305.14992), [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633), and more. These advanced algorithms enable tree-structure reasoning and outperform traditional chain-of-thoughts approaches.
 
-- **Intuitive Visualization and Interpretation**: Our library provides visualization tools to aid users in comprehending the reasoning process. Even for the most complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand what occurred with one line of python code.
+- **Intuitive Visualization and Interpretation**: Our library provides a [visualization tool](https://www.llm-reasoners.net/) to aid users in comprehending the reasoning process. Even for complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand the process with one line of python code.
 
-- **Compatibility with any LLM libraries**: Our framework is compatible with any LLM frameworks, e.g. Huggingface transformers, OpenAI API, etc. Specifically, we integrated LLaMA with the option of using [fairscale](https://github.com/facebookresearch/llama) backend for improved multi-GPU performance or [LLaMA.cpp](https://github.com/ggerganov/llama.cpp) backend with lower hardware requirements.
+- **Compatibility with popular libraries**: Our framework is compatible with popular LLM frameworks, e.g. Huggingface transformers, OpenAI API, etc. Specifically, we have integrated LLaMA-1/2 with the option of using [fairscale](https://github.com/facebookresearch/llama), [LLaMA.cpp](https://github.com/ggerganov/llama.cpp), [Exllama](https://github.com/Ber666/llm-reasoners/tree/main/reasoners/lm#exllama) for different needs.
 
 
 ## Experiment Results
-We tested different reasoning algorithms on the following benchmarks (to be updated).
+We tested different reasoning algorithms with Llama-2 70B on the following benchmarks:
 
-|Method|Base LLM|[GSM8K](https://arxiv.org/abs/2110.14168)|[AQuA](https://arxiv.org/abs/1705.04146)|[Blocksworld](https://arxiv.org/abs/2305.15771)|[Game of 24](https://arxiv.org/abs/2305.10601)|[StrategyQA](https://arxiv.org/abs/2101.02235)|
-|-|-|-|-|-|-|-|
-|[CoT](https://arxiv.org/abs/2201.11903)|Llama-2 70B|0.54|0.34|0.05|-|0.76|
-|[ToT (BFS)](https://arxiv.org/abs/2305.10601)|Llama-2 70B|0.58|0.42|0.09|0.04|0.76|
-|[RAP](https://arxiv.org/abs/2305.14992)|Llama-2 70B|0.61|0.47|0.51|0.07|0.77|
-|[RAP (aggr)](https://arxiv.org/abs/2305.14992)|Llama-2 70B|0.64|0.51|-|-|0.82|
+| Method        | [GSM8K](https://arxiv.org/abs/2110.14168) | [AQuA](https://arxiv.org/abs/1705.04146) | [Game of 24](https://arxiv.org/abs/2305.10601) | [PrOntoQA](https://arxiv.org/abs/2210.01240) | [StrategyQA](https://arxiv.org/abs/2101.02235) | [Blocksworld](https://arxiv.org/abs/2305.15771) |
+|--------------|--------------|-------------|---------|----------|-------------------|-------------|
+| [CoT](https://arxiv.org/abs/2201.11903)          | 0.37 / 0.54  | 0.09 / 0.34 | 0.04    | 0.58     | 0.34 / 0.76       | 0.05        |
+| [ToT](https://arxiv.org/abs/2305.10601) (BFS)    | 0.53 / 0.58  | 0.15 / 0.42 | 0.04    | 0.52     | 0.41 / 0.76       | 0.09        |
+| [ToT](https://arxiv.org/abs/2305.10601) (DFS)    | 0.45 / 0.52  | 0.10 / 0.36 | 0.07    | 0.44     | 0.42 / 0.76       | 0.08        |
+| [RAP](https://arxiv.org/abs/2305.14992)          | 0.58 / 0.64  | 0.20 / 0.47 | 0.07    | 0.59     | 0.28 / 0.77       | 0.51        |
 
 
 Our library has been tested against official repos of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601) and [Guided Decoding](https://arxiv.org/abs/2305.00633). We list the results reported in their paper /  reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
@@ -48,7 +50,7 @@ Our library has been tested against official repos of [Tree-of-Thoughts](https:/
 |Tree-of-Thoughts|GPT-3.5-turbo|[0.22](examples/tot_game24)|
 
 
-## Understanding LLM Reasoners
+## Background of LLM Reasoning
 
 Consider the following problem:
 
@@ -83,9 +85,15 @@ LLM Reasoners formulate **reasoning as planning** ([RAP](https://arxiv.org/abs/2
 - **Reward function** provides a criterion to evaluate a reasoning step. Ideally, a reasoning chain with a higher accumulated reward should be more likely to be correct. For the example shown above, we can reward actions based on the increased number of accomplished subgoals they lead to. Besides, the likelihood of LLMs generating the action can also be used as a reward, to give the search a good prior.
 
 
-After we have the world model and reward function, it's time to apply an algorithm to search for the optimal reasoning trace. Here, we show the process of Monte-Carlo Tree Search:
+After we have the world model and reward function, it's time to apply an algorithm to search for the optimal reasoning trace. Here, we show the process of Monte-Carlo Tree Search with a gif:
 
-![Alt text](images/mcts_animation.gif)
+![MCTS Animation](images/mcts_animation.gif)
+
+## Introduction of the library
+
+The three key components in a reasoning algorithm, *reward function*, *world model*, and *search algorithm* in the formulation (top), correspond to three classes in the library, <tt>SearchConfig</tt>, <tt>WorldModel</tt> and <tt>SearchAlgorithm</tt> respectively. Besides, there are <tt>LLM APIs</tt> to power other modules, <tt>Benchmark</tt>, and <tt>Visualization</tt> to evaluate or debug the reasoning algorithm (middle). To implement a reasoning algorithm for a certain domain (a <tt>Reasoner</tt> object), a user may inherit the <tt>SearchConfig</tt> and <tt>WorldModel</tt> class, and import a pre-implemented <tt>SearchAlgorithm</tt>. We also show a concrete example of solving Blocksworld with RAP using LLM Reasoners (bottom).
+
+![Library Structure](images/figure2_reasoners_v5.png)
 
 ## Quick Tour
 Let's go through the code of reasoning over Blocksworld problems. Note that the code is simplified for demonstration (check [here](https://github.com/Ber666/llm-reasoners/tree/main/examples/rap_blocksworld) for full experiment code).
@@ -232,7 +240,7 @@ def blocksworld_edge_data_factory(n: MCTSNode) -> EdgeData:
 visualize(mcts_result, node_data_factory=blocksworld_node_data_factory,
                        edge_data_factory=blocksworld_edge_data_factory)
 ```
-Then an URL of the visualized results will pop up. The figure will be interactive and look like the examples shown in our [demo website](https://llm-reasoners.net/).
+Then a URL of the visualized results will pop up. The figure will be interactive and look like the examples shown on our [demo website](https://llm-reasoners.net/).
 ## Installation
 Make sure to use Python 3.10 or later.
 
