@@ -1,4 +1,4 @@
-from distutils.command import clean
+from typing import Literal
 from reasoners.lm import ExLlamaModel
 import json
 from reasoners.benchmark import AQuAEvaluator
@@ -52,30 +52,32 @@ class CoTReasoner():
         
         return outputs
 
-def main(exllama_model_dir= None, 
-         exllama_lora_dir = None, 
-         exllama_mem_map = None, 
+def main(model_type:Literal['hf', 'google', 'openai', 'anthropic','exllama'],
+         model_dir= None, 
+         lora_dir = None, 
+         mem_map = None, 
          batch_size=1, 
          prompt="examples/AQuA_cot/prompts/cot.json", 
          quantized='int8',
          resume=0, 
          temperature=0,
          sc_num=1,
-         log_dir=None,
-         device_map=None):
+         log_dir=None):
 
-    # base_model = ExLlamaModel(exllama_model_dir, exllama_lora_dir,
-    #                       mem_map=exllama_mem_map, max_batch_size=batch_size,
-    #                       max_new_tokens=500, max_seq_length=2048)
-    if exllama_model_dir == "google":
+    if model_type == "exllama":
+        base_model = ExLlamaModel(model_dir, lora_dir,
+                            mem_map=mem_map, max_batch_size=batch_size,
+                            max_new_tokens=500, max_seq_length=2048)
+    elif model_type == "google":
         base_model = BardCompletionModel("gemini-pro", additional_prompt="ANSWER")
-    elif exllama_model_dir == "openai":
+    elif model_type == "openai":
         base_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="ANSWER")
-    elif exllama_model_dir == "anthropic":
+    elif model_type == "anthropic":
         base_model = ClaudeModel("claude-3-opus-20240229", additional_prompt="ANSWER")
+    elif model_type == "hf":
+        base_model = HFModel(model_dir, model_dir,quantized=quantized)
     else:
-        base_model = HFModel(exllama_model_dir, exllama_model_dir,quantized=quantized)
-
+        raise ValueError(f"model_type {model_type} is not supported")
     with open(prompt) as f:
         prompt = json.load(f)
 
@@ -88,72 +90,28 @@ def main(exllama_model_dir= None,
                  disable_tqdm=False,
                  sample_prompt_type="cot")
     from datetime import datetime
-    log_dir =  f'logs/AQuA'\
+    log_dir =  f'logs/AQuA_'\
                         f'cot/'\
                         f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
-    model_type = exllama_model_dir.split('/')[-1]
-    log_dir = log_dir + f'_{model_type}'
+    if model_type == 'hf':
+        model_name= model_dir.split('/')[-1]
+    else:
+        model_name = model_type
+    log_dir = log_dir + f'_{model_name}'
     accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
     print(f'accuracy: {accuracy:.4f}')
     return 0
 
-def calculate_acc():
-    from reasoners.benchmark import data_reader
-    import pickle
-    data = data_reader("AQuA","/data/haotian/RAP_tune/llm-reasoners/dataset/AQuA")
-    output_extractor=utils.retrieve_answer
-    answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"])
-    evaluator = AQuAEvaluator(output_extractor=output_extractor,answer_extractor=answer_extractor,init_prompt=None,disable_log=False,disable_tqdm=False,sample_prompt_type="cot")
-    correct_count = 0
-    clean_path = '/data/haotian/RAP_tune/llm-reasoners/logs/AQuAcot/02282024-092258_openai/GPT-4-turbo_cleaned.jsonl'
-    import pandas as pd
-    df = pd.read_json(clean_path, lines=True)
-    cnt = 0
-    df_c = pd.DataFrame(columns=['question', 'cot','index_ap'])
-    for i in range(1,len(df)+1):
-        mcts_result = pickle.load(open(f"/data/haotian/RAP_tune/llm-reasoners/logs/AQuAcot/02282024-092258_openai/algo_output/{i}.pkl", 'rb'))
-        output_real = output_extractor(mcts_result)
-        output_clean = df.loc[i-1,'metadata_generation'] + '.'
-        output_clean = [output_clean]
-        output = output_extractor(output_clean)
-        answer = answer_extractor(data[i-1])
-        correct = evaluator.eval_output(answer, output)
-        correct_real = evaluator.eval_output(answer, output_real)
-        question = data[i-1]['question']
-        cot = mcts_result[-1]
-        cot = cot.split('Q:')[0]
-        cot_steps = cot.split('. ')
-        cot_final = ""
-        # cot_final = cot
-        for j in range(len(cot_steps)):
-            cot_final += f'Step {j+1}: ' + cot_steps[j] + ".\n"
-        cot_final = cot_final.rstrip('\n')
-
-        if correct_real != correct:
-            df_c.loc[cnt] = [question, mcts_result, i-1]
-            cnt += 1
-            
-            print(f'question: {question}')
-            print(f'answer: {answer}')
-            print(f'output: {output}')
-            print(f'output_real: {output_real}')
-            print(mcts_result)
-            print(output_clean)
-            print(f'correct: {correct}')
-            print(f'correct_real: {correct_real}')
-        correct_count += correct
-        accuracy = correct_count / (i + 1)
-    df_c.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/AQuAcot/02282024-092258_openai/cot_ap.json')
-
-    print(cnt)
-    print(f'accuracy: {accuracy:.4f}')
 
 
 if __name__ == '__main__':
-    # fire.Fire(main)
-    fire.Fire(calculate_acc)
-    """
+    fire.Fire(main)
+"""
 CUDA_VISIBLE_DEVICES=0 python examples/AQuA_cot/inference_new.py \
 --exllama_model_dir $MODEL_CKPTS --quantized 'int8'\
 """
 
+"""
+python examples/AQuA_cot/inference_new.py \
+--model_type google \
+"""

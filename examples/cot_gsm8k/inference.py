@@ -6,6 +6,7 @@ from reasoners.lm.hf_model import HFModel
 from reasoners.lm.gemini_model import BardCompletionModel
 from reasoners.lm.anthropic_model import ClaudeModel
 import utils
+from typing import Literal
 import fire
 import transformers
 class CoTReasoner():
@@ -43,21 +44,20 @@ class CoTReasoner():
                                             hide_input=True,
                                             do_sample=do_sample,
                                             temperature=self.temperature,
-                                            # eos_token_id=[13]).text #gemma的词表换了\n是108#\n\n是109
                                             eos_token_id=eos_token_id).text
         return [o.strip() for o in outputs]
 
-def main(exllama_model_dir, exllama_lora_dir=None, exllama_mem_map=None, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0, n_sc=1, quantized='int8'):
+def main(model_type:Literal['hf', 'google', 'openai', 'anthropic','exllama'],model_dir, lora_dir=None, mem_map=None, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0, n_sc=1, quantized='int8'):
 
-    if exllama_model_dir == "openai":
+    if model_type == "openai":
         base_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="ANSWER")
-    elif exllama_model_dir == "google":
+    elif model_type == "google":
         base_model = BardCompletionModel("gemini-pro", additional_prompt="ANSWER")
-    elif exllama_model_dir == "anthropic":
+    elif model_type == "anthropic":
         base_model = ClaudeModel("claude-3-opus-20240229", additional_prompt="ANSWER")
-    else:
-        base_model = HFModel(exllama_model_dir, exllama_model_dir, quantized=quantized)
-
+    elif model_type == "hf":
+        base_model = HFModel(model_dir, model_dir, quantized=quantized)
+    
     with open(prompt) as f:
         prompt = json.load(f)
 
@@ -69,79 +69,24 @@ def main(exllama_model_dir, exllama_lora_dir=None, exllama_mem_map=None, batch_s
                  disable_log=False,
                  disable_tqdm=False,
                  sample_prompt_type="cot")
-
+    from datetime import datetime
+    log_dir =  f'logs/gsm8k_'\
+                        f'cot/'\
+                        f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
+    if model_type == 'hf':
+        model_name= model_dir.split('/')[-1]
+    else:
+        model_name = model_type
+    log_dir = log_dir + f'_{model_name}'
     accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
     print(f'accuracy: {accuracy:.4f}')
     return 0
 
-def calculate_acc():
-    import pickle
-    from datasets import load_dataset
-    data = load_dataset('gsm8k','main','test')
-    output_extractor=utils.retrieve_answer
-    answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"])
-    evaluator = GSM8KEvaluator(output_extractor=output_extractor,answer_extractor=answer_extractor,init_prompt=None,disable_log=False,disable_tqdm=False,sample_prompt_type="cot")
-    correct_count = 0
-    clean_path = '/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/03052024-061622/Claude3_new.json'
-    import pandas as pd
-    df = pd.read_json(clean_path, lines=True)
-    cnt = 0
-    df_c = pd.DataFrame(columns=['question', 'cot','index_ap'])
-    for i in range(1,1319):
-        mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/03052024-061622/algo_output/{i}.pkl', 'rb'))[-1]
-        
-        output_real = output_extractor(mcts_result)
-        output_clean = df.loc[i-1,'metadata_generation'] + '.'
-        print(output_clean)
-        print(data['test'][i-1]['answer'])
-        output = output_extractor(output_clean)
-        answer = answer_extractor(data['test'][i-1])
-        correct = evaluator.eval_output(answer, output)
-        correct_real = evaluator.eval_output(answer, output_real)
-        question = data['test'][i-1]['question']
-        cot = mcts_result
-        cot = cot.split('Q:')[0]
-        cot_steps = cot.split('. ')
-        cot_final = ""
-        # cot_final = cot
-        for j in range(len(cot_steps)):
-            cot_final += f'Step {j+1}: ' + cot_steps[j] + ".\n"
-        cot_final = cot_final.rstrip('\n')
-        if correct_real != correct:
-            # df_c.loc[cnt] = [question, cot_final, i-1]
-            print(i)
-            print(mcts_result)
-            print(output_clean)
-            print(answer)
-            cnt += 1
-        correct_count += correct
-    accuracy = correct_count / (i + 1)
-    print(cnt)
-    print(f'accuracy: {accuracy:.4f}')
-    # df_c.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02292024-025642/cot_ap.json')
-def fix_append():
-    import pandas as pd
-    ap_id_path = "/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02292024-025642/cot_ap.json"
-    ap_path = "/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02292024-025642/GPT_4_ap.json"
-    bug_path = "/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02292024-025642/GPT-4-turbo_cleaned.jsonl"
-    df_id_ap = pd.read_json(ap_id_path)
-    df_ap = pd.read_json(ap_path, lines=True)
-    df_bug = pd.read_json(bug_path, lines=True)
-    for i in range(len(df_ap)):
-        bug_id = df_id_ap.loc[i,'index_ap']
-        ap_metadata_generation = df_ap.loc[i,'metadata_generation']
-        ap_text = df_ap.loc[i,'text']
-        df_bug.loc[bug_id,'metadata_generation'] = ap_metadata_generation
-        df_bug.loc[bug_id,'text'] = ap_text
-    df_bug.to_json("/data/haotian/RAP_tune/llm-reasoners/logs/gsm8k_unknown/02292024-025642/GPT-4-turbo_fixed.jsonl", orient='records', lines=True)
-
 if __name__ == '__main__':
-    # fire.Fire(main)
-    fire.Fire(calculate_acc)
-    # fire.Fire(fix_append)
+    fire.Fire(main)
     """
 CUDA_VISIBLE_DEVICES=2 python examples/cot_gsm8k/inference.py \
---exllama_model_dir $Gemma_ckpts \ 这里gemma我用的非instruction tuning模型
+--model_dir $Gemma_ckpts \ 
 """
 
 

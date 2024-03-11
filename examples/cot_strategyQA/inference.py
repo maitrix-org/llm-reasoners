@@ -1,9 +1,8 @@
 import os
 import sys
 import json
-import warnings
 import fire
-from reasoners.lm import LlamaCppModel, LlamaModel, ExLlamaModel, HFModel, Llama2Model, ClaudeModel
+from reasoners.lm import LlamaCppModel, LlamaModel, ExLlamaModel, HFModel, ClaudeModel
 import random
 from typing import Literal
 import torch
@@ -12,20 +11,14 @@ from tqdm import tqdm
 from utils import extract_final_answer, eval_output
 from reasoners.lm.openai_model import GPTCompletionModel
 from reasoners.lm.gemini_model import BardCompletionModel
-# llama_ckpts = os.environ.get("LLAMA_CKPTS", None)
-# llama_2_ckpts = os.environ.get("LLAMA_2_CKPTS", None)
-# exllama_ckpt = os.environ.get("EXLLAMA_CKPT", None)
-# local_rank = int(os.environ.get("LOCAL_RANK", 0))
-# if local_rank != 0:
-#     sys.stdout = open(os.devnull, 'w')
-#     warnings.filterwarnings('ignore')
 
 
-def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','openai','google','anthropic'] = 'hf',
+def main(model_type: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','openai','google','anthropic'] = 'hf',
             llama_ckpt: str = None,
             llama_2_ckpt: str = None,
-            exllama_model_dir: str = None,
+            model_dir: str = None,
             llama_size: str = None,
+            lora_dir: str = None,
             mem_map: list[int] = None,
             llama_cpp_path: str = None,
             self_consistency: int = 1,
@@ -40,47 +33,42 @@ def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','open
             temperature: float = 0,
             quantized = 'int8',
             **kwargs):
-    # set base_lm = 'llama' and llama_ckpt = '13B/30B/65B' to use llama with torchscale
-    # else set base_lm = 'llama.cpp' and llama_cpp_path = the checkpoint to use llama.cpp
+    # set model_type = 'llama' and llama_ckpt = '13B/30B/65B' to use llama with torchscale
+    # else set model_type = 'llama.cpp' and llama_cpp_path = the checkpoint to use llama.cpp
 
-    if base_lm == 'llama':
+    if model_type == 'llama':
         base_model = LlamaModel(llama_ckpt, llama_size, max_batch_size=batch_size, max_seq_len=max_seq_len)
-    elif base_lm == 'llama.cpp':
+    elif model_type == 'llama.cpp':
         base_model = LlamaCppModel(llama_cpp_path)
-    elif base_lm == 'llama2':
+    elif model_type == 'llama2':
         base_model = LlamaModel(llama_2_ckpt, llama_size, max_batch_size=batch_size)
-    elif base_lm == 'exllama':
+    elif model_type == 'exllama':
         device = torch.device("cuda:0")
-        base_model = ExLlamaModel(
-            model_dir = f"{exllama_model_dir}/Llama-2-{llama_size}-GPTQ",
-            lora_dir = None,
-            device = "cuda:0",
-            max_batch_size = batch_size,
-            max_new_tokens = 256,
-            max_seq_length = max_seq_len,
-            mem_map = mem_map
-        )
-    elif base_lm == 'hf':
-        base_model = HFModel(exllama_model_dir, exllama_model_dir,quantized=quantized)
-    elif base_lm == 'openai':
+        ExLlamaModel(model_dir, lora_dir,mem_map=mem_map, max_batch_size=batch_size, max_new_tokens=500, max_seq_length=2048)
+    elif model_type == 'hf':
+        base_model = HFModel(model_dir, model_dir,quantized=quantized)
+    elif model_type == 'openai':
         base_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="ANSWER")
-    elif base_lm == 'google':
+    elif model_type == 'google':
         base_model = BardCompletionModel("gemini-pro", additional_prompt="ANSWER")
-    elif base_lm == 'anthropic':
+    elif model_type == 'anthropic':
         base_model = ClaudeModel("claude-3-opus-20240229", additional_prompt="ANSWER")
     from datetime import datetime
     log_dir =  f'logs/strategyqa_'\
                         f'cot/'\
                         f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
-    model_type = exllama_model_dir.split('/')[-1]
-    log_dir = log_dir + f'_{model_type}'
+    if model_type == 'hf':
+        model_name = model_dir.split('/')[-1]
+    else:
+        model_name = model_type
+    log_dir = log_dir + f'_{model_name}'
     # load the dataset
     with open(data_file_path, 'r') as f:
         dataset = json.load(f)
     
     dataset = dataset[resume:]
 
-    ### write all answers to json for submission
+    #write all answers to json for submission
     answer_dict = {}
     if os.path.isfile(os.path.join(log_dir, 'all_answers-1.json')):
         with open(os.path.join(log_dir, 'all_answers-1.json')) as f:
@@ -109,7 +97,6 @@ def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','open
     import transformers
     import pickle
     print("----------------")
-    # print(base_model.model.config.architectures[0])
     if isinstance(base_model, GPTCompletionModel) or isinstance(base_model, BardCompletionModel) or isinstance(base_model, ClaudeModel):
         eos_token_id = []
     elif isinstance(base_model.model, transformers.GemmaForCausalLM):
@@ -205,74 +192,11 @@ def eval_output(answer, output):
     answer = "no" if not answer else "yes"
     
     return answer == output.strip().lower()
-def calculate_acc():
-    import pickle
-    with open("examples/rap_strategyQA/data/strategyqa_test.json", 'r') as f:
-        data = json.load(f)
-    import re
-    clean_path = '/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/GPT-4-turbo_fixed.jsonl'
-    correct_count = 0
-    import pandas as pd
-    df = pd.read_json(clean_path, lines=True)
-    df_c = pd.DataFrame(columns=['question', 'cot','index_ap'])
-    print(len(data))
-    cnt = 0
-    for i in range(1,2291):
-        mcts_result = pickle.load(open(f'/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/algo_output/{i}.pkl', 'rb'))
-        output = re.match(r'.*[Tt]he answer is .*(yes|no|Yes|No).*.*', mcts_result, re.DOTALL)
-        # print(output[1])
-        output_new = re.match(r'.*[Tt]he answer is .*(yes|no|Yes|No).*.*', df.loc[i-1,'metadata_generation']+'.', re.DOTALL)
-        question = data[i-1]['question']
-        cot = mcts_result
-        cot = cot.split('Q:')[0]
-        cot_steps = cot.split('. ')
-        cot_final = ""
-        for j in range(len(cot_steps)):
-            cot_final += f'Step {j+1}: ' + cot_steps[j] + ".\n"
-        cot_final = cot_final.rstrip('\n')
-        print(data[i-1]['answer'])
-        if output_new is None and output is not None:
-            df_c.loc[cnt] = [question, cot_final, i-1]
-            cnt += 1
-            continue
-        if output is None:
-            continue
-        correct = eval_output(data[i-1]['answer'], output[1])
-        correct_new = eval_output(data[i-1]['answer'], output_new[1])
-        if correct_new != correct:
-            df_c.loc[cnt] = [question, cot_final, i-1]
-            print(i)
-            print(mcts_result)
-            print(df.loc[i-1,'metadata_generation'])
-            print(data[i-1]['answer'])
-            cnt += 1
-        correct_count += correct
-    print(cnt)
-    accuracy = correct_count / (i + 1)
-    print(f'accuracy: {accuracy:.4f}')
-    df_c.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/cot_ap.json')
-
-def fix_append():
-    import pandas as pd
-    ap_id_path = "/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/cot_ap.json"
-    ap_path = "/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/GPT-4_ap.json"
-    bug_path = "/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/GPT-4-turbo_cleaned.jsonl"
-    df_id_ap = pd.read_json(ap_id_path)
-    df_ap = pd.read_json(ap_path, lines=True)
-    df_bug = pd.read_json(bug_path, lines=True)
-    for i in range(len(df_ap)):
-        bug_id = df_id_ap.loc[i,'index_ap']
-        ap_metadata_generation = df_ap.loc[i,'metadata_generation']
-        ap_text = df_ap.loc[i,'text']
-        df_bug.loc[bug_id,'metadata_generation'] = ap_metadata_generation
-        df_bug.loc[bug_id,'text'] = ap_text
-    df_bug.to_json('/data/haotian/RAP_tune/llm-reasoners/logs/strategyqa_cot/02282024-093310_openai/GPT-4-turbo_fixed.jsonl', orient='records', lines=True)
 
 if __name__ == '__main__':
-    # fire.Fire(main)
-    fire.Fire(calculate_acc)
-    # fire.Fire(fix_append)
+    fire.Fire(main)
+
 
 """
-CUDA_VISIBLE_DEVICES=6,7 python examples/cot_strategyQA/inference.py --base_lm hf --exllama_model_dir /data/haotian/RAP_tune/Mixtral-8x7B-v0.1 --quantized 'nf4'
+CUDA_VISIBLE_DEVICES=6,7 python examples/cot_strategyQA/inference.py --model_type hf --exllama_model_dir /data/haotian/RAP_tune/Mixtral-8x7B-v0.1 --quantized 'nf4'
 """
