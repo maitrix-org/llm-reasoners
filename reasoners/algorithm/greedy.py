@@ -134,8 +134,6 @@ class GreedySearch(SearchAlgorithm, Generic[State, Action]):
             if self.reject_sample:
                 # reject the samples with reward less than the reject_min_reward
                 beam = [x for x in beam if x[2] >= self.reject_min_reward]
-            # return the top k
-            print(f" inside sample : {beam}")
             return beam[0]
 
         
@@ -157,9 +155,8 @@ class GreedySearch(SearchAlgorithm, Generic[State, Action]):
             cache_for_dedup = set()
 
             print("--"*20)
-            print("new depth \n \n ")
             for beam_item in cur_beam:
-                node, reward_list, _ = beam_item[:3]
+                node, reward_list, _ = beam_item
 
                 state = node.state
                 if self.early_terminate and world.is_terminal(state):
@@ -225,8 +222,6 @@ class GreedySearch(SearchAlgorithm, Generic[State, Action]):
                 break
             cur_beam = [self._sample(new_beam)]
 
-            print(f" new_beam: {new_beam}")
-            print(f"selected action: {cur_beam[0][0].state}")
             # Decay the temperature
             if self.temperature_decay:
                 self.temperature *= self.temperature_decay

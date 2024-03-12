@@ -1,4 +1,4 @@
-from transformers import T5Tokenizer, T5ForConditionalGeneration, T5Config
+from transformers import T5Tokenizer, T5ForConditionalGeneration, T5Config, AutoTokenizer
 import torch
 import os
 import sys
@@ -19,7 +19,7 @@ from reasoners import LanguageModel, GenerateOutput
 
 class FlanT5Model:
     def __init__(self, model_name='mkhalifa/flan-t5-large-gsm8k'):
-        self.tokenizer = T5Tokenizer.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = T5ForConditionalGeneration.from_pretrained(model_name)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model.to(self.device)
@@ -61,10 +61,8 @@ class FlanT5Model:
             temperature: float = 0.8,
             top_k: int = None,
             top_p: float = 0.95,
-            num_return_sequences: int = 5,
+            num_return_sequences: int = 1,
             eos_token_id: Union[None, str, int, list[Union[str, int]]] = None,
-            hide_input: bool = False,
-            output_log_probs: bool = True,
             **kwargs,
     ) -> GenerateOutput:
         if max_length is not None:
@@ -85,9 +83,6 @@ class FlanT5Model:
         model_inputs = inputs[0]  
         cur_prefix = inputs[1]
         
-    
-        print(f" model_inputs: {model_inputs}")  
-        print(f" cur_prefix: {cur_prefix}") 
         model_encoded_inputs = self.tokenizer(model_inputs, return_tensors="pt").to(self.device)
         model_input_ids = model_encoded_inputs['input_ids']
         
@@ -102,52 +97,61 @@ class FlanT5Model:
 
         input_generated_sequences = []
         input_generated_sequences += [self.tokenizer.decode(g, skip_special_tokens=True) for g in model_input_ids]
-        # print(f" input_generated_sequences: {input_generated_sequences}")
         input_generated_sequences = []
         input_generated_sequences += [self.tokenizer.decode(g, skip_special_tokens=True) for g in cur_prefix_input_ids]
-        # print(f" input_generated_sequences prefix: {input_generated_sequences}")
+       
  
 
         # Generate outputs
         generated_sequences = []
         total_generated_ids = []
-        for _ in range(num_return_sequences):
 
-            generated_ids = self.model.generate(
-                decoder_input_ids=cur_prefix_input_ids ,
-                input_ids=model_input_ids,
-                attention_mask=model_input_ids.new_ones(model_input_ids.shape),
-                max_new_tokens=max_new_tokens,
-                do_sample=do_sample,
-                repetition_penalty=1.0,
-                # bad_words_ids = [[0]],
-                no_repeat_ngram_size=0,
-            
-                sample_calc=True,
-                temperature=temperature,
-                output_scores=True,
-                top_k=None,
-                top_p=0.95,
-                eos_token_id=[1820],  # Assumes single EOS token ID for simplicity
-                tokenizer=self.tokenizer,
-                **kwargs
-            )
+        outputs = self.model.generate(
+            decoder_input_ids=cur_prefix_input_ids ,
+            input_ids=model_input_ids,
+            attention_mask=model_input_ids.new_ones(model_input_ids.shape),
+            max_new_tokens=max_new_tokens,
+            do_sample=do_sample,
+            repetition_penalty=1.0,
+            return_dict_in_generate=True,
+            num_return_sequences=20,
+            # bad_words_ids = [[0]],
+            no_repeat_ngram_size=0,
+            sample_calc=True,
+            temperature=temperature,
+            output_scores=True,
+            top_k=None,
+            top_p=0.95,
+            eos_token_id=[1820],  # Assumes single EOS token ID for simplicity
+            tokenizer=self.tokenizer,
+            **kwargs
+        )
+        output_sequences = outputs.sequences
 
+        new_sequences = output_sequences[:, cur_prefix_input_ids.shape[1]-1:]
+        transition_scores = self.model.compute_transition_scores(
+                    outputs.sequences,
+                    outputs.scores,
+                    normalize_logits=True)# batch x seq
+
+        ## normalize by length: exp()
+        probs = torch.exp(transition_scores) # batch x seq
+        logprobs = torch.log(probs) # batch x seq
+        ## divide by length of each sequence
+        seq_lens = torch.sum(new_sequences!= self.tokenizer.pad_token_id, dim=-1).unsqueeze(-1) # batch x 1
+        logprobs = logprobs / seq_lens # batch x seq
+        ### set -inf to 0
+        logprobs[logprobs == float('-inf')] = 0.0
+        seq_scores = torch.exp(torch.sum(logprobs, dim=-1))
+
+
+        for generated_ids in new_sequences:
+            generated_ids = generated_ids.view(1, -1)
             total_generated_ids.append(generated_ids)
-            generated_sequences += [self.tokenizer.decode(g, skip_special_tokens=True) for g in generated_ids]
+            generated_sequences+=[self.tokenizer.decode(g, skip_special_tokens=True) for g in generated_ids]
 
-        print(f"  generated sequence {generated_sequences}")
-        print()
-        if hide_input:
-            generated_sequences = [seq[len(input_text)-1:] for seq, input_text in zip(generated_sequences, inputs*num_return_sequences)]
-        
-        # If log probabilities are requested
-        if output_log_probs:
-            log_probs = self.get_log_probs(inputs[0], generated_sequences)
-        else:
-            log_probs = None
 
-        return GenerateOutput(generated_sequences, log_probs)
+        return GenerateOutput(generated_sequences, seq_scores)
 
     
     @torch.no_grad()

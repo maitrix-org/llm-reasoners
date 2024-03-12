@@ -60,13 +60,15 @@ class GSM8KEvaluator(Evaluator):
                                                                                             ret['useful_examples'])),
                                                                                     k=num_shot))
             return ret
-
+            
+        elif sample_prompt_type == "grace":
+            return None
+            
         else:
             raise NotImplementedError
         return prompt
 
     def eval_output(self, answer, output):
-        print("hello in gsm8k evaluator")
         if output is None:
             return False
         try:

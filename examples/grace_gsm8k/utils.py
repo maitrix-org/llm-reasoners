@@ -30,24 +30,9 @@ def retrieve_answer(output: Union[list, str, AlgorithmOutput]) -> Optional[str]:
         if (result := getattr(output, 'aggregated_result', None)) is not None:
             return result
         output = output.terminal_state
-        print("hello")
     if isinstance(output, list):
         output = output[-1].sub_answer
 
-    print(f" inside answer retrieval: {output.action[0]}")
-    print(f" grace answer extractor: {extract_answer(output.action[0])}")
-    # return ""
-    match = re.match(r'.*The answer is .*?([ $.0-9,\-=]+).*\..*', output.action[0])
-    if match is None:
-        print(f"og answer extractor: {None}")
-        return extract_answer(output.action[0])
-        return None
-    answer = match[1].replace(',', '').replace('$', '').replace(' ', '')
-    if '=' in answer:
-        answer = answer[answer.rindex('=') + 1:]
-
-    print(f"og answer extractor: {answer}")
-    
     return extract_answer(output.action[0])
 
 

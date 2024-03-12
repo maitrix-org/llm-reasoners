@@ -213,9 +213,7 @@ class Evaluator():
                                         shuffle_prompt=shuffle_prompt,
                                         num_shot=num_shot))
             
-            
             output = self.output_extractor(algo_output)
-            print(f" in base:  {example}")
             answer = self.answer_extractor(example)
             correct = self.eval_output(answer, output)
 

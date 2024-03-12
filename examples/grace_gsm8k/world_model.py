@@ -44,6 +44,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction, GSM8kExample]):
     def init_state(self) -> list:
         return []
 
+    # given a set of actions, find out which action to take, here we get the discriminator to filter out some of the generated texts.
     def step(self, state: GSM8kState, action: GSM8kAction) -> tuple[GSM8kState, dict]:
         state = state.copy()
         # print(f" in world model : state: {state}")
