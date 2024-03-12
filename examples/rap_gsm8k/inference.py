@@ -12,7 +12,7 @@ from search_config import GSM8kConfig, GSM8kUsefulPrompt
 import utils
 
 
-def node_visualizer(x: MCTSNode[GSM8kState, GSM8kAction]):
+def node_visualizer(x: MCTSNode):
     if not x.state:
         return {}
     return {"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer}
