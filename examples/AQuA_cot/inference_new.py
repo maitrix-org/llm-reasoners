@@ -52,7 +52,7 @@ class CoTReasoner():
         
         return outputs
 
-def main(model_type:Literal['hf', 'google', 'openai', 'anthropic','exllama'],
+def main(base_lm:Literal['hf', 'google', 'openai', 'anthropic','exllama'],
          model_dir= None, 
          lora_dir = None, 
          mem_map = None, 
@@ -64,20 +64,20 @@ def main(model_type:Literal['hf', 'google', 'openai', 'anthropic','exllama'],
          sc_num=1,
          log_dir=None):
 
-    if model_type == "exllama":
+    if base_lm == "exllama":
         base_model = ExLlamaModel(model_dir, lora_dir,
                             mem_map=mem_map, max_batch_size=batch_size,
                             max_new_tokens=500, max_seq_length=2048)
-    elif model_type == "google":
+    elif base_lm == "google":
         base_model = BardCompletionModel("gemini-pro", additional_prompt="ANSWER")
-    elif model_type == "openai":
+    elif base_lm == "openai":
         base_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="ANSWER")
-    elif model_type == "anthropic":
+    elif base_lm == "anthropic":
         base_model = ClaudeModel("claude-3-opus-20240229", additional_prompt="ANSWER")
-    elif model_type == "hf":
+    elif base_lm == "hf":
         base_model = HFModel(model_dir, model_dir,quantized=quantized)
     else:
-        raise ValueError(f"model_type {model_type} is not supported")
+        raise ValueError(f"base_lm {base_lm} is not supported")
     with open(prompt) as f:
         prompt = json.load(f)
 
@@ -93,10 +93,10 @@ def main(model_type:Literal['hf', 'google', 'openai', 'anthropic','exllama'],
     log_dir =  f'logs/AQuA_'\
                         f'cot/'\
                         f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
-    if model_type == 'hf':
+    if base_lm == 'hf':
         model_name= model_dir.split('/')[-1]
     else:
-        model_name = model_type
+        model_name = base_lm
     log_dir = log_dir + f'_{model_name}'
     accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
     print(f'accuracy: {accuracy:.4f}')
@@ -113,5 +113,5 @@ CUDA_VISIBLE_DEVICES=0 python examples/AQuA_cot/inference_new.py \
 
 """
 python examples/AQuA_cot/inference_new.py \
---model_type google \
+--base_lm google \
 """

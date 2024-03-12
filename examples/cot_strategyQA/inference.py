@@ -13,7 +13,7 @@ from reasoners.lm.openai_model import GPTCompletionModel
 from reasoners.lm.gemini_model import BardCompletionModel
 
 
-def main(model_type: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','openai','google','anthropic'] = 'hf',
+def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','openai','google','anthropic'] = 'hf',
             llama_ckpt: str = None,
             llama_2_ckpt: str = None,
             model_dir: str = None,
@@ -33,34 +33,34 @@ def main(model_type: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama','o
             temperature: float = 0,
             quantized = 'int8',
             **kwargs):
-    # set model_type = 'llama' and llama_ckpt = '13B/30B/65B' to use llama with torchscale
-    # else set model_type = 'llama.cpp' and llama_cpp_path = the checkpoint to use llama.cpp
+    # set base_lm = 'llama' and llama_ckpt = '13B/30B/65B' to use llama with torchscale
+    # else set base_lm = 'llama.cpp' and llama_cpp_path = the checkpoint to use llama.cpp
 
-    if model_type == 'llama':
+    if base_lm == 'llama':
         base_model = LlamaModel(llama_ckpt, llama_size, max_batch_size=batch_size, max_seq_len=max_seq_len)
-    elif model_type == 'llama.cpp':
+    elif base_lm == 'llama.cpp':
         base_model = LlamaCppModel(llama_cpp_path)
-    elif model_type == 'llama2':
+    elif base_lm == 'llama2':
         base_model = LlamaModel(llama_2_ckpt, llama_size, max_batch_size=batch_size)
-    elif model_type == 'exllama':
+    elif base_lm == 'exllama':
         device = torch.device("cuda:0")
         ExLlamaModel(model_dir, lora_dir,mem_map=mem_map, max_batch_size=batch_size, max_new_tokens=500, max_seq_length=2048)
-    elif model_type == 'hf':
+    elif base_lm == 'hf':
         base_model = HFModel(model_dir, model_dir,quantized=quantized)
-    elif model_type == 'openai':
+    elif base_lm == 'openai':
         base_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="ANSWER")
-    elif model_type == 'google':
+    elif base_lm == 'google':
         base_model = BardCompletionModel("gemini-pro", additional_prompt="ANSWER")
-    elif model_type == 'anthropic':
+    elif base_lm == 'anthropic':
         base_model = ClaudeModel("claude-3-opus-20240229", additional_prompt="ANSWER")
     from datetime import datetime
     log_dir =  f'logs/strategyqa_'\
                         f'cot/'\
                         f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
-    if model_type == 'hf':
+    if base_lm == 'hf':
         model_name = model_dir.split('/')[-1]
     else:
-        model_name = model_type
+        model_name = base_lm
     log_dir = log_dir + f'_{model_name}'
     # load the dataset
     with open(data_file_path, 'r') as f:
@@ -198,5 +198,5 @@ if __name__ == '__main__':
 
 
 """
-CUDA_VISIBLE_DEVICES=6,7 python examples/cot_strategyQA/inference.py --model_type hf --exllama_model_dir /data/haotian/RAP_tune/Mixtral-8x7B-v0.1 --quantized 'nf4'
+CUDA_VISIBLE_DEVICES=6,7 python examples/cot_strategyQA/inference.py --base_lm hf --exllama_model_dir /data/haotian/RAP_tune/Mixtral-8x7B-v0.1 --quantized 'nf4'
 """

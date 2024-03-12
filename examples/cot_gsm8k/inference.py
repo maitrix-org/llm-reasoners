@@ -47,15 +47,15 @@ class CoTReasoner():
                                             eos_token_id=eos_token_id).text
         return [o.strip() for o in outputs]
 
-def main(model_type:Literal['hf', 'google', 'openai', 'anthropic','exllama'],model_dir, lora_dir=None, mem_map=None, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0, n_sc=1, quantized='int8'):
+def main(base_lm:Literal['hf', 'google', 'openai', 'anthropic','exllama'],model_dir, lora_dir=None, mem_map=None, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0, n_sc=1, quantized='int8'):
 
-    if model_type == "openai":
+    if base_lm == "openai":
         base_model = GPTCompletionModel("gpt-4-1106-preview", additional_prompt="ANSWER")
-    elif model_type == "google":
+    elif base_lm == "google":
         base_model = BardCompletionModel("gemini-pro", additional_prompt="ANSWER")
-    elif model_type == "anthropic":
+    elif base_lm == "anthropic":
         base_model = ClaudeModel("claude-3-opus-20240229", additional_prompt="ANSWER")
-    elif model_type == "hf":
+    elif base_lm == "hf":
         base_model = HFModel(model_dir, model_dir, quantized=quantized)
     
     with open(prompt) as f:
@@ -73,10 +73,10 @@ def main(model_type:Literal['hf', 'google', 'openai', 'anthropic','exllama'],mod
     log_dir =  f'logs/gsm8k_'\
                         f'cot/'\
                         f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
-    if model_type == 'hf':
+    if base_lm == 'hf':
         model_name= model_dir.split('/')[-1]
     else:
-        model_name = model_type
+        model_name = base_lm
     log_dir = log_dir + f'_{model_name}'
     accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4, resume=resume, log_dir=log_dir)
     print(f'accuracy: {accuracy:.4f}')
@@ -84,7 +84,7 @@ def main(model_type:Literal['hf', 'google', 'openai', 'anthropic','exllama'],mod
 
 if __name__ == '__main__':
     fire.Fire(main)
-    """
+"""
 CUDA_VISIBLE_DEVICES=2 python examples/cot_gsm8k/inference.py \
 --model_dir $Gemma_ckpts \ 
 """
