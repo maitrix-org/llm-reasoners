@@ -51,8 +51,7 @@ To measure the efficacy of reasoning chain evaluation metrics, we use human-anno
 
 
 
-**Results:** The results to compare various evaluation methods are presented in Table 1. We can observe that among all metrics for reasoning chains, RICE achieves the best overall performance. It excels in 3 out of 6 tasks and exhibits robustness, maintaining performance levels within 5% of the best results across the board. Note that, unlike all baselines, which require human-written demonstrations, RICE does not need any human input specific to reasoning tasks. As a case study shown in Figure 2, we even find that RICE enables GPT-4 to evaluate reasoning chains on problems challenging to GPT-4 itself. Specifically, in a problem from MultiArith, SocREval fails because GPT-4 generates the reference with the same mistakes as the reasoning chain to be evaluated, but RICE identifies the tricky errors with the detailed criteria. We also list the comparison of cost in Appendix B.
-
+**Results:** The results to compare various evaluation methods are presented in Table 1. We can observe that among all metrics for reasoning chains, RICE achieves the best overall performance. It excels in 3 out of 6 tasks and exhibits robustness, maintaining performance levels within 5% of the best results across the board. Note that, unlike all baselines, which require human-written demonstrations, RICE does not need any human input specific to reasoning tasks. As a case study shown in Figure 2, we even find that RICE enables GPT-4 to evaluate reasoning chains on problems challenging to GPT-4 itself. Specifically, in a problem from MultiArith, SocREval fails because GPT-4 generates the reference with the same mistakes as the reasoning chain to be evaluated, but RICE identifies the tricky errors with the detailed criteria.
 
 <p align="center">
 <img src="../images/Table-2-rice.png" width="50%">
