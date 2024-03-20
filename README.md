@@ -6,8 +6,6 @@
 
 Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Reasoning Algorithms, Visualization, LLM calling, and more!
 
-The library also includes a new metric for **<u>R</u>eason<u>i</u>ng <u>C</u>hain <u>E</u>valuation ([RICE](https://github.com/Ber666/llm-reasoners/tree/main/reasoners/rice))**.
-
 ## News
 - Oct. 25, 2023: A [video tutorial](https://www.youtube.com/watch?v=5QfOxtiw_ZU) on the visualizer of LLM Reasoners are available.
 
