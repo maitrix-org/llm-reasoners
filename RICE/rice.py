@@ -53,13 +53,13 @@ def RICE_evaluation(prompt_type:str = "aqua_auto",
     annotated_data = pd.read_json(data_pth, orient='records')
     for index in tqdm(range(len(annotated_data))):
         metadata_generation = annotated_data.loc[index, 'cot']
-        ###make some format cleanning
+        #make some format cleanning
         metadata_generation = '\n' + metadata_generation
         metadata_generation = metadata_generation.rstrip('\n\n.')
         raw_question = annotated_data.loc[index, 'question']
         raw_question = raw_question.replace('Q:', '')
         raw_question = raw_question.lstrip(' ')
-        ###
+
         with open("prompt.json") as f:
             prompt = json.load(f)
         prompt = prompt[prompt_type].format(raw_question, metadata_generation)  
@@ -127,6 +127,7 @@ The profit per component is (selling price - production cost) = $s - $110. The y
     with open("prompt.json") as f:
         prompt = json.load(f)
     criterion_prompt = prompt["criterion"].format(few_shot_prompt)
+    #prompt 'criterion' is used for generating criterions
     criterion_text = generate(criterion_prompt)
     print(criterion_text)
     criterion = '1. **' + criterion_text[0].split('1. **')[-1]
@@ -140,13 +141,67 @@ The profit per component is (selling price - production cost) = $s - $110. The y
     with open("prompt.json", "w") as f:
         json.dump(prompt, f)
 
-def RICE_eval_dataset(
-    dataset: Literal['GSM8k','StrategyQA','AQuA','CosmosQA', 'Multi-Arith','Word-Sort','Logic-Deduct'],
-    prompt_type: Literal['aqua_auto','gsm8k_auto','strategyqa_auto','cosmosqa_auto','multi_arith_auto','word_sort_auto','logic_deduct_auto'],
-)
+def result_score(data:pd.DataFrame, output_log_dir:str):
+    #load the RICE evaluation
+    with jsonlines.open(output_log_dir, mode='r') as reader:
+        rice_log = list(reader)
 
+    #calculate the score
+    total = len(data)
+    score = 0
+    for i in range(len(data)):
+        if "INCORRECT" in rice_log[i]['text'][0]:
+            if data.loc[i, 'human_label'] == 0:
+                score += 1
+        else:
+            if data.loc[i, 'human_label'] == 1:
+                score += 1
+    print(f"RICE score: {score}/{total}")
+
+
+def RICE_eval_dataset(
+    dataset: Literal['gsm8k','strategyqa','AQuA','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction'], #AQuA is not hand annotated, it is llama2-13b generated in ./data.
+    prompt_type: Literal['gsm8k_auto','sq_auto','cosmos_auto', 'aqua_auto', 'arith_auto','sort_auto','logic_auto'],
+    output_log_dir:str = "logs/rice"
+):
+    #specify a log dir
+    import time
+    if output_log_dir == "logs/rice":
+        output_log_dir = f"logs/{dataset}"
+    os.makedirs(output_log_dir, exist_ok=True)
+    output_log_dir = f"{output_log_dir}/{time.strftime('%Y-%m-%d-%H-%M-%S')}.jsonl"
+    
+    #generate LLM's response
+    import pandas as pd
+    data = pd.read_json(f"./data/{dataset}.jsonl", lines=True)
+    for index in tqdm(range(len(data))):
+        metadata_generation = data.loc[index, 'metadata_generation']
+        #make some format cleanning
+        if not metadata_generation.startswith('\n'):
+            metadata_generation = '\n' + metadata_generation#new line at the beginning
+        metadata_generation = metadata_generation.rstrip('\n\n.')
+        raw_question = data.loc[index, 'question']
+        raw_question = raw_question.replace('Q:', '')
+        raw_question = raw_question.lstrip(' ')
+        with open("prompt.json") as f:
+            prompt = json.load(f)
+        prompt = prompt[prompt_type].format(raw_question, metadata_generation)  
+        prompt = prompt.replace('..', '.')
+        text = generate(prompt)
+        tmp = {'index': index, 'text': text, 'question': raw_question, 'metadata_generation': metadata_generation, 'gt_answer': data.loc[index, 'gt_answer'], 'human_label': data.loc[index, 'human_label']}    
+        with jsonlines.open(output_log_dir, mode='a') as writer:
+            writer.write(tmp)
+    
+    if dataset != "AQuA":
+        #calculate the score
+        result_score(data, output_log_dir)
+    
+
+    
+    
 
 if __name__ == '__main__':
     # fire.Fire(RICE_evaluation)
-    fire.Fire(RICE_criterion)
+    # fire.Fire(RICE_criterion)
+    fire.Fire(RICE_eval_dataset)
 
