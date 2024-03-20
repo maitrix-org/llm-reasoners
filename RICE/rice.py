@@ -1,5 +1,5 @@
 import os
-from typing import Optional
+from typing import Optional, Literal
 import time
 import pandas as pd
 import json
@@ -139,6 +139,11 @@ The profit per component is (selling price - production cost) = $s - $110. The y
 
     with open("prompt.json", "w") as f:
         json.dump(prompt, f)
+
+def RICE_eval_dataset(
+    dataset: Literal['GSM8k','StrategyQA','AQuA','CosmosQA', 'Multi-Arith','Word-Sort','Logic-Deduct'],
+    prompt_type: Literal['aqua_auto','gsm8k_auto','strategyqa_auto','cosmosqa_auto','multi_arith_auto','word_sort_auto','logic_deduct_auto'],
+)
 
 
 if __name__ == '__main__':
