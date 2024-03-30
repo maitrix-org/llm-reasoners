@@ -36,7 +36,7 @@ We tested different reasoning algorithms with Llama-2 70B on the following bench
 | [RAP](https://arxiv.org/abs/2305.14992)          | 0.58 / 0.64  | 0.20 / 0.47 | 0.07    | 0.59     | 0.28 / 0.77       | 0.51        |
 
 
-Our library has been tested against official repos of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601) and [Guided Decoding](https://arxiv.org/abs/2305.00633). We list the results reported in their paper /  reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
+Our library has been tested against official repos of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633) and [GRACE Decoding](https://arxiv.org/abs/2305.14934). We list the results reported in their paper /  reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
 |Method|Base LLM|GSM8k|
 |--|--|--|
 |[Guided Decoding](https://arxiv.org/abs/2305.00633)<sup>†</sup>|CodeX (PAL)|0.80|-|-|-|-|-|
@@ -46,6 +46,11 @@ Our library has been tested against official repos of [Tree-of-Thoughts](https:/
 |--|--|--|
 |[Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)<sup>†</sup>|GPT-3.5-turbo|0.22|
 |Tree-of-Thoughts|GPT-3.5-turbo|[0.22](examples/tot_game24)|
+
+|Method|Base LLM|GSM8k|
+|--|--|--|
+|[GRACE Decoding](https://arxiv.org/abs/2305.14934)<sup>†</sup>|Flan-T5-Large (Fine-tuned)|0.34|-|-|-|-|-|
+|GRACE Decoding| Flan-T5-Large (Fine-tuned)|[0.33\*](examples/grace_gsm8k)|-|-|-|-|-|
 
 
 ## Background of LLM Reasoning
