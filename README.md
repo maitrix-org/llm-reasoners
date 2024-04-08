@@ -1,4 +1,4 @@
-![logo](images/reasoners_icon.png#pic_center)
+![logo](assets/reasoners_icon.png#pic_center)
 
 ---
 
@@ -7,6 +7,7 @@
 Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Reasoning Algorithms, Visualization, LLM calling, and more!
 
 ## News
+- **Apr. 8, 2024: Our new [paper](https://www.llm-reasoners.net/leaderboard) introducing LLM Reasoners is available!**
 - Mar. 29, 2024: [Grace Decoding](https://arxiv.org/abs/2305.14934) has been incoporated!
 - Oct. 25, 2023: A [video tutorial](https://www.youtube.com/watch?v=5QfOxtiw_ZU) on the visualizer of LLM Reasoners are available.
 
@@ -31,11 +32,16 @@ We tested different reasoning algorithms with Llama-2 70B on the following bench
 
 | Method        | [GSM8K](https://arxiv.org/abs/2110.14168) | [AQuA](https://arxiv.org/abs/1705.04146) | [Game of 24](https://arxiv.org/abs/2305.10601) | [PrOntoQA](https://arxiv.org/abs/2210.01240) | [StrategyQA](https://arxiv.org/abs/2101.02235) | [Blocksworld](https://arxiv.org/abs/2305.15771) |
 |--------------|--------------|-------------|---------|----------|-------------------|-------------|
-| [CoT](https://arxiv.org/abs/2201.11903)          | 0.37 / 0.54  | 0.09 / 0.34 | 0.04    | 0.58     | 0.34 / 0.76       | 0.05        |
-| [ToT](https://arxiv.org/abs/2305.10601) (BFS)    | 0.53 / 0.58  | 0.15 / 0.42 | 0.04    | 0.52     | 0.41 / 0.76       | 0.09        |
-| [ToT](https://arxiv.org/abs/2305.10601) (DFS)    | 0.45 / 0.52  | 0.10 / 0.36 | 0.07    | 0.44     | 0.42 / 0.76       | 0.08        |
-| [RAP](https://arxiv.org/abs/2305.14992)          | 0.58 / 0.64  | 0.20 / 0.47 | 0.07    | 0.59     | 0.28 / 0.77       | 0.51        |
+| [CoT](https://arxiv.org/abs/2201.11903)          | 0.37 (0.54) | 0.09 (0.34) | 0.04    | 0.58     | 0.34 (0.76)    | 0.05        |
+| [ToT](https://arxiv.org/abs/2305.10601) (BFS)    | 0.53 (0.58) | 0.15 (0.42) | 0.04    | 0.52     | 0.41 (0.76)     | 0.09        |
+| [ToT](https://arxiv.org/abs/2305.10601) (DFS)    | 0.45 (0.52) | 0.10 (0.36) | 0.07    | 0.44     | 0.42 (0.76)     | 0.08        |
+| [RAP](https://arxiv.org/abs/2305.14992)          | 0.58 (0.64) | 0.20 (0.47) | 0.07    | 0.59     | 0.28 (0.77)     | 0.51        |
 
+<span style='color:grey'>To evaluate the reasoning chains, we apply [AutoRace](https://www.llm-reasoners.net/leaderboard) for open-domain tasks, including GSM8k, AQuA, and StrategyQA. For other close-domain tasks, we test the reasoning chain with oracle evaluators (rule-based programs). By clicking the "show accuracy" button, you can see the final answer accuracy of some tasks for reference.</span>
+
+
+
+---
 
 Our library has been tested against official repos of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633) and [GRACE Decoding](https://arxiv.org/abs/2305.14934). We list the results reported in their paper /  reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
 |Method|Base LLM|GSM8k|
@@ -58,7 +64,7 @@ Our library has been tested against official repos of [Tree-of-Thoughts](https:/
 
 Consider the following problem:
 
-![Alt text](images/goal.png)
+![Alt text](assets/goal.png)
 
 Let's start with a naive method for LLM reasoning: Prompted with a few examples of problem-solving step by step, an LLM can generate a chain of thoughts (or a sequence of actions) to solve a new problem. For the problem above, the prompt inputted to the LLM and the expected output (in bold) is shown below:
 
@@ -91,13 +97,13 @@ LLM Reasoners formulate **reasoning as planning** ([RAP](https://arxiv.org/abs/2
 
 After we have the world model and reward function, it's time to apply an algorithm to search for the optimal reasoning trace. Here, we show the process of Monte-Carlo Tree Search with a gif:
 
-![MCTS Animation](images/mcts_animation.gif)
+![MCTS Animation](assets/mcts_animation.gif)
 
 ## Introduction of the library
 
 The three key components in a reasoning algorithm, *reward function*, *world model*, and *search algorithm* in the formulation (top), correspond to three classes in the library, <tt>SearchConfig</tt>, <tt>WorldModel</tt> and <tt>SearchAlgorithm</tt> respectively. Besides, there are <tt>LLM APIs</tt> to power other modules, <tt>Benchmark</tt>, and <tt>Visualization</tt> to evaluate or debug the reasoning algorithm (middle). To implement a reasoning algorithm for a certain domain (a <tt>Reasoner</tt> object), a user may inherit the <tt>SearchConfig</tt> and <tt>WorldModel</tt> class, and import a pre-implemented <tt>SearchAlgorithm</tt>. We also show a concrete example of solving Blocksworld with RAP using LLM Reasoners (bottom).
 
-![Library Structure](images/figure2_reasoners_v5.png)
+![Library Structure](assets/figure2_reasoners_v5.png)
 
 ## Quick Tour
 Let's go through the code of reasoning over Blocksworld problems. Note that the code is simplified for demonstration (check [here](https://github.com/Ber666/llm-reasoners/tree/main/examples/rap_blocksworld) for full experiment code).
