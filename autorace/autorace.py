@@ -46,8 +46,8 @@ def generate(prompt):
             print(f"An Error Occured: {e}, sleeping for 5 seconds")
             time.sleep(5)
 
-def RICE_evaluation(prompt_type:str = "aqua_auto",
-                    output_log:str = "logs/example_RICE.json"
+def AutoRace_evaluation(prompt_type:str = "aqua_auto",
+                    output_log:str = "logs/example_AutoRace.json"
                     ):
     data_pth = "./eval_example.json"
     annotated_data = pd.read_json(data_pth, orient='records')
@@ -69,7 +69,7 @@ def RICE_evaluation(prompt_type:str = "aqua_auto",
         with jsonlines.open(output_log, mode='a') as writer:
             writer.write(tmp)
     
-def RICE_criterion(task_type:str = "aquatest"):
+def AutoRace_criterion(task_type:str = "aquatest"):
     #example 4 shot for AQuA-RAT, user can change to any other task's prompt
     few_shot_prompt = """
 Question:
@@ -142,7 +142,7 @@ The profit per component is (selling price - production cost) = $s - $110. The y
         json.dump(prompt, f)
 
 def result_score(data:pd.DataFrame, output_log_dir:str):
-    #load the RICE evaluation
+    #load the AutoRace evaluation
     with jsonlines.open(output_log_dir, mode='r') as reader:
         rice_log = list(reader)
 
@@ -156,17 +156,17 @@ def result_score(data:pd.DataFrame, output_log_dir:str):
         else:
             if data.loc[i, 'human_label'] == 1:
                 score += 1
-    print(f"RICE score: {score}/{total}")
+    print(f"AutoRace score: {score}/{total}")
 
 
-def RICE_eval_dataset(
+def AutoRace_eval_dataset(
     dataset: Literal['gsm8k','strategyqa','AQuA','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction'], #AQuA is not hand annotated, it is llama2-13b generated in ./data.
     prompt_type: Literal['gsm8k_auto','sq_auto','cosmos_auto', 'aqua_auto', 'arith_auto','sort_auto','logic_auto'],
-    output_log_dir:str = "logs/rice"
+    output_log_dir:str = "logs/AutoRace"
 ):
     #specify a log dir
     import time
-    if output_log_dir == "logs/rice":
+    if output_log_dir == "logs/AutoRace":
         output_log_dir = f"logs/{dataset}"
     os.makedirs(output_log_dir, exist_ok=True)
     output_log_dir = f"{output_log_dir}/{time.strftime('%Y-%m-%d-%H-%M-%S')}.jsonl"
@@ -201,7 +201,7 @@ def RICE_eval_dataset(
     
 
 if __name__ == '__main__':
-    # fire.Fire(RICE_evaluation)
-    # fire.Fire(RICE_criterion)
-    fire.Fire(RICE_eval_dataset)
+    # fire.Fire(AutoRace_evaluation)
+    # fire.Fire(AutoRace_criterion)
+    fire.Fire(AutoRace_eval_dataset)
 
