@@ -7,7 +7,7 @@
 Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Reasoning Algorithms, Visualization, LLM calling, and more!
 
 ## News
-- **Apr. 8, 2024: Our new [paper](https://www.llm-reasoners.net/leaderboard) introducing LLM Reasoners is available!**
+- **Apr. 8, 2024: Our new [paper](assets/Reasoners.pdf) introducing LLM Reasoners is available!**
 - Mar. 29, 2024: [Grace Decoding](https://arxiv.org/abs/2305.14934) has been incoporated!
 - Oct. 25, 2023: A [video tutorial](https://www.youtube.com/watch?v=5QfOxtiw_ZU) on the visualizer of LLM Reasoners are available.
 
