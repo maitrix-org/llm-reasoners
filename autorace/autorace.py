@@ -158,19 +158,20 @@ def result_score(data:pd.DataFrame, output_log_dir:str):
 
 def AutoRace_eval_dataset(
     dataset: Literal['gsm8k','strategyqa','AQuA','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction'], 
+    model: Literal['dbrx','gpt-4-turbo','claude-3-opus','gemini-pro','internlm-2-7b','llama-2-70b','qwen-1.5-7b','gemma-7b','mistral-7b','llama-2-13b'],
     prompt_type: Literal['gsm8k_auto','sq_auto','cosmos_auto', 'aqua_auto', 'arith_auto','sort_auto','logic_auto'],
     output_log_dir:str = "logs/AutoRace"
 ):
     #specify a log dir
     import time
     if output_log_dir == "logs/AutoRace":
-        output_log_dir = f"logs/{dataset}"
+        output_log_dir = f"logs/{dataset}_{model}"
     os.makedirs(output_log_dir, exist_ok=True)
     output_log_dir = f"{output_log_dir}/{time.strftime('%Y-%m-%d-%H-%M-%S')}.jsonl"
     
     #generate LLM's response
     import pandas as pd
-    data = pd.read_json(f"./data/{dataset}.jsonl", lines=True)
+    data = pd.read_json(f"./data/{dataset}_{model}.jsonl", lines=True)
     for index in tqdm(range(len(data))):
         metadata_generation = data.loc[index, 'metadata_generation']
         #make some format cleanning
