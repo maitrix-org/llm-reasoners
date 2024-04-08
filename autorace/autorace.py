@@ -47,9 +47,9 @@ def generate(prompt):
             time.sleep(5)
 
 def AutoRace_evaluation(prompt_type:str = "aqua_auto",
-                    output_log:str = "logs/example_AutoRace.json"
+                    output_log:str = "logs/example_AutoRace.json",
+                    data_pth = "./eval_example.json"
                     ):
-    data_pth = "./eval_example.json"
     annotated_data = pd.read_json(data_pth, orient='records')
     for index in tqdm(range(len(annotated_data))):
         metadata_generation = annotated_data.loc[index, 'cot']
@@ -137,43 +137,41 @@ The profit per component is (selling price - production cost) = $s - $110. The y
     evaluation_prompt = "Below is a question and an answer from a student. You are required to check the correctness of the reasoning chains step by step. The criterions are as follows:\n\n{}\n\nQuestion:\n{{}}\n\nStudent answer:\n{{}}\n\nPlease check the answer through each criterion, and make sure you carefully examine each reasoning step. Finally, if there is any step that fails the verification, output a INCORRECT, else output a CORRECT.".format(criterion)
     prompt[task_type + '_auto'] = evaluation_prompt
 
-
     with open("prompt.json", "w") as f:
         json.dump(prompt, f)
 
 def result_score(data:pd.DataFrame, output_log_dir:str):
     #load the AutoRace evaluation
     with jsonlines.open(output_log_dir, mode='r') as reader:
-        rice_log = list(reader)
+        autorace = list(reader)
 
     #calculate the score
     total = len(data)
-    score = 0
-    for i in range(len(data)):
-        if "INCORRECT" in rice_log[i]['text'][0]:
-            if data.loc[i, 'human_label'] == 0:
-                score += 1
-        else:
-            if data.loc[i, 'human_label'] == 1:
-                score += 1
-    print(f"AutoRace score: {score}/{total}")
+    incorrect = 0
+    for i in range(total):
+        if "INCORRECT" in autorace[i]['text'][0]:
+            incorrect += 1
+
+    print(f"AutoRace score: {(total - incorrect) / total:.2f}")
+
 
 
 def AutoRace_eval_dataset(
-    dataset: Literal['gsm8k','strategyqa','AQuA','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction'], #AQuA is not hand annotated, it is llama2-13b generated in ./data.
+    dataset: Literal['gsm8k','strategyqa','AQuA','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction'], 
+    model: Literal['dbrx','gpt-4-turbo','claude-3-opus','gemini-pro','internlm-2-7b','llama-2-70b','qwen-1.5-7b','gemma-7b','mistral-7b','llama-2-13b'],
     prompt_type: Literal['gsm8k_auto','sq_auto','cosmos_auto', 'aqua_auto', 'arith_auto','sort_auto','logic_auto'],
     output_log_dir:str = "logs/AutoRace"
 ):
     #specify a log dir
     import time
     if output_log_dir == "logs/AutoRace":
-        output_log_dir = f"logs/{dataset}"
+        output_log_dir = f"logs/{dataset}_{model}"
     os.makedirs(output_log_dir, exist_ok=True)
     output_log_dir = f"{output_log_dir}/{time.strftime('%Y-%m-%d-%H-%M-%S')}.jsonl"
     
     #generate LLM's response
     import pandas as pd
-    data = pd.read_json(f"./data/{dataset}.jsonl", lines=True)
+    data = pd.read_json(f"./data/{dataset}_{model}.jsonl", lines=True)
     for index in tqdm(range(len(data))):
         metadata_generation = data.loc[index, 'metadata_generation']
         #make some format cleanning
@@ -192,9 +190,9 @@ def AutoRace_eval_dataset(
         with jsonlines.open(output_log_dir, mode='a') as writer:
             writer.write(tmp)
     
-    if dataset != "AQuA":
-        #calculate the score
-        result_score(data, output_log_dir)
+
+    #calculate the score
+    result_score(data, output_log_dir)
     
 
     
