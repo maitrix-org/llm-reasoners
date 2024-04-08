@@ -12,14 +12,20 @@ export OPENAI_API_KEY= YOUR_OWN_OPEN_AI_KEY
 
 ```
 cd .../AutoRace
-python autorace.py --dataset DATASET_NAME --prompt_type PROMPT_TYPE
+python autorace.py --dataset DATASET_NAME --prompt_type PROMPT_TYPE --model MODEL_TYPE
 ```
 
 The `DATASET_NAME` is one of `dataset list` below:
 
 `['gsm8k','strategyqa','AQuA','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction']`.
 
-You can easily add your own datasets results under `data` directory and make corresponding changes to `AutoRace_eval_dataset` function in `autorace.py`. The `PROMPT_TYPE` can be found in `prompt.json`
+The `MODEL_TYPE` is one of `model list` below:
+
+`['dbrx','gpt-4-turbo','claude-3-opus','gemini-pro','internlm-2-7b','llama-2-70b','qwen-1.5-7b','gemma-7b','mistral-7b','llama-2-13b']`.
+
+The `PROMPT_TYPE` can be found in `prompt.json`.
+
+You can easily add your own datasets-model results under `data` directory and use `AutoRace_eval_dataset` function in `autorace.py` to get AutoRace Score. 
 
 ## Evaluate your own result
 
