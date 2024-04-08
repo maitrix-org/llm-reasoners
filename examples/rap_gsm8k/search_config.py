@@ -1,12 +1,10 @@
 import io
 import re
 from typing import TypedDict, Optional
-
 import numpy as np
 
 from world_model import GSM8kState, GSM8kAction, GSM8kPromptDict
 from reasoners import SearchConfig, LanguageModel
-
 
 class GSM8kUsefulPrompt(TypedDict):
     input: str
@@ -14,7 +12,6 @@ class GSM8kUsefulPrompt(TypedDict):
     subquestion_prefix: str
     new_subquestion_prefix: str
     useful_prefix: str
-
 
 class GSM8kConfig(SearchConfig):
     def __init__(self,
@@ -63,8 +60,10 @@ class GSM8kConfig(SearchConfig):
             self.prompt_examples = f.getvalue()
 
         if self.force_overall_prompt_on_overall_question or self.force_overall_question_on_overall_prompt:
-            self.overall_question = re.match('.*((Calculate|calculate|how|How|what|What|Find|find|True or false).*)$',
-                                             self.example)[1]
+            print(self.example)
+            # self.overall_question = re.match('.*((Calculate|calculate|how|How|what|What|Find|find|True or false).*)$',
+            #                                  self.example, flags=re.DOTALL)[1]
+            self.overall_question = re.match('.*((([A-Z].* (calculate|how|what|find|true or false))|((Calculate|How|What|Find|True or false))).*)$', self.example, flags=re.DOTALL)[1]
 
     def get_actions(self, state: GSM8kState, ) -> list[GSM8kAction]:
         with io.StringIO() as f:

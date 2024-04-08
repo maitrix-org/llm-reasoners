@@ -21,6 +21,8 @@ def create_directory_if_not_exists(directory):
 
 def main(model_dir: str=  os.environ['LLAMA2_CKPTS'],
            mem_map: str = "[16, 22]",
+           temperature: float = 0.8,
+           n_candidates: int = 4,
            **search_algo_params):
     import numpy as np
     from reasoners.lm import ExLlamaModel 
@@ -36,7 +38,7 @@ def main(model_dir: str=  os.environ['LLAMA2_CKPTS'],
         init_prompt = json.load(f)
     
     world_model = ProntoQAWorldModel(base_model=language_model)
-    search_config = ProntoQAConfig(base_model=language_model)
+    search_config = ProntoQAConfig(base_model=language_model, temperature=temperature, n_candidates=n_candidates)
     search_algo = MCTS(output_trace_in_each_iter=True, cum_reward=np.mean, **search_algo_params)
     reasoner =  Reasoner(
             world_model=world_model,
@@ -64,3 +66,5 @@ if __name__ == '__main__':
 # CUDA_VISIBLE_DEVICES=0,1 python examples/prontoqa/rap_inference.py --mem_map "[16, 22]" --depth_limit 6 | tee debug_rap.log
     
 # CUDA_VISIBLE_DEVICES=0,1 python examples/prontoqa/rap_inference.py --mem_map "[16, 22]" --depth_limit 6 --w_exp 2 | tee debug_rap_2.log
+
+# CUDA_VISIBLE_DEVICES=0,1 python examples/prontoqa/rap_inference.py --mem_map "[16, 22]" --depth_limit 6 --n_candidates 1 --temperature 0.0 | tee debug_rap_chain.log

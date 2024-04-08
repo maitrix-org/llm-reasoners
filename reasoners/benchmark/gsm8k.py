@@ -10,7 +10,7 @@ import copy
 from reasoners import Evaluator
 
 class GSM8KEvaluator(Evaluator):
-    def __init__(self, 
+    def __init__(self,
                  output_extractor,
                  answer_extractor,
                  init_prompt=None,
