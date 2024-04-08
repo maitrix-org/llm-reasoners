@@ -8,10 +8,12 @@ def retrieve_answer(output: Union[list, str]) -> Optional[str]:
     '''
     if isinstance(output, list):
         output = output[-1].sub_answer
-    match = re.match(r'.*[Tt]he answer is .*?([ $.0-9,\-]+).*\..*', output)
+    # print("output:", output)
+    match = re.match(r'.*[Tt]he answer is .*?([ $.0-9,\-]+).*\..*', output, re.DOTALL)
     if match is None:
         return None
     answer = match[1].replace(',', '').replace('$', '').replace(' ', '')
+    # print("answer:", answer)
     if '=' in answer:
         answer = answer[answer.rindex('=') + 1:]
     return answer
@@ -56,4 +58,6 @@ def cot_sc_extractor(algo_output, sc=True):
     answers = [retrieve_answer(x) for x in algo_output]
     answers = [x for x in answers if x is not None]
     counter = Counter(answers)
+    if counter == {}:
+        return None
     return counter.most_common(1)[0][0]

@@ -83,10 +83,7 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction, GSM8kExample]):
                                                              sub_idx=len(state) + 1) + " " + action + "\n")
             f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
             model_input = f.getvalue()
-
-        # print(model_input)
-        # input(">")
-
+        
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
         result = ""
         for start1 in range(0, self.n_confidence, self.early_stop_base):
@@ -105,9 +102,8 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction, GSM8kExample]):
                                                    eos_token_id='\n').text
                 for output in outputs:
                     result = output.strip()
-                    answer = utils.retrieve_answer(result)
-                    if answer is not None:
-                        answer_dict[answer].append(result)
+                    answer = utils.retrieve_answer(result)               
+                    answer_dict[answer].append(result)
 
             # Early stop if confidence is high enough
             if len(answer_dict) == 0:  # no answer yet
