@@ -1,121 +1,82 @@
 import os
-import warnings
-
 import openai
 import numpy as np
 from typing import Optional, Union, Literal
 import time
 
 from .. import LanguageModel, GenerateOutput
+from openai import OpenAI
 
+PROMPT_TEMPLATE_ANSWER = "Your response need to be ended with \"So the answer is\"\n\n"
+PROMPT_TEMPLATE_CONTINUE = "Please continue to answer the last question, following the format of previous examples. Don't say any other words.\n\n"
 
-class OpenAIModel(LanguageModel):
-    def __init__(self, model: str, rate_limit_in_seconds: float = 2,
-                 api_type: Optional[Literal['completions', 'chat']] = None, max_retries: int = 20):
+class GPTCompletionModel(LanguageModel):
+    def __init__(self, model:str, max_tokens:int = 2048, temperature=0.0, additional_prompt=None):
         self.model = model
-        self.rate_limit_in_seconds = rate_limit_in_seconds
-        self.last_query_time = 0
-        self.max_retries = max_retries
-        if api_type is None:
-            if 'gpt-4' in model or 'gpt-3.5' in model:
-                api_type = 'chat'
-            else:
-                api_type = 'completions'
-        self.api_type = api_type
-        openai.api_key = os.environ.get("OPENAI_API_KEY", None)
-        if openai.api_key is None:
-            raise ValueError("OPENAI_API_KEY not found in env. Use `export OPENAI_API_KEY=<your key>` to set it.")
-
+        self.max_tokens = max_tokens
+        self.temperature = temperature
+        self.client = OpenAI(
+            api_key = os.getenv("OPENAI_API_KEY", None),
+            # organization='',
+        )
+        self.additional_prompt = additional_prompt
+    
     def generate(self,
-                 inputs: list[str],
-                 max_length: None = None,
-                 max_new_tokens: Optional[int] = None,
-                 do_sample: bool = False,
-                 temperature: float = 1.0,
-                 top_k: None = None,
-                 top_p: float = 1.0,
-                 num_return_sequences: int = 1,
-                 eos_token_id: Union[None, str, list[str]] = None,
-                 hide_input: bool = True,
-                 output_log_probs: bool = False,
-                 stopping_criteria: None = None,
-                 **kwargs) -> GenerateOutput:
-        if not do_sample:
-            if temperature != 1.0:  # temperature is explicitly set with do_sample=False
-                warnings.warn('temperature is set, but do_sample=False')
-            temperature = 0
-        if stopping_criteria is not None:
-            warnings.warn('OpenAI model does not support stopping_criteria, ignoring it')
+                prompt: Optional[Union[str, list[str]]],
+                max_tokens: int = None,
+                top_p: float = 1.0,
+                num_return_sequences: int = 1,
+                rate_limit_per_min: Optional[int] = 20,
+                stop: Optional[str] = None,
+                logprobs: Optional[int] = None,
+                temperature = None,
+                additional_prompt=None,
+                retry = 64,
+                **kwargs) -> GenerateOutput:
+        
+        gpt_temperature = self.temperature if temperature is None else temperature
+        if isinstance(prompt, list):
+            assert len(prompt) == 1
+            prompt = prompt[0]
+        if additional_prompt is None and self.additional_prompt is not None:
+            additional_prompt = self.additional_prompt
+        elif additional_prompt is not None and self.additional_prompt is not None:
+            print("Warning: additional_prompt set in constructor is overridden.")
+        if additional_prompt == "ANSWER":
+            prompt = PROMPT_TEMPLATE_ANSWER + prompt
+        elif additional_prompt == "CONTINUE":
+            prompt = PROMPT_TEMPLATE_CONTINUE + prompt
 
-        eos_token_id_input = eos_token_id
-        eos_token = []
-        if eos_token_id_input is not None:
-            if not isinstance(eos_token_id_input, list):
-                eos_token_id_input = [eos_token_id_input]
-            for token in eos_token_id_input:
-                if isinstance(token, str):
-                    eos_token.append(token)
-                else:
-                    warnings.warn(f'the eos_token {repr(token)} is neither str, which is ignored')
+        if max_tokens is None:
+            max_tokens = self.max_tokens
+        
+        if logprobs is None:
+            logprobs = 0
 
-        if num_return_sequences > 1:
-            assert len(inputs) == 1, 'num_return_sequences > 1 is not supported for multiple inputs'
 
-        if top_k is not None:
-            warnings.warn('OpenAI model does not support top_k, ignoring it')
-
-        if output_log_probs and self.api_type == 'chat':
-            warnings.warn('output_log_probs is not supported for ChatCompletion, ignoring it')
-            output_log_probs = False
-
-        result_text = []
-        if output_log_probs:
-            result_log_prob = []
-        else:
-            result_log_prob = None
-
-        for inp in inputs:
-            text, log_prob = self.query_openai(prompt=inp,
-                                               max_tokens=max_new_tokens,
-                                               temperature=temperature,
-                                               top_p=top_p,
-                                               num_return_sequences=num_return_sequences,
-                                               stop=eos_token,
-                                               **kwargs)
-            result_text += text
-            if output_log_probs:
-                result_log_prob += log_prob
-
-        return GenerateOutput(text=result_text, log_prob=None)
-
-    def query_openai(self,
-                     prompt: str,
-                     max_tokens: int = None,
-                     temperature: float = 1.0,
-                     top_p: float = 1.0,
-                     num_return_sequences: int = 1,
-                     stop: Optional[list[str]] = None,
-                     **kwargs) -> GenerateOutput:
-        for retry in range(self.max_retries):
+        for i in range(1, retry + 1):
             try:
-                if time.time() - self.last_query_time < self.rate_limit_in_seconds:
-                    time.sleep(self.rate_limit_in_seconds - (time.time() - self.last_query_time))
-                if self.api_type == 'chat':
-                    messages = [{"role": "system", "content": "You are a helpful assistant."},
-                                {"role": "user", "content": prompt}]
-                    response = openai.ChatCompletion.create(
+                # sleep several seconds to avoid rate limit
+                if rate_limit_per_min is not None:
+                    time.sleep(60 / rate_limit_per_min)
+                ### GPT 3.5 and higher use a different API
+                if ('gpt-3.5' in self.model) or ('gpt-4' in self.model):
+                    messages = [{"role": "user", "content": prompt}]
+                    response = self.client.chat.completions.create(
                         model=self.model,
                         messages=messages,
                         max_tokens=max_tokens,
                         temperature=temperature,
                         top_p=top_p,
                         n=num_return_sequences,
-                        stop=stop,
-                        **kwargs
+                        stop=stop
                     )
-                    return GenerateOutput(text=[choice["message"]["content"] for choice in response["choices"]])
-                elif self.api_type == 'completions':
-                    response = openai.Completion.create(
+                    return GenerateOutput(
+                        text=[choice.message.content for choice in response.choices],
+                        log_prob=None
+                    )
+                else:
+                    response = self.client.chat.completions.create(
                         model=self.model,
                         prompt=prompt,
                         max_tokens=max_tokens,
@@ -127,23 +88,17 @@ class OpenAIModel(LanguageModel):
                         **kwargs
                     )
                     return GenerateOutput(
-                        text=[choice["text"] for choice in response["choices"]],
+                        text=[choice["text"] for choice in response.choices],
                         log_prob=[choice["logprobs"] for choice in response["choices"]]
                     )
-            except openai.error.RateLimitError:
-                warnings.warn('RateLimitError from openai, waiting for 5 seconds')
-                time.sleep(5)
-                pass
-            except openai.error.APIError as e:
-                if 'Bad gateway' in e:
-                    warnings.warn('Bad Gateway from openai, waiting for 5 seconds')
-                    time.sleep(5)
-                    pass
-                raise e
-            #  let other exceptions raise
-        # exceed max_retries
-        raise openai.error.OpenAIError
-
+            
+            except Exception as e:
+                print(f"An Error Occured: {e}, sleeping for {i} seconds")
+                time.sleep(i)
+        
+        # after 64 tries, still no luck
+        raise RuntimeError("GPTCompletionModel failed to generate output, even after 64 tries")
+    
     def get_next_token_logits(self,
                               prompt: Union[str, list[str]],
                               candidates: Union[list[str], list[list[str]]],

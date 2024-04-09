@@ -2,18 +2,18 @@ from typing import Union, Optional
 import warnings
 import copy
 
-from transformers import LlamaForCausalLM, AutoTokenizer, GenerationConfig, BitsAndBytesConfig, AutoConfig, AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig, BitsAndBytesConfig, AutoConfig, AutoModelForCausalLM
 import torch
 from peft import PeftModel
 import numpy as np
-from optimum.bettertransformer import BetterTransformer
+# from optimum.bettertransformer import BetterTransformer
 from accelerate import infer_auto_device_map, dispatch_model
 
 from .. import LanguageModel,GenerateOutput
 
 
 class HFModel(LanguageModel):
-    def __init__(self, model_pth, tokenizer_pth, device='cuda:0', max_batch_size=1, max_new_tokens=None, max_length=2048, quantized=None, peft_pth=None, load_awq_pth=None):
+    def __init__(self, model_pth, tokenizer_pth, device='cuda:0', max_batch_size=1, max_new_tokens=None, max_length=2048, quantized=None, peft_pth=None, load_awq_pth=None,device_map=None, **kwargs):
         super().__init__()
         """
         Initializes a new instance of the `HFModel` class.
@@ -29,14 +29,16 @@ class HFModel(LanguageModel):
             peft_pth (str, optional): The path to the directory containing the pre-trained PEFT model. Defaults to None.
             load_awq_pth (str, optional): The path to the directory containing the pre-trained AWQ model. Defaults to None.
         """
-        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_pth, lagacy=False)
+        self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_pth, lagacy=False, trust_remote_code=True)
 
         if quantized == "int8":
-            self.model = LlamaForCausalLM.from_pretrained(
+            print("int8 quantizing.............................")
+            quantization_config = BitsAndBytesConfig(load_in_8bit=True)
+            self.model = AutoModelForCausalLM.from_pretrained(
                 model_pth,
-                load_in_8bit=True,
-                torch_dtype=torch.float16,
-                device_map="auto",                                    
+                quantization_config=quantization_config,
+                trust_remote_code=True,
+                device_map="auto" if device_map is None else device_map,                                    
             )
         elif quantized == "nf4" or quantized  == "fp4":
             bnb_config = BitsAndBytesConfig(
@@ -48,10 +50,11 @@ class HFModel(LanguageModel):
 
             print("quantizing.............................")
 
-            self.model = LlamaForCausalLM.from_pretrained(
+            self.model = AutoModelForCausalLM.from_pretrained(
                 model_pth,
                 quantization_config=bnb_config,
                 device_map="auto",
+                trust_remote_code=True
             )
         
         elif quantized == "awq":
@@ -66,7 +69,7 @@ class HFModel(LanguageModel):
             config = AutoConfig.from_pretrained(model_pth, trust_remote_code=True)
             self.tokenizer = AutoTokenizer.from_pretrained(model_pth, trust_remote_code=True, lagacy=False)
             kwargs = {"torch_dtype": torch.float16, "low_cpu_mem_usage": True}
-            self.model = LlamaForCausalLM.from_pretrained(model_pth, config=config, trust_remote_code=True,**kwargs)
+            self.model = AutoModelForCausalLM.from_pretrained(model_pth, config=config, trust_remote_code=True,**kwargs)
             self.model.eval()
             awq_results = torch.load(load_awq_pth, map_location="cpu")
             apply_awq(self.model, awq_results)
@@ -80,9 +83,10 @@ class HFModel(LanguageModel):
             self.model = dispatch_model(self.model, device_map=device_map)
 
         else:
-            self.model = LlamaForCausalLM.from_pretrained(
+            self.model = AutoModelForCausalLM.from_pretrained(
                 model_pth,
                 device_map="auto",
+                trust_remote_code=True
             )
         if peft_pth is not None:
             self.model = PeftModel.from_pretrained(
@@ -95,7 +99,7 @@ class HFModel(LanguageModel):
         self.max_batch_size = max_batch_size
         self.max_length = max_length
         self.device = device
-        self.model = BetterTransformer.transform(self.model)
+        # self.model = BetterTransformer.transform(self.model) #not updated yet
         self.model.eval()
         # for old llama tokenizer's config, below is necessary
         self.model.config.pad_token_id = self.tokenizer.pad_token_id = 0  # unk
@@ -127,6 +131,11 @@ class HFModel(LanguageModel):
         eos_token_id_input = copy.deepcopy(eos_token_id)
         eos_token_id = []
 
+        if not do_sample or temperature == 0.0:
+            warnings.warn('temperature=0.0 is equivalent to greedy search, ')
+            do_sample = False
+            temperature = 1.0
+            top_k = 1 
         if eos_token_id_input is not None:
             if not isinstance(eos_token_id_input, list):
                 eos_token_id_input = [eos_token_id_input]
