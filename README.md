@@ -270,10 +270,17 @@ Adding `--recursive` will help you clone exllama automatically. Note that some o
 ## Citation
 This project is an extension of the following paper:
 ```bibtex
-@article{hao2023reasoning,
-  title={Reasoning with language model is planning with world model},
-  author={Hao, Shibo and Gu, Yi and Ma, Haodi and Hong, Joshua Jiahua and Wang, Zhen and Wang, Daisy Zhe and Hu, Zhiting},
-  journal={arXiv preprint arXiv:2305.14992},
+@inproceedings{hao2023reasoning,
+  title={Reasoning with Language Model is Planning with World Model},
+  author={Hao, Shibo and Gu, Yi and Ma, Haodi and Hong, Joshua and Wang, Zhen and Wang, Daisy and Hu, Zhiting},
+  booktitle={Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing},
+  pages={8154--8173},
   year={2023}
+}
+@article{hao2024llm,
+  title={LLM Reasoners: New Evaluation, Library, and Analysis of Step-by-Step Reasoning with Large Language Models},
+  author={Hao, Shibo and Gu, Yi and Luo, Haotian and Liu, Tianyang and Shao, Xiyan and Wang, Xinyuan and Xie, Shuhua and Ma, Haodi and Samavedhi, Adithya and Gao, Qiyue and others},
+  journal={arXiv preprint arXiv:2404.05221},
+  year={2024}
 }
 ```
