@@ -16,7 +16,7 @@ import utils
 from dataset import get_prompt_examples, get_examples, extract_golden_answer
 
 
-def node_visualizer(x: MCTSNode[StrategyQAState, StrategyQAAction]):
+def node_visualizer(x: MCTSNode):
     if not x.state:
         return {}
     return {"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer}

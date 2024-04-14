@@ -75,7 +75,7 @@ def eval_aggregate(pkl_pth:str, resume_s:int, resume_e:int):
 
 
 
-def node_visualizer(x: MCTSNode[MATHState, MATHAction]):
+def node_visualizer(x: MCTSNode):
     if not x.state:
         return {}
     return {"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer}

@@ -18,7 +18,7 @@ from world_model import MATHWorldModel, MATHState, MATHAction
 from search_config import MATHConfig
 import utils
 
-def node_visualizer(x: MCTSNode[MATHState, MATHAction]):
+def node_visualizer(x: MCTSNode):
     if not x.state:
         return {}
     return {"question": x.state[-1].sub_question, "answer": x.state[-1].sub_answer}
