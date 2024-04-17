@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(name='reasoners',
       version='0.0.0',
-      packages=['exllama', 'reasoners'], #  find_packages(exclude=('examples', 'examples.*')),
+      packages=['exllama', 'reasoners', 'reasoners.*'],  # find_packages(exclude=('examples', 'examples.*')),
       entry_points={
           'console_scripts': ['reasoners-visualizer=reasoners.visualization:main'],
       },

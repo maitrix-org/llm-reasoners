@@ -1,8 +1,7 @@
 import os
-from click import Option
 import openai
 import numpy as np
-from typing import Optional, Union
+from typing import Optional, Union, Literal
 import time
 
 from .. import LanguageModel, GenerateOutput
@@ -67,7 +66,7 @@ class GPTCompletionModel(LanguageModel):
                         model=self.model,
                         messages=messages,
                         max_tokens=max_tokens,
-                        temperature=gpt_temperature,
+                        temperature=temperature,
                         top_p=top_p,
                         n=num_return_sequences,
                         stop=stop
@@ -81,14 +80,13 @@ class GPTCompletionModel(LanguageModel):
                         model=self.model,
                         prompt=prompt,
                         max_tokens=max_tokens,
-                        temperature=gpt_temperature,
+                        temperature=temperature,
                         top_p=top_p,
                         n=num_return_sequences,
                         stop=stop,
-                        logprobs=logprobs,
+                        logprobs=0,
                         **kwargs
                     )
-
                     return GenerateOutput(
                         text=[choice["text"] for choice in response.choices],
                         log_prob=[choice["logprobs"] for choice in response["choices"]]
@@ -105,11 +103,14 @@ class GPTCompletionModel(LanguageModel):
                               prompt: Union[str, list[str]],
                               candidates: Union[list[str], list[list[str]]],
                               **kwargs) -> list[np.ndarray]:
-        
         raise NotImplementedError("GPTCompletionModel does not support get_next_token_logits")
 
     def get_loglikelihood(self,
-                    prompt: Union[str, list[str]],
-                    **kwargs) -> list[np.ndarray]:
-        
+                          prompt: Union[str, list[str]],
+                          **kwargs) -> list[np.ndarray]:
         raise NotImplementedError("GPTCompletionModel does not support get_log_prob")
+
+
+if __name__ == '__main__':
+    model = OpenAIModel(model='gpt-3.5-turbo')
+    print(model.generate(['Hello, how are you?', 'How to go to Shanghai from Beijing?']))

@@ -1,23 +1,27 @@
-import io
+import copy
+import re
+from typing import Literal
 
 import numpy as np
-import re
+import scipy
+import torch
 
 from reasoners import SearchConfig, LanguageModel
-from world_model import game24State, game24Action
-import utils
+from world_model import Game24State, Game24Action
+
+from prompts.game24 import output_prompt, propose_prompt, value_prompt, value_last_step_prompt, value_map
 
 
-class game24Config(SearchConfig):
+class Game24Config(SearchConfig[Game24State, Game24Action]):
     def __init__(self,
                  base_model: LanguageModel,
                  prompt: dict,
                  n_actions=4,
                  batch_size=2,
-                 reward_confidence_default=0.8,
-                 depth_limit=5,
+                 depth_limit=4,
+                 temperature=0.7,
                  n_eval=5,
-                 force_terminating_on_depth_limit=True) -> None:
+                 calc_reward: Literal['sampling', 'logits'] = 'sampling') -> None:
         super().__init__()
         self.base_model = base_model
         self.example = None
@@ -26,80 +30,104 @@ class game24Config(SearchConfig):
         self.n_actions = n_actions
         self.n_eval = n_eval
         self.value_cache = {}
-        self.local_cache = {}
         self.depth_limit = depth_limit
-        self.reward_confidence_default = reward_confidence_default
+        self.temperature = temperature
+        self.calc_reward = calc_reward
 
-    def get_actions(self, state: game24State) -> list[game24Action]:
-        x, y = state[0], state[1]
-        propose_prompt = utils.propose_prompt_wrap(state[0], state[1], self.prompt)
-        #print(f'propose prompt:{propose_prompt}')
-        
-        ## query with llama
-        # outputs = []
-        # for idx in range(0, self.n_actions, self.batch_size):
-        #     n_samples = min(self.n_actions - idx, self.batch_size)
-        #     outputs += self.base_model.generate([model_input] * n_samples, max_gen_len=512, end_token=")", hide_input=True).text
-        # outputs = self.base_model.generate([model_input] * 1, max_gen_len=256, end_token=")", hide_input=True).text[0]
-        ## query with GPT
-        outputs = self.base_model.generate(propose_prompt, num_return_sequences=1, stop=None).text
+    @staticmethod
+    def output_prompt_wrap(state: Game24State) -> str:
+        return output_prompt.format(input=state.input, history='\n'.join(state.history))
 
-        ######## post process for operation actions
-        ## some post-process for llama
-        # outputs = outputs[0].split('Input: ')
-        ## post-process for llama and gpt
-        outputs = outputs[0].split('\n')
-        #print(f'original actions: {outputs}')
-        ## correct the left number status
-        # outputs = [utils.correct_left_numbers(x, y, action) if 'left' in action else action for action in outputs]
-        return_actions = [y + _ + '\n' for _ in outputs]
-        # flatten_actions = [action.replace('\n', '->') for action in outputs]
-        # flatten_actions = '\n'.join(flatten_actions)
-        # print(f'propose actions: \n{flatten_actions}, #: {len(return_actions)}')
-        return return_actions
+    @staticmethod
+    def propose_prompt_wrap(state: Game24State) -> str:
+        return propose_prompt.format(input=state.current)
 
-    def fast_reward(self, state: game24State, action: game24Action) -> tuple[float, dict]:
-        ## don't need fast_reward for beam search
-        return 0
+    @staticmethod
+    def value_prompt_wrap(state: Game24State) -> str:
+        return value_prompt.format(input=state.current)
 
-    def reward(self, state: game24State, action: game24Action, new_state: game24State) -> float:
-        ## get values (state eval) for each action
-        ## impossible, maybe, sure
-        x, y = new_state[0], new_state[1]
-        flatten_y = y.strip().replace('\n', '->')
-        # print(f"--checking status: {x}, {y}")
-        value_prompt = utils.value_prompt_wrap(x, y, self.prompt)
-        #print(f'reward prompt with {flatten_y}: {value_prompt}')
-        if value_prompt in self.value_cache:
-            #print(f"-- duplicate state eval: {flatten_y}, \nvalue: {self.value_cache[value_prompt]}")
-            return self.value_cache[value_prompt]
-        #### query with llama
-        # value_outputs = []
-        # for idx in range(0, self.n_eval, self.batch_size):
-        #     n_samples = min(self.n_eval - idx, self.batch_size)
-        #     # value_outputs += self.base_model.generate([value_prompt] * n_samples, max_gen_len=256, hide_input=True).text
-        
-        #### query with GPT
-        value_outputs = self.base_model.generate(value_prompt, num_return_sequences=self.n_eval, stop=None).text
-        #print(f"reward output: {value_outputs}\n")
+    @staticmethod
+    def value_last_step_prompt_wrap(state: Game24State) -> str:
+        return value_last_step_prompt.format(input=state.input, answer=state.output)
 
-        ## postprocess for llama
-        ## find the first value result: impossible/sure/likely + \n
-        ## by locating \n + num num num
-        # pattern = r"\n\d+ \d+ \d+( \d+|\n)"
-        # for i, v_o in enumerate(value_outputs):
-        #     try:
-        #         value_outputs[i] = v_o[:re.search(pattern, v_o).start()]
-        #     except:
-        #         # print(f'no matching: {v_o}')
-        #         if 'sure' in v_o:
-        #             value_outputs[i] = 'sure'
-        #         elif 'likely' in v_o:
-        #             value_outputs[i] = 'likely'
-        #         else:
-        #             value_outputs[i] = 'impossible'
-        value = utils.value_outputs_unwrap(x, y, value_outputs)
-        self.value_cache[value_prompt] = value
-        flatten_y = y.strip().replace('\n', '->')
-        #print(f"-- new_state eval: {flatten_y}, \nvalue: {value}")
+    @staticmethod
+    def retrieve_value(output: list[str]) -> float:
+        output_names = [x.split('\n')[-1] for x in output]
+        value = sum(v * output_names.count(k) for k, v in value_map.items())
         return value
+
+    def get_actions(self, state: Game24State) -> list[Game24Action]:
+        if state.current == '':
+            return []
+        # print(f'Generating actions for {state}')
+        if state.current == '24':
+            prompt = self.output_prompt_wrap(state)
+            output = \
+            self.base_model.generate([prompt], num_return_sequences=1, do_sample=False, eos_token_id='\n').text[0]
+            output = 'Answer: ' + output.strip()
+            return [output]
+        elif ' ' not in state.current:
+            return []
+        else:
+            prompt = self.propose_prompt_wrap(state)
+            output = \
+            self.base_model.generate([prompt], num_return_sequences=1, do_sample=False, eos_token_id='Input').text[0]
+            output = output.strip()
+            if '\n\n' in output:
+                output = output.split('\n\n')[0]
+            output = output.split('\n')
+            actions = [x for x in output if 'left' in x]
+            # set does not guarantee order, but dict does guarantee
+            # we cannot use set here because torch.distributed in LLaMA requires the same order across all processes
+            actions = list(dict.fromkeys(actions))
+            return actions
+
+    def _reward(self, state: Game24State, action: Game24Action) -> float:
+        if state.current == '':
+            return 0.
+        next_state = copy.deepcopy(state)
+        if 'Answer' in action:
+            match = re.match(r'Answer: (.*)', action)
+            next_state.output = match[1] if match is not None else ''
+        else:
+            match = re.match(r'.*\(left: (.*)\)', action)
+            next_state.current = match[1] if match is not None else ''
+            next_state.history.append(action)
+
+        if len(next_state.history) >= self.depth_limit:
+            return 0.
+        if next_state.output is None:
+            prompt = self.value_prompt_wrap(next_state)
+        else:
+            prompt = self.value_last_step_prompt_wrap(next_state)
+        if prompt in self.value_cache:
+            return self.value_cache[prompt]
+
+        if self.calc_reward == 'sampling':
+            value_outputs = []
+            for idx in range(0, self.n_eval, self.batch_size):
+                n_samples = min(self.n_eval - idx, self.batch_size)
+                output = self.base_model.generate([prompt], do_sample=True, temperature=self.temperature,
+                                                  num_return_sequences=n_samples).text
+                value_outputs += [o.strip().split('\n\n')[0] for o in output]
+            # print(value_outputs)
+            value = self.retrieve_value(value_outputs)
+        elif self.calc_reward == 'logits':
+            value_keys = list(value_map.keys())
+            logits = self.base_model.get_next_token_logits([prompt], value_keys)[0]
+            logits = scipy.special.softmax(logits)
+            value = np.sum(logits * np.array(list(value_map.values())))
+        else:
+            raise NotImplementedError
+
+        self.value_cache[prompt] = value
+        # print(f'Reward of {state}, {action=} is {value:.5f}')
+        return value
+
+    def fast_reward(self, state: Game24State, action: Game24Action) -> tuple[float, dict]:
+        reward = self._reward(state, action)
+        return reward, {'reward': reward}
+
+    # We calculate the full reward in fast_reward in Game24SearchConfig, direct return it
+    def reward(self, state: Game24State, action: Game24Action, **kwargs) -> tuple[float, dict]:
+        return self.fast_reward(state, action)

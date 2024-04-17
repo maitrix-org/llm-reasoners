@@ -8,6 +8,7 @@ import random
 from copy import deepcopy
 import itertools
 
+
 class BeamSearchNode:
     id_iter = itertools.count()
 
@@ -15,15 +16,14 @@ class BeamSearchNode:
     def reset_id(cls):
         cls.id_iter = itertools.count()
 
-    def __init__(self, 
-                 state: State, 
-                 action: Action, 
-                 reward: float, 
-                 parent: Optional['BeamSearchNode'] = None, 
+    def __init__(self,
+                 state: State,
+                 action: Action,
+                 reward: float,
+                 parent: Optional['BeamSearchNode'] = None,
                  children: Optional[List['BeamSearchNode']] = None
-                ) -> None:
-        
-        self.id = next(BeamSearchNode.id_iter)  
+                 ) -> None:
+        self.id = next(BeamSearchNode.id_iter)
         self.state = state
         self.action = action
         self.reward = reward
@@ -32,7 +32,7 @@ class BeamSearchNode:
 
     def add_child(self, child: 'BeamSearchNode'):
         self.children.append(child)
-    
+
     def get_trace(self) -> List[Tuple[Action, State, float]]:
         """ Returns the sequence of actions and states from the root to the current node """
         node, path = self, []
@@ -43,30 +43,23 @@ class BeamSearchNode:
         path = path[::-1]
         return path
 
+
 class BeamSearchResult(NamedTuple):
-    terminal_node: BeamSearchNode
+    terminal_state: BeamSearchNode
     cum_reward: float
     tree: BeamSearchNode
     trace: List[Tuple[Action, State, float]]
 
 
 class BeamSearch(SearchAlgorithm, Generic[State, Action]):
-    def __init__(self, 
-                 beam_size: int, 
-                 max_depth: int, 
-                 sampling_strategy: str = 'argmax', # sampling strategy, argmax or softmax
-                 replace: Optional[bool] = None, # whether to sample with replacement
-                 temperature: Optional[float] = None, # temperature for softmax sampling
-                 temperature_decay: Optional[float] = None, # temperature decay, default to no decay
-                 reject_sample: Optional[bool] = None, # whether to reject the samples with reward less than the reject_min_reward
-                 reject_min_reward: Optional[float] = None, # the minimum reward to reject the sample
-                 unbiased: Optional[bool] = None, # whether to use unbiased sampling
-                 reward_aggregator: Union[Callable[[List[Any]], float], str] = 'last', # how to aggregate the reward list
-                 action_dedup: bool = False, # whether to deduplicate the actions
-                 early_terminate: bool = True, # whether to add to terminal beam if the action is terminal
-                 return_beam: bool = False # whether to return the beam instead of the best trace
-                ) -> None:
+    def __init__(self, beam_size: int, max_depth: int, sampling_strategy: str = 'argmax',
+                 replace: Optional[bool] = None, temperature: Optional[float] = None,
+                 temperature_decay: Optional[float] = None, reject_sample: Optional[bool] = None,
+                 reject_min_reward: Optional[float] = None, unbiased: Optional[bool] = None,
+                 reward_aggregator: Union[Callable[[List[Any]], float], str] = 'last', action_dedup: bool = False,
+                 early_terminate: bool = True, return_beam: bool = False, **kwargs) -> None:
         # Initialize the BeamSearch class
+        super().__init__(**kwargs)
         self.beam_size = beam_size
         self.max_depth = max_depth
         self.sampling_strategy = sampling_strategy
@@ -84,7 +77,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         # Initializing the reward_aggregator based on the provided argument
         self._initialize_reward_aggregator()
 
-        # Post processing after initialization
+        # Postprocessing after initialization
         self._post_initialization()
 
     def _initialize_reward_aggregator(self):
@@ -99,7 +92,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             # if the reward_aggregator is a string but not the above, raise error
             if isinstance(self.reward_aggregator, str):
                 raise NotImplementedError(f"Reward aggregator {self.reward_aggregator} is not implemented.")
-    
+
     def _post_initialization(self):
         # if the temperature is set to 0, then we force the sampling strategy to be argmax
         if self.temperature and self.temperature < 1e-4:
@@ -109,31 +102,31 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         # argmax = greedy = deterministic = topk
         if self.sampling_strategy in ['greedy', 'deterministic', 'topk']:
             self.sampling_strategy = 'argmax'
-        
+
         # if sampling strategy not in argmax or stochastic, just use argmax
         if self.sampling_strategy not in ['argmax', 'stochastic']:
             self.sampling_strategy = 'argmax'
             warnings.warn(f"Sampling strategy only supports argmax or stochastic, but got {self.sampling_strategy}. \
                             Sampling strategy is changed to argmax automatically.")
-        
+
         # if early_terminate is set to False, we need to inform the user that we will return the beam instead of the best trace
         if not self.early_terminate:
             self.return_beam = True
-            warnings.warn(f"early_terminate is set to False, BeamSearch will return the beam instead of the best trace.")
+            warnings.warn(
+                f"early_terminate is set to False, BeamSearch will return the beam instead of the best trace.")
 
-    
     @staticmethod
-    def softmax(x: List[float], temperature: float, unbiased: bool = False, action_probs: Optional[List[float]] = None) -> List[float]:
+    def softmax(x: List[float], temperature: float, unbiased: bool = False,
+                action_probs: Optional[List[float]] = None) -> List[float]:
         e_x = np.exp(np.array(x) / temperature)
 
         if unbiased and action_probs is not None:
             # adjust the values by the action_probs
-            adjusted_values = [ n*p for n, p in zip(e_x, action_probs)]
+            adjusted_values = [n * p for n, p in zip(e_x, action_probs)]
 
             return [p / sum(adjusted_values) / max(1, len(adjusted_values)) for p in e_x]
 
         return list(e_x / e_x.sum())
-
 
     def _sample(self, beam):
 
@@ -154,7 +147,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
 
             # sample size is the minimum of beam size and the length of the beam
             sample_size = min(self.beam_size, len(beam))
-            
+
             acc_action_probs = [x[3][0] for x in beam]
             cur_action_prob = [x[3][1] for x in beam]
 
@@ -172,8 +165,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
 
                 # get the upper bound of the reward
                 reward_upper_bound = max(rewards)
-                reward_upper_bound -= 1e-5 # to avoid the case where the reward is exactly the upper bound
-
+                reward_upper_bound -= 1e-5  # to avoid the case where the reward is exactly the upper bound
 
                 while len(topk_beam_idx) < sample_size and len(indexes) and iterate_cnt < 100:
                     iterate_cnt += 1
@@ -181,18 +173,18 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                     idx = random.choices(list(range(len(indexes))), weights=cur_probs)[0]
                     idx = indexes[idx]
 
-                    if random.uniform(0,1) < cur_action_prob[idx] and \
-                        rewards[idx] > min(self.reject_min_reward, reward_upper_bound):
-                        
+                    if random.uniform(0, 1) < cur_action_prob[idx] and \
+                            rewards[idx] > min(self.reject_min_reward, reward_upper_bound):
+
                         topk_beam_idx.append(idx)
                         indexes.remove(idx)
-                    
+
                         if self.unbiased:
-                            cur_probs = BeamSearch.softmax([rewards[i] for i in indexes], 
-                                                            self.temperature,
-                                                            self.unbiased,
-                                                            action_probs=[acc_action_probs[i] for i in indexes])
-                            
+                            cur_probs = BeamSearch.softmax([rewards[i] for i in indexes],
+                                                           self.temperature,
+                                                           self.unbiased,
+                                                           action_probs=[acc_action_probs[i] for i in indexes])
+
                         else:
                             cur_probs = BeamSearch.softmax([rewards[i] for i in indexes], self.temperature)
 
@@ -200,7 +192,6 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                 topk_beam_idx = np.random.choice(len(probs), size=sample_size, p=probs, replace=self.replace)
 
             return [beam[i] for i in topk_beam_idx]
-        
 
     def __call__(self, world: WorldModel[State, Action, State], config: SearchConfig[State, Action, State]):
         # reset id
@@ -210,7 +201,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         # root node
         root_node = BeamSearchNode(state=init_state, action=None, reward=0.0)
         # Initialize current beam with initial state
-        cur_beam = [(root_node, [], 0.0)] # (node, reward_list, cum_reward)
+        cur_beam = [(root_node, [], 0.0)]  # (node, reward_list, cum_reward)
         terminal_beam = []
 
         for depth in range(self.max_depth + 1):
@@ -231,13 +222,11 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                         # deduplicate the actions
                         actions = [a for a in actions if a not in cache_for_dedup]
                         cache_for_dedup.update(actions)
-                        
                     elif depth == self.max_depth:
                         terminal_beam.append(beam_item)
-                    
                     for action in actions:
                         next_state, aux = world.step(state, action)
-                        
+
                         if self.unbiased and self.sampling_strategy == 'stochastic':
                             # the action should have action.action_prob
                             try:
@@ -245,7 +234,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                                 reward, reward_aux = config.reward(state, action, **aux, **fast_reward_aux)
                                 acc_action_prob = reward_aux['acc_action_prob']
                                 cur_action_prob = reward_aux['cur_action_prob']
-                            except:
+                            except KeyError:
                                 raise ValueError(f"If unbiased stochastic sampling is used, \
                                                    please make sure the reward function returns \
                                                    a dictionary with keys 'acc_action_prob', which \
@@ -264,6 +253,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
 
                         # Compute new reward
                         new_reward = self.reward_aggregator(new_reward_list)
+                        # print(reward, new_reward_list, new_reward)
 
                         # Create new node
                         new_node = BeamSearchNode(state=next_state, action=action, reward=reward, parent=node)
@@ -276,8 +266,12 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                         else:
                             new_beam.append((new_node, new_reward_list, new_reward))
 
+                    # check whether this is max_depth
+                    if depth == self.max_depth - 1:
+                        terminal_beam.append(beam_item)
 
             # Sort new beam by reward
+            # print(new_beam)
             new_beam.sort(key=lambda x: x[2], reverse=True)
 
             # Sample from new beam
@@ -286,7 +280,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             # Decay the temperature
             if self.temperature_decay:
                 self.temperature *= self.temperature_decay
-        
+
         if not self.early_terminate:
             # add the cur_beam to terminal_beam
             terminal_beam += cur_beam
@@ -302,16 +296,15 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                                 trace=item[0].get_trace(),
                                 tree=root_node
                                 ) for item in terminal_beam]
-            
-            return terminal_beam
 
+            return terminal_beam
 
         best_result = terminal_beam[0]
         result = BeamSearchResult(
-            terminal_node=best_result[0],
+            terminal_state=best_result[0].state,
             cum_reward=best_result[2],  # Use the precomputed cum_reward
             trace=best_result[0].get_trace(),
             tree=root_node
-            )
+        )
 
         return result

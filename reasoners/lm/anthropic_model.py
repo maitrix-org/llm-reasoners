@@ -49,7 +49,6 @@ class ClaudeModel(LanguageModel):
         for i in range(1, retry + 1):
             try:
                 # sleep several seconds to avoid rate limit
-                
                 message = self.client.messages.create(
                     model=self.model,
                     max_tokens=max_tokens,

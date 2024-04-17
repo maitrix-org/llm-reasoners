@@ -19,6 +19,8 @@ Output Example:
     6 * 4 = 24 (left: 24)
     (1 + 2 + 3) * 4 = 24
 """
+
+
 def read_data(file='24.csv'):
     """
     file: a csv file (fixed)
@@ -27,25 +29,44 @@ def read_data(file='24.csv'):
     data = list(pd.read_csv(file)['Puzzles'])
     return data
 
+
 def get_input(self, idx: int) -> str:
     return self.data[idx]
 
+
+# def test_output(question: str, output: str):
+#     expression = output.strip().split('\n')[-1].lower().replace('answer: ', '').split('=')[0]
+#     numbers = re.findall(r'\d+', expression)
+#     problem_numbers = re.findall(r'\d+', question)
+#     if sorted(numbers) != sorted(problem_numbers):
+#         return {'r': 0}
+#     try:
+#         # print(sympy.simplify(expression))
+#         return {'r': int(sympy.simplify(expression) == 24)}
+#     except Exception as e:
+#         # print(e)
+#         return {'r': 0}
+
 def test_output(question: str, output: str):
-    expression = output.strip().split('\n')[-1].lower().replace('answer: ', '').split('=')[0]
+    if output is None or '=' not in output:
+        return False
+    if output.split('=')[1].strip() != '24':
+        return False
+    expression = output.split('=')[0]
     numbers = re.findall(r'\d+', expression)
-    problem_numbers = re.findall(r'\d+', question)
-    if sorted(numbers) != sorted(problem_numbers):
-        return {'r': 0}
+    question_numbers = re.findall(r'\d+', question)
+    if sorted(numbers) != sorted(question_numbers):
+        return False
     try:
-        # print(sympy.simplify(expression))
-        return {'r': int(sympy.simplify(expression) == 24)}
-    except Exception as e:
-        # print(e)
-        return {'r': 0}
-    
+        return abs(float(sympy.simplify(expression)) - 24) < 1e-6
+    except ValueError:
+        return False
+
+
 def get_current_numbers(y: str) -> str:
     last_line = y.strip().split('\n')[-1]
     return last_line.split('left: ')[-1].split(')')[0]
+
 
 def correct_left_numbers(x: str, y: str, action: str) -> str:
     ## find the actual left numbers
@@ -71,18 +92,19 @@ def correct_left_numbers(x: str, y: str, action: str) -> str:
     return correct_action
 
 
-def propose_prompt_wrap(x: str, y: str='', all_prompt: dict={}) -> str:
-        current_numbers = get_current_numbers(y if y else x)
-        if current_numbers == '24':
-            # prompt = all_prompt['cot_prompt'].format(input=x) + 'Steps:\n' + y
-            prompt = cot_prompt.format(input=x) + 'Steps:' + y
-            # print(f"Final propose: {prompt}")
-        else:
-            # prompt = all_prompt['propose_prompt'].format(input=current_numbers)
-            prompt = propose_prompt.format(input=current_numbers)
-        return prompt
+def propose_prompt_wrap(x: str, y: str = '', all_prompt: dict = {}) -> str:
+    current_numbers = get_current_numbers(y if y else x)
+    if current_numbers == '24':
+        # prompt = all_prompt['cot_prompt'].format(input=x) + 'Steps:\n' + y
+        prompt = output_prompt.format(input=x) + 'Steps:' + y
+        # print(f"Final propose: {prompt}")
+    else:
+        # prompt = all_prompt['propose_prompt'].format(input=current_numbers)
+        prompt = propose_prompt.format(input=current_numbers)
+    return prompt
 
-def value_prompt_wrap(x: str, y: str, all_prompt: dict={}) -> str:
+
+def value_prompt_wrap(x: str, y: str, all_prompt: dict = {}) -> str:
     last_line = y.strip().split('\n')[-1]
     if 'left: ' not in last_line and last_line != '':  # last step
         ans = last_line.lower().replace('answer: ', '')
@@ -92,7 +114,8 @@ def value_prompt_wrap(x: str, y: str, all_prompt: dict={}) -> str:
     current_numbers = get_current_numbers(y)
     # return all_prompt['value_prompt'].format(input=current_numbers)
     return value_prompt.format(input=current_numbers)
-    
+
+
 def value_outputs_unwrap(x: str, y: str, value_outputs: list) -> float:
     if len(y.strip().split('\n')) == 4 and 'answer' not in y.lower():
         print("not an answer at step 4")

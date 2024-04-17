@@ -6,6 +6,7 @@ import time
 import google.generativeai as genai
 from .. import LanguageModel, GenerateOutput
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
+
 GEMINI_KEY = os.getenv("GEMINI_KEY", None)#user need to set the environment variable GEMINI_KEY
 genai.configure(api_key=GEMINI_KEY)
 
@@ -49,7 +50,6 @@ class BardCompletionModel(LanguageModel):
                 # sleep several seconds to avoid rate limit
                 if rate_limit_per_min is not None:
                     time.sleep(60 / rate_limit_per_min)
-                
                 messages = [{"role": "user", "parts": prompt}]
                 safety_settings={
                     HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
@@ -83,5 +83,3 @@ class BardCompletionModel(LanguageModel):
     def get_loglikelihood(self,
                     prompt: Union[str, list[str]],
                     **kwargs) -> list[np.ndarray]:
-        
-        raise NotImplementedError("BardCompletionModel does not support get_log_prob")
