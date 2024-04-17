@@ -22,11 +22,11 @@ Given any reasoning problem, simply define the reward function and an optional w
 - **Cutting-Edge Reasoning Algorithms**: We offer the most up-to-date search algorithms for reasoning with LLMs, such as:
     - [Chain-of-thoughts (Wei et al., 2022)](https://arxiv.org/abs/2201.11903) ([example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/cot_gsm8k))
     - [Least-to-most prompting (Zhou et al., 2022)](https://arxiv.org/abs/2205.10625) ([example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/least_to_most_strategyQA))
-    - [Reasoning-via-Planning, MCTS (Hao et al., 2023)](https://arxiv.org/abs/2305.14992) ([example](https://github.com/maitrix-org/llm-reasoners/blob/main/examples/blocksworld/rap_inference.py))
     - [Tree-of-Thoughts, BFS (Yao et al., 2023)](https://arxiv.org/abs/2305.10601) ([example](https://github.com/maitrix-org/llm-reasoners/blob/main/examples/blocksworld/rap_inference.py))
     - [Tree-of-Thoughts, DFS (Yao et al., 2023)](https://arxiv.org/abs/2305.10601) ([example](https://github.com/maitrix-org/llm-reasoners/blob/main/examples/blocksworld/rap_inference.py))
     - [Guided Decoding, Beam Search (Xie et al., 2023)](https://arxiv.org/abs/2305.00633) ([example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/guided_gsm8k))
     - [Grace Decoding, Greedy Decoding (Khalifa et al., 2023)](https://arxiv.org/abs/2305.14934) ([example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/grace_gsm8k))
+    - [Reasoning-via-Planning, MCTS (Hao et al., 2023)](https://arxiv.org/abs/2305.14992) ([example](https://github.com/maitrix-org/llm-reasoners/blob/main/examples/blocksworld/rap_inference.py))
 
 - **Intuitive Visualization and Interpretation**: Our library provides a [visualization tool](https://www.llm-reasoners.net/) to aid users in comprehending the reasoning process. Even for complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand the process with one line of python code.
 
