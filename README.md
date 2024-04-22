@@ -7,6 +7,7 @@
 Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Reasoning Algorithms, Visualization, LLM calling, and more!
 
 ## News
+- Apr. 22, 2024: We integrated [Llama-3](https://github.com/meta-llama/llama3), with additional useful APIs (e.g., customizing EOS tokens, calculating likelihood)
 - **Apr. 8, 2024: Our new [paper](assets/Reasoners.pdf) introducing LLM Reasoners is available!**
 - Mar. 29, 2024: [Grace Decoding](https://arxiv.org/abs/2305.14934) has been incoporated!
 - Oct. 25, 2023: A [video tutorial](https://www.youtube.com/watch?v=5QfOxtiw_ZU) on the visualizer of LLM Reasoners are available.
@@ -30,7 +31,7 @@ Given any reasoning problem, simply define the reward function and an optional w
 
 - **Intuitive Visualization and Interpretation**: Our library provides a [visualization tool](https://www.llm-reasoners.net/) to aid users in comprehending the reasoning process. Even for complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand the process with one line of python code.
 
-- **Compatibility with popular LLM libraries**: Our framework is compatible with popular LLM frameworks, e.g. Huggingface transformers, OpenAI API, etc. Specifically, we have integrated LLaMA-1/2 with the option of using [fairscale](https://github.com/facebookresearch/llama), [LLaMA.cpp](https://github.com/ggerganov/llama.cpp), [Exllama](https://github.com/Ber666/llm-reasoners/tree/main/reasoners/lm#exllama) for different needs.
+- **Compatibility with popular LLM libraries**: Our framework is compatible with popular LLM frameworks, e.g. Huggingface transformers, OpenAI API, etc. Specifically, we have integrated LLaMA-1/2/3 with the option of using `fairscale` ([1,2](https://github.com/facebookresearch/llama), [3](https://github.com/meta-llama/llama3)), [LLaMA.cpp](https://github.com/ggerganov/llama.cpp), [Exllama](https://github.com/Ber666/llm-reasoners/tree/main/reasoners/lm#exllama) or huggingface for different needs, e.g., fastest inference speed, minimal hardware requirements, etc.
 
 
 ## Experiment Results
