@@ -103,7 +103,7 @@ The three key components in a reasoning algorithm, *reward function*, *world mod
 ![Library Structure](assets/figure2_reasoners_v5.png)
 
 ## Quick Tour
-Let's go through the code of reasoning over Blocksworld problems. Note that the code is simplified for demonstration (check [here](https://github.com/Ber666/llm-reasoners/tree/main/examples/rap_blocksworld) for full experiment code).
+Let's go through the code of reasoning over Blocksworld problems. Note that the code is simplified for demonstration (check [here](demo.ipynb) for a runnable notebook).
 
 The first step is to define the world model: you will set up an initial state given a question in `init_state`, judge whether a state is terminal in `is_terminal`, and most importantly, define the world dynamics with `step`:
 ```python
