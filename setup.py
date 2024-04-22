@@ -23,8 +23,9 @@ setup(name='reasoners',
                         'optimum',
                         'ninja',
                         'bitsandbytes',
-                        'llama1@git+https://github.com/AegeanYan/llama@llama_v1',  # llama 2 have some alias problem so you may need to clone the forked llama1 at private repo. please check the setup.py
-                        'llama@git+https://github.com/facebookresearch/llama@main',
+                        'llama1@git+https://github.com/AegeanYan/llama@llama_v1',  # To avoid the alias problem, you need to clone the forked llama1
+                        'llama@git+https://github.com/facebookresearch/llama@main',  # llama 2
+                        'llama3@git+https://github.com/meta-llama/llama3'
                         'fairscale'],
       include_package_data=True,
       extras_require={

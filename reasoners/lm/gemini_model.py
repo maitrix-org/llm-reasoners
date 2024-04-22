@@ -83,3 +83,4 @@ class BardCompletionModel(LanguageModel):
     def get_loglikelihood(self,
                     prompt: Union[str, list[str]],
                     **kwargs) -> list[np.ndarray]:
+        raise NotImplementedError("BardCompletionModel does not support get_log_prob")

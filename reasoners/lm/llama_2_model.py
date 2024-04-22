@@ -1,4 +1,4 @@
-#revised from https://github.com/facebookresearch/llama/blob/main/llama/generation.py
+# revised from https://github.com/facebookresearch/llama/blob/main/llama/generation.py
 
 
 import json
@@ -30,7 +30,7 @@ class Llama2Model(LanguageModel):
         max_seq_len: int,
         max_batch_size: int,
         model_parallel_size: Optional[int] = None,
-    ) -> (Transformer,Tokenizer):
+    ) -> Tuple[Transformer, Tokenizer]:
         if not torch.distributed.is_initialized():
             torch.distributed.init_process_group("nccl")
         if not model_parallel_is_initialized():

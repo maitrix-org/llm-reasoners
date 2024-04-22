@@ -10,7 +10,7 @@ from openai import OpenAI
 PROMPT_TEMPLATE_ANSWER = "Your response need to be ended with \"So the answer is\"\n\n"
 PROMPT_TEMPLATE_CONTINUE = "Please continue to answer the last question, following the format of previous examples. Don't say any other words.\n\n"
 
-class GPTCompletionModel(LanguageModel):
+class OpenAIModel(LanguageModel):
     def __init__(self, model:str, max_tokens:int = 2048, temperature=0.0, additional_prompt=None):
         self.model = model
         self.max_tokens = max_tokens
