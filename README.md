@@ -29,9 +29,9 @@ Given any reasoning problem, simply define the reward function and an optional w
     - [Guided Decoding, Beam Search (Xie et al., 2023)](https://arxiv.org/abs/2305.00633) ([example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/guided_gsm8k))
     - [Grace Decoding, Greedy Decoding (Khalifa et al., 2023)](https://arxiv.org/abs/2305.14934) ([example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/grace_gsm8k))
 
-- **Intuitive Visualization and Interpretation**: Our library provides a [visualization tool](https://www.llm-reasoners.net/) to aid users in comprehending the reasoning process. Even for complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand the process with one line of python code.
+- **Intuitive Visualization and Interpretation**: Our library provides a [visualization tool](https://www.llm-reasoners.net/) to aid users in comprehending the reasoning process. Even for complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand the process with **one line of python code**. See an exmaple in the tutorial [notebook](demo.ipynb).
 
-- **Compatibility with popular LLM libraries**: Our framework is compatible with popular LLM frameworks, e.g. Huggingface transformers, OpenAI API, etc. Specifically, we have integrated LLaMA-1/2/3 with the option of using `fairscale` ([1,2](https://github.com/facebookresearch/llama), [3](https://github.com/meta-llama/llama3)), [LLaMA.cpp](https://github.com/ggerganov/llama.cpp), [Exllama](https://github.com/Ber666/llm-reasoners/tree/main/reasoners/lm#exllama) or huggingface for different needs, e.g., fastest inference speed, minimal hardware requirements, etc.
+- **Compatibility with popular LLM libraries**: Our framework is compatible with popular LLM frameworks, e.g. `Huggingface transformers`, `OpenAI`/`Google`/`Anthropic` API, etc. Specifically, we have integrated LLaMA-1/2/3 with the option of using `fairscale` ([1,2](https://github.com/facebookresearch/llama), [3](https://github.com/meta-llama/llama3)), [LLaMA.cpp](https://github.com/ggerganov/llama.cpp), [Exllama](https://github.com/Ber666/llm-reasoners/tree/main/reasoners/lm#exllama) or `huggingface` for different needs, e.g., fastest inference speed, minimal hardware requirements, etc.
 
 
 ## Experiment Results
