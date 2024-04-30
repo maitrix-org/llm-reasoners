@@ -83,12 +83,8 @@ class StructChemWorldModelF(WorldModel[StructChemState, StructChemAction, Struct
         return state, {}
 
     def is_terminal(self, state: StructChemState) -> bool:
-        ### Number of iterations pre-defined (hard-coded)
-        ### TODO: add into parameters
-        if len(state) >= 2:
-            return True
-        else:
-            return False
+        # No special termination conditions except depth of search (number of iterations).
+        return False
 
 
 class StructChemWorldModelR(WorldModel[StructChemStateReasoning, StructChemAction, StructChemExample]):
@@ -152,9 +148,5 @@ class StructChemWorldModelR(WorldModel[StructChemStateReasoning, StructChemActio
         return state, {}
 
     def is_terminal(self, state: StructChemStateReasoning) -> bool:
-        ### Number of iterations pre-defined (hard-coded)
-        ### TODO: add into parameters
-        if len(state) >= 2:
-            return True
-        else:
-            return False
+        # No special termination conditions except depth of search (number of iterations).
+        return False

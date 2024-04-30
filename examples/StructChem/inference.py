@@ -38,7 +38,6 @@ def structChem(base_model: LanguageModel,
                 depth_limit: int = 16,
                 temperature: float = 0.8,
                 beam_size: int = 1,
-                self_consistency_n: int = 10,
                 max_depth: int = 16,
                 data_path: str = "examples/structChem/chemmc.json",
                 log_dir: Optional[str] = None,
@@ -65,7 +64,6 @@ def structChem(base_model: LanguageModel,
     world_model = StructChemWorldModelF(base_model=base_model, temperature=temperature)
     config = StructChemConfigF(base_model=base_model,
                             temperature=temperature,
-                            self_consistency_n=self_consistency_n,
                             depth_limit=depth_limit)
     reasoner_f = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 
@@ -73,7 +71,6 @@ def structChem(base_model: LanguageModel,
     world_model = StructChemWorldModelR(base_model=base_model, temperature=temperature)
     config = StructChemConfigR(base_model=base_model,
                             temperature=temperature,
-                            self_consistency_n=self_consistency_n,
                             depth_limit=depth_limit)
     reasoner_r = Reasoner(world_model=world_model, search_config=config, search_algo=search_algo)
 

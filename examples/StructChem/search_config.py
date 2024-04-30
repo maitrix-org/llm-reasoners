@@ -14,14 +14,12 @@ class StructChemConfigF(SearchConfig):
                  base_model: LanguageModel,
                  temperature=0.7,
                  depth_limit=10,
-                 self_consistency_n=1,
                  force_terminating_on_depth_limit=True) -> None:
         super().__init__()
         self.base_model = base_model
         self.temperature = temperature
         self.depth_limit = depth_limit
         self.force_terminating_on_depth_limit = force_terminating_on_depth_limit
-        self.self_consistency_n = self_consistency_n
         self.actions = []
 
     def get_actions(self, state: StructChemState) -> list[StructChemAction]:
@@ -51,14 +49,12 @@ class StructChemConfigR(SearchConfig):
                  base_model: LanguageModel,
                  temperature=0.7,
                  depth_limit=10,
-                 self_consistency_n=1,
                  force_terminating_on_depth_limit=True) -> None:
         super().__init__()
         self.base_model = base_model
         self.temperature = temperature
         self.depth_limit = depth_limit
         self.force_terminating_on_depth_limit = force_terminating_on_depth_limit
-        self.self_consistency_n = self_consistency_n
         self.actions = []
 
     def get_actions(self, state: StructChemState) -> list[StructChemAction]:
