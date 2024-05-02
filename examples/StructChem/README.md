@@ -96,7 +96,8 @@ The program will return the final accuracy with integration of evaluation snippe
 @article{ouyang2023structured,
   title={Structured chemistry reasoning with large language models},
   author={Ouyang, Siru and Zhang, Zhuosheng and Yan, Bing and Liu, Xuan and Choi, Yejin and Han, Jiawei and Qin, Lianhui},
-  journal={arXiv preprint arXiv:2311.09656},
-  year={2023}
+  booktitle={Forty-first International Conference on Machine Learning},
+  year={2024},
+  url={https://openreview.net/forum?id=7R3pzxTSlg}
 }
 ```
