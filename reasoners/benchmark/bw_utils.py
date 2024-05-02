@@ -18,8 +18,8 @@ try:
     from pddl.formatter import domain_to_string, problem_to_string
     from pddl import parse_problem as parse_pddl_problem
 except:
-    raise ImportError("To run experiments on blocksworld, please install pddl "
-                      "with `pip install pddl`.")
+    raise ImportError("To run experiments on blocksworld, please install pddl v0.2.0 "
+                      "with `pip install pddl==0.2.0`.")
 
 # helper functions from https://github.com/karthikv792/LLMs-Planning
 
