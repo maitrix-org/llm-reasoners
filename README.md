@@ -23,6 +23,7 @@ Given any reasoning problem, simply define the reward function and an optional w
 
 - **Cutting-Edge Reasoning Algorithms**: We offer the most up-to-date search algorithms for reasoning with LLMs, such as:
     - [Reasoning-via-Planning, MCTS (Hao et al., 2023)](https://arxiv.org/abs/2305.14992) ([example](https://github.com/maitrix-org/llm-reasoners/blob/main/examples/blocksworld/rap_inference.py))
+    - [StructChem (Ouyang et al., 2023)](https://arxiv.org/abs/2311.09656) ([example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/StructChem))
     - [Chain-of-thoughts (Wei et al., 2022)](https://arxiv.org/abs/2201.11903) ([example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/cot_gsm8k))
     - [Least-to-most prompting (Zhou et al., 2022)](https://arxiv.org/abs/2205.10625) ([example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/least_to_most_strategyQA))
     - [Tree-of-Thoughts, BFS (Yao et al., 2023)](https://arxiv.org/abs/2305.10601) ([example](https://github.com/maitrix-org/llm-reasoners/blob/main/examples/blocksworld/rap_inference.py))
