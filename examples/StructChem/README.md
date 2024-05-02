@@ -1,6 +1,8 @@
 # Examples
 
-## StructChem
+## StructChem: Structured Chemistry Reasoning with Large Language Models
+
+[Siru Ouyang](https://ozyyshr.github.io/), [Zhuosheng Zhang](https://bcmi.sjtu.edu.cn/~zhangzs/), [Bing Yan](https://bingyan.me/), [Xuan Liu](https://scholar.google.com/citations?user=XbtWYioAAAAJ&hl=en), [Yejin Choi](https://yzjiao.github.io/), [Yejin Choi](https://homes.cs.washington.edu/~yejin/), [Jiawei Han](https://hanj.cs.illinois.edu/), [Lianhui Qin](https://sites.google.com/view/lianhuiqin/home)
 
 StructChem is a simple yet effective prompting strategy that offers the desired guidance and substantially boosts the LLMs' chemical reasoning capability.
 
@@ -8,7 +10,7 @@ StructChem is a simple yet effective prompting strategy that offers the desired 
     <img src="assets/method.png" width="100%" alt="intro_case">
 </p>
 
-There are threee key components in StructChem:
+There are three key components in StructChem:
 
 1. Formulae generation: we instruct the LLM not only to recite the formulae but also to provide explanations for the variables they contain.
 
@@ -93,7 +95,7 @@ The program will return the final accuracy with integration of evaluation snippe
 ```
 @article{ouyang2023structured,
   title={Structured chemistry reasoning with large language models},
-  author={Ouyang, Siru and Zhang, Zhuosheng and Yan, Bing and Liu, Xuan and Han, Jiawei and Qin, Lianhui},
+  author={Ouyang, Siru and Zhang, Zhuosheng and Yan, Bing and Liu, Xuan and Choi, Yejin and Han, Jiawei and Qin, Lianhui},
   journal={arXiv preprint arXiv:2311.09656},
   year={2023}
 }
