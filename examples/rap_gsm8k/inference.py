@@ -7,7 +7,7 @@ from reasoners.benchmark import GSM8KEvaluator
 from reasoners import LanguageModel, Reasoner, SearchAlgorithm
 from reasoners.algorithm import MCTS, MCTSNode, MCTSAggregation
 
-from world_model import GSM8kWorldModel, GSM8kState, GSM8kAction, GSM8kPromptDict
+from world_model import GSM8kWorldModel, GSM8kPromptDict
 from search_config import GSM8kConfig, GSM8kUsefulPrompt
 import utils
 
@@ -79,16 +79,19 @@ if __name__ == '__main__':
     import random
 
     llama_ckpts = os.environ.get("LLAMA_CKPTS", None)
-    llama_2_ckpts = os.environ.get("LLAMA_2_CKPTS", None)
+    llama_2_ckpts = os.environ.get("LLAMA2_CKPTS", None)
+    llama_3_ckpts = os.environ.get("LLAMA3_CKPTS", None)
+
     local_rank = int(os.environ.get("LOCAL_RANK", 0))
     if local_rank != 0:
         sys.stdout = open(os.devnull, 'w')
         warnings.filterwarnings('ignore')
 
 
-    def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama'] = 'llama-2',
+    def main(base_lm: Literal['llama', 'llama.cpp', 'llama-2', 'hf', 'exllama', 'llama-3'] = 'llama-3',
              llama_ckpts: str = llama_ckpts,
              llama_2_ckpts: str = llama_2_ckpts,
+             llama_3_ckpts: str = llama_3_ckpts,
              llama_size: str = '13B',
              llama_cpp_path: str = None,
              llama_cpp_n_batch: int = 512,
@@ -110,7 +113,7 @@ if __name__ == '__main__':
             useful_prompt = json.load(f)
         with open(prompt) as f:
             prompt = json.load(f)
-        if base_lm in ['llama', 'llama2']:
+        if base_lm in ['llama', 'llama2', 'llama3']:
             import torch
             import torch.backends.cudnn
             np.random.seed(0)
@@ -128,6 +131,9 @@ if __name__ == '__main__':
         elif base_lm == 'llama-2':
             from reasoners.lm import Llama2Model
             base_model = Llama2Model(llama_2_ckpts, llama_size, max_batch_size=batch_size)
+        elif base_lm == 'llama-3':
+            from reasoners.lm import Llama3Model
+            base_model = Llama3Model(llama_3_ckpts, llama_size, max_batch_size=batch_size)
         elif base_lm == 'hf':
             from reasoners.lm import HFModel
             base_model = HFModel(hf_path, hf_path, max_batch_size=batch_size, max_new_tokens=512,
