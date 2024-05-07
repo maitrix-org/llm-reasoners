@@ -117,35 +117,6 @@ class MCTSAggregation(Generic[State, Action, Example], ABC):
             return None
         return max(answer_dict, key=lambda answer: answer_dict[answer])
 
-class MCTS_SC(Generic[State, Action,Example], ABC):
-    def __init__(self, retrieve_answer: Callable[[State], Hashable],
-                 weight_policy: str = 'edge'):
-        assert weight_policy in ['edge', 'edge_inverse_depth']
-        self.retrieve_answer = retrieve_answer
-        self.weight_policy = weight_policy
-
-    def __call__(self, tree_state: MCTSNode[State, Action, Example]) -> Optional[Hashable]:
-        answer_dict = defaultdict(lambda: 0)
-
-        def visit(cur: MCTSNode[State, Action,Example]):
-            if cur.state is None:
-                return []
-            if cur.is_terminal:
-                answer = self.retrieve_answer(cur.state)
-                if answer is None:
-                    print("hihihi")
-                    return []
-                answer_dict[answer] += 1
-                return [(answer, cur.depth)]
-            for child in cur.children:
-                visit(child)
-
-        visit(tree_state)
-
-        if len(answer_dict) == 0:
-            return None
-        return max(answer_dict, key=lambda answer: answer_dict[answer])
-
 class MCTS(SearchAlgorithm, Generic[State, Action, Example]):
     def __init__(self,
                  output_trace_in_each_iter: bool = False,
