@@ -1,3 +1,11 @@
+# How to RUN
+`examples` folder now has six reasoning methods and supports StructChem. 
+
+Each reasoning method contains different datasets `(GSM8K, AQuA, blocksworld, Prontoqa, GSM8k, StrategyQA, Game24, Crosswords)`.
+
+`cd examples/reasoning_method/dataset` You can find a Readme about how to run
+
+
 # Examples
 
 ## GSM8K
