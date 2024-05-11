@@ -1,4 +1,9 @@
-```bash
-CUDA_VISIBLE_DEVICES=0,1 python examples/cot_gsm8k/inference.py --exllama_model_dir $LLAMA2_CKPTS --exllama_lora_dir None --exllama_mem_map '[16,22]' | tee cot_log.log
-```
-accuracy: 0.461
+CUDA_VISIBLE_DEVICES=0 python examples/reward_LM_gsm8k/inference.py \
+    --model_dir /home/rahulc/Desktop/llama/llama-2-7b/quant/ \
+    --reward_dir openbmb/Eurus-RM-7b \
+    --base_lm exllama \
+    --quantized_reward nf4 \
+    --reward_lm hf \
+    --batch_size 4 \
+    --temperature 0.8 \
+    --n_sc 4
