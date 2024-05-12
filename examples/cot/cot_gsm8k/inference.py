@@ -10,6 +10,7 @@ import utils
 from typing import Literal
 import fire
 import transformers
+
 class CoTReasoner():
     def __init__(self, base_model, n_sc=1, temperature=0, bs=1):
         assert n_sc == 1 or temperature > 0, \

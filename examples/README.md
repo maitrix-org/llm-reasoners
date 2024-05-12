@@ -1,10 +1,19 @@
-# How to RUN
-`examples` folder now has six reasoning methods and supports StructChem. 
+# How to RUN examples
+LLM Reasoners now provides the example code for the following methods:
+  - [Reasoning-via-Planning, MCTS](RAP) ([Hao et al., 2023](https://arxiv.org/abs/2305.14992))
+  - [StructChem](StructChem) ([Ouyang et al., 2023](https://arxiv.org/abs/2311.09656))
+  - [Chain-of-thoughts](CoT) ([Wei et al., 202](https://arxiv.org/abs/2201.11903))
+  - [Least-to-most prompting](Least-to-most) ([Zhou et al., 2022](https://arxiv.org/abs/2205.10625))
+  - [Tree-of-Thoughts, BFS](ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
+  - [Tree-of-Thoughts, DFS](ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
+  - [Self-Eval Guided Decoding, Beam Search](Self-eval) ([Xie et al., 2023](https://arxiv.org/abs/2305.00633))
+  - [Grace Decoding](Grace) ([Khalifa et al., 2023](https://arxiv.org/abs/2305.14934))
 
-Each reasoning method contains different datasets `(GSM8K, AQuA, blocksworld, Prontoqa, GSM8k, StrategyQA, Game24, Crosswords)`.
+Each reasoning method contains different datasets `(GSM8K, AQuA, blocksworld, Prontoqa, StrategyQA, Game24, Crosswords)`.
 
-`cd examples/reasoning_method/dataset` You can find a Readme about how to run
+`cd examples/reasoning_method/dataset` You can find a Readme about how to run the code.
 
+Generally, all examples should be runnable with any choices of the base models (in `reasoners/lm`), e.g., `hugginface`, `llama3`, `exllama`, `openai`, `claude`, etc. Simply change the code of model loading `base_model = ...` and it should work.
 
 # Examples
 

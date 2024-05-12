@@ -1,13 +1,18 @@
 ![logo](assets/reasoners_icon.png#pic_center)
 
----
+<p align="center">
+  [<a href="https://www.llm-reasoners.net/">Home</a>]
+  [<a href="https://arxiv.org/abs/2404.05221">Paper</a>]
+  [<a href="https://www.llm-reasoners.net/blog">Blog</a>]
+</p>
+
 
 **LLM Reasoners** is a library to enable LLMs to conduct complex reasoning, with advanced reasoning algorithms. It approaches multi-step reasoning as planning and searches for the optimal reasoning chain, which achieves the best balance of exploration vs exploitation with the idea of "World Model" and "Reward".
 
 Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Reasoning Algorithms, Visualization, LLM calling, and more!
 
 ## News
-- May. 2, 2024: We have integrated our first reasoning method for scientific reasoning, [StructChem](https://arxiv.org/abs/2311.09656)! Check it out [here](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/StructChem).
+- May. 2, 2024: We have integrated our first reasoning method for scientific problems, [StructChem](https://arxiv.org/abs/2311.09656)! Check it out [here](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/StructChem).
 - Apr. 22, 2024: We integrated [Llama-3](https://github.com/meta-llama/llama3), with additional useful APIs (e.g., customizing EOS tokens, calculating likelihood)
 - **Apr. 8, 2024: Our new [paper](assets/Reasoners.pdf) introducing LLM Reasoners is available!**
 - Mar. 29, 2024: [Grace Decoding](https://arxiv.org/abs/2305.14934) has been incoporated!
