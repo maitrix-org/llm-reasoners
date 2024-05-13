@@ -5,7 +5,7 @@ import json
 import transformers
 
 from dataset import ProntoQADataset
-from reasoners.lm import ExLlamaModel, HFModel, BardCompletionModel, OpenAIModel, ClaudeModel, Llama2Model
+from reasoners.lm import ExLlamaModel, HFModel, BardCompletionModel, OpenAIModel, ClaudeModel, Llama2Model, Llama3Model
 from reasoners.algorithm import MCTS
 from reasoners.benchmark import ProntoQAEvaluatorFinal
 
@@ -38,6 +38,8 @@ class CoTReasoner():
             eos_token_id = [13]
         elif isinstance(self.base_model, Llama2Model):
             eos_token_id = [13]
+        elif isinstance(self.base_model, Llama3Model):
+            eos_token_id = ["\n", ".\n", ".\n\n"]
         elif self.base_model.model.config.architectures[0] == 'InternLM2ForCausalLM':
             eos_token_id = [364,402,512,756]
         elif self.base_model.model.config.architectures[0] == 'Qwen2ForCausalLM':
@@ -52,12 +54,12 @@ class CoTReasoner():
         
         return "\n".join(steps)
 
-def main(model_dir=None, temperature=0.0, log_dir="name", quantized="int8", llama2_path=None, llama_size=None, batch_size=1):
+def main(base_model='exllama', model_dir=None, temperature=0.0, log_dir="name", quantized="int8", llama_size=None, batch_size=1):
 
     import torch, os
     import numpy as np
     from reasoners.lm import ExLlamaModel
-    if model_dir is None:
+    if base_model == 'exllama' and model_dir is None:
         print("Using Llama-2 70B by default")
         language_model = ExLlamaModel(os.environ['LLAMA2_CKPTS'],
                                     None, 
@@ -67,21 +69,25 @@ def main(model_dir=None, temperature=0.0, log_dir="name", quantized="int8", llam
                                     mem_map=[16,22],
                                     log_output=True) #please set mem_map if you need model parallelism, e.g. mem_map = [16,22] with 2 GPUs
     else:
-        if model_dir == "google":
+        if base_model == "google":
             language_model = BardCompletionModel("gemini-pro", additional_prompt="CONTINUE")
-        elif model_dir == "openai":
+        elif base_model == "openai":
             language_model = OpenAIModel("gpt-4-1106-preview", additional_prompt="CONTINUE")
-        elif model_dir == "anthropic":
+        elif base_model == "anthropic":
             language_model = ClaudeModel("claude-3-opus-20240229", additional_prompt="CONTINUE")
-        elif model_dir == 'llama2':
-            language_model = Llama2Model(llama2_path, llama_size, max_batch_size=batch_size)   
-        else:
+        elif base_model == 'llama2':
+            language_model = Llama2Model(model_dir, llama_size, max_batch_size=batch_size)   
+        elif base_model == 'llama3':
+            language_model = Llama3Model(model_dir, llama_size, max_batch_size=batch_size)
+        elif base_model == "hf":
             language_model = HFModel(model_pth=model_dir, tokenizer_pth=model_dir, quantized=quantized)
+        else:
+            raise ValueError(f"Unknown model: {base_model}")
         # dataset = ProntoQADataset.from_file(
         #     'examples/prontoqa/data/345hop_random_true.json'
         # )
 
-    with open('examples/cot/prontoqa/data/example_next_steps.json') as f:
+    with open('examples/CoT/prontoqa/data/example_next_steps.json') as f:
         init_prompt = json.load(f)
     
     reasoner =  CoTReasoner(base_model=language_model, temperature=temperature)
@@ -91,7 +97,7 @@ def main(model_dir=None, temperature=0.0, log_dir="name", quantized="int8", llam
         sample_prompt_type="cot",
         disable_log=False,
         disable_tqdm=False, dataset = ProntoQADataset.from_file(
-            'examples/cot/prontoqa/data/345hop_random_true.json'
+            'examples/CoT/prontoqa/data/345hop_random_true.json'
         ),
         output_extractor=lambda x: x,
         answer_extractor=lambda x: "\n".join(x.test_example.chain_of_thought[2::2])

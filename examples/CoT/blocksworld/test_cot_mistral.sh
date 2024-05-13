@@ -1,7 +1,11 @@
+# This script calls huggingface as the backend llm provider.
+# You can use other models. Refer to `inference.py` for more details.
+
 export CUDA_VISIBLE_DEVICES=1
 
-export model_dir="/path/to/mistral"
+export model_dir="/your/path/to/mistral"
 export log_name="blocksworld-cot-mistral-log"
+
 # export model_dir="/data/haotian/RAP_tune/gemma-7b"
 # export log_name="gemma"
 

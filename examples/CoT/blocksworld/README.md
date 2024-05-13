@@ -22,14 +22,8 @@ In the paper [Reasoning-via-Planning](https://arxiv.org/pdf/2305.14992), we repo
 
 ## Run
 
-We provide the script to reproduce the results of COT (Hard one) 
+We provide the script to reproduce the results of CoT with mistral (`huggingface`). To use other model providers in `reasoners/lm`, simply change the line to load the model in `cot_inference.py`, and change the command lines correspondingly.
 
-To reproduce the result, make sure:
-
-1. you have prepared the corresponding LLM(e.g. `Llama-2-13b-hf` or `Llama2-7B`) 
-2. Modify the `CUDA_VISIBLE_DEVICES`, `model_path` and `llama_size`(if have) in the shell you will run. (e.g. `test_cot_llama13b.sh` or  `test_cot_llama2.sh`) 
-
-Then run the corresponding shell:
 ```bash
 ./examples/CoT/blocksworld/test_cot_mistral.sh
 ```

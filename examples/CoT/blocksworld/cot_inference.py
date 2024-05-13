@@ -29,7 +29,7 @@ class CoTReasoner():
                                           temperature=self.temperature).text[0].replace("[PLAN END]", "").strip()            
         return output
 
-def main(model_dir, data_path, prompt_path, disable_log=False, batch_size=1, config_file: str = "examples/cot/blocksworld/data/bw_config.yaml", domain_file: str = "examples/cot/blocksworld/data/generated_domain.pddl", resume=0, log_dir=None, temperature=0.8, exllama_mem_map: str = None, quantized="int8", llama2_path=None, llama_size=None):
+def main(model_dir, data_path, prompt_path, disable_log=False, batch_size=1, config_file: str = "examples/CoT/blocksworld/data/bw_config.yaml", domain_file: str = "examples/CoT/blocksworld/data/generated_domain.pddl", resume=0, log_dir=None, temperature=0.8, exllama_mem_map: str = None, quantized="int8", llama2_path=None, llama_size=None):
 
     # base_model = ExLlamaModel(model_dir,
                         #   mem_map=exllama_mem_map, max_batch_size=batch_size,

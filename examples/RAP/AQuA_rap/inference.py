@@ -104,7 +104,7 @@ def rap_AQuA(base_model: LanguageModel,
               output_trace_in_each_iter: bool = True,
               aggregate: bool = True,
               weight_policy:str = 'edge',
-              data_path="examples/cot/AQuA_cot/data/", 
+              data_path="examples/cot/AQuA/data/", 
               datasetname="test",
               **search_algo_params):
     
@@ -196,7 +196,7 @@ if __name__ == '__main__':
         reward_alpha = 0.5,
         weight_policy:str = 'edge',
         resume:int = 0,
-        data_path="examples/cot/AQuA_cot/data/", 
+        data_path="examples/cot/AQuA/data/", 
         datasetname="test",
         **kwargs):
 

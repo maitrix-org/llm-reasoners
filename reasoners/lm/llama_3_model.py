@@ -151,7 +151,6 @@ class Llama3Model(LanguageModel):
                 elif self.local_rank == 0:
                     warnings.warn(f'the eos_token {repr(token)} is neither str nor int, which is ignored')
 
-
         echo = not hide_input
 
         if num_return_sequences > 1:

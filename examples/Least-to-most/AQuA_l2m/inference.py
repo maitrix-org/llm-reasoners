@@ -120,7 +120,7 @@ if __name__ == '__main__':
         prompt = "examples/least_to_most/AQuA_l2m/prompts/AQuA_example_pool.json",
         disable_log = False,
         disable_tqdm = False,
-        data_path="examples/cot/AQuA_cot/data/", 
+        data_path="examples/cot/AQuA/data/", 
         datasetname="test",
         **kwargs):
 
