@@ -116,6 +116,24 @@ class WorldModel(ABC, Generic[State, Action, Example]):
             self.prompt = prompt
         self.example = example
 
+class DefaultWorldModel(WorldModel):
+    # A default implementation of WorldModel that only 
+    # saves the action sequence as the state
+
+    def __init__(self, base_model) -> None:
+        super().__init__()
+        self.base_model = base_model
+
+    def init_state(self):
+        return []
+
+    def step(self, state, action):
+        return state + [action], {}
+
+    def is_terminal(self, state):
+        # By default the state is never terminal
+        return False
+
 
 class SearchConfig(ABC, Generic[State, Action, Example]):
     def __init__(self) -> None:
