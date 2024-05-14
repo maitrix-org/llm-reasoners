@@ -187,6 +187,12 @@ class ExLlamaModel(LanguageModel):
 
         return GenerateOutput(decoded_list, log_prob_list)
 
+    def get_reward(self, prompt):
+        
+        ids = self.tokenizer.encode(prompt, return_mask=False, add_bos=False, add_eos=False)
+        output = self.model.forward(ids, self.cache)
+        return output
+
     def generate_simple(self, generator, prompt, max_new_tokens=128, eos_token_id=None, hide_input=False):
         # copied from exllama/generator.py
         # support customized eos_token_id

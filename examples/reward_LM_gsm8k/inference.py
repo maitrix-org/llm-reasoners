@@ -78,7 +78,7 @@ def main(base_lm:Literal['hf', 'google', 'openai', 'anthropic','exllama'],model_
     elif reward_lm == "hf":
         reward_model = HFModel(model_pth = reward_dir, tokenizer_pth = reward_dir,quantized=quantized_reward, is_reward_model=True, device_map = device_map)
     elif reward_lm == "exllama":
-        reward_model = ExLlamaModel(reward_dir, max_batch_size = n_sc, max_seq_length=5000, lora_dir=None)
+        reward_model = ExLlamaModel(reward_dir, max_batch_size = n_sc, max_seq_length=5000, lora_dir=None, max_new_tokens=1000)
     
     
     
