@@ -34,6 +34,7 @@ class EurusSearchConfig(SearchConfig):
         outputs = self.base_model.generate([inputs],
                                             hide_input=True,
                                             do_sample=True,
+                                            max_new_tokens=512,
                                             temperature=self.temperature,
                                             eos_token_id=[".\n\n"]).text[0]
         outputs = outputs.strip() if outputs.strip().endswith(".") else outputs.strip() + '.'
@@ -41,7 +42,7 @@ class EurusSearchConfig(SearchConfig):
 
     def reward(self, state, action):
         
-        template = "[INST] {INST} [\INST] {RESPONSE}"
+        template = "[INST] {INST} [/INST] {RESPONSE}"
         inputs = template.replace("{INST}", self.example) \
             .replace("{RESPONSE}", action)
         inputs = self.reward_model_tokenizer(inputs, return_tensors="pt").to(self.reward_model.device)

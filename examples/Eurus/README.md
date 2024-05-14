@@ -1,6 +1,15 @@
 # Eurus
 
-This is an example of using Eurus-LM to perform best-of-N sampling with Llama-3 8B as the base model.
+This is an example of using Eurus-RM ([Yuan et al., 2024](https://arxiv.org/html/2404.02078v1)) to perform best-of-N sampling with Llama-3 8B as the base model.
+
+
+## Introduction
+
+Eurus-RM-7B is trained on a mixture of UltraInteract, UltraFeedback, and UltraSafety, with a specifically designed reward modeling objective for reasoning to directly increase.
+
+EURUS-RM-7B stands out as the best 7B RM overall and achieves similar or better performance than much larger baselines. Particularly, it outperforms GPT-4 in certain tasks.
+
+## Running the example
 
 Prerequisites:
 - Download LLama-3 8B model.
