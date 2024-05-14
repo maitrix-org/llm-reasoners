@@ -61,37 +61,3 @@ def cot_sc_extractor(algo_output, sc=True):
     if counter == {}:
         return None
     return counter.most_common(1)[0][0]
-
-
-
-
-class Reward_CoT_Utils():
-
-    def __init__(self, reward_model) -> None:
-        self.reward_model = reward_model.model
-        self.tokenizer = reward_model.tokenizer
-
-    
-    def cot_reward_sc_extractor(self, algo_and_question_output):
-
-        algo_output, question = algo_and_question_output
-        non_none_ans = [x for x in algo_output if retrieve_answer(x)!=None]
-        
-        ans_reward_pairs = []
-        for ans in non_none_ans:
-
-            reward_input = self.tokenizer(question + ans, return_tensors = "pt")
-            reward_input = {k:reward_input[k].to("cuda:0") for k in reward_input.keys()}
-            reward = self.reward_model(**reward_input).item()
-            ans_reward_pairs.append((reward,ans))
-
-        if (len(ans_reward_pairs)==0):
-            return None
-        
-        ans_reward_pairs.sort(key = lambda x:x[0])
-        ans_with_max_reward = ans_reward_pairs[-1][1]
-        return retrieve_answer(ans_with_max_reward)
-
-        
-
-

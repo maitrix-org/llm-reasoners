@@ -5,15 +5,12 @@ from reasoners.benchmark import GSM8KEvaluator
 from reasoners.lm.hf_model import HFModel
 from reasoners.lm.gemini_model import BardCompletionModel
 from reasoners.lm.anthropic_model import ClaudeModel
-from reasoners.lm.hf_model_reward import HFModelReward
 import utils
-from utils import Reward_CoT_Utils
 from typing import Literal
 import fire
-from transformers import AutoTokenizer, AutoModel
 import transformers
 class CoT_Reward_Reasoner():
-    def __init__(self, base_model, n_sc=1, temperature=0, bs=1, main_prompt = None):
+    def __init__(self, base_model, n_sc=1, temperature=0, bs=1, main_prompt = None, reward_model = None):
         assert n_sc == 1 or temperature > 0, \
             "Temperature = 0 indicates greedy decoding. There is no point running multiple chains (n_sc > 1)"
         
@@ -22,10 +19,12 @@ class CoT_Reward_Reasoner():
         self.n_sc = n_sc
         self.bs = bs
         self.main_prompt = main_prompt
+        self.reward_model = reward_model
     def __call__(self, example, prompt=None):
         inputs = prompt["cot"].replace("{QUESTION}", example)
         question = self.main_prompt["prefix"].replace("{QUESTION}", example)
         outputs = []
+        rewards = []
         do_sample = True
         if self.temperature == 0 and isinstance(self.base_model, HFModel):
             print("Greedy decoding is not supported by HFModel. Using temperature = 1.0 instead.")
@@ -54,9 +53,12 @@ class CoT_Reward_Reasoner():
                                             top_p=0.95,
                                             temperature=self.temperature,
                                             eos_token_id=eos_token_id).text
-        return [o.strip() for o in outputs], question
+            #rewards for each solution
+            rewards += self.reward_model.get_reward([question + out for out in outputs]).cpu().flatten().tolist()
+        
+        return [max(zip(rewards, outputs))[1]]
 
-def main(base_lm:Literal['hf', 'google', 'openai', 'anthropic','exllama'],model_dir, lora_dir=None, mem_map=None, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0, n_sc=1, quantized='int8', quantized_reward = None, reward_lm = None, reward_dir = None):
+def main(base_lm:Literal['hf', 'google', 'openai', 'anthropic','exllama'],model_dir, lora_dir=None, mem_map=None, batch_size=1, prompt="examples/cot_gsm8k/prompts/cot.json", resume=0, log_dir=None, temperature=0, n_sc=1, quantized='int8', quantized_reward = None, reward_lm = None, reward_dir = None, device_map = None):
 
     if base_lm == "openai":
         base_model = OpenAIModel("gpt-4-1106-preview", additional_prompt="ANSWER")
@@ -71,14 +73,10 @@ def main(base_lm:Literal['hf', 'google', 'openai', 'anthropic','exllama'],model_
 
     reward_tokenizer = None
     assert reward_dir is not None, "Reward model path cannot be none for CoT + Reward"
-    if reward_lm == "openai":
-        raise NotImplementedError("GPTCompletionModel does not support reward model output")
-    elif reward_lm == "google":
-        raise NotImplementedError("BardCompletionModel does not support reward model output")
-    elif reward_lm == "anthropic":
-        raise NotImplementedError("ClaudeModel does not support reward model output")
+    if reward_lm == "openai" or reward_lm == "google" or reward_lm == "anthropic":
+        raise NotImplementedError("{} model currently does not support reward model output",reward_lm)
     elif reward_lm == "hf":
-        reward_model = HFModelReward(model_pth = reward_dir, tokenizer_pth = reward_dir,quantized=quantized_reward, device_map = "cuda:0")
+        reward_model = HFModel(model_pth = reward_dir, tokenizer_pth = reward_dir,quantized=quantized_reward, is_reward_model=True, device_map = device_map)
     elif reward_lm == "exllama":
         reward_model = ExLlamaModel(reward_dir, max_batch_size = n_sc, max_seq_length=5000, lora_dir=None)
     
@@ -87,10 +85,9 @@ def main(base_lm:Literal['hf', 'google', 'openai', 'anthropic','exllama'],model_
     with open(prompt) as f:
         prompt = json.load(f)
 
-    reasoner = CoT_Reward_Reasoner(base_model, temperature=temperature, n_sc=n_sc, bs=batch_size, main_prompt = prompt)
-    utils_reward = Reward_CoT_Utils(reward_model = reward_model)
+    reasoner = CoT_Reward_Reasoner(base_model, temperature=temperature, n_sc=n_sc, bs=batch_size, main_prompt = prompt, reward_model = reward_model)
     evaluator = GSM8KEvaluator(
-                 output_extractor=utils_reward.cot_reward_sc_extractor,
+                 output_extractor=utils.cot_sc_extractor,
                  answer_extractor=lambda x: utils.retrieve_answer_from_dataset(x["answer"]),
                  init_prompt=prompt, # will update dynamically
                  disable_log=False,
@@ -112,8 +109,16 @@ def main(base_lm:Literal['hf', 'google', 'openai', 'anthropic','exllama'],model_
 if __name__ == '__main__':
     fire.Fire(main)
 """
-CUDA_VISIBLE_DEVICES=2 python examples/cot_gsm8k/inference.py \
---model_dir $Gemma_ckpts \ 
+CUDA_VISIBLE_DEVICES=0 python examples/reward_LM_gsm8k/inference.py \
+    --model_dir /home/rahulc/Desktop/llama/llama-2-7b/quant/ \
+    --reward_dir openbmb/Eurus-RM-7b \
+    --base_lm exllama \
+    --quantized_reward nf4 \
+    --reward_lm hf \
+    --batch_size 4 \
+    --temperature 0.8 \
+    --n_sc 4 \
+    --device_map cuda:0
 """
 
 

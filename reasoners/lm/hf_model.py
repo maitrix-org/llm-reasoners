@@ -2,7 +2,7 @@ from typing import Union, Optional
 import warnings
 import copy
 
-from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig, BitsAndBytesConfig, AutoConfig, AutoModelForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig, BitsAndBytesConfig, AutoConfig, AutoModelForCausalLM, AutoModel
 import torch
 from peft import PeftModel
 import numpy as np
@@ -13,7 +13,7 @@ from .. import LanguageModel,GenerateOutput
 
 
 class HFModel(LanguageModel):
-    def __init__(self, model_pth, tokenizer_pth, device='cuda:0', max_batch_size=1, max_new_tokens=None, max_length=2048, quantized=None, peft_pth=None, load_awq_pth=None,device_map=None, **kwargs):
+    def __init__(self, model_pth, tokenizer_pth, device='cuda:0', max_batch_size=1, max_new_tokens=None, max_length=2048, quantized=None, peft_pth=None, load_awq_pth=None,device_map=None, is_reward_model = False, **kwargs):
         super().__init__()
         """
         Initializes a new instance of the `HFModel` class.
@@ -29,12 +29,16 @@ class HFModel(LanguageModel):
             peft_pth (str, optional): The path to the directory containing the pre-trained PEFT model. Defaults to None.
             load_awq_pth (str, optional): The path to the directory containing the pre-trained AWQ model. Defaults to None.
         """
+        self.is_reward_model = is_reward_model
+        model_cls = AutoModelForCausalLM if not self.is_reward_model else AutoModel
+        
+
         self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_pth, lagacy=False, trust_remote_code=True)
 
         if quantized == "int8":
             print("int8 quantizing.............................")
             quantization_config = BitsAndBytesConfig(load_in_8bit=True)
-            self.model = AutoModelForCausalLM.from_pretrained(
+            self.model = model_cls.from_pretrained(
                 model_pth,
                 quantization_config=quantization_config,
                 trust_remote_code=True,
@@ -50,13 +54,13 @@ class HFModel(LanguageModel):
 
             print("quantizing.............................")
 
-            self.model = AutoModelForCausalLM.from_pretrained(
+            self.model = model_cls.from_pretrained(
                 model_pth,
                 quantization_config=bnb_config,
-                device_map="auto",
+                device_map="auto" if device_map is None else device_map,
                 trust_remote_code=True
             )
-        
+
         elif quantized == "awq":
             try:
                 from awq.quantize.pre_quant import apply_awq
@@ -69,7 +73,7 @@ class HFModel(LanguageModel):
             config = AutoConfig.from_pretrained(model_pth, trust_remote_code=True)
             self.tokenizer = AutoTokenizer.from_pretrained(model_pth, trust_remote_code=True, lagacy=False)
             kwargs = {"torch_dtype": torch.float16, "low_cpu_mem_usage": True}
-            self.model = AutoModelForCausalLM.from_pretrained(model_pth, config=config, trust_remote_code=True,**kwargs)
+            self.model = model_cls.from_pretrained(model_pth, config=config, trust_remote_code=True,**kwargs)
             self.model.eval()
             awq_results = torch.load(load_awq_pth, map_location="cpu")
             apply_awq(self.model, awq_results)
@@ -83,7 +87,7 @@ class HFModel(LanguageModel):
             self.model = dispatch_model(self.model, device_map=device_map)
 
         else:
-            self.model = AutoModelForCausalLM.from_pretrained(
+            self.model = model_cls.from_pretrained(
                 model_pth,
                 device_map="auto",
                 trust_remote_code=True
@@ -122,7 +126,7 @@ class HFModel(LanguageModel):
             output_log_probs: bool = False,
             **kwargs,
         ) -> GenerateOutput:
-
+        
         # unify eos_token
         if max_length is None:
             max_length = self.max_length  
@@ -202,6 +206,17 @@ class HFModel(LanguageModel):
             log_prob_list = None
 
         return GenerateOutput(decoded_list, log_prob_list)
+
+
+    def get_reward(
+        self,
+        inputs: list[str]
+    ) -> float:
+        
+        inputs = self.tokenizer(inputs, padding=True, return_tensors="pt").to(self.device)
+        rewards = self.model(**inputs)
+        return rewards
+
 
     @torch.no_grad()
     def get_next_token_logits(
