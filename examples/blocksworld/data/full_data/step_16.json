@@ -1,1 +1,0 @@
-[["LLMs-Planning/llm_planning_analysis/instances/blocksworld/generated_basic/instance-464.pddl", "(unstack c a)\n(put-down c)\n(unstack a b)\n(put-down a)\n(unstack b e)\n(put-down b)\n(unstack e d)\n(put-down e)\n(pick-up d)\n(stack d a)\n(pick-up c)\n(stack c d)\n(pick-up b)\n(stack b c)\n(pick-up e)\n(stack e b)\n", 16]]
