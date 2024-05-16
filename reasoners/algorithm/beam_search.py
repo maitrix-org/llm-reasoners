@@ -215,15 +215,20 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                 state = node.state
                 if self.early_terminate and world.is_terminal(state):
                     terminal_beam.append(beam_item)
+                    
                 else:
-                    actions = config.get_actions(state)
+                    
+                    if depth == self.max_depth:
+                        terminal_beam.append(beam_item)
+                        continue
 
                     if self.action_dedup:
                         # deduplicate the actions
                         actions = [a for a in actions if a not in cache_for_dedup]
                         cache_for_dedup.update(actions)
-                    elif depth == self.max_depth:
-                        terminal_beam.append(beam_item)
+
+                    actions = config.get_actions(state)
+
                     for action in actions:
                         next_state, aux = world.step(state, action)
 
@@ -266,10 +271,6 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                         else:
                             new_beam.append((new_node, new_reward_list, new_reward))
 
-                    # check whether this is max_depth
-                    if depth == self.max_depth - 1:
-                        terminal_beam.append(beam_item)
-
             # Sort new beam by reward
             # print(new_beam)
             new_beam.sort(key=lambda x: x[2], reverse=True)
@@ -298,8 +299,17 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                                 ) for item in terminal_beam]
 
             return terminal_beam
-
+        
+        if len(terminal_beam) == 0:
+            return BeamSearchResult(
+                terminal_state=None,
+                cum_reward=0,
+                trace=[],
+                tree=root_node
+            )
+        
         best_result = terminal_beam[0]
+
         result = BeamSearchResult(
             terminal_state=best_result[0].state,
             cum_reward=best_result[2],  # Use the precomputed cum_reward
