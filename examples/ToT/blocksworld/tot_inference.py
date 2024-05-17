@@ -65,7 +65,7 @@ class BWConfig(SearchConfig):
         ouputs = self.base_model.generate([prompts],
                                           num_return_sequences=self.n_candidate,
                                           #max_length=20,
-                                          eos_token_id="\n[",
+                                          eos_token_id=["\n[", "\n", ],
                                           temperature=self.temperature,
                                           do_sample=True,
                                           hide_input=True).text

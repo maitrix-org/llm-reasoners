@@ -45,7 +45,8 @@ class BeamSearchNode:
 
 
 class BeamSearchResult(NamedTuple):
-    terminal_state: BeamSearchNode
+    terminal_node: BeamSearchNode
+    terminal_state: State
     cum_reward: float
     tree: BeamSearchNode
     trace: List[Tuple[Action, State, float]]
@@ -293,6 +294,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
             # convert terminal_beam to a list of BeamSearchResult
             terminal_beam = [BeamSearchResult(
                                 terminal_node=item[0],
+                                terminal_state=item[0].state,
                                 cum_reward=item[2],  # Use the precomputed cum_reward
                                 trace=item[0].get_trace(),
                                 tree=root_node
@@ -303,6 +305,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         if len(terminal_beam) == 0:
             return BeamSearchResult(
                 terminal_state=None,
+                terminal_node=None,
                 cum_reward=0,
                 trace=[],
                 tree=root_node
@@ -312,6 +315,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
 
         result = BeamSearchResult(
             terminal_state=best_result[0].state,
+            terminal_node=best_result[0],
             cum_reward=best_result[2],  # Use the precomputed cum_reward
             trace=best_result[0].get_trace(),
             tree=root_node
