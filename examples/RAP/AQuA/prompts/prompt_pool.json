@@ -1,0 +1,41 @@
+{
+    "instruction": "Given a question, please decompose it into sub-questions. For each sub-question, please answer it in a complete sentence, ending with \"The answer is\". When the original question is answerable, please start the subquestion with \"Now we can answer the question with an option from A to E: \".",
+
+    "interactive_examples":[
+        "Question {idx}: A class of 35 students has an average height of 180 cm. Seven students whose average height is 120 cm, left the class and seven others whose average height is 140 cm, joined. Calculate the new average height of the students of the class (in cm) is? Options: A)204.6 cm, B)404.6 cm, C)224.6 cm, D)184.0 cm, E)256.6 cm.\nQuestion {idx}.1: What is the total height of students before seven students left?\nAnswer {idx}.1: Total height = 180 * 35 = 6300 cm. The answer is 6300 cm.\nQuestion {idx}.2: What is the total height of students who joined?\nAnswer {idx}.2: Total height = 140 * 7  = 980 cm. The answer is 980 cm.\nQuestion {idx}.3: What is the new total height of students after seven students joined?\nAnswer {idx}.3: Total height = 6300 - 840 + 980 = 6440 cm. The answer is 6440 cm.\nQuestion {idx}.4: Now we can answer the question with an option from A to E: What is the new average height?\nAnswer {idx}.4: New average height is 6440 / 35 = 184 cm. The answer is D.",
+
+        "Question {idx}: How much is 70% of 40 is greater than 4/5 of 25? Options: A)22, B)67, C)88, D)12, E)8\nQuestion {idx}.1: How much is 70% of 40?\nAnswer {idx}.1: The number is 40 * 0.7 = 28. The answer is 28.\nQuestion {idx}.2: How much is 4/5 of 25?\nAnswer {idx}.2: The number is 25 * 4/5 = 20. The answer is 20.\nQuestion {idx}.3: Now we can answer the question with an option from A to E: How much is 70% of 40 is greater than 4/5 of 25?\nAnswer {idx}.3: the number is 28 - 20 = 8. The answer is E.",
+
+        "Question {idx}: What is the average of the first 21 multiples of 7? Options: A)22, B)77, C)88, D)21, E)65\nQuestion {idx}.1: What is the sum of the first 21 multiples of 7?\nAnswer {idx}.1: The number is 7 * (1+2+….+21). After simplification, 7 * ((21x22) / 2) = 1617. The answer is 1617.\nQuestion {idx}.2: Now we can answer the question with an option from A to E: What is the average of the first 21 multiples of 7?\nAnswer {idx}.2: The average is 1617 / 21 = 77. The answer is B.",
+
+        "Question {idx}: In a certain store, the profit is 320% of the cost. If the cost increases by 25% but the selling price remains constant, approximately what percentage of the selling price is the profit? Options: A)80%, B)70%, C)60%, D)50%, E)40%\nQuestion {idx}.1: Let cost be 100, What is the profit?\nAnswer {idx}.1: The profit is 100 * 3.2 = 320. The answer is 320.\nQuestion {idx}.2: Let cost be 100, What is the selling price?\nAnswer {idx}.2: The selling price is 100 + 320 = 420. The answer is 420.\nQuestion {idx}.3: Let cost be 100, What is the cost after increases by 25%?\nAnswer {idx}.3: The new cost is 100 * 0.25 + 100 = 125. The answer is 125.\nQuestion {idx}.4: Let cost be 100, What is the new profit?\nAnswer {idx}.4: the new profit is 420 - 125 = 295. The answer is 295.\nQuestion {idx}.5: Now we can answer the question with an option from A to E: What percentage of the selling price is the profit?\nAnswer {idx}.5: The percentage is 296/420 * 100 = 70%. The answer is B.",
+
+        "Question {idx}: A 290 meters long train running at the speed of 120 kmph crosses another train running in opposite direction at the speed of 80 kmph in 9 seconds. What is the length of the other train? Options: A)230 m, B)210 m, C)260 m, D)320 m, E)330 m\nQuestion {idx}.1: What is the relative speed?\nAnswer {idx}.1: The relative speed is 120 + 80 = 200 kmph. The answer is 200 kmph.\nQuestion {idx}.2: What is the relative speed in m/s?\nAnswer {idx}.2: The speed is 200 kmph = (200 * 1000)/3600m/s = 55.55m/s\nQuestion {idx}.3: What is the total distance traveled?\nAnswer {idx}.3: The distance is 55.55m/s * 9 = 499.95m. The answer is 499.95m\nQuestion {idx}.4: Now we can answer the question with an option from A to E: What is the length of the other train?\nAnswer {idx}.4: The length of the other train is 499.95 - 290 = 209.95. The answer is B.",
+
+        "Question {idx}: Square P is inscribed in circle Q. If the perimeter of P is 40, what is the circumference of Q? Options: A)11√2π, B)10√2π, C)9√2π, D)8√2π, E)7√2π\nQuestion {idx}.1: What is side length of the square P?\nAnswer {idx}.1: Square P has 4 side with equal length, so the side length is 1/4 of the perimeter: 40 / 4=10. The answer is 10.\nQuestion {idx}.2: What is the diameter of the circle Q?\nAnswer {idx}.2: The diameter of Q is equal to the diagonal of the square, which is 10 * √2π= 10√2. The answer is 10√2.\nQuestion {idx}.3: Now we can answer the question with an option from A to E: What is the circumference of Q?\nAnswer {idx}.3: The circumference of Q is diameter of Q * π, which is 10√2 * π = 10√2π. The answer is B.",
+
+        "Question {idx}: A coin is tossed three times. What is the probability that there is at least one tail? Options: A)7/8, B)6/7, C)1/7, D)3/7, E)1/31\nQuestion {idx}.1: What is the probability of getting all heads?\nAnswer {idx}.1: The probability is (1/2)^3 = 1/8. The answer is 1/8.\nQuestion {idx}.2: Now we can answer the question with an option from A to E: What is the probability that there is at least one tail?\nAnswer {idx}.2: The probability is 1 - 1/8 = 7/8. The answer is A.",
+
+        "Question {idx}: If q is the square of a positive integer, which of the following must be equal to the square of the next positive integer? Options: A)√n + 1, B)n + 1, C)n^2 + 1, D)q + 2√q + 1, E)n^2 + 2n + 1.\nQuestion {idx}.1: How to represent the positive integer using q?\nAnswer {idx}.1: The positive integer is the square root of q. The answer is √q.\nQuestion {idx}.2: What is the next positive integer\nAnswer {idx}.2: The next integer is the positive integer plus 1. The answer is √q+1.\nQuestion {idx}.3: Now we can answer the question with an option from A to E: What is the square of the next integer?\nAnswer {idx}.3: The square of the next integer is (√q+1)^2=q + 2√q + 1. The answer is D.",
+
+        "Question {idx}: When 20 percent of a number is added to another number the second number increases to its 140 per cent. What is the ratio between the first and the second number? Options: A)3 : 4, B)2 : 1, C)3 : 2, D)Data inadequate, E)None of these\nQuestion {idx}.1: Let the first number be x and the second number be y. What equation satisfied the increase?\nAnswer {idx}.1: the equation is y + 0.2 x = 1.4y. The answer is y + 0.2x = 1.4y.\nQuestion {idx}.2: Let the first number be x and the second number be y. Now we can answer the question with an option from A to E: What is the ratio between the first and the second number?\nAnswer {idx}.2: The equation is y + 0.2x = 1.4y, after simplification, 0.2x = 0.4y. So the ratio is y = 0.5x. The answer is B.",
+
+        "Question {idx}: An electric pump can fill a tank in 7 hours. Because of a leak in the tank, it took 14 hours to fill the tank. If the tank is full, how much time will the leak take to empty it? Options: A)10 hours, B)12 hours, C)8 hours, D)5 hours, E)14 hours\nQuestion {idx}.1: What is the filling rate of the pump without leak?\nAnswer {idx}.1: An electric pump can fill a tank in 7 hours, the filling rate is 1/7. The answer is 1/7.\nQuestion {idx}.2: What is the filling rate of the pump with leak?\nAnswer {idx}.2:  It took 14 hours to fill the tank, the filling rate is 1/14. The answer is 1/14.\nQuestion {idx}.3: What is the leaking rate?\nAnswer {idx}.3: The leaking rate is 1/7 - 1/14 = 1/14. The answer is 1/14.\nQuestion {idx}.4: Now we can answer the question with an option from A to E: How much time will the leak take to empty it?\nAnswer {idx}.4: the leaking rate is 1/14, so it takes 14 hours to empty it. The answer is E."
+    ],
+    "useful_examples": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "question_prefix": "Question {idx}: {question}",
+      "subquestion_prefix": "Question {idx}.{sub_idx}:",
+      "overall_question_prefix": "Now we can answer the question with an option from A to E:",
+      "answer_prefix": "Answer {idx}.{sub_idx}:"
+}
