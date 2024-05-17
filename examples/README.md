@@ -6,10 +6,11 @@ LLM Reasoners now provides the example code for the following methods:
   - [Least-to-most prompting](Least-to-most) ([Zhou et al., 2022](https://arxiv.org/abs/2205.10625))
   - [Tree-of-Thoughts, BFS](ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
   - [Tree-of-Thoughts, DFS](ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
-  - [Self-Eval Guided Decoding, Beam Search](Self-eval) ([Xie et al., 2023](https://arxiv.org/abs/2305.00633))
+  - [Self-Eval Guided Decoding, Beam Search](Self-Eval) ([Xie et al., 2023](https://arxiv.org/abs/2305.00633))
   - [Grace Decoding](Grace) ([Khalifa et al., 2023](https://arxiv.org/abs/2305.14934))
+  - [Eurus](Eurus) ([Yuan et al., 2024](https://arxiv.org/abs/2404.02078))
 
-Each reasoning method contains different datasets `(GSM8K, AQuA, blocksworld, Prontoqa, StrategyQA, Game24, Crosswords)`.
+For each reasoning method, we provide scripts for different datasets, including GSM8K, AQuA, blocksworld, Prontoqa, StrategyQA, Game24, Crosswords, etc.
 
 ## How to run the examples
 You can find the README about how to run the code under each directory with `cd examples/reasoning_method/dataset`.
