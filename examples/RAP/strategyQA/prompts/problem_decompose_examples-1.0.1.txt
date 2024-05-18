@@ -1,0 +1,14 @@
+Q: Did the 40th president of the United States forward lolcats to his friends?
+A: To answer the question "Did the 40th president of the United States forward lolcats to his friends?", we need to know: "Who was the 40th president of the United States?", "Which year did the 40th president of the United States die in?", "In what year did the first lolcat appear?", "Is the year the first lolcat appear before or the same as the year the 40th president of the United States die?".
+
+Q: Would an uninsured person be more likely than an insured person to decline a CT scan?
+A: To answer the question "Would an uninsured person be more likely than an insured person to decline a CT scan?", we need to know: "How much does it usually cost to get a CT scan without insurance?", "How much on average does it cost to get a CT scan with insurance?", "Is the cost to get a CT scan without insurance less than the cost to get a CT scan with insurance?"
+
+Q: Were mollusks an ingredient in the color purple?
+A: To answer the question "Were mollusks an ingredient in the color purple?", we need to know: "Which animal was used in making purple glands in ancient Tyre?", "Is the animal used in making purple glands in ancient Tyre a mollusk?".
+
+Q: Is a platypus immune from cholera?
+A: To answer the question "Is a platypus immune from cholera?", we need to know: "What parts of the body does Cholera damage?", "Does a platypus not have the parts of the body Cholera damage?".
+
+Q: Are quadrupeds represented on Chinese calendar?
+A: To answer the question "Are quadrupeds represented on Chinese calendar?", we need to know: "What are the symbols of the Chinese calendar?", "What is the defining characteristic of quadrapeds?", "Is any of the defining characteristic of quadrapeds included in any of the animals in the symbols of the Chinese calendar have?".

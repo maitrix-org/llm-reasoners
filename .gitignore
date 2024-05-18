@@ -17,11 +17,9 @@ dataset/
 /*.json
 /data_to_check/
 *.jsonl
-*.txt
 sas_plan
 build/
 examples/MATH
-*.csv
 *.ipynb
 examples/AQuA_rap/test.ipynb
 temp_plan
