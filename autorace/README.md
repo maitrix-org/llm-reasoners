@@ -25,15 +25,16 @@ The `MODEL_TYPE` is one of `model list` below:
 
 The `PROMPT_TYPE` can be found in `prompt.json`.
 
-You can easily add your own datasets-model results under `data` directory and use `AutoRace_eval_dataset` function in `autorace.py` to get AutoRace Score. 
+You can easily add your own datasets-model results under `data` directory and use `AutoRace_evaluation` function in `autorace.py` to get AutoRace Score. 
 
 ## Evaluate your own result
 
-Theoretically, AutoRace can support any evaluation of Chain-of-Thought. In practice, you could first use the `AutoRace_criterion()` function in `AutoRace.py` to generate your own dataset's criterion prompt first and take `AutoRace_evaluation()` for evaluation. We showed an example from AQuA.
+Theoretically, AutoRace can support any evaluation of Chain-of-Thought. In practice, you could first use the `AutoRace_criterion()` function in `AutoRace.py` to generate your own dataset's criterion prompt first and take `AutoRace_evaluation()` for evaluation.
 
 * **If you are using the dataset already available in `dataset list`, but testing a different model, you don't need to run `AutoRace_criterion()` to generate a criterion prompt.** You should use criterion prompt corresponding to the dataset in `prompt.json`.
 
 ## Dataset format
+your own datasets-model results should follow the format below:
 
 ```jsonl
 {
