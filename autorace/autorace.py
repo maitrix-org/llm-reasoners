@@ -5,7 +5,6 @@ import pandas as pd
 import json
 import fire
 import jsonlines
-from scipy.stats import somersd
 from tqdm import tqdm
 from openai import OpenAI
 max_tokens = 4096
@@ -46,29 +45,6 @@ def generate(prompt):
             print(f"An Error Occured: {e}, sleeping for 5 seconds")
             time.sleep(5)
 
-def AutoRace_evaluation(prompt_type:str = "aqua_auto",
-                    output_log:str = "logs/example_AutoRace.json",
-                    data_pth = "./eval_example.json"
-                    ):
-    annotated_data = pd.read_json(data_pth, orient='records')
-    for index in tqdm(range(len(annotated_data))):
-        metadata_generation = annotated_data.loc[index, 'cot']
-        #make some format cleanning
-        metadata_generation = '\n' + metadata_generation
-        metadata_generation = metadata_generation.rstrip('\n\n.')
-        raw_question = annotated_data.loc[index, 'question']
-        raw_question = raw_question.replace('Q:', '')
-        raw_question = raw_question.lstrip(' ')
-
-        with open("prompt.json") as f:
-            prompt = json.load(f)
-        prompt = prompt[prompt_type].format(raw_question, metadata_generation)  
-        prompt = prompt.replace('..', '.')
-        text = generate(prompt)
-        tmp = {'index': index, 'text': text, 'question': raw_question, 'metadata_generation': metadata_generation}    
-        with jsonlines.open(output_log, mode='a') as writer:
-            writer.write(tmp)
-    
 def AutoRace_criterion(task_type:str = "aquatest"):
     #example 4 shot for AQuA-RAT, user can change to any other task's prompt
     few_shot_prompt = """
@@ -155,8 +131,7 @@ def result_score(data:pd.DataFrame, output_log_dir:str):
     print(f"AutoRace score: {(total - incorrect) / total:.2f}")
 
 
-
-def AutoRace_eval_dataset(
+def AutoRace_evaluation(
     dataset: Literal['gsm8k','strategyqa','AQuA','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction'], 
     model: Literal['dbrx','gpt-4-turbo','claude-3-opus','gemini-pro','internlm-2-7b','llama-2-70b','qwen-1.5-7b','gemma-7b','mistral-7b','llama-2-13b'],
     prompt_type: Literal['gsm8k_auto','sq_auto','cosmos_auto', 'aqua_auto', 'arith_auto','sort_auto','logic_auto'],
@@ -195,11 +170,8 @@ def AutoRace_eval_dataset(
     result_score(data, output_log_dir)
     
 
-    
-    
 
 if __name__ == '__main__':
-    # fire.Fire(AutoRace_evaluation)
     # fire.Fire(AutoRace_criterion)
-    fire.Fire(AutoRace_eval_dataset)
+    fire.Fire(AutoRace_evaluation)
 
