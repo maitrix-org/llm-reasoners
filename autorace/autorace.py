@@ -21,7 +21,7 @@ LOGPROBS: Optional[int] = 0
 PROMPT_TYPE_DICT = {
     'gsm8k': 'gsm8k_auto',
     'strategyqa': 'sq_auto',
-    'AQuA': 'aqua_auto',
+    'aqua': 'aqua_auto',
     'cosmos': 'cosmos_auto',
     'multistep_arithmetic': 'arith_auto',
     'word_sorting': 'sort_auto',
@@ -65,7 +65,6 @@ def autorace_criterion(dataset:str = 'aqua', criteria_path:str = 'CRITERION_GENE
     This function is used to generate criterions by comparing reference/student answers. (Fig 2 in the paper)
     '''
     
-    
     assert os.path.exists(criteria_path), f'criteria_path: {criteria_path} does not exist!'
     
     with open(criteria_path) as f:
@@ -92,20 +91,77 @@ def autorace_criterion(dataset:str = 'aqua', criteria_path:str = 'CRITERION_GENE
     with open('prompt.json', 'w') as f:
         json.dump(prompt, f)
 
-def autorace_score(data:pd.DataFrame, output_log_dir:str):
+def autorace_score(output_log_path:str):
     '''report autorace score'''
     #load the autorace evaluation
-    with jsonlines.open(output_log_dir, mode='r') as reader:
+    with jsonlines.open(output_log_path, mode='r') as reader:
         autorace = list(reader)
 
     #calculate the score
-    total = len(data)
+    total = len(autorace)
     incorrect = 0
     for i in range(total):
         if 'INCORRECT' in autorace[i]['evaluation_result'][0]:
             incorrect += 1
 
     print(f'autorace score: {(total - incorrect) / total:.2f}')
+
+def autorace_evaluation(
+    dataset: str = "gsm8k", 
+    reasoning_model: str = "gpt3",
+    output_log_dir:str = 'logs/auto_race'
+):
+    '''
+    autorace evaluation, 
+    - In Tab.1, we use this function to first generate the evaluation results, then use 'test_evaluation_accuracy' to compare with the human label, and finally get the Table 1 results.
+    - In Tab.9, we use this function to calculate autorace score for gsm8k, aqua, strategyqa.
+    
+    specify the dataset and reasoning_model to evaluate.
+    '''
+    
+    predefined_datasets = ['gsm8k', 'strategyqa', 'aqua', 'cosmos', 'multistep_arithmetic', 'word_sorting', 'logical_deduction']
+    
+    if dataset not in predefined_datasets:
+        print(f"Warning: The dataset '{dataset}' is not a predefined dataset.")
+    if dataset not in PROMPT_TYPE_DICT:
+        raise ValueError(f"dataset '{dataset}' is not in PROMPT_TYPE_DICT! Please add the prompt type to PROMPT_TYPE_DICT.")
+    
+    
+    data_path = f'./data/{reasoning_model}/{dataset}.jsonl'
+    assert os.path.exists(data_path), f'the output from {reasoning_model}: {data_path} does not exist!'
+    
+    #specify a log dir
+    assert output_log_dir is not None, 'output_log_dir should not be None'
+    output_log_dir = os.path.join(output_log_dir, reasoning_model, dataset)
+    os.makedirs(output_log_dir, exist_ok=True)
+    output_log_path = f'{output_log_dir}/autorace_eval.jsonl'
+    
+    print("evaluating reasoning model: ", reasoning_model, " on dataset: ", dataset, "output log path: ", output_log_path)
+    
+    # generate evaluator's response
+    import pandas as pd
+    data = pd.read_json(data_path, lines=True)
+    for index in tqdm(range(1)):
+        reasoning_chain = data.loc[index, 'reasoning_chain']
+        #make some format cleanning
+        if not reasoning_chain.startswith('\n'):
+            reasoning_chain = '\n' + reasoning_chain#new line at the beginning
+        reasoning_chain = reasoning_chain.rstrip('\n\n.')
+        raw_question = data.loc[index, 'question']
+        raw_question = raw_question.replace('Q:', '')
+        raw_question = raw_question.lstrip(' ')
+        with open('prompt.json') as f:
+            prompts = json.load(f)
+        prompt = prompts[PROMPT_TYPE_DICT[dataset]].format(raw_question, reasoning_chain)  
+        prompt = prompt.replace('..', '.')
+        evaluation_result = generate(prompt)
+        tmp = {'index': index, 'evaluation_result': evaluation_result, 'question': raw_question, 'reasoning_chain': reasoning_chain, 'answer': data.loc[index, 'answer']}    
+        with jsonlines.open(output_log_path, mode='a') as writer:
+            writer.write(tmp)
+    
+    #calculate the score
+    autorace_score(output_log_path)
+    
 
 def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S')):
     """
@@ -118,7 +174,7 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
     
     print("Start testing evaluation accuracy...")
     
-    datasets = ['gsm8k','strategyqa','AQuA','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction']
+    datasets = ['gsm8k','strategyqa','aqua','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction']
     model = "gpt3"
     eval_dir = "./logs/auto_race"
     
@@ -218,64 +274,9 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
             f.write(f'Incorrect align list: {incorrect_align_list}\n')
             f.write(f'Correct disagreement list: {correct_disagreement}\n')
             f.write(f'Incorrect disagreement list: {incorrect_disagreement}\n')    
+    
 
-def autorace_evaluation(
-    dataset: str = "gsm8k", 
-    reasoning_model: str = "gpt3",
-    output_log_dir:str = 'logs/auto_race'
-):
-    '''
-    autorace evaluation, 
-    - In Tab.1, we use this function to first generate the evaluation results, then use 'test_evaluation_accuracy' to compare with the human label, and finally get the Table 1 results.
-    - In Tab.9, we use this function to calculate autorace score for gsm8k, aqua, strategyqa.
-    
-    specify the dataset and reasoning_model to evaluate.
-    '''
-    
-    predefined_datasets = ['gsm8k', 'strategyqa', 'AQuA', 'cosmos', 'multistep_arithmetic', 'word_sorting', 'logical_deduction']
-    
-    if dataset not in predefined_datasets:
-        print(f"Warning: The dataset '{dataset}' is not a predefined dataset.")
-    if dataset not in PROMPT_TYPE_DICT:
-        raise ValueError(f"dataset '{dataset}' is not in PROMPT_TYPE_DICT! Please add the prompt type to PROMPT_TYPE_DICT.")
-    
-    
-    data_path = f'./data/{reasoning_model}/{dataset}.jsonl'
-    assert os.path.exists(data_path), f'the output from {reasoning_model}: {data_path} does not exist!'
-    
-    #specify a log dir
-    assert output_log_dir is not None, 'output_log_dir should not be None'
-    output_log_dir = os.path.join(output_log_dir, reasoning_model, dataset)
-    os.makedirs(output_log_dir, exist_ok=True)
-    output_log_path = f'{output_log_dir}/autorace_eval.jsonl'
-    
-    print("evaluating reasoning model: ", reasoning_model, " on dataset: ", dataset, "output log path: ", output_log_path)
-    
-    # generate evaluator's response
-    import pandas as pd
-    data = pd.read_json(data_path, lines=True)
-    for index in tqdm(range(len(data))):
-        reasoning_chain = data.loc[index, 'reasoning_chain']
-        #make some format cleanning
-        if not reasoning_chain.startswith('\n'):
-            reasoning_chain = '\n' + reasoning_chain#new line at the beginning
-        reasoning_chain = reasoning_chain.rstrip('\n\n.')
-        raw_question = data.loc[index, 'question']
-        raw_question = raw_question.replace('Q:', '')
-        raw_question = raw_question.lstrip(' ')
-        with open('prompt.json') as f:
-            prompts = json.load(f)
-        prompt = prompts[PROMPT_TYPE_DICT[dataset]].format(raw_question, reasoning_chain)  
-        prompt = prompt.replace('..', '.')
-        evaluation_result = generate(prompt)
-        tmp = {'index': index, 'evaluation_result': evaluation_result, 'question': raw_question, 'reasoning_chain': reasoning_chain, 'answer': data.loc[index, 'answer']}    
-        with jsonlines.open(output_log_path, mode='a') as writer:
-            writer.write(tmp)
-    
-    #calculate the score
-    autorace_score(data, output_log_path)
-    
-def main(gen_criteria: bool = False, dataset: str = 'aquatest',criteria_path: str = 'CRITERION_GENERATION_PROMPT.txt',  reproduce_tab1: bool = False, reasoning_model: str = "gpt3", output_log: str = 'logs/auto_race'):
+def main(gen_criteria: bool = False, dataset: str = 'aqua',criteria_path: str = 'CRITERION_GENERATION_PROMPT.txt',  reproduce_tab1: bool = False, reasoning_model: str = "gpt3", output_log: str = 'logs/auto_race'):
 
     if reproduce_tab1:
         test_evaluation_accuracy()
