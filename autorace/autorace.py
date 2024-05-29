@@ -141,7 +141,7 @@ def autorace_evaluation(
     # generate evaluator's response
     import pandas as pd
     data = pd.read_json(data_path, lines=True)
-    for index in tqdm(range(1)):
+    for index in tqdm(range(len(data))):
         reasoning_chain = data.loc[index, 'reasoning_chain']
         #make some format cleanning
         if not reasoning_chain.startswith('\n'):
