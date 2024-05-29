@@ -14,7 +14,7 @@ Or you can input it to the terminal when running `autorace.py`
 
 ## Reproduce the Evaluation Accuracy Results in Paper (Table 1)
 
-The files under `data/eval_model` is the reasoning_chain with human labels. `human label = false` means the human annotator believes the reasoning chain is flawed.
+The files under `data/eval_model` is the reasoning_chain with human labels. `human_label = false` means the human annotator believes the reasoning chain is flawed.
 
 ```
 python autorace.py --reproduce_tab1
@@ -24,7 +24,7 @@ python autorace.py --reproduce_tab1
 
 ### Format your Results
 
-The output of your `REASONING_MODEL` on `DATASET` should be a .jsonlines file in the following format:
+The output of your `REASONING_MODEL` on `DATASET` should be a `.jsonl` file in the following format:
 
 ```jsonl
 {
@@ -42,9 +42,10 @@ Theoretically, autorace can support any evaluation of Chain-of-Thought.
 
 Currently, we have supported:
 
- `dataset_list=['gsm8k', 'strategyqa', 'AQuA', 'cosmos', 'multistep_arithmetic', 'word_sorting', 'logical_deduction']`
+ `dataset_list=['gsm8k', 'strategyqa', 'aqua', 'cosmos', 'multistep_arithmetic', 'word_sorting', 'logical_deduction']`
 
-* If you want to evaluate your reasoning model on other datasets, you should first generate the criteria. First, you should write **criteria generation prompt**. We provide an example in `CRITERION_GENERATION_PROMPT.txt`, which is for the `AQuA` dataset. You should follow the format:
+* If you want to evaluate your reasoning model on other datasets, you should first generate the criteria. 
+As shown in Fig.2 in the paper, we need to provide several examples of wrong reasoning chains to generate the criteria. We provide an example in `EXAMPLE_WRONG_CHAINS_AQUA.txt`, which includes several wrong reasoning chains on the `AQuA` dataset. You should follow the format:
 
   ``` txt 
   Question:
@@ -62,12 +63,12 @@ Currently, we have supported:
   The original price of the item is 1.22 * $20. The answer is B.
   ```
 
-  Please see `CRITERION_GENERATION_PROMPT.txt` for details. 
+  Please see `EXAMPLE_WRONG_CHAINS_AQUA.txt` for details. 
 
   Then you should run:
 
   ```python
-  python autorace.py --gen_criteria --dataset="YOUR_DATASET" --gen_criteria_path="YOUR_CRITERIA_PROMPT_PATH.txt"
+  python autorace.py --gen_criteria --dataset="YOUR_DATASET" --example_wrong_chains="YOUR_CRITERIA_PROMPT_PATH.txt"
   ```
 
     Generated criteria will be written into `prompt.json`. Then please fill in `PROMPT_TYPE_DICT` in `autorace.py` accordingly.

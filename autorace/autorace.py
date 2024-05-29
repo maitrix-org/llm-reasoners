@@ -59,26 +59,39 @@ def generate(prompt):
             print(f'An Error Occured: {e}, sleeping for 5 seconds')
             time.sleep(5)
 
-def autorace_criterion(dataset:str = 'aqua', gen_criteria_path:str = 'CRITERION_GENERATION_PROMPT.txt'):
+def autorace_criterion(dataset:str = 'aqua', example_wrong_chains:str = 'EXAMPLE_WRONG_CHAINS_AQUA.txt'):
     
     '''
     This function is used to generate criterions by comparing reference/student answers. (Fig 2 in the paper).
     
+        
+    As shown in Fig 2, we should provide several wrong reasoning chains to generate criterions.
     
-    In CRITERION_GENERATION_PROMPT.txt we display a example for generating criterions for AQuA dataset. When writing criterions for other datasets, please follow the format in CRITERION_GENERATION_PROMPT.txt. i.g.
-    
+    We provide an example in EXAMPLE_WRONG_CHAINS_AQUA.txt, which includes several wrong reasoning chains on the AQuA dataset.
+
+    Please follow the format in EXAMPLE_WRONG_CHAINS_AQUA.txt. i.e.
+    -----------------------------------------------------------------------------
     Question:
-    
+    The original price of an item is discounted 22%. A customer buys the item at this discounted price using a $20-off coupon. There is no tax on the item, and this was the only item the customer bought. If the customer paid $1.90 more than half the original price of the item, what was the original price of the item? Options: A)$61, B)$65, C)$67.40, D)$70, E)$78.20
+
     Reference answer:
-    
+    Let x be the original price of the item
+    Discounted price = 0.78x
+    Payment made by the customer after using the $20 coupon = 0.78x - 20
+    0.78x - 20 = x/2 + 1.9
+    x = 78.20
+    Answer: E
+
     Student answer:
-    
+    The original price of the item is 1.22 * $20. The answer is B.
+    -----------------------------------------------------------------------------
+    Please see `EXAMPLE_WRONG_CHAINS_AQUA.txt` for details. 
     '''
     
-    assert os.path.exists(gen_criteria_path), f'gen_criteria_path: {gen_criteria_path} does not exist!'
+    assert os.path.exists(example_wrong_chains), f'example_wrong_chains: {example_wrong_chains} does not exist!'
     
-    with open(gen_criteria_path) as f:
-        CRITERION_GENERATION_PROMPT = f.read()
+    with open(example_wrong_chains) as f:
+        EXAMPLE_WRONG_CHAINS = f.read()
 
     with open('prompt.json') as f:
         prompt = json.load(f)
@@ -87,7 +100,7 @@ def autorace_criterion(dataset:str = 'aqua', gen_criteria_path:str = 'CRITERION_
         print(f'Warning: dataset {dataset} already exists in prompt.json, please check whether you want to overwrite it.')
         input('Press any key to continue...')
         
-    criterion_prompt = prompt['criterion'].format(CRITERION_GENERATION_PROMPT)
+    criterion_prompt = prompt['criterion'].format(EXAMPLE_WRONG_CHAINS)
     #prompt 'criterion' is used for generating criterions
     criterion_text = generate(criterion_prompt)
     print(criterion_text)
@@ -286,12 +299,12 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
             f.write(f'Incorrect disagreement list: {incorrect_disagreement}\n')    
     
 
-def main(gen_criteria: bool = False, dataset: str = 'aqua',gen_criteria_path: str = 'CRITERION_GENERATION_PROMPT.txt',  reproduce_tab1: bool = False, reasoning_model: str = "eval_model", output_log: str = 'logs/auto_race'):
+def main(gen_criteria: bool = False, dataset: str = 'aqua',example_wrong_chains: str = 'EXAMPLE_WRONG_CHAINS_AQUA.txt',  reproduce_tab1: bool = False, reasoning_model: str = "eval_model", output_log: str = 'logs/auto_race'):
 
     if reproduce_tab1:
         test_evaluation_accuracy()
     if gen_criteria:
-        autorace_criterion(dataset, gen_criteria_path)
+        autorace_criterion(dataset, example_wrong_chains)
     else:
         autorace_evaluation(dataset, reasoning_model, output_log)
     
