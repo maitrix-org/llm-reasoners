@@ -1,0 +1,51 @@
+Question:
+The original price of an item is discounted 22%. A customer buys the item at this discounted price using a $20-off coupon. There is no tax on the item, and this was the only item the customer bought. If the customer paid $1.90 more than half the original price of the item, what was the original price of the item? Options: A)$61, B)$65, C)$67.40, D)$70, E)$78.20
+
+Reference answer:
+Let x be the original price of the item
+Discounted price = 0.78x
+Payment made by the customer after using the $20 coupon = 0.78x - 20
+0.78x - 20 = x/2 + 1.9
+x = 78.20
+Answer: E
+
+Student answer:
+The original price of the item is 1.22 * $20. The answer is B.
+
+Question:
+20 marbles were pulled out of a bag of only white marbles, painted black, and then put back in. Then, another 20 marbles were pulled out, of which 1 was black, after which they were all returned to the bag. If the percentage of black marbles pulled out the second time represents their percentage in the bag, how many marbles in total Q does the bag currently hold? Options: A)40, B)200, C)380, D)400, E)3200
+
+Reference answer:
+We know that there are 20 black marbles in the bag and this number represent 1/20 th of the number of all marbles in the bag, thus there are total Q of 20*20=400 marbles.
+Answer: D.
+
+Student answer:
+The probability that the first marble is white is 19/20. The probability that the second marble is white is 18/19. The probability that the third marble is white is 17/18. In total, the probability that the pulled out marbles are all white is 19/20 * 18/19 * 17/18 = 1167/1360. The probability that at least one marble is black is 1 - 1167/1360 = 193/1360. The percentage of black marbles is 193/1360 * 100% = 14.19%. The number of black marbles is 14.19% * 640 = 90. Therefore, there are 640 marbles in total. The answer is D.
+
+Question:
+Of the 200 students in a school, at least 45% attended the prom night and at least 35% took part in the debating session. What is the maximum number of students who could have neither attended the prom night nor the debating session? Options: A)27, B)81, C)90, D)99, E)110
+
+Reference answer:
+To maximize the number of students who did neither, we should minimize the number of students who debated or attended the prom.
+Let's assume that all 35% of students who debated also attended the prom.
+Then 35% did both, 10% only attended prom, and 55% did neither.
+0.55*200 = 110
+The answer is E.
+
+Student answer:
+The minimum number of students who attended the prom night is 45% * 200 - 45% * 150 = 45 - 35 = 10. The minimum number of students who took part in the debating session is 35% * 200 - 35% * 150 = 35 - 20 = 15. The maximum number of students who neither attended the prom night or the debating session is 200 - 10 - 15 = 175. The answer is C.
+
+Question:
+A company produces 420 units of a particular computer component every month, at a production cost to the company of $110 per component, and sells all of the components by the end of each month. What is the minimum selling price per component that will guarantee that the yearly profit (revenue from sales minus production costs) will be at least $626,400 ? Options: A)226, B)230, C)240, D)260, E)280
+
+Reference answer:
+450*12(x-110)=626400
+where x is a selling cost of one item
+x-110, is a profit from one item
+450 - number of items produced and sold per month
+12 - is a number of month in a year
+Simplifying the equation will lead to x-110=116, then x = 230
+B
+
+Student answer:
+The profit per component is (selling price - production cost) = $s - $110. The yearly profit is $y = n * (selling price - production cost) = 420 * 12 * ($s - $110). $y is at least $626,400. This is $y \u2265 $626,400. The selling price s must be s \u2265 240 to guarantee that the yearly profit is at least $626,400. The answer is C.
