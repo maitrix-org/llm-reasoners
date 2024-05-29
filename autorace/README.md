@@ -4,13 +4,13 @@ This document will guide you to use the **autorace** to evaluate your reasoning 
 
 ## Set up
 
-`cd autorace` and set the OPENAI_API_KEY:
+`cd autorace` and set the `OPENAI_API_KEY`:
 
 ```
 export OPENAI_API_KEY=YOUR_OWN_OPEN_AI_KEY
 ```
 
-Or you can input it to terminal when running "autorace.py"
+Or you can input it to terminal when running `autorace.py`
 
 ## Reproduce the Evaluation Accuracy Results in Paper (Table 1)
 
