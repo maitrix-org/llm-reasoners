@@ -1,8 +1,8 @@
 # AutoRace
 
-This document will guide you to use the autorace to evaluate your reasoning chains (reproduce the experiments or apply it to your own datasets)
+This document will guide you to use the **autorace** to evaluate your reasoning chains (reproduce the experiments or apply it to your own datasets)
 
-## Set Up
+## Set up
 
 `cd autorace` and set the OPENAI_API_KEY:
 
@@ -12,15 +12,15 @@ export OPENAI_API_KEY=YOUR_OWN_OPEN_AI_KEY
 
 Or you can input it to terminal when running "autorace.py"
 
-## Reproduce the evaluation accuracy results in paper (Table 1)
+## Reproduce the Evaluation Accuracy Results in Paper (Table 1)
 
 ```
 python autorace.py --reproduce_tab1
 ```
 
-## Evaluate your own result
+## Evaluate your Own Result
 
-### Format your results
+### Format your Results
 
 The output of your `REASONING_MODEL` on `DATASET` should be a .jsonlines file in the following format:
 
@@ -46,8 +46,7 @@ Currently, we have supported:
   python autorace.py --gen_criteria --dataset="YOUR_DATASET" --criteria_path="YOUR_CRITERIA_PROMPT_PATH.txt"
   ``` 
     
-    Generated criterias will be written into `prompt.json`
-  2. fill in `PROMPT_TYPE_DICT` in `autorace.py` accordingly
+    Generated criterias will be written into `prompt.json`. Then please fill in `PROMPT_TYPE_DICT` in `autorace.py` accordingly
 
 * **If you are using the dataset already available in `dataset list`, but testing a different reasoning model, you don't need to run `autorace_criterion()` to generate a criterion prompt.** You should use criterion prompt corresponding to the dataset in `prompt.json`.
 
