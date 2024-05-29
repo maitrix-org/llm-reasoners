@@ -7,102 +7,77 @@ import fire
 import jsonlines
 from tqdm import tqdm
 from openai import OpenAI
-max_tokens = 4096
-model = "gpt-4-1106-preview"
-temperature = 0.7
-top_p: float = 1.0
-num_return_sequences: int = 1
-rate_limit_per_min: Optional[int] = None
-stop: Optional[str] = None
-logprobs: Optional[int] = 0
 
+# Default settings for Evaluator
+MAX_TOKENS = 4096
+OPENAI_MODEL = 'gpt-4-1106-preview'
+TEMPERATURE = 0.7
+TOP_P: float = 1.0
+NUM_RETURN_SEQUENCES: int = 1
+RATE_LIMIT_PER_MIN: Optional[int] = None
+STOP: Optional[str] = None
+LOGPROBS: Optional[int] = 0
+
+PROMPT_TYPE_DICT = {
+    'gsm8k': 'gsm8k_auto',
+    'strategyqa': 'sq_auto',
+    'aqua': 'aqua_auto',
+    'cosmos': 'cosmos_auto',
+    'multistep_arithmetic': 'arith_auto',
+    'word_sorting': 'sort_auto',
+    'logical_deduction': 'logic_auto'
+}
+
+OPENAI_KEY = os.getenv('OPENAI_API_KEY', input('Please input your OpenAI API key: '))
 client = OpenAI(
-    api_key = os.getenv("OPENAI_API_KEY", None)
+    api_key = OPENAI_KEY
 )
 
 def generate(prompt):
+    ''' generation using OpenAI API '''
     while(True):
         try:
             # sleep several seconds to avoid rate limit
-            if rate_limit_per_min is not None:
-                time.sleep(60 / rate_limit_per_min)
-            if ('gpt-3.5-turbo' in model) or ('gpt-4' in model):
-                messages = [{"role": "user", "content": prompt}]
+            if RATE_LIMIT_PER_MIN is not None:
+                time.sleep(60 / RATE_LIMIT_PER_MIN)
+            if ('gpt-3.5-turbo' in OPENAI_MODEL) or ('gpt-4' in OPENAI_MODEL):
+                messages = [{'role': 'user', 'content': prompt}]
                 response = client.chat.completions.create(
-                    model=model,
+                    model=OPENAI_MODEL,
                     messages=messages,
-                    max_tokens=max_tokens,
-                    temperature=temperature,
-                    top_p=top_p,
-                    n=num_return_sequences,
-                    stop=stop,
+                    max_tokens=MAX_TOKENS,
+                    temperature=TEMPERATURE,
+                    top_p=TOP_P,
+                    n=NUM_RETURN_SEQUENCES,
+                    stop=STOP,
                 )
                 text=[choice.message.content for choice in response.choices]
                 return text
             else:
-                raise ValueError(f"Unknown model {model}")
+                raise ValueError(f'Unknown OPENAI MODEL {OPENAI_MODEL}')
         except Exception as e:
-            print(f"An Error Occured: {e}, sleeping for 5 seconds")
+            print(f'An Error Occured: {e}, sleeping for 5 seconds')
             time.sleep(5)
 
-def AutoRace_criterion(task_type:str = "aquatest"):
-    #example 4 shot for AQuA-RAT, user can change to any other task's prompt
-    few_shot_prompt = """
-Question:
-The original price of an item is discounted 22%. A customer buys the item at this discounted price using a $20-off coupon. There is no tax on the item, and this was the only item the customer bought. If the customer paid $1.90 more than half the original price of the item, what was the original price of the item? Options: A)$61, B)$65, C)$67.40, D)$70, E)$78.20
+def autorace_criterion(dataset:str = 'aqua', criteria_path:str = 'CRITERION_GENERATION_PROMPT.txt'):
+    
+    '''
+    This function is used to generate criterions by comparing reference/student answers. (Fig 2 in the paper)
+    '''
+    
+    assert os.path.exists(criteria_path), f'criteria_path: {criteria_path} does not exist!'
+    
+    with open(criteria_path) as f:
+        CRITERION_GENERATION_PROMPT = f.read()
 
-Reference answer:
-Let x be the original price of the item
-Discounted price = 0.78x
-Payment made by the customer after using the $20 coupon = 0.78x - 20
-0.78x - 20 = x/2 + 1.9
-x = 78.20
-Answer: E
-
-Student answer:
-The original price of the item is 1.22 * $20. The answer is B.
-
-Question:
-20 marbles were pulled out of a bag of only white marbles, painted black, and then put back in. Then, another 20 marbles were pulled out, of which 1 was black, after which they were all returned to the bag. If the percentage of black marbles pulled out the second time represents their percentage in the bag, how many marbles in total Q does the bag currently hold? Options: A)40, B)200, C)380, D)400, E)3200
-
-Reference answer:
-We know that there are 20 black marbles in the bag and this number represent 1/20 th of the number of all marbles in the bag, thus there are total Q of 20*20=400 marbles.
-Answer: D.
-
-Student answer:
-The probability that the first marble is white is 19/20. The probability that the second marble is white is 18/19. The probability that the third marble is white is 17/18. In total, the probability that the pulled out marbles are all white is 19/20 * 18/19 * 17/18 = 1167/1360. The probability that at least one marble is black is 1 - 1167/1360 = 193/1360. The percentage of black marbles is 193/1360 * 100% = 14.19%. The number of black marbles is 14.19% * 640 = 90. Therefore, there are 640 marbles in total. The answer is D.
-
-Question:
-Of the 200 students in a school, at least 45% attended the prom night and at least 35% took part in the debating session. What is the maximum number of students who could have neither attended the prom night nor the debating session? Options: A)27, B)81, C)90, D)99, E)110
-
-Reference answer:
-To maximize the number of students who did neither, we should minimize the number of students who debated or attended the prom.
-Let's assume that all 35% of students who debated also attended the prom.
-Then 35% did both, 10% only attended prom, and 55% did neither.
-0.55*200 = 110
-The answer is E.
-
-Student answer:
-The minimum number of students who attended the prom night is 45% * 200 - 45% * 150 = 45 - 35 = 10. The minimum number of students who took part in the debating session is 35% * 200 - 35% * 150 = 35 - 20 = 15. The maximum number of students who neither attended the prom night or the debating session is 200 - 10 - 15 = 175. The answer is C.
-
-Question:
-A company produces 420 units of a particular computer component every month, at a production cost to the company of $110 per component, and sells all of the components by the end of each month. What is the minimum selling price per component that will guarantee that the yearly profit (revenue from sales minus production costs) will be at least $626,400 ? Options: A)226, B)230, C)240, D)260, E)280
-
-Reference answer:
-450*12(x-110)=626400
-where x is a selling cost of one item
-x-110, is a profit from one item
-450 - number of items produced and sold per month
-12 - is a number of month in a year
-Simplifying the equation will lead to x-110=116, then x = 230
-B
-
-Student answer:
-The profit per component is (selling price - production cost) = $s - $110. The yearly profit is $y = n * (selling price - production cost) = 420 * 12 * ($s - $110). $y is at least $626,400. This is $y \u2265 $626,400. The selling price s must be s \u2265 240 to guarantee that the yearly profit is at least $626,400. The answer is C.
-"""
-    with open("prompt.json") as f:
+    with open('prompt.json') as f:
         prompt = json.load(f)
-    criterion_prompt = prompt["criterion"].format(few_shot_prompt)
+        
+    if f"{dataset}_auto" in prompt:
+        print(f'Warning: dataset {dataset} already exists in prompt.json, please check whether you want to overwrite it.')
+        input('Press any key to continue...')
+        
+    criterion_prompt = prompt['criterion'].format(CRITERION_GENERATION_PROMPT)
     #prompt 'criterion' is used for generating criterions
     criterion_text = generate(criterion_prompt)
     print(criterion_text)
@@ -110,68 +85,209 @@ The profit per component is (selling price - production cost) = $s - $110. The y
     #user need to human check this criterion cuz it's not cleaned enough
     import re
     criterion = re.sub(r'\d\. ', '', criterion)
-    evaluation_prompt = "Below is a question and an answer from a student. You are required to check the correctness of the reasoning chains step by step. The criterions are as follows:\n\n{}\n\nQuestion:\n{{}}\n\nStudent answer:\n{{}}\n\nPlease check the answer through each criterion, and make sure you carefully examine each reasoning step. Finally, if there is any step that fails the verification, output a INCORRECT, else output a CORRECT.".format(criterion)
-    prompt[task_type + '_auto'] = evaluation_prompt
+    evaluation_prompt = 'Below is a question and an answer from a student. You are required to check the correctness of the reasoning chains step by step. The criterions are as follows:\n\n{}\n\nQuestion:\n{{}}\n\nStudent answer:\n{{}}\n\nPlease check the answer through each criterion, and make sure you carefully examine each reasoning step. Finally, if there is any step that fails the verification, output a INCORRECT, else output a CORRECT.'.format(criterion)
+    prompt[dataset + '_auto'] = evaluation_prompt
 
-    with open("prompt.json", "w") as f:
+    with open('prompt.json', 'w') as f:
         json.dump(prompt, f)
 
-def result_score(data:pd.DataFrame, output_log_dir:str):
-    #load the AutoRace evaluation
-    with jsonlines.open(output_log_dir, mode='r') as reader:
+def autorace_score(output_log_path:str):
+    '''report autorace score'''
+    #load the autorace evaluation
+    with jsonlines.open(output_log_path, mode='r') as reader:
         autorace = list(reader)
 
     #calculate the score
-    total = len(data)
+    total = len(autorace)
     incorrect = 0
     for i in range(total):
-        if "INCORRECT" in autorace[i]['text'][0]:
+        if 'INCORRECT' in autorace[i]['evaluation_result'][0]:
             incorrect += 1
 
-    print(f"AutoRace score: {(total - incorrect) / total:.2f}")
+    print(f'autorace score: {(total - incorrect) / total:.2f}')
 
-
-def AutoRace_evaluation(
-    dataset: Literal['gsm8k','strategyqa','AQuA','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction'], 
-    model: Literal['dbrx','gpt-4-turbo','claude-3-opus','gemini-pro','internlm-2-7b','llama-2-70b','qwen-1.5-7b','gemma-7b','mistral-7b','llama-2-13b'],
-    prompt_type: Literal['gsm8k_auto','sq_auto','cosmos_auto', 'aqua_auto', 'arith_auto','sort_auto','logic_auto'],
-    output_log_dir:str = "logs/AutoRace"
+def autorace_evaluation(
+    dataset: str = "gsm8k", 
+    reasoning_model: str = "gpt3",
+    output_log_dir:str = 'logs/auto_race'
 ):
-    #specify a log dir
-    import time
-    if output_log_dir == "logs/AutoRace":
-        output_log_dir = f"logs/{dataset}_{model}"
-    os.makedirs(output_log_dir, exist_ok=True)
-    output_log_dir = f"{output_log_dir}/{time.strftime('%Y-%m-%d-%H-%M-%S')}.jsonl"
+    '''
+    autorace evaluation, 
+    - In Tab.1, we use this function to first generate the evaluation results, then use 'test_evaluation_accuracy' to compare with the human label, and finally get the Table 1 results.
+    - In Tab.9, we use this function to calculate autorace score for gsm8k, aqua, strategyqa.
     
-    #generate LLM's response
+    specify the dataset and reasoning_model to evaluate.
+    '''
+    
+    predefined_datasets = ['gsm8k', 'strategyqa', 'aqua', 'cosmos', 'multistep_arithmetic', 'word_sorting', 'logical_deduction']
+    
+    if dataset not in predefined_datasets:
+        print(f"Warning: The dataset '{dataset}' is not a predefined dataset.")
+    if dataset not in PROMPT_TYPE_DICT:
+        raise ValueError(f"dataset '{dataset}' is not in PROMPT_TYPE_DICT! Please add the prompt type to PROMPT_TYPE_DICT.")
+    
+    
+    data_path = f'./data/{reasoning_model}/{dataset}.jsonl'
+    assert os.path.exists(data_path), f'the output from {reasoning_model}: {data_path} does not exist!'
+    
+    #specify a log dir
+    assert output_log_dir is not None, 'output_log_dir should not be None'
+    output_log_dir = os.path.join(output_log_dir, reasoning_model, dataset)
+    os.makedirs(output_log_dir, exist_ok=True)
+    output_log_path = f'{output_log_dir}/autorace_eval.jsonl'
+    
+    print("evaluating reasoning model: ", reasoning_model, " on dataset: ", dataset, "output log path: ", output_log_path)
+    
+    # generate evaluator's response
     import pandas as pd
-    data = pd.read_json(f"./data/{dataset}_{model}.jsonl", lines=True)
+    data = pd.read_json(data_path, lines=True)
     for index in tqdm(range(len(data))):
-        metadata_generation = data.loc[index, 'metadata_generation']
+        reasoning_chain = data.loc[index, 'reasoning_chain']
         #make some format cleanning
-        if not metadata_generation.startswith('\n'):
-            metadata_generation = '\n' + metadata_generation#new line at the beginning
-        metadata_generation = metadata_generation.rstrip('\n\n.')
+        if not reasoning_chain.startswith('\n'):
+            reasoning_chain = '\n' + reasoning_chain#new line at the beginning
+        reasoning_chain = reasoning_chain.rstrip('\n\n.')
         raw_question = data.loc[index, 'question']
         raw_question = raw_question.replace('Q:', '')
         raw_question = raw_question.lstrip(' ')
-        with open("prompt.json") as f:
-            prompt = json.load(f)
-        prompt = prompt[prompt_type].format(raw_question, metadata_generation)  
+        with open('prompt.json') as f:
+            prompts = json.load(f)
+        prompt = prompts[PROMPT_TYPE_DICT[dataset]].format(raw_question, reasoning_chain)  
         prompt = prompt.replace('..', '.')
-        text = generate(prompt)
-        tmp = {'index': index, 'text': text, 'question': raw_question, 'metadata_generation': metadata_generation, 'gt_answer': data.loc[index, 'gt_answer'], 'human_label': data.loc[index, 'human_label']}    
-        with jsonlines.open(output_log_dir, mode='a') as writer:
+        evaluation_result = generate(prompt)
+        tmp = {'index': index, 'evaluation_result': evaluation_result, 'question': raw_question, 'reasoning_chain': reasoning_chain, 'answer': data.loc[index, 'answer']}    
+        with jsonlines.open(output_log_path, mode='a') as writer:
             writer.write(tmp)
     
-
     #calculate the score
-    result_score(data, output_log_dir)
+    autorace_score(output_log_path)
     
 
+def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S')):
+    """
+    This function is used to test the accuracy of evaluation metrics, when using human labels as the ground truth.
+    (Reproduce Tab.1 in the paper)
+    
+    Args:
+        output_name (_type_, optional): Name for the output directory. Defaults to current timestamp.
+    """
+    
+    print("Start testing evaluation accuracy...")
+    
+    datasets = ['gsm8k','strategyqa','aqua','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction']
+    model = "gpt3"
+    eval_dir = "./logs/auto_race"
+    
+    for dataset in datasets:
+        if os.path.exists(f'{eval_dir}/{model}/{dataset}'):
+            print(f'{eval_dir}/{model}/{dataset} exists, pass.')
+        else:
+            print(f'{eval_dir}/{model}/{dataset} does not exist, start autorace evaluation...')
+            autorace_evaluation(dataset, model, eval_dir)
+    
+    human_label_dir = "./data/gpt3"
+
+    for dataset in datasets:
+        human_label_path = os.path.join(human_label_dir, f'{dataset}.jsonl')
+        evaluator_label_path = os.path.join(eval_dir, f'{model}/{dataset}/autorace_eval.jsonl')
+        
+        with jsonlines.open(human_label_path, mode='r') as reader:
+            human_labels = list(reader)
+        
+        with jsonlines.open(evaluator_label_path, mode='r') as reader:
+            evaluator_labels = list(reader)
+            
+        assert len(human_labels) == len(evaluator_labels), f'human_labels and evaluator_labels have different lengths'
+
+        total = len(human_labels)
+        score = 0
+        correct_align_list = []
+        incorrect_align_list = []
+        incorrect_disagreement = []
+        correct_disagreement = []
+        
+        for i in range(len(human_labels)):
+            output = evaluator_labels[i]['evaluation_result']
+            if 'INCORRECT' in output:
+                if int(human_labels[i]['human_label']) == 0:
+                    incorrect_align_list.append(i)
+                    score += 1
+                else:
+                    incorrect_disagreement.append({
+                        'index': i, 
+                        'prompt': evaluator_labels[i]['prompt'], 
+                        'answer': str(human_labels[i]['answer']), 
+                        'human_label': str(human_labels[i]['human_label']), 
+                        'evaluation_result': evaluator_labels[i]['evaluation_result']
+                    })
+            else:
+                if int(human_labels[i]['human_label']) == 1:
+                    correct_align_list.append(i)
+                    score += 1
+                else:
+                    correct_disagreement.append({
+                        'index': i, 
+                        'prompt': evaluator_labels[i]['prompt'], 
+                        'answer': str(human_labels[i]['answer']), 
+                        'human_label': str(human_labels[i]['human_label']), 
+                        'evaluation_result': evaluator_labels[i]['evaluation_result']
+                    })
+
+        output_dir = f'logs/error_analysis/{output_name}/{dataset}'
+        os.makedirs(output_dir, exist_ok=True)
+        correct_path = os.path.join(output_dir, 'correct_disagree')
+        incorrect_path = os.path.join(output_dir, 'incorrect_disagree')
+        align_score_log = os.path.join(output_dir, 'align_score.txt')
+        os.makedirs(correct_path, exist_ok=True)
+        os.makedirs(incorrect_path, exist_ok=True)
+
+        for sample in incorrect_disagreement:
+            with open(os.path.join(incorrect_path, f"{sample['index']}.txt"), 'w') as f:
+                f.write('====================================\n')
+                f.write(f'Index: {sample["index"]}\n')
+                f.write(f'Answer: {sample["answer"]}\n')
+                f.write(f'Human label: {sample["human_label"]}\n')
+                f.write('====================================\n')
+                f.write(f'Prompt: {sample["prompt"]}\n')
+                f.write('====================================\n')
+                f.write(f'Evaluation: {sample["evaluation_result"]}\n')
+                
+        for sample in correct_disagreement:
+            with open(os.path.join(correct_path, f"{sample['index']}.txt"), 'w') as f:
+                f.write('====================================\n')
+                f.write(f'Index: {sample["index"]}\n')
+                f.write(f'Answer: {sample["answer"]}\n')
+                f.write(f'Human label: {sample["human_label"]}\n')
+                f.write('====================================\n')
+                f.write(f'Prompt: {sample["prompt"]}\n')
+                f.write('====================================\n')
+                f.write(f'Evaluation: {sample["evaluation_result"]}\n')
+
+        align_score = score / total
+        print(f'align score for {dataset}: {align_score:.2f}')
+        with open(align_score_log, 'w') as f:
+            f.write(f'Align score: {align_score:.2f}\n')
+            f.write(f'Total: {total}\n')
+            f.write(f'Correct: {score}\n')
+            f.write(f'Incorrect: {total - score}\n')
+            f.write(f'Correct align list: {correct_align_list}\n')
+            f.write(f'Incorrect align list: {incorrect_align_list}\n')
+            f.write(f'Correct disagreement list: {correct_disagreement}\n')
+            f.write(f'Incorrect disagreement list: {incorrect_disagreement}\n')    
+    
+
+def main(gen_criteria: bool = False, dataset: str = 'aqua',criteria_path: str = 'CRITERION_GENERATION_PROMPT.txt',  reproduce_tab1: bool = False, reasoning_model: str = "gpt3", output_log: str = 'logs/auto_race'):
+
+    if reproduce_tab1:
+        test_evaluation_accuracy()
+    if gen_criteria:
+        autorace_criterion(dataset, criteria_path)
+    else:
+        autorace_evaluation(dataset, reasoning_model, output_log)
+    
 
 if __name__ == '__main__':
-    # fire.Fire(AutoRace_criterion)
-    fire.Fire(AutoRace_evaluation)
+    
+    fire.Fire(main)
+    
 
