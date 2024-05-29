@@ -59,15 +59,25 @@ def generate(prompt):
             print(f'An Error Occured: {e}, sleeping for 5 seconds')
             time.sleep(5)
 
-def autorace_criterion(dataset:str = 'aqua', criteria_path:str = 'CRITERION_GENERATION_PROMPT.txt'):
+def autorace_criterion(dataset:str = 'aqua', gen_criteria_path:str = 'CRITERION_GENERATION_PROMPT.txt'):
     
     '''
-    This function is used to generate criterions by comparing reference/student answers. (Fig 2 in the paper)
+    This function is used to generate criterions by comparing reference/student answers. (Fig 2 in the paper).
+    
+    
+    In CRITERION_GENERATION_PROMPT.txt we display a example for generating criterions for AQuA dataset. When writing criterions for other datasets, please follow the format in CRITERION_GENERATION_PROMPT.txt. i.g.
+    
+    Question:
+    
+    Reference answer:
+    
+    Student answer:
+    
     '''
     
-    assert os.path.exists(criteria_path), f'criteria_path: {criteria_path} does not exist!'
+    assert os.path.exists(gen_criteria_path), f'gen_criteria_path: {gen_criteria_path} does not exist!'
     
-    with open(criteria_path) as f:
+    with open(gen_criteria_path) as f:
         CRITERION_GENERATION_PROMPT = f.read()
 
     with open('prompt.json') as f:
@@ -108,7 +118,7 @@ def autorace_score(output_log_path:str):
 
 def autorace_evaluation(
     dataset: str = "gsm8k", 
-    reasoning_model: str = "gpt3",
+    reasoning_model: str = "eval_model",
     output_log_dir:str = 'logs/auto_race'
 ):
     '''
@@ -175,7 +185,7 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
     print("Start testing evaluation accuracy...")
     
     datasets = ['gsm8k','strategyqa','aqua','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction']
-    model = "gpt3"
+    model = "eval_model"
     eval_dir = "./logs/auto_race"
     
     for dataset in datasets:
@@ -185,7 +195,7 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
             print(f'{eval_dir}/{model}/{dataset} does not exist, start autorace evaluation...')
             autorace_evaluation(dataset, model, eval_dir)
     
-    human_label_dir = "./data/gpt3"
+    human_label_dir = "./data/eval_model"
 
     for dataset in datasets:
         human_label_path = os.path.join(human_label_dir, f'{dataset}.jsonl')
@@ -276,12 +286,12 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
             f.write(f'Incorrect disagreement list: {incorrect_disagreement}\n')    
     
 
-def main(gen_criteria: bool = False, dataset: str = 'aqua',criteria_path: str = 'CRITERION_GENERATION_PROMPT.txt',  reproduce_tab1: bool = False, reasoning_model: str = "gpt3", output_log: str = 'logs/auto_race'):
+def main(gen_criteria: bool = False, dataset: str = 'aqua',gen_criteria_path: str = 'CRITERION_GENERATION_PROMPT.txt',  reproduce_tab1: bool = False, reasoning_model: str = "eval_model", output_log: str = 'logs/auto_race'):
 
     if reproduce_tab1:
         test_evaluation_accuracy()
     if gen_criteria:
-        autorace_criterion(dataset, criteria_path)
+        autorace_criterion(dataset, gen_criteria_path)
     else:
         autorace_evaluation(dataset, reasoning_model, output_log)
     

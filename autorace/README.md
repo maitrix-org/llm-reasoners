@@ -10,11 +10,11 @@ This document will guide you to use the **autorace** to evaluate your reasoning 
 export OPENAI_API_KEY=YOUR_OWN_OPEN_AI_KEY
 ```
 
-Or you can input it to terminal when running `autorace.py`
+Or you can input it to the terminal when running `autorace.py`
 
 ## Reproduce the Evaluation Accuracy Results in Paper (Table 1)
 
-The files under `data/gpt3` is the reasoning_chain with human labels. `human label = false` means human annotator believe the reasoning chain is flawed.
+The files under `data/eval_model` is the reasoning_chain with human labels. `human label = false` means the human annotator believes the reasoning chain is flawed.
 
 ```
 python autorace.py --reproduce_tab1
@@ -37,26 +37,44 @@ The output of your `REASONING_MODEL` on `DATASET` should be a .jsonlines file in
 The path of this file should be `autorace/data/{REASONING_MODEL}/{DATASET}.jsonl`
 
 ### Criteria Generation
+
 Theoretically, autorace can support any evaluation of Chain-of-Thought. 
 
 Currently, we have supported:
 
  `dataset_list=['gsm8k', 'strategyqa', 'AQuA', 'cosmos', 'multistep_arithmetic', 'word_sorting', 'logical_deduction']`
- 
-* If you want to evaluate your reasoning model on other datasets, you should first generate the criteria:
-  ```python
-  python autorace.py --gen_criteria --dataset="YOUR_DATASET" --criteria_path="YOUR_CRITERIA_PROMPT_PATH.txt"
-  ``` 
-    
-    Generated criterias will be written into `prompt.json`. Then please fill in `PROMPT_TYPE_DICT` in `autorace.py` accordingly
 
-* **If you are using the dataset already available in `dataset list`, but testing a different reasoning model, you don't need to run `autorace_criterion()` to generate a criterion prompt.** You should use criterion prompt corresponding to the dataset in `prompt.json`.
+* If you want to evaluate your reasoning model on other datasets, you should first generate the criteria. First, you should write **criteria generation prompt**. We provide an example in `CRITERION_GENERATION_PROMPT.txt`, which is for the `AQuA` dataset. You should follow the format:
+
+  ``` txt 
+  Question:
+  The original price of an item is discounted 22%. A customer buys the item at this discounted price using a $20-off coupon. There is no tax on the item, and this was the only item the customer bought. If the customer paid $1.90 more than half the original price of the item, what was the original price of the item? Options: A)$61, B)$65, C)$67.40, D)$70, E)$78.20
+  
+  Reference answer:
+  Let x be the original price of the item
+  Discounted price = 0.78x
+  Payment made by the customer after using the $20 coupon = 0.78x - 20
+  0.78x - 20 = x/2 + 1.9
+  x = 78.20
+  Answer: E
+  
+  Student answer:
+  The original price of the item is 1.22 * $20. The answer is B.
+  ```
+
+  Please see `CRITERION_GENERATION_PROMPT.txt` for details. 
+
+  Then you should run:
+
+  ```python
+  python autorace.py --gen_criteria --dataset="YOUR_DATASET" --gen_criteria_path="YOUR_CRITERIA_PROMPT_PATH.txt"
+  ```
+
+    Generated criteria will be written into `prompt.json`. Then please fill in `PROMPT_TYPE_DICT` in `autorace.py` accordingly.
+
+* **If you are using the dataset already available in the `dataset list`, but testing a different reasoning model, you don't need to run `autorace_criterion()` to generate a criterion prompt.** You should use the criterion prompt corresponding to the dataset in `prompt.json`.
 
 ### Get AutoRace Score
 
 Then, run `python autorace.py --dataset="DATASET" --reasoning_model="REASONING_MODEL" --output_log="OUTPUT_PATH"` for evaluation. The AutoRace results will be under 
 `OUTPUT_PATH`. By default, `OUTPUT_PATH` is `log/auto_race`
-
-
-
-
