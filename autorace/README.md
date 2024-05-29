@@ -14,6 +14,8 @@ Or you can input it to terminal when running `autorace.py`
 
 ## Reproduce the Evaluation Accuracy Results in Paper (Table 1)
 
+The files under `data/gpt3` is the reasoning_chain with human labels. `human label = false` means human annotator believe the reasoning chain is flawed.
+
 ```
 python autorace.py --reproduce_tab1
 ```
