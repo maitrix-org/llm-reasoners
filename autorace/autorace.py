@@ -164,6 +164,7 @@ def autorace_evaluation(
     # generate evaluator's response
     import pandas as pd
     data = pd.read_json(data_path, lines=True)
+    results = []
     for index in tqdm(range(len(data))):
         reasoning_chain = data.loc[index, 'reasoning_chain']
         #make some format cleanning
@@ -178,9 +179,10 @@ def autorace_evaluation(
         prompt = prompts[PROMPT_TYPE_DICT[dataset]].format(raw_question, reasoning_chain)  
         prompt = prompt.replace('..', '.')
         evaluation_result = generate(prompt)
-        tmp = {'index': index, 'evaluation_result': evaluation_result, 'question': raw_question, 'reasoning_chain': reasoning_chain, 'answer': data.loc[index, 'answer']}    
-        with jsonlines.open(output_log_path, mode='a') as writer:
-            writer.write(tmp)
+        tmp = {'index': index, 'evaluation_result': evaluation_result, 'question': raw_question, 'reasoning_chain': reasoning_chain, 'answer': data.loc[index, 'answer'], 'prompt': prompt}    
+        results.append(tmp)
+        with jsonlines.open(output_log_path, mode='w') as writer:
+            writer.write_all(results)
     
     #calculate the score
     autorace_score(output_log_path)
@@ -197,9 +199,11 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
     
     print("Start testing evaluation accuracy...")
     
-    datasets = ['gsm8k','strategyqa','aqua','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction']
+    datasets = ['gsm8k','strategyqa','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction']
+
     model = "eval_model"
     eval_dir = "./logs/auto_race"
+    human_label_dir = "./data/eval_model"
     
     for dataset in datasets:
         if os.path.exists(f'{eval_dir}/{model}/{dataset}'):
@@ -208,9 +212,6 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
             print(f'{eval_dir}/{model}/{dataset} does not exist, start autorace evaluation...')
             autorace_evaluation(dataset, model, eval_dir)
     
-    human_label_dir = "./data/eval_model"
-
-    for dataset in datasets:
         human_label_path = os.path.join(human_label_dir, f'{dataset}.jsonl')
         evaluator_label_path = os.path.join(eval_dir, f'{model}/{dataset}/autorace_eval.jsonl')
         
@@ -220,17 +221,17 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
         with jsonlines.open(evaluator_label_path, mode='r') as reader:
             evaluator_labels = list(reader)
             
-        assert len(human_labels) == len(evaluator_labels), f'human_labels and evaluator_labels have different lengths'
+        assert len(human_labels) >= len(evaluator_labels), f'there are unlabelled samples in {human_label_path} comp'
 
-        total = len(human_labels)
+        total = len(evaluator_labels)
         score = 0
         correct_align_list = []
         incorrect_align_list = []
         incorrect_disagreement = []
         correct_disagreement = []
         
-        for i in range(len(human_labels)):
-            output = evaluator_labels[i]['evaluation_result']
+        for i in range(len(evaluator_labels)):
+            output = evaluator_labels[i]['evaluation_result'][0]
             if 'INCORRECT' in output:
                 if int(human_labels[i]['human_label']) == 0:
                     incorrect_align_list.append(i)
@@ -257,10 +258,10 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
                     })
 
         output_dir = f'logs/error_analysis/{output_name}/{dataset}'
-        os.makedirs(output_dir, exist_ok=True)
         correct_path = os.path.join(output_dir, 'correct_disagree')
         incorrect_path = os.path.join(output_dir, 'incorrect_disagree')
         align_score_log = os.path.join(output_dir, 'align_score.txt')
+        os.makedirs(output_dir, exist_ok=True)
         os.makedirs(correct_path, exist_ok=True)
         os.makedirs(incorrect_path, exist_ok=True)
 
@@ -299,11 +300,10 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
             f.write(f'Incorrect disagreement list: {incorrect_disagreement}\n')    
     
 
-def main(gen_criteria: bool = False, dataset: str = 'aqua',example_wrong_chains: str = 'EXAMPLE_WRONG_CHAINS_AQUA.txt',  reproduce_tab1: bool = False, reasoning_model: str = "eval_model", output_log: str = 'logs/auto_race'):
-
+def main(gen_criteria: bool = False, dataset: str = 'gsm8k', example_wrong_chains: str = 'EXAMPLE_WRONG_CHAINS_AQUA.txt',  reproduce_tab1: bool = False, reasoning_model: str = "eval_model", output_log: str = 'logs/auto_race'):
     if reproduce_tab1:
         test_evaluation_accuracy()
-    if gen_criteria:
+    elif gen_criteria:
         autorace_criterion(dataset, example_wrong_chains)
     else:
         autorace_evaluation(dataset, reasoning_model, output_log)
