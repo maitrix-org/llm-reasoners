@@ -59,16 +59,39 @@ def generate(prompt):
             print(f'An Error Occured: {e}, sleeping for 5 seconds')
             time.sleep(5)
 
-def autorace_criterion(dataset:str = 'aqua', criteria_path:str = 'CRITERION_GENERATION_PROMPT.txt'):
+def autorace_criterion(dataset:str = 'aqua', example_wrong_chains:str = 'EXAMPLE_WRONG_CHAINS_AQUA.txt'):
     
     '''
-    This function is used to generate criterions by comparing reference/student answers. (Fig 2 in the paper)
+    This function is used to generate criterions by comparing reference/student answers. (Fig 2 in the paper).
+    
+        
+    As shown in Fig 2, we should provide several wrong reasoning chains to generate criterions.
+    
+    We provide an example in EXAMPLE_WRONG_CHAINS_AQUA.txt, which includes several wrong reasoning chains on the AQuA dataset.
+
+    Please follow the format in EXAMPLE_WRONG_CHAINS_AQUA.txt. i.e.
+    -----------------------------------------------------------------------------
+    Question:
+    The original price of an item is discounted 22%. A customer buys the item at this discounted price using a $20-off coupon. There is no tax on the item, and this was the only item the customer bought. If the customer paid $1.90 more than half the original price of the item, what was the original price of the item? Options: A)$61, B)$65, C)$67.40, D)$70, E)$78.20
+
+    Reference answer:
+    Let x be the original price of the item
+    Discounted price = 0.78x
+    Payment made by the customer after using the $20 coupon = 0.78x - 20
+    0.78x - 20 = x/2 + 1.9
+    x = 78.20
+    Answer: E
+
+    Student answer:
+    The original price of the item is 1.22 * $20. The answer is B.
+    -----------------------------------------------------------------------------
+    Please see `EXAMPLE_WRONG_CHAINS_AQUA.txt` for details. 
     '''
     
-    assert os.path.exists(criteria_path), f'criteria_path: {criteria_path} does not exist!'
+    assert os.path.exists(example_wrong_chains), f'example_wrong_chains: {example_wrong_chains} does not exist!'
     
-    with open(criteria_path) as f:
-        CRITERION_GENERATION_PROMPT = f.read()
+    with open(example_wrong_chains) as f:
+        EXAMPLE_WRONG_CHAINS = f.read()
 
     with open('prompt.json') as f:
         prompt = json.load(f)
@@ -77,7 +100,7 @@ def autorace_criterion(dataset:str = 'aqua', criteria_path:str = 'CRITERION_GENE
         print(f'Warning: dataset {dataset} already exists in prompt.json, please check whether you want to overwrite it.')
         input('Press any key to continue...')
         
-    criterion_prompt = prompt['criterion'].format(CRITERION_GENERATION_PROMPT)
+    criterion_prompt = prompt['criterion'].format(EXAMPLE_WRONG_CHAINS)
     #prompt 'criterion' is used for generating criterions
     criterion_text = generate(criterion_prompt)
     print(criterion_text)
@@ -108,7 +131,7 @@ def autorace_score(output_log_path:str):
 
 def autorace_evaluation(
     dataset: str = "gsm8k", 
-    reasoning_model: str = "gpt3",
+    reasoning_model: str = "eval_model",
     output_log_dir:str = 'logs/auto_race'
 ):
     '''
@@ -141,6 +164,7 @@ def autorace_evaluation(
     # generate evaluator's response
     import pandas as pd
     data = pd.read_json(data_path, lines=True)
+    results = []
     for index in tqdm(range(len(data))):
         reasoning_chain = data.loc[index, 'reasoning_chain']
         #make some format cleanning
@@ -155,9 +179,10 @@ def autorace_evaluation(
         prompt = prompts[PROMPT_TYPE_DICT[dataset]].format(raw_question, reasoning_chain)  
         prompt = prompt.replace('..', '.')
         evaluation_result = generate(prompt)
-        tmp = {'index': index, 'evaluation_result': evaluation_result, 'question': raw_question, 'reasoning_chain': reasoning_chain, 'answer': data.loc[index, 'answer']}    
-        with jsonlines.open(output_log_path, mode='a') as writer:
-            writer.write(tmp)
+        tmp = {'index': index, 'evaluation_result': evaluation_result, 'question': raw_question, 'reasoning_chain': reasoning_chain, 'answer': data.loc[index, 'answer'], 'prompt': prompt}    
+        results.append(tmp)
+        with jsonlines.open(output_log_path, mode='w') as writer:
+            writer.write_all(results)
     
     #calculate the score
     autorace_score(output_log_path)
@@ -174,9 +199,11 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
     
     print("Start testing evaluation accuracy...")
     
-    datasets = ['gsm8k','strategyqa','aqua','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction']
-    model = "gpt3"
+    datasets = ['gsm8k','strategyqa','cosmos', 'multistep_arithmetic','word_sorting','logical_deduction']
+
+    model = "eval_model"
     eval_dir = "./logs/auto_race"
+    human_label_dir = "./data/eval_model"
     
     for dataset in datasets:
         if os.path.exists(f'{eval_dir}/{model}/{dataset}'):
@@ -185,9 +212,6 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
             print(f'{eval_dir}/{model}/{dataset} does not exist, start autorace evaluation...')
             autorace_evaluation(dataset, model, eval_dir)
     
-    human_label_dir = "./data/gpt3"
-
-    for dataset in datasets:
         human_label_path = os.path.join(human_label_dir, f'{dataset}.jsonl')
         evaluator_label_path = os.path.join(eval_dir, f'{model}/{dataset}/autorace_eval.jsonl')
         
@@ -197,17 +221,17 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
         with jsonlines.open(evaluator_label_path, mode='r') as reader:
             evaluator_labels = list(reader)
             
-        assert len(human_labels) == len(evaluator_labels), f'human_labels and evaluator_labels have different lengths'
+        assert len(human_labels) >= len(evaluator_labels), f'there are unlabelled samples in {human_label_path} compared to {evaluator_label_path}!'
 
-        total = len(human_labels)
+        total = len(evaluator_labels)
         score = 0
         correct_align_list = []
         incorrect_align_list = []
         incorrect_disagreement = []
         correct_disagreement = []
         
-        for i in range(len(human_labels)):
-            output = evaluator_labels[i]['evaluation_result']
+        for i in range(len(evaluator_labels)):
+            output = evaluator_labels[i]['evaluation_result'][0]
             if 'INCORRECT' in output:
                 if int(human_labels[i]['human_label']) == 0:
                     incorrect_align_list.append(i)
@@ -234,10 +258,10 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
                     })
 
         output_dir = f'logs/error_analysis/{output_name}/{dataset}'
-        os.makedirs(output_dir, exist_ok=True)
         correct_path = os.path.join(output_dir, 'correct_disagree')
         incorrect_path = os.path.join(output_dir, 'incorrect_disagree')
         align_score_log = os.path.join(output_dir, 'align_score.txt')
+        os.makedirs(output_dir, exist_ok=True)
         os.makedirs(correct_path, exist_ok=True)
         os.makedirs(incorrect_path, exist_ok=True)
 
@@ -276,12 +300,11 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
             f.write(f'Incorrect disagreement list: {incorrect_disagreement}\n')    
     
 
-def main(gen_criteria: bool = False, dataset: str = 'aqua',criteria_path: str = 'CRITERION_GENERATION_PROMPT.txt',  reproduce_tab1: bool = False, reasoning_model: str = "gpt3", output_log: str = 'logs/auto_race'):
-
+def main(gen_criteria: bool = False, dataset: str = 'gsm8k', example_wrong_chains: str = 'EXAMPLE_WRONG_CHAINS_AQUA.txt',  reproduce_tab1: bool = False, reasoning_model: str = "eval_model", output_log: str = 'logs/auto_race'):
     if reproduce_tab1:
         test_evaluation_accuracy()
-    if gen_criteria:
-        autorace_criterion(dataset, criteria_path)
+    elif gen_criteria:
+        autorace_criterion(dataset, example_wrong_chains)
     else:
         autorace_evaluation(dataset, reasoning_model, output_log)
     
