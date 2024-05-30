@@ -221,7 +221,7 @@ def test_evaluation_accuracy(output_name: str = time.strftime('%Y-%m-%d-%H-%M-%S
         with jsonlines.open(evaluator_label_path, mode='r') as reader:
             evaluator_labels = list(reader)
             
-        assert len(human_labels) >= len(evaluator_labels), f'there are unlabelled samples in {human_label_path} comp'
+        assert len(human_labels) >= len(evaluator_labels), f'there are unlabelled samples in {human_label_path} compared to {evaluator_label_path}!'
 
         total = len(evaluator_labels)
         score = 0
