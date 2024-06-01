@@ -9,6 +9,7 @@ LLM Reasoners now provides the example code for the following methods:
   - [Self-Eval Guided Decoding, Beam Search](Self-Eval) ([Xie et al., 2023](https://arxiv.org/abs/2305.00633))
   - [Grace Decoding](Grace) ([Khalifa et al., 2023](https://arxiv.org/abs/2305.14934))
   - [Eurus](Eurus) ([Yuan et al., 2024](https://arxiv.org/abs/2404.02078))
+  - [PromptAgent](examples/PromptAgent) ([Wang et al., 2023](https://arxiv.org/abs/2310.16427))
 
 For each reasoning method, we provide scripts for different datasets, including GSM8K, AQuA, blocksworld, Prontoqa, StrategyQA, Game24, Crosswords, etc.
 
