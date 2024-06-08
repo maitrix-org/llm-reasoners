@@ -26,7 +26,7 @@ Please use your domain knowledge in medical area to solve the questions.
 Please draw upon your comprehensive medical knowledge to thoroughly analyze the questions provided. Consider all aspects of the patient's history, lifestyle choices, and potential risk factors in your responses. Reflect on the importance of differential diagnosis and the integration of symptoms with clinical findings to arrive at the most accurate medical conclusions. Remember to include how the patient's medication use and lifestyle can impact diagnostic outcomes. Ensure that your analysis is aligned with the latest medical standards and guidelines, and clearly indicate your final answer. Let's aim for a holistic and precise diagnosis based on the patient's complete scenario.
 
 |Promp|Eval Accuracy|Test Accuracy
-|-|-|
+|-|-|-|
 |Original Prompt|0.367|0.374
 |Optimized Prompt|0.5066666666666667|0.524
  
