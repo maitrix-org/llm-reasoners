@@ -28,7 +28,7 @@ Please draw upon your comprehensive medical knowledge to thoroughly analyze the 
 |Promp|Eval Accuracy|Test Accuracy
 |-|-|-|
 |Original Prompt|0.367|0.374
-|Optimized Prompt|0.5066666666666667|0.524
+|Optimized Prompt|0.507|0.524
  
 
 ## Reference
