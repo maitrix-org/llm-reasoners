@@ -7,7 +7,63 @@ from reasoners.lm import OpenAIModel
 from reasoners import WorldModel, LanguageModel,Reasoner,SearchConfig
 from reasoners.algorithm import MCTS
 import fire
+from datasets import load_dataset
+
 os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+def load_task_dataset(dataset_name="bigbio/med_qa"):
+    dataset = load_dataset(dataset_name,trust_remote_code=True)
+    new_dataset = dict(train=[], test=[])
+
+    def process_split(split_name):
+        for example in dataset[split_name]:
+            # Extract choices and answer key from the example
+            choices = [option['value'] for option in example['options']]
+            answer_dict = {option['value']: option['key'] for option in example['options']}
+            
+            # Construct the question format with letters in front of options
+            options_str = "\n".join([f"{chr(65 + i)}. {choice}" for i, choice in enumerate(choices)])
+            question_format = "{question}\nOptions:\n" + options_str
+            question_str = question_format.format(question=example['question'])
+            
+            # Append to the new dataset
+            new_dataset[split_name].append(dict(question=question_str, answer=answer_dict[example['answer']]))
+
+    process_split('train')
+    process_split('test')
+
+    return new_dataset
+
+def reformat_questions(question_list):
+    reformatted_list = []
+
+    for item in question_list:
+        question_text = item['question']
+        # Extracting question part
+        question_part, options_part = question_text.split('Options:\n', 1)
+
+        # Splitting options into individual choices and stripping whitespace
+        options_list = [option.strip() for option in options_part.split('\n') if option.strip()]
+
+        # Filtering out invalid options that do not contain '. '
+        valid_options_list = [option for option in options_list if '. ' in option]
+
+        # Creating options string with suffix ')'
+        options_string = "\n".join([option.split('. ', 1)[0] + ')' + option.split('. ', 1)[1] for option in valid_options_list])
+
+        # Extracting correct answer
+        correct_answer = item['answer']
+
+        # Creating reformatted dictionary
+        reformatted_dict = {
+            'question': question_part.strip(),
+            'options': options_string,
+            'correct': correct_answer
+        }
+
+        reformatted_list.append(reformatted_dict)
+
+    return reformatted_list
+
 
 class PromptState(NamedTuple):
     text: str
@@ -20,8 +76,9 @@ class PromptAction(NamedTuple):
 
 
 class PromptWorldModel(WorldModel[PromptState, PromptAction, str]):
-    def __init__(self, language_model: LanguageModel, test_data, depth_limit: int = 2, origin_prompt="Answer the following question.") -> None:
+    def __init__(self, language_model: LanguageModel, eval_data,test_data, depth_limit: int = 2, origin_prompt="Answer the following question.") -> None:
         super().__init__()
+        self.eval_data = eval_data
         self.test_data = test_data
         self.language_model = language_model
         self.origin_prompt = origin_prompt
@@ -55,23 +112,39 @@ class PromptWorldModel(WorldModel[PromptState, PromptAction, str]):
                 return True
         return False
 
-    def get_accuracy(self, prompt: str) -> float:
-        if prompt in self.accuracy_cache:
-            return self.accuracy_cache[prompt]
-        questions = self.test_data
-        correct = 0
-        for question in questions:
-            inputs = f"{prompt}\nQuestion: {question['question']} Options: {question['options']}. At the end show the answer option between <answer> and </answer>.\n"
-            outputs = self.language_model.generate(prompt=[inputs])
-            generated_text = outputs.text[0]
-            answer = re.search(r"<answer>([A-Z])\)", generated_text)
-            if answer:
-                answer = answer.group(1)
-            if answer == question['correct']:
-                correct += 1
-        accuracy = correct / len(questions)
-        self.accuracy_cache[prompt] = accuracy
-        return accuracy
+    def get_accuracy(self, prompt: str,test_mode=False) -> float:
+        if not test_mode:
+            if prompt in self.accuracy_cache:
+                return self.accuracy_cache[prompt]
+            questions = self.eval_data
+            correct = 0
+            for question in questions:
+                inputs = f"{prompt}\nQuestion: {question['question']} Options: {question['options']}. At the end show the answer option between <answer> and </answer>.\n"
+                outputs = self.language_model.generate(prompt=[inputs])
+                generated_text = outputs.text[0]
+                answer = re.search(r"<answer>([A-Z])\)", generated_text)
+                if answer:
+                    answer = answer.group(1)
+                if answer == question['correct']:
+                    correct += 1
+            accuracy = correct / len(questions)
+            self.accuracy_cache[prompt] = accuracy
+            return accuracy
+        else:
+            questions = self.test_data
+            correct = 0
+            for question in questions:
+                inputs = f"{prompt}\nQuestion: {question['question']} Options: {question['options']}. At the end show the answer option between <answer> and </answer>.\n"
+                outputs = self.language_model.generate(prompt=[inputs])
+                generated_text = outputs.text[0]
+                answer = re.search(r"<answer>([A-Z])\)", generated_text)
+                if answer:
+                    answer = answer.group(1)
+                if answer == question['correct']:
+                    correct += 1
+            accuracy = correct / len(questions)
+            self.accuracy_cache[prompt] = accuracy
+            return accuracy
 
 class PromptSearchConfig(SearchConfig[PromptState, PromptAction, str]):
     def __init__(self, world_model: PromptWorldModel,lm_model: LanguageModel , optimize_model : LanguageModel, num_batches: int = 3, steps_per_gradient: int = 1,batch_size: int=5) -> None:
@@ -161,19 +234,21 @@ class PromptSearchConfig(SearchConfig[PromptState, PromptAction, str]):
                 for new_prompt in new_prompts:
                     actions.append(PromptAction(new_prompt.strip()))
                 batch_index += 1
+        print(actions)
+        print("----------------------------------------------------------------")
         return actions
 
     def reward(self, state: PromptState, action: PromptAction) -> Tuple[float, dict]:
         return self.world_model.get_accuracy(action.new_prompt), {}
     
-def optimize_prompt(train_data, questions_test,origin_prompt):
+def optimize_prompt(train_data, questions_eval, questions_test,origin_prompt):
     # Initialize models
     # model to answer questions
     base_model = OpenAIModel(model="gpt-3.5-turbo", temperature=0)
     # model to generate prompts and give feedback
     optimize_model = OpenAIModel(model="gpt-4-turbo-preview", temperature=1)
     # Initialize the world model
-    world_model = PromptWorldModel(base_model, test_data=questions_test, depth_limit=4,origin_prompt=origin_prompt)
+    world_model = PromptWorldModel(base_model,eval_data=questions_eval, test_data=questions_test, depth_limit=4,origin_prompt=origin_prompt)
 
     # Configure search parameters
     search_config = PromptSearchConfig(
@@ -182,7 +257,7 @@ def optimize_prompt(train_data, questions_test,origin_prompt):
         optimize_model=optimize_model, 
         num_batches=3, 
         steps_per_gradient=1, 
-        batch_size=5 
+        batch_size=5
     )
 
     # Initialize the search algorithm
@@ -199,35 +274,37 @@ def optimize_prompt(train_data, questions_test,origin_prompt):
         search_config=search_config, 
         search_algo=search_algo
     )
-
     questions=train_data
     world_model.update_example(questions)
     search_config.update_example(questions)  
     optimized_result = reasoner(world_model.example)
-    return optimized_result
+    best_prompt = optimized_result.trace_of_nodes[0].state.text
+    best_accuracy = optimized_result.trace_of_nodes[1].state.accuracy_trajectory[0]
+    with open("result.txt", "w") as file:
+        file.write(f"Original Prompt: {origin_prompt}\n")
+        file.write(f"Original Eval Data Accuracy: {best_accuracy}\n")
+    for node in optimized_result.trace_of_nodes:
+        if node.reward > best_accuracy:
+            best_accuracy = node.reward
+            best_prompt = node.state.text
+    with open("result.txt", "a") as file:
+        file.write(f"Best Prompt: {best_prompt}\n")
+        file.write(f"Best Eval Data Accuracy: {best_accuracy}\n")
+        file.write(f"Original Test Data Accuracy: {world_model.get_accuracy(origin_prompt,test_mode=True)}\n")
+        file.write(f"Best Test Data Accuracy: {world_model.get_accuracy(best_prompt,test_mode=True)}")
+    
     
 
 
 def main(prompt="Answer the question."):
-    
-    # Load data
-    with open("data/data.json", 'r') as file:
-        questions = [json.loads(line) for line in file]
-
-    # Split training and testing data
-    questions_train = questions[:180]
-    questions_test = questions[180:250]
-    result=optimize_prompt(questions_train, questions_test,"Answer the question.")
-    best_prompt = result.trace_of_nodes[0].state.text
-    best_accuracy = result.trace_of_nodes[1].state.accuracy_trajectory[0]
-    print("Original Prompt: Answer the question.")
-    print(f"Original Accuracy: {best_accuracy}")
-    for node in result.trace_of_nodes:
-        if node.reward > best_accuracy:
-            best_accuracy = node.reward
-            best_prompt = node.state.text
-    print(f"Best Accuracy: {best_accuracy}")
-    print(f"Best Prompt: {best_prompt}")
+    dataset = load_task_dataset()
+    random.seed(21)
+    random.shuffle(dataset['train'])
+    random.shuffle(dataset['test'])
+    questions_train = reformat_questions(dataset['train'][:2000])
+    questions_eval = reformat_questions(dataset['train'][2000:2150])
+    questions_test= reformat_questions(dataset['test'][0:500])
+    optimize_prompt(questions_train, questions_eval,questions_test,prompt)
 
 if __name__ == "__main__":
     fire.Fire(main)
