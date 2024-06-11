@@ -23,12 +23,13 @@ We tested the performance using a subset of the MedQA data set, provided in the 
 Please use your domain knowledge in medical area to solve the questions.
 
 ### Optimized Prompt
-Please draw upon your comprehensive medical knowledge to thoroughly analyze the questions provided. Consider all aspects of the patient's history, lifestyle choices, and potential risk factors in your responses. Reflect on the importance of differential diagnosis and the integration of symptoms with clinical findings to arrive at the most accurate medical conclusions. Remember to include how the patient's medication use and lifestyle can impact diagnostic outcomes. Ensure that your analysis is aligned with the latest medical standards and guidelines, and clearly indicate your final answer. Let's aim for a holistic and precise diagnosis based on the patient's complete scenario.
+Draw upon your comprehensive medical expertise and critical thinking capabilities to provide a precise answer for the forthcoming query. In formulating your response, foreground your rationale in up-to-date clinical guidelines, deep physiological understanding, or pharmacological insights where relevant. Your explanation should not only demonstrate a mastery of the medical context but also engage in logical deduction rooted in the most relevant medical evidence available. Clearly articulate your selected answer, delving into a stepwise explanation that underscores how it coheres with contemporary medical practices and understandings. Additionally, pay special attention to integrating all aspects of the clinical presentation, including patient history, symptoms, examination findings, and laboratory data, to support your diagnostic or therapeutic conclusion. Ensure that your analysis embodies a rigorous application of medical knowledge, effectively synthesizing information to align with the principles of evidence-based medicine.
+
 
 |Promp|Eval Accuracy|Test Accuracy
 |-|-|-|
-|Original Prompt|0.367|0.374
-|Optimized Prompt|0.507|0.524
+|Original Prompt|0.413|0.464
+|Optimized Prompt|0.587|0.572
  
 
 ## Reference
