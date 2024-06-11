@@ -1,0 +1,4 @@
+(pick-up d)
+(stack d a)
+(pick-up c)
+(stack c a)

@@ -1,0 +1,84 @@
+instance_dir: blocksworld/mystery/generated_basic_3
+generalized_instance_dir: blocksworld/mystery/generated
+domain_file: blocksworld/mystery/generated_domain.pddl
+domain_name: mystery_blocksworld_3
+n_instances: 101
+start: 1
+end: 100
+instances_template: instance-{}.pddl
+
+domain_intro: |
+   I am playing with a set of objects. Here are the actions I can do
+   
+      Attack object
+      Feast object from another object
+      Succumb object
+      Overcome object from another object
+   
+   I have the following restrictions on my actions:
+       To perform Attack action, the following facts need to be true: Province object, Planet object, Harmony.
+       Once Attack action is performed the following facts will be true: Pain object.
+       Once Attack action is performed the following facts will be false: Province object, Planet object, Harmony.
+       To perform Succumb action, the following facts need to be true: Pain object.
+       Once Succumb action is performed the following facts will be true: Province object, Planet object, Harmony.    
+       Once Succumb action is performed the following facts will be false: Pain object.
+       To perform Overcome action, the following needs to be true: Province other object, Pain object.
+       Once Overcome action is performed the following will be true: Harmony, Province object, Object Craves other object.
+       Once Overcome action is performed the following will be false: Province other object, Pain object.
+       To perform Feast action, the following needs to be true: Object Craves other object, Province object, Harmony.
+       Once Feast action is performed the following will be true: Pain object, Province other object.
+       Once Feast action is performed the following will be false:, Object Craves other object, Province object, Harmony.
+
+domain_intro_cost: |
+   I am playing with a set of objects. Here are the actions I can do
+   
+   Attack object. It takes 1 minute to do the Attack action.
+   Feast object from another object. It takes 1 minute to do the Feast action.
+   Succumb object. It takes 1 minute to do the Succumb action.
+   Overcome object from another object. It takes 1 minute to do the Overcome action.
+   
+   I have the following restrictions on my actions:
+       To perform Attack action, the following facts need to be true: Province object, Planet object, Harmony.
+       Once Attack action is performed the following facts will be true: Pain object.
+       Once Attack action is performed the following facts will be false: Province object, Planet object, Harmony.
+       To perform Succumb action, the following facts need to be true: Pain object.
+       Once Succumb action is performed the following facts will be true: Province object, Planet object, Harmony.    
+       Once Succumb action is performed the following facts will be false: Pain object.
+       To perform Overcome action, the following needs to be true: Province other object, Pain object.
+       Once Overcome action is performed the following will be true: Harmony, Province object, Object Craves other object.
+       Once Overcome action is performed the following will be false: Province other object, Pain object.
+       To perform Feast action, the following needs to be true: Object Craves other object, Province object, Harmony.
+       Once Feast action is performed the following will be true: Pain object, Province other object.
+       Once Feast action is performed the following will be false:, Object Craves other object, Province object, Harmony.
+       
+actions:
+  {attack: "attack {}",
+   succumb: "succumb {}",
+   overcome: "overcome {} from {}",
+   feast: "feast {} from {}"}
+
+action_obfuscation:
+  {pick-up: "attack",
+   put-down: "succumb",
+   stack: "overcome",
+   unstack: "feast"}
+
+
+predicates:
+  {planet: "planet {}",
+   province: "province {}",
+   harmony: "harmony",
+   "craves": "{} craves {}",
+  "pain": "pain {}"}
+predicate_obfuscation:
+  {ontable: "planet",
+   clear: "province",
+   handempty: "harmony",
+   "on": "craves",
+  "holding": "pain"}
+
+# encoded_objects: dictionary of object names, have to be alphabetical
+encoded_objects:
+  {"a": "object a", "b": "object b", "c": "object c", "d": "object d",
+   "e": "object e", "f": "object f", "g": "object g", "h": "object h",
+   "i": "object i", "j": "object j", "k": "object k", "l": "object l" }

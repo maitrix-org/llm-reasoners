@@ -1,0 +1,52 @@
+.TH BWSTATES X "13 November 1995"
+.SH NAME
+bwstates \- BWSTATES: Blocks World States
+.SH SYNOPSIS
+.LP
+.B bwstates
+[
+.I -n integer
+] [
+.I -r integer
+] [
+.I -s integer
+]
+.SH DESCRIPTION
+.LP
+.BR bwstates
+is a program for generating random states of the standard planning domain
+Blocks World. Every state of the chosen size has the same probability of
+being generated. For a full description see
+.I Generating Random States of Blocks World
+available as a technical report from the address below.
+.SH OPTIONS
+.TP 15
+.BI \-n " N"
+sets the number of blocks in the domain to N. N is a non-negative integer,
+default 0.
+.TP 15
+.BI \-r " R"
+causes R to be used as the seed for the random number generator drand48().
+R is a non-negative integer, default random.
+.TP
+.BI \-s " S"
+specifies the number of states to be produced. S is a positive integer,
+default 1.
+.PD
+.SH SEE ALSO
+.I Generating Random States of Blocks World (TR-ARP-18-95)
+.SH BUGS
+.LP
+.B bwstates
+is rather memory-intensive. Attempts to generate very large problems will
+require many Mb and may cause crashes.
+.SH AVAILABILITY
+.B bwstates
+can be obtained from the Automated Reasoning Project by snail-mail or from
+arp.anu.edu.au by anonymous ftp (/pub/bwstates.1.tar.Z).
+.SH AUTHOR
+John Slaney, Automated Reasoning Project, Research School of Information
+Sciences and Engineering, Australian National University, Canberra ACT 0200,
+Australia; e-mail:
+.I John.Slaney@anu.edu.au
+

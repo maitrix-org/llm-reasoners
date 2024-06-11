@@ -1,0 +1,1155 @@
+# depslib dependency file v1.0
+1406195218 source:c:\users\derek\downloads\val4301\val\src\action.cpp
+	"State.h"
+	"Action.h"
+	"Plan.h"
+	"main.h"
+	"Validator.h"
+	"Ownership.h"
+	"Utils.h"
+	"Proposition.h"
+	"LaTeXSupport.h"
+	"RobustAnalyse.h"
+	<string>
+	<cmath>
+
+1406195222 c:\users\derek\downloads\val4301\val\include\state.h
+	"Proposition.h"
+	"FuncExp.h"
+	"StateObserver.h"
+	<set>
+
+1406195221 c:\users\derek\downloads\val4301\val\include\proposition.h
+	"ptree.h"
+	<iostream>
+	<set>
+	"Environment.h"
+	"Ownership.h"
+	"Polynomial.h"
+
+1406195221 c:\users\derek\downloads\val4301\val\include\ptree.h
+	<list>
+	<memory>
+	<map>
+	<string>
+	"sStack.h"
+	"macros.h"
+	"parse_error.h"
+	<iostream>
+
+1406195222 c:\users\derek\downloads\val4301\val\include\sstack.h
+	<deque>
+
+1406195220 c:\users\derek\downloads\val4301\val\include\macros.h
+
+1406195220 c:\users\derek\downloads\val4301\val\include\parse_error.h
+	<string>
+	<cstdio>
+	<iostream>
+	"ptree.h"
+
+1406195218 c:\users\derek\downloads\val4301\val\include\environment.h
+	<map>
+	<vector>
+
+1406195220 c:\users\derek\downloads\val4301\val\include\ownership.h
+	<map>
+	"ptree.h"
+
+1406195221 c:\users\derek\downloads\val4301\val\include\polynomial.h
+	<map>
+	<iostream>
+	<vector>
+	<utility>
+
+1406195219 c:\users\derek\downloads\val4301\val\include\funcexp.h
+	<iostream>
+	<stdlib.h>
+	"ptree.h"
+	"Environment.h"
+	"Utils.h"
+
+1406195222 c:\users\derek\downloads\val4301\val\include\utils.h
+	<sstream>
+	<string>
+
+1406195222 c:\users\derek\downloads\val4301\val\include\stateobserver.h
+
+1406195218 c:\users\derek\downloads\val4301\val\include\action.h
+	"ptree.h"
+	"Proposition.h"
+	"main.h"
+	<iostream>
+	<algorithm>
+	<iterator>
+	<string>
+	<set>
+
+1406195220 c:\users\derek\downloads\val4301\val\include\main.h
+	<iostream>
+
+1406195221 c:\users\derek\downloads\val4301\val\include\plan.h
+	<vector>
+	<functional>
+	<algorithm>
+	<map>
+	<iostream>
+	"ptree.h"
+	"Exceptions.h"
+	"main.h"
+	"Ownership.h"
+	"Polynomial.h"
+	"State.h"
+
+1406195218 c:\users\derek\downloads\val4301\val\include\exceptions.h
+	<exception>
+
+1406195223 c:\users\derek\downloads\val4301\val\include\validator.h
+	<vector>
+	<string>
+	<sstream>
+	<map>
+	"Action.h"
+	"Plan.h"
+	"State.h"
+	"Polynomial.h"
+	"Events.h"
+	"typecheck.h"
+	"RepairAdvice.h"
+	"TrajectoryConstraints.h"
+
+1406195218 c:\users\derek\downloads\val4301\val\include\events.h
+	"ptree.h"
+	"State.h"
+	"Action.h"
+	"Plan.h"
+	<vector>
+
+1406195222 c:\users\derek\downloads\val4301\val\include\typecheck.h
+	"ptree.h"
+	<set>
+	<vector>
+
+1406195221 c:\users\derek\downloads\val4301\val\include\repairadvice.h
+	"Action.h"
+	"State.h"
+	<memory>
+
+1406195222 c:\users\derek\downloads\val4301\val\include\trajectoryconstraints.h
+	"ptree.h"
+	"Proposition.h"
+	<set>
+
+1406195219 c:\users\derek\downloads\val4301\val\include\latexsupport.h
+	<vector>
+	<string>
+	<iostream>
+	"Utils.h"
+	"main.h"
+	"Validator.h"
+
+1406195222 c:\users\derek\downloads\val4301\val\include\robustanalyse.h
+	<vector>
+	<map>
+	"ptree.h"
+
+1406195218 source:c:\users\derek\downloads\val4301\val\src\analysis.cpp
+	<cstdio>
+	<iostream>
+	<fstream>
+	"ptree.h"
+	"FlexLexer.h"
+	"Analyser.h"
+
+1406195219 c:\users\derek\downloads\val4301\val\include\flexlexer.h
+	<iostream>
+
+1406195218 c:\users\derek\downloads\val4301\val\include\analyser.h
+	<vector>
+	<iostream>
+	"ptree.h"
+	"VisitController.h"
+
+1406195223 c:\users\derek\downloads\val4301\val\include\visitcontroller.h
+	"ptree.h"
+
+1406195218 source:c:\users\derek\downloads\val4301\val\src\causalgraph.cpp
+	"CausalGraph.h"
+	"ptree.h"
+	"VisitController.h"
+	"TimSupport.h"
+	"ToFunction.h"
+	"SASActions.h"
+	<set>
+
+1406195218 c:\users\derek\downloads\val4301\val\include\causalgraph.h
+	<map>
+	<set>
+	"ToFunction.h"
+
+1406195222 c:\users\derek\downloads\val4301\val\include\tofunction.h
+	<iostream>
+	"ptree.h"
+	"TIM.h"
+	<iterator>
+	<set>
+	<map>
+	<vector>
+
+1406195222 c:\users\derek\downloads\val4301\val\include\tim.h
+	"TimSupport.h"
+
+1406195222 c:\users\derek\downloads\val4301\val\include\timsupport.h
+	<algorithm>
+	<iostream>
+	<set>
+	<memory>
+	<iterator>
+	<string.h>
+	"TIMUtilities.h"
+	"TypedAnalyser.h"
+
+1406195222 c:\users\derek\downloads\val4301\val\include\timutilities.h
+	<iostream>
+	<iterator>
+
+1406195222 c:\users\derek\downloads\val4301\val\include\typedanalyser.h
+	"FuncAnalysis.h"
+	<vector>
+	<set>
+	<iostream>
+	<algorithm>
+	"ptree.h"
+	"VisitController.h"
+	"typecheck.h"
+	"Cascader.h"
+	"FastEnvironment.h"
+	"Environment.h"
+
+1406195219 c:\users\derek\downloads\val4301\val\include\funcanalysis.h
+	<iostream>
+	<utility>
+	<vector>
+	<set>
+	<map>
+	"VisitController.h"
+
+1406195218 c:\users\derek\downloads\val4301\val\include\cascader.h
+	<map>
+	<iostream>
+
+1406195219 c:\users\derek\downloads\val4301\val\include\fastenvironment.h
+	<vector>
+	<list>
+	<iterator>
+	"ptree.h"
+
+1406195222 c:\users\derek\downloads\val4301\val\include\sasactions.h
+	"ToFunction.h"
+	<vector>
+	<map>
+	<iostream>
+
+1406195218 source:c:\users\derek\downloads\val4301\val\src\commitments.cpp
+	<string>
+	"State.h"
+	"Plan.h"
+	"Validator.h"
+	"typecheck.h"
+	"RobustAnalyse.h"
+	<cstdio>
+	<iostream>
+	<fstream>
+	"ptree.h"
+	"FlexLexer.h"
+	"Utils.h"
+	"LaTeXSupport.h"
+	"main.h"
+	"ptree.h"
+	"TIM.h"
+	"FuncAnalysis.h"
+	"AbstractGraph.h"
+	"CommitmentTracker.h"
+	"Agents.h"
+
+1406195218 c:\users\derek\downloads\val4301\val\include\abstractgraph.h
+	"HowAnalyser.h"
+
+1406195219 c:\users\derek\downloads\val4301\val\include\howanalyser.h
+	"ptree.h"
+	"VisitController.h"
+	<iostream>
+	"TypedAnalyser.h"
+	"TimSupport.h"
+	<set>
+
+1406195218 c:\users\derek\downloads\val4301\val\include\commitmenttracker.h
+	<map>
+	<set>
+	"State.h"
+	"Plan.h"
+	"VisitController.h"
+	"Proposition.h"
+	"Agents.h"
+
+1406195218 c:\users\derek\downloads\val4301\val\include\agents.h
+	"ptree.h"
+	"Environment.h"
+
+1406195218 source:c:\users\derek\downloads\val4301\val\src\debugwritecontroller.cpp
+	<iostream>
+	"DebugWriteController.h"
+
+1406195218 c:\users\derek\downloads\val4301\val\include\debugwritecontroller.h
+	"WriteController.h"
+
+1406195223 c:\users\derek\downloads\val4301\val\include\writecontroller.h
+	"ptree.h"
+
+1406195218 source:c:\users\derek\downloads\val4301\val\src\environment.cpp
+	"Environment.h"
+
+1406195218 source:c:\users\derek\downloads\val4301\val\src\evaluator.cpp
+	"Evaluator.h"
+	"TypedAnalyser.h"
+	"State.h"
+	"ptree.h"
+	"instantiation.h"
+	"InstPropLinker.h"
+	"Validator.h"
+
+1406195218 c:\users\derek\downloads\val4301\val\include\evaluator.h
+	"VisitController.h"
+	<map>
+	<vector>
+	<set>
+	"ptree.h"
+	"Environment.h"
+
+1406195219 c:\users\derek\downloads\val4301\val\include\instantiation.h
+	<vector>
+	<map>
+	"FastEnvironment.h"
+	<algorithm>
+	<iterator>
+	"SimpleEval.h"
+	"TypedAnalyser.h"
+
+1406195222 c:\users\derek\downloads\val4301\val\include\simpleeval.h
+	"VisitController.h"
+	"FastEnvironment.h"
+	<map>
+	<vector>
+	<set>
+	"ptree.h"
+
+1406195219 c:\users\derek\downloads\val4301\val\include\instproplinker.h
+
+1406195218 source:c:\users\derek\downloads\val4301\val\src\events.cpp
+	"Events.h"
+	"Plan.h"
+	"Validator.h"
+	"Action.h"
+	"RobustAnalyse.h"
+
+1406195219 source:c:\users\derek\downloads\val4301\val\src\fastenvironment.cpp
+	"FastEnvironment.h"
+
+1406195219 source:c:\users\derek\downloads\val4301\val\src\funcexp.cpp
+	"FuncExp.h"
+	"State.h"
+	"random.h"
+	"main.h"
+	"RobustAnalyse.h"
+
+1406195221 c:\users\derek\downloads\val4301\val\include\random.h
+	<cmath>
+	<ctime>
+
+1406195219 source:c:\users\derek\downloads\val4301\val\src\latexsupport.cpp
+	"LaTeXSupport.h"
+	"ptree.h"
+
+1406195220 source:c:\users\derek\downloads\val4301\val\src\ownership.cpp
+	"Ownership.h"
+	"Validator.h"
+	"Action.h"
+	"FuncExp.h"
+	"Environment.h"
+	"Proposition.h"
+
+1406195220 source:c:\users\derek\downloads\val4301\val\src\pddl+.cpp
+	<cstdlib>
+	<cstdio>
+	<fstream>
+	<ctype.h>
+	"ptree.h"
+	"parse_error.h"
+	<libintl.h>
+	<stddef.h>
+	<libintl.h>
+	<alloca.h>
+	<malloc.h>
+	<stdlib.h>
+	<stdlib.h>
+	<stdio.h>
+	<cstdio>
+	<iostream>
+	"lex.yy.cc"
+
+1406195219 c:\users\derek\downloads\val4301\val\src\parser\lex.yy.cc
+	<inttypes.h>
+	<iostream>
+	<errno.h>
+	<cstdlib>
+	<cstdio>
+	<cstring>
+	<FlexLexer.h>
+	<string>
+	<fstream>
+	<unistd.h>
+
+1406195221 source:c:\users\derek\downloads\val4301\val\src\plan.cpp
+	"State.h"
+	"Plan.h"
+	"Action.h"
+	"Validator.h"
+	"main.h"
+	"Polynomial.h"
+	"Exceptions.h"
+	"ptree.h"
+	"RobustAnalyse.h"
+
+1406195221 source:c:\users\derek\downloads\val4301\val\src\polynomial.cpp
+	<math.h>
+	<vector>
+	<algorithm>
+	"Polynomial.h"
+	"Exceptions.h"
+	"Proposition.h"
+	"main.h"
+
+1406195221 source:c:\users\derek\downloads\val4301\val\src\prettyprinter.cpp
+	"PrettyPrinter.h"
+	"Utils.h"
+	"ptree.h"
+	<set>
+	<algorithm>
+	"FuncExp.h"
+
+1406195221 c:\users\derek\downloads\val4301\val\include\prettyprinter.h
+	"WriteController.h"
+
+1406195221 source:c:\users\derek\downloads\val4301\val\src\proposition.cpp
+	<string>
+	<utility>
+	"Proposition.h"
+	"State.h"
+	"Action.h"
+	"Plan.h"
+	"Validator.h"
+	"Exceptions.h"
+	"Utils.h"
+	"Polynomial.h"
+	"Events.h"
+	"PrettyPrinter.h"
+
+1406195221 source:c:\users\derek\downloads\val4301\val\src\ptree.cpp
+	"ptree.h"
+	"macros.h"
+	"DebugWriteController.h"
+	"VisitController.h"
+	<memory>
+
+1406195221 source:c:\users\derek\downloads\val4301\val\src\random.cpp
+	"random.h"
+
+1406195221 source:c:\users\derek\downloads\val4301\val\src\repairadvice.cpp
+	"RepairAdvice.h"
+	"Validator.h"
+	"Utils.h"
+
+1406195222 source:c:\users\derek\downloads\val4301\val\src\robustanalyse.cpp
+	"RobustAnalyse.h"
+	"Utils.h"
+	"LaTeXSupport.h"
+	"tDistribution.h"
+	"random.h"
+	"Validator.h"
+
+1406195222 c:\users\derek\downloads\val4301\val\include\tdistribution.h
+
+1406195222 source:c:\users\derek\downloads\val4301\val\src\simpleeval.cpp
+	"SimpleEval.h"
+	"TypedAnalyser.h"
+	"instantiation.h"
+	"typecheck.h"
+
+1406195222 source:c:\users\derek\downloads\val4301\val\src\state.cpp
+	"State.h"
+	"Plan.h"
+	"main.h"
+	"Validator.h"
+	"Proposition.h"
+	"Exceptions.h"
+	"LaTeXSupport.h"
+	"RobustAnalyse.h"
+	<sstream>
+
+1406195222 source:c:\users\derek\downloads\val4301\val\src\tim.cpp
+	"FastEnvironment.h"
+	"TimSupport.h"
+	<cstdio>
+	<iostream>
+	<fstream>
+	"ptree.h"
+	"FlexLexer.h"
+	"TypedAnalyser.h"
+	"TIM.h"
+
+1406195222 source:c:\users\derek\downloads\val4301\val\src\timsupport.cpp
+	"FastEnvironment.h"
+	"TimSupport.h"
+	"ptree.h"
+	"Partitions.h"
+	<numeric>
+	<set>
+	<assert.h>
+
+1406195220 c:\users\derek\downloads\val4301\val\include\partitions.h
+	<list>
+	<map>
+
+1406195222 source:c:\users\derek\downloads\val4301\val\src\trajectoryconstraints.cpp
+	"TrajectoryConstraints.h"
+	"Proposition.h"
+	"VisitController.h"
+	"Validator.h"
+
+1406195222 source:c:\users\derek\downloads\val4301\val\src\typecheck.cpp
+	"typecheck.h"
+	"ptree.h"
+	<functional>
+	"main.h"
+	"Exceptions.h"
+	<algorithm>
+
+1406195223 source:c:\users\derek\downloads\val4301\val\src\utils.cpp
+	<sstream>
+	<string>
+	"Polynomial.h"
+	"Action.h"
+	"FuncExp.h"
+	"Utils.h"
+
+1406195223 source:c:\users\derek\downloads\val4301\val\src\validator.cpp
+	<iostream>
+	<string>
+	<algorithm>
+	<math.h>
+	"Validator.h"
+	"Action.h"
+	"Utils.h"
+	"typecheck.h"
+	"Exceptions.h"
+	"RobustAnalyse.h"
+	"random.h"
+	<sstream>
+
+1406195220 source:c:\users\derek\downloads\val4301\val\src\main.cpp
+	<string>
+	"State.h"
+	"Plan.h"
+	"Validator.h"
+	"typecheck.h"
+	"RobustAnalyse.h"
+	<cstdio>
+	<iostream>
+	<fstream>
+	<time.h>
+	"ptree.h"
+	"FlexLexer.h"
+	"Utils.h"
+	"LaTeXSupport.h"
+	"main.h"
+
+1406195220 source:c:\users\derek\downloads\val4301\val\src\parse.cpp
+	<cstdio>
+	<iostream>
+	<fstream>
+	"ptree.h"
+	"FlexLexer.h"
+
+1406195222 source:c:\users\derek\downloads\val4301\val\src\typedanalyser.cpp
+	"TypedAnalyser.h"
+
+1406195222 source:c:\users\derek\downloads\val4301\val\src\typedanalysis.cpp
+	<cstdio>
+	<iostream>
+	<fstream>
+	"ptree.h"
+	"FlexLexer.h"
+	"TypedAnalyser.h"
+
+1406295841 D
+
+1406738413 source:c:\users\derek\downloads\val\src\debugwritecontroller.cpp
+	<iostream>
+	"DebugWriteController.h"
+
+1406738413 c:\users\derek\downloads\val\include\debugwritecontroller.h
+	"WriteController.h"
+
+1406738413 c:\users\derek\downloads\val\include\writecontroller.h
+	"ptree.h"
+
+1416943051 c:\users\derek\downloads\val\include\ptree.h
+	<list>
+	<memory>
+	<map>
+	<string>
+	"sStack.h"
+	"macros.h"
+	"parse_error.h"
+	<iostream>
+
+1406295841 source:c:\users\maria\desktop\val\src\robustanalyse.cpp
+	"RobustAnalyse.h"
+	"Utils.h"
+	"LaTeXSupport.h"
+	"tDistribution.h"
+	"random.h"
+	"Validator.h"
+
+1406295840 c:\users\maria\desktop\val\include\robustanalyse.h
+	<vector>
+	<map>
+	"ptree.h"
+
+1406295840 c:\users\maria\desktop\val\include\ptree.h
+
+1406295840 gin/master
+	<list>
+	<memory>
+	<map>
+	<string>
+	"sStack.h"
+	"macros.h"
+	"parse_error.h"
+	<iostream>
+	<string>
+	<cstdio>
+	<iostream>
+	"ptree.h"
+	"ptree.h"
+	<iostream>
+	<set>
+	"Environment.h"
+	"Ownership.h"
+	"Polynomial.h"
+	<map>
+	<iostream>
+	<vector>
+	<utility>
+	<vector>
+	<functional>
+	<algorithm>
+	<map>
+	<iostream>
+	"ptree.h"
+	"Exceptions.h"
+	"main.h"
+	"Ownership.h"
+	"Polynomial.h"
+	"State.h"
+	"State.h"
+	"Plan.h"
+	"main.h"
+	"Validator.h"
+	"Proposition.h"
+	"Exceptions.h"
+	"LaTeXSupport.h"
+	"RobustAnalyse.h"
+	<sstream>
+	"TrajectoryConstraints.h"
+	"Proposition.h"
+	"VisitController.h"
+	"Validator.h"
+
+1406738413 c:\users\derek\downloads\val\include\sstack.h
+	<deque>
+
+1406738413 c:\users\derek\downloads\val\include\macros.h
+
+1406738413 c:\users\derek\downloads\val\include\parse_error.h
+
+1406295840 c:\users\maria\desktop\val\include\sstack.h
+	<deque>
+
+1406295840 c:\users\maria\desktop\val\include\macros.h
+
+1406295840 c:\users\maria\desktop\val\include\parse_error.h
+
+1406738413 source:c:\users\derek\downloads\val\src\funcanalysis.cpp
+	"FuncAnalysis.h"
+	<set>
+	<algorithm>
+
+1406738413 c:\users\derek\downloads\val\include\funcanalysis.h
+	<iostream>
+	<utility>
+	<vector>
+	<set>
+	<map>
+	"VisitController.h"
+
+1406738413 c:\users\derek\downloads\val\include\visitcontroller.h
+	"ptree.h"
+
+1416943051 source:c:\users\derek\downloads\val\src\action.cpp
+	"State.h"
+	"Action.h"
+	"Plan.h"
+	"main.h"
+	"Validator.h"
+	"Ownership.h"
+	"Utils.h"
+	"Proposition.h"
+	"LaTeXSupport.h"
+	"RobustAnalyse.h"
+	<string>
+	<cmath>
+
+1406738413 c:\users\derek\downloads\val\include\state.h
+	"Proposition.h"
+	"FuncExp.h"
+	"StateObserver.h"
+	<set>
+
+1416943051 c:\users\derek\downloads\val\include\proposition.h
+	"ptree.h"
+	<iostream>
+	<set>
+	"Environment.h"
+	"Ownership.h"
+	"Polynomial.h"
+
+1406295840 c:\users\maria\desktop\val\include\utils.h
+	<sstream>
+	<string>
+
+1406295840 c:\users\maria\desktop\val\include\latexsupport.h
+	<vector>
+	<string>
+	<iostream>
+	"Utils.h"
+	"main.h"
+	"Validator.h"
+
+1406295840 c:\users\maria\desktop\val\include\main.h
+	<iostream>
+
+1406295840 c:\users\maria\desktop\val\include\validator.h
+	<vector>
+	<string>
+	<sstream>
+	<map>
+	"Action.h"
+	"Plan.h"
+	"State.h"
+	"Polynomial.h"
+	"Events.h"
+	"typecheck.h"
+	"RepairAdvice.h"
+	"TrajectoryConstraints.h"
+
+1406295840 c:\users\maria\desktop\val\include\action.h
+	"ptree.h"
+	"Proposition.h"
+	"main.h"
+	<iostream>
+	<algorithm>
+	<iterator>
+	<string>
+	<set>
+
+1406295840 c:\users\maria\desktop\val\include\proposition.h
+
+1416943051 c:\users\derek\downloads\val\include\environment.h
+	<map>
+	<vector>
+
+1416943051 c:\users\derek\downloads\val\include\ownership.h
+	<map>
+	"ptree.h"
+
+1406738413 c:\users\derek\downloads\val\include\polynomial.h
+
+1406295840 c:\users\maria\desktop\val\include\environment.h
+	<map>
+	<vector>
+
+1406295840 c:\users\maria\desktop\val\include\ownership.h
+	<map>
+	"ptree.h"
+
+1406295840 c:\users\maria\desktop\val\include\polynomial.h
+
+1406738413 c:\users\derek\downloads\val\include\funcexp.h
+	<iostream>
+	<stdlib.h>
+	"ptree.h"
+	"Environment.h"
+	"Utils.h"
+
+1406738413 c:\users\derek\downloads\val\include\utils.h
+	<sstream>
+	<string>
+
+1406738413 c:\users\derek\downloads\val\include\stateobserver.h
+
+1416943051 c:\users\derek\downloads\val\include\action.h
+	"ptree.h"
+	"Proposition.h"
+	"main.h"
+	<iostream>
+	<algorithm>
+	<iterator>
+	<string>
+	<set>
+
+1406738413 c:\users\derek\downloads\val\include\main.h
+	<iostream>
+
+1416943051 c:\users\derek\downloads\val\include\plan.h
+	<vector>
+	<functional>
+	<algorithm>
+	<map>
+	<iostream>
+	"ptree.h"
+	"Exceptions.h"
+	"main.h"
+	"Ownership.h"
+	"Polynomial.h"
+	"State.h"
+
+1406295840 c:\users\maria\desktop\val\include\plan.h
+
+1406738413 c:\users\derek\downloads\val\include\exceptions.h
+	<exception>
+
+1406738413 c:\users\derek\downloads\val\include\validator.h
+	<vector>
+	<string>
+	<sstream>
+	<map>
+	"Action.h"
+	"Plan.h"
+	"State.h"
+	"Polynomial.h"
+	"Events.h"
+	"typecheck.h"
+	"RepairAdvice.h"
+	"TrajectoryConstraints.h"
+
+1406738413 c:\users\derek\downloads\val\include\events.h
+	"ptree.h"
+	"State.h"
+	"Action.h"
+	"Plan.h"
+	<vector>
+
+1406738413 c:\users\derek\downloads\val\include\typecheck.h
+	"ptree.h"
+	<set>
+	<vector>
+
+1406738413 c:\users\derek\downloads\val\include\repairadvice.h
+	"Action.h"
+	"State.h"
+	<memory>
+
+1406738413 c:\users\derek\downloads\val\include\trajectoryconstraints.h
+	"ptree.h"
+	"Proposition.h"
+	<set>
+
+1406738413 c:\users\derek\downloads\val\include\latexsupport.h
+	<vector>
+	<string>
+	<iostream>
+	"Utils.h"
+	"main.h"
+	"Validator.h"
+
+1406738413 c:\users\derek\downloads\val\include\robustanalyse.h
+	<vector>
+	<map>
+	"ptree.h"
+
+1406738413 source:c:\users\derek\downloads\val\src\environment.cpp
+	"Environment.h"
+
+1406738413 source:c:\users\derek\downloads\val\src\funcexp.cpp
+	"FuncExp.h"
+	"State.h"
+	"random.h"
+	"main.h"
+	"RobustAnalyse.h"
+
+1406738413 c:\users\derek\downloads\val\include\random.h
+	<cmath>
+	<ctime>
+
+1406738414 source:c:\users\derek\downloads\val\src\latexsupport.cpp
+	"LaTeXSupport.h"
+	"ptree.h"
+
+1406738414 source:c:\users\derek\downloads\val\src\main.cpp
+	<string>
+	"State.h"
+	"Plan.h"
+	"Validator.h"
+	"typecheck.h"
+	"RobustAnalyse.h"
+	<cstdio>
+	<iostream>
+	<fstream>
+	<time.h>
+	"ptree.h"
+	"FlexLexer.h"
+	"Utils.h"
+	"LaTeXSupport.h"
+	"main.h"
+
+1406738413 c:\users\derek\downloads\val\include\flexlexer.h
+	<iostream>
+
+1406738414 source:c:\users\derek\downloads\val\src\ownership.cpp
+	"Ownership.h"
+	"Validator.h"
+	"Action.h"
+	"FuncExp.h"
+	"Environment.h"
+	"Proposition.h"
+
+1423673826 source:c:\users\derek\downloads\val\src\pddl+.cpp
+	<cstdlib>
+	<cstdio>
+	<fstream>
+	<ctype.h>
+	"ptree.h"
+	"parse_error.h"
+	<libintl.h>
+	<stddef.h>
+	<libintl.h>
+	<alloca.h>
+	<malloc.h>
+	<stdlib.h>
+	<stdlib.h>
+	<stdio.h>
+	<cstdio>
+	<iostream>
+	"lex.yy.cc"
+
+1406738414 c:\users\derek\downloads\val\src\parser\lex.yy.cc
+	<inttypes.h>
+	<iostream>
+	<errno.h>
+	<cstdlib>
+	<cstdio>
+	<cstring>
+	<FlexLexer.h>
+	<string>
+	<fstream>
+	<unistd.h>
+
+1416943051 source:c:\users\derek\downloads\val\src\plan.cpp
+	"State.h"
+	"Plan.h"
+	"Action.h"
+	"Validator.h"
+	"main.h"
+	"Polynomial.h"
+	"Exceptions.h"
+	"ptree.h"
+	"RobustAnalyse.h"
+
+1416943051 source:c:\users\derek\downloads\val\src\polynomial.cpp
+	<math.h>
+	<vector>
+	<algorithm>
+	"Polynomial.h"
+	"Exceptions.h"
+	"Proposition.h"
+	"main.h"
+
+1406738414 source:c:\users\derek\downloads\val\src\prettyprinter.cpp
+	"PrettyPrinter.h"
+	"Utils.h"
+	"ptree.h"
+	<set>
+	<algorithm>
+	"FuncExp.h"
+
+1406738413 c:\users\derek\downloads\val\include\prettyprinter.h
+	"WriteController.h"
+
+1416943050 source:c:\users\derek\downloads\val\src\proposition.cpp
+	<string>
+	<utility>
+	"Proposition.h"
+	"State.h"
+	"Action.h"
+	"Plan.h"
+	"Validator.h"
+	"Exceptions.h"
+	"Utils.h"
+	"Polynomial.h"
+	"Events.h"
+	"PrettyPrinter.h"
+
+1406738414 source:c:\users\derek\downloads\val\src\ptree.cpp
+	"ptree.h"
+	"macros.h"
+	"DebugWriteController.h"
+	"VisitController.h"
+	<memory>
+
+1406738414 source:c:\users\derek\downloads\val\src\random.cpp
+	"random.h"
+
+1406738414 source:c:\users\derek\downloads\val\src\repairadvice.cpp
+	"RepairAdvice.h"
+	"Validator.h"
+	"Utils.h"
+
+1406738414 source:c:\users\derek\downloads\val\src\robustanalyse.cpp
+	"RobustAnalyse.h"
+	"Utils.h"
+	"LaTeXSupport.h"
+	"tDistribution.h"
+	"random.h"
+	"Validator.h"
+
+1406738413 c:\users\derek\downloads\val\include\tdistribution.h
+
+1416943051 source:c:\users\derek\downloads\val\src\state.cpp
+	"State.h"
+	"Plan.h"
+	"main.h"
+	"Validator.h"
+	"Proposition.h"
+	"Exceptions.h"
+	"LaTeXSupport.h"
+	"RobustAnalyse.h"
+	<sstream>
+
+1406295840 c:\users\maria\desktop\val\include\exceptions.h
+	<exception>
+
+1406295840 c:\users\maria\desktop\val\include\state.h
+	"Proposition.h"
+	"FuncExp.h"
+	"StateObserver.h"
+	<set>
+
+1406295840 c:\users\maria\desktop\val\include\funcexp.h
+	<iostream>
+	<stdlib.h>
+	"ptree.h"
+	"Environment.h"
+	"Utils.h"
+
+1406295840 c:\users\maria\desktop\val\include\stateobserver.h
+
+1406295840 c:\users\maria\desktop\val\include\events.h
+	"ptree.h"
+	"State.h"
+	"Action.h"
+	"Plan.h"
+	<vector>
+
+1406295840 c:\users\maria\desktop\val\include\typecheck.h
+	"ptree.h"
+	<set>
+	<vector>
+
+1406295840 c:\users\maria\desktop\val\include\repairadvice.h
+	"Action.h"
+	"State.h"
+	<memory>
+
+1406295840 c:\users\maria\desktop\val\include\trajectoryconstraints.h
+	"ptree.h"
+	"Proposition.h"
+	<set>
+
+1406295840 c:\users\maria\desktop\val\include\tdistribution.h
+
+1406295840 c:\users\maria\desktop\val\include\random.h
+	<cmath>
+	<ctime>
+
+1406295841 source:c:\users\maria\desktop\val\src\state.cpp
+
+1406738414 source:c:\users\derek\downloads\val\src\trajectoryconstraints.cpp
+
+1406295841 source:c:\users\maria\desktop\val\src\trajectoryconstraints.cpp
+
+1416943051 source:c:\users\derek\downloads\val\src\typecheck.cpp
+	"typecheck.h"
+	"ptree.h"
+	<functional>
+	"main.h"
+	"Exceptions.h"
+	<algorithm>
+
+1406738414 source:c:\users\derek\downloads\val\src\utils.cpp
+	<sstream>
+	<string>
+	"Polynomial.h"
+	"Action.h"
+	"FuncExp.h"
+	"Utils.h"
+
+1406738414 source:c:\users\derek\downloads\val\src\validator.cpp
+	<iostream>
+	<string>
+	<algorithm>
+	<math.h>
+	"Validator.h"
+	"Action.h"
+	"Utils.h"
+	"typecheck.h"
+	"Exceptions.h"
+	"RobustAnalyse.h"
+	"random.h"
+	<sstream>
+
+1423676844 source:c:\users\derek\downloads\val\src\events.cpp
+	"Events.h"
+	"Plan.h"
+	"Validator.h"
+	"Action.h"
+	"RobustAnalyse.h"
+
+1416682121 lyse.h"
+
+1406295840 c:\users\maria\desktop\val\include\visitcontroller.h
+	"ptree.h"
+
+1423673744 c:\users\derek\downloads\val\src\lex.yy.cc
+	<inttypes.h>
+	<iostream>
+	<errno.h>
+	<cstdlib>
+	<cstdio>
+	<cstring>
+	<cstdio>
+	<FlexLexer.h>
+	<string>
+	<fstream>
+	<unistd.h>
+

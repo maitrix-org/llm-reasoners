@@ -1,0 +1,22 @@
+(define (problem BW-generalization-4)
+(:domain blocksworld-4ops)(:objects g k j c f)
+(:init 
+(handempty)
+(ontable g)
+(ontable k)
+(ontable j)
+(ontable c)
+(ontable f)
+(clear g)
+(clear k)
+(clear j)
+(clear c)
+(clear f)
+)
+(:goal
+(and
+(on g k)
+(on k j)
+(on j c)
+(on c f)
+)))

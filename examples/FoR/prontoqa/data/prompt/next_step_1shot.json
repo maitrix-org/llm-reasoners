@@ -1,0 +1,8 @@
+{
+    "input": "Given a list of facts, and a current claim, output one possible fact as the next step. Be sure to copy the exact sentences in the facts. Do not change any wording. Do not create your own words.\n\nFacts 1: Each lepidopteran is an insect. Each arthropod is a protostome. Every animal is multicellular. Protostomes are invertebrates. Each whale is bony. Each painted lady is a butterfly. Invertebrates are animals. Butterflies are lepidopterans. Each insect is six-legged. Every insect is an arthropod. Arthropods are not bony.\nQuery 1: True or false: Sally is not bony.\nClaim 1.1: Sally is an insect.\nNext 1.1: Each insect is six-legged.\nClaim 1.2: Sally is a butterfly.\nNext 1.2: Butterflies are lepidopterans.\nClaim 1.3: Sally is a lepidopteran.\nNext 1.3: Each lepidopteran is an insect.\nClaim 1.4: Sally is not bony.\nNext 1.4: Finish.\nClaim 1.5: Sally is an arthropod.\nNext 1.5: Arthropods are not bony.\nClaim 1.6: Sally is a painted lady.\nNext 1.6: Each painted lady is a butterfly.\n\n",
+    "facts_format": "Facts 2: {}.\n",
+    "claim_format": "Claim 2.1: {}\n",
+    "target_format": "Query 2: {}\n",
+    "next_step_prefix": "Next 2.1:",
+    "claim_prefix": "Claim 2.1: "
+  }

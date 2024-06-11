@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="validate" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="validate">
+				<Option output="bin/validate/validate" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/validate/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add directory="include" />
+					<Add directory="src/parser" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+			<Target title="parser">
+				<Option output="bin/parser/parser" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin/parser/" />
+				<Option object_output="obj/parser/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add directory="include" />
+					<Add directory="src/parser" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+			<Target title="tan">
+				<Option output="bin/tan/tan" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin/tan/" />
+				<Option object_output="obj/tan/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add directory="include" />
+					<Add directory="src/parser" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-O2" />
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Unit filename="include/Action.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/Analyser.h">
+			<Option target="tan" />
+		</Unit>
+		<Unit filename="include/Cascader.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/DebugWriteController.h" />
+		<Unit filename="include/Environment.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/Events.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/Exceptions.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/FuncAnalysis.h">
+			<Option target="tan" />
+		</Unit>
+		<Unit filename="include/FuncExp.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/LaTeXSupport.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/Ownership.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/Partitions.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/Plan.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/Polynomial.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/PrettyPrinter.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/Proposition.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/RepairAdvice.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/RobustAnalyse.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/State.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/TrajectoryConstraints.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/TypedAnalyser.h">
+			<Option target="validate" />
+			<Option target="tan" />
+		</Unit>
+		<Unit filename="include/Utils.h">
+			<Option target="validate" />
+			<Option target="tan" />
+		</Unit>
+		<Unit filename="include/Validator.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="include/VisitController.h">
+			<Option target="validate" />
+			<Option target="tan" />
+		</Unit>
+		<Unit filename="include/WriteController.h">
+			<Option target="validate" />
+			<Option target="tan" />
+		</Unit>
+		<Unit filename="include/macros.h" />
+		<Unit filename="include/parse_error.h" />
+		<Unit filename="include/ptree.h" />
+		<Unit filename="include/typecheck.h">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/Action.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/DebugWriteController.cpp" />
+		<Unit filename="src/Environment.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/Events.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/FuncAnalysis.cpp">
+			<Option target="tan" />
+		</Unit>
+		<Unit filename="src/FuncExp.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/LaTeXSupport.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/Ownership.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/Plan.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/Polynomial.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/PrettyPrinter.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/Proposition.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/RepairAdvice.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/RobustAnalyse.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/State.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/TrajectoryConstraints.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/TypedAnalyser.cpp">
+			<Option target="tan" />
+		</Unit>
+		<Unit filename="src/TypedAnalysis.cpp">
+			<Option target="tan" />
+		</Unit>
+		<Unit filename="src/Utils.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/Validator.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/main.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/parse.cpp">
+			<Option target="parser" />
+		</Unit>
+		<Unit filename="src/pddl+.cpp" />
+		<Unit filename="src/ptree.cpp" />
+		<Unit filename="src/random.cpp">
+			<Option target="validate" />
+		</Unit>
+		<Unit filename="src/typecheck.cpp">
+			<Option target="validate" />
+			<Option target="tan" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

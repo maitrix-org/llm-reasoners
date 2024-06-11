@@ -1,0 +1,114 @@
+instance_dir: logistics/generated_basic
+generalized_instance_dir: logistics/generated
+domain_file: logistics/generated_domain.pddl
+domain_name: logistics
+n_instances: 285
+start: 1
+end: 200
+instances_template: instance-{}.pddl
+
+domain_intro: |
+   I have to plan logistics to transport packages within cities via trucks and between cities via airplanes. Locations within a city are directly connected (trucks can move between any two such locations), and so are the cities. In each city there is exactly one truck and each city has one location that serves as an airport.
+   Here are the actions that can be performed:
+
+   Load a package into a truck. 
+   Load a package into an airplane.
+   Unload a package from a truck. 
+   Unload a package from an airplane. 
+   Drive a truck from one location to another location. 
+   Fly an airplane from one city to another city.
+
+   The following are the restrictions on the actions:
+   A package can be loaded into a truck only if the package and the truck are in the same location.
+   Once a package is loaded into a truck, the package is not at the location and is in the truck.   
+   A package can be loaded into an airplane only if the package and the airplane are in the same location.
+   Once a package is loaded into an airplane, the package is not at the location and is in the airplane.
+   A package can be unloaded from a truck only if the package is in the truck.
+   Once a package is unloaded from a truck, the package is not in the truck and is at the location of the truck.
+   A package can be unloaded from an airplane only if the package in the airplane.
+   Once a package is unloaded from an airplane, the package is not in the airplane and is at the location of the airplane.   
+   A truck can be driven from one location to another if the truck is at the from-location and both from-location and to-location are locations in the same city.
+   Once a truck is driven from one location to another, it is not at the from-location and is at the to-location.
+   An airplane can be flown from one city to another if the from-location and the to-location are airports and the airplane is at the from-location.
+   Once an airplane is flown from one city to another the airplane is not at the from-location and is at the to-location.
+
+domain_intro_zero_shot: |
+   I have to plan logistics to transport packages within cities via trucks and between cities via airplanes. Locations within a city are directly connected (trucks can move between any two such locations), and so are the cities. In each city there is exactly one truck and each city has one location that serves as an airport.
+   Here are the actions that can be performed:
+
+   Load a package into a truck. For example, load package_1 into truck_1 at location_1_1.
+   Load a package into an airplane. For example, load package_1 into airplane_1 at location_1_1.
+   Unload a package from a truck. For example, unload package_1 from truck_1 at location_1_1.
+   Unload a package from an airplane. For example, unload package_1 from airplane_1 at location_1_1.
+   Drive a truck from one location to another location. For example, drive truck_1 from location_1_1 to location_1_2 in city_1.
+   Fly an airplane from one city to another city. For example, fly airplane_1 from location_1_1 to location_2_1. Here location_1_1 is the airport in city_1 and location_2_1 is the airport in city_2.
+
+   The following are the restrictions on the actions:
+   A package can be loaded into a truck only if the package and the truck are in the same location.
+   Once a package is loaded into a truck, the package is not at the location and is in the truck.   
+   A package can be loaded into an airplane only if the package and the airplane are in the same location.
+   Once a package is loaded into an airplane, the package is not at the location and is in the airplane.
+   A package can be unloaded from a truck only if the package is in the truck.
+   Once a package is unloaded from a truck, the package is not in the truck and is at the location of the truck.
+   A package can be unloaded from an airplane only if the package in the airplane.
+   Once a package is unloaded from an airplane, the package is not in the airplane and is at the location of the airplane.   
+   A truck can be driven from one location to another if the truck is at the from-location and both from-location and to-location are locations in the same city.
+   Once a truck is driven from one location to another, it is not at the from-location and is at the to-location.
+   An airplane can be flown from one city to another if the from-location and the to-location are airports and the airplane is at the from-location.
+   Once an airplane is flown from one city to another the airplane is not at the from-location and is at the to-location.
+
+domain_intro_state_tracking: |
+   I have to plan logistics to transport packages within cities via trucks and between cities via airplanes. Locations within a city are directly connected (trucks can move between any two such locations), and so are the cities. In each city there is exactly one truck and each city has one location that serves as an airport.
+   Here are the actions that can be performed:
+
+   Load a package into a truck. For example, load package_1 into truck_1 at location_1_1.
+   Load a package into an airplane. For example, load package_1 into airplane_1 at location_1_1.
+   Unload a package from a truck. For example, unload package_1 from truck_1 at location_1_1.
+   Unload a package from an airplane. For example, unload package_1 from airplane_1 at location_1_1.
+   Drive a truck from one location to another location. For example, drive truck_1 from location_1_1 to location_1_2 in city_1.
+   Fly an airplane from one city to another city. For example, fly airplane_1 from location_1_1 to location_2_1. Here location_1_1 is the airport in city_1 and location_2_1 is the airport in city_2.
+
+   The following are the restrictions on the actions:
+   A package can be loaded into a truck only if the package and the truck are in the same location.
+   Once a package is loaded into a truck, the package is not at the location and is in the truck.   
+   A package can be loaded into an airplane only if the package and the airplane are in the same location.
+   Once a package is loaded into an airplane, the package is not at the location and is in the airplane.
+   A package can be unloaded from a truck only if the package is in the truck.
+   Once a package is unloaded from a truck, the package is not in the truck and is at the location of the truck.
+   A package can be unloaded from an airplane only if the package in the airplane.
+   Once a package is unloaded from an airplane, the package is not in the airplane and is at the location of the airplane.   
+   A truck can be driven from one location to another if the truck is at the from-location and both from-location and to-location are locations in the same city.
+   Once a truck is driven from one location to another, it is not at the from-location and is at the to-location.
+   An airplane can be flown from one city to another if the from-location and the to-location are airports and the airplane is at the from-location.
+   Once an airplane is flown from one city to another the airplane is not at the from-location and is at the to-location.
+
+   The plan correctness is defined in terms of states resulting from executing the actions in the plan. An action is executable in a state when all its preconditions hold in that state. The state resulting from the action execution consists of everything in the previous state with the addition and deletion of add and delete effects of the action. Plan correctness is defined as follows: if the first action in the plan is applicable in the initial state, i.e., its preconditions are all present there; and the second action is applicable in the state resulting from applying the first action to the initial state, this process continues until the state resulting from the application of the last action in the last but one state gives rise to the final state where all the goals are satisfied.
+
+
+actions:
+  {
+    load-truck: "load {} into {} at {}",
+    load-airplane: "load {} into {} at {}",
+    unload-truck: "unload {} from {} at {}",
+    unload-airplane: "unload {} from {} at {}",
+    drive-truck: "drive {} from {} to {} in {}",
+    fly-airplane: "fly {} from {} to {}"
+  }
+
+
+predicates: {
+   "airplane": "",
+   "airport": "{} is an airport",
+   "city": "",
+   "location": "",
+   "obj": "",
+   "truck": "",
+   "at": "{} is at {}",
+   "in": "{} is in {}",
+   "in-city": "{} is in the city {}",
+  }
+
+# encoded_objects: dictionary of object names, have to be alphabetical
+encoded_objects:
+  {"p": "package_{}", "t": "truck_{}", "a": "airplane_{}", "l": "location_{}_{}", "c": "city_{}"}
+

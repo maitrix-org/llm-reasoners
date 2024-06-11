@@ -1,0 +1,6 @@
+{
+  "input": "Given a query and a claim, output \"True\" if the query and the claim are the same, or \"False\" if they are different.\n\nQuery: True or false: Sally is not bony.\nClaim: Sally is not bony.\nOutput: True\n\nQuery: True or false: 127 is not real.\nClaim: 127 is real.\nOutput: False\n\nQuery: True or false: Polly is not small.\nClaim: Polly is small.\nOutput: False\n\nQuery: True or false: Fae is not cold-blooded.\nClaim: Fae is not cold-blooded.\nOutput: True\n\nQuery: True or false: 7 is imaginary.\nClaim: 7 is not imaginary.\nOutput: False\n\nQuery: True or false: Stella is six-legged.\nClaim: Stella is six-legged.\nOutput: True\n\n",
+  "target_format": "Query: {}\n",
+  "claim_format": "Claim: {}\n",
+  "output_prefix": "Output:"
+}

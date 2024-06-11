@@ -1,0 +1,22 @@
+---
+domain: generated_basic
+domain_file: generated_domain.pddl
+domain_name: mystery_blocksworld_zero_shot
+n_instances: 500
+start: 1
+end: 500
+instances_template: instance-{}.pddl
+
+
+predicates:
+  {ontable: "planet",
+   clear: "province",
+   handempty: "harmony",
+   "on": "craves",
+  "holding": "pain"}
+actions:
+  {pick-up: "attack",
+   put-down: "succumb",
+   stack: "overcome",
+   unstack: "feast"}
+
