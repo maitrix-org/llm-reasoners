@@ -7,6 +7,47 @@ This example demonstrates the implementation of the Prompt Agent framework ([Wan
 
 PromptAgent optimizes prompts by treating the process as a strategic planning problem. Explore various potential prompts, iterating through states (prompt versions) and actions (modifications based on model errors) to systematically refine them. This method bridges the gap between novice and expert prompt engineers with minimal human intervention, ensuring maximum performance.
 
+## How to make custom tasks
+
+### config.py
+#### Hyperparameters
+- `depth_limit`: The maximum depth for searching.
+- `origin_prompt`: Initial prompt.
+- `num_batches`: Number of batches for processing,.
+- `steps_per_gradient`: Number of prompts per gradient computation.
+- `batch_size`: Number of items per batch.
+- `w_exp`: Exponential weight factor for computations.
+- `n_iters`: Number of iterations for each reasoning process.
+- `prompt_position`: Positioning of the prompt in the reasoning process, set to "pre" to indicate before the main content, 'pro' to then end.
+
+#### Model Configuration
+- `base_model`: The model used to answer the questions.
+- `optimize_model`: The model used to give the feedback and the new prompts.
+
+### task.py
+
+#### `load_task_dataset`
+- **Usage**: Loads the question dataset and preprocesses it into training, evaluating, and testing subsets.
+- **Parameters**: None
+- **Returns**: Three lists containing questions for training, evaluating, and testing.
+
+#### `reformat_data`
+- **Usage**: Reformats the dataset entries for compatibility with the prompt generation process.
+- **Parameters**: `question_list` - a list of question entries to be reformatted.
+- **Returns**: A reformatted list of question entries. Include keys 'question0' and 'answer'
+
+#### `extract_answer`
+- **Usage**: Extracts the answer from a response provided by a language model.
+- **Parameters**: `message` - the string containing the model's response.
+- **Returns**: The extracted answer key as a string.
+
+#### `check_answer`
+- **Usage**: Checks if the answer provided by the model matches the correct answer.
+- **Parameters**:
+  - `model_answer`: The answer provided by the model.
+  - `correct_answer`: The correct answer to the question.
+- **Returns**: `True` if the answers match, otherwise `False`.
+
 ## Running the example
 
 Prerequisites:
@@ -14,6 +55,7 @@ Prerequisites:
 
 How to run:
 - python inference.py --prompt "The origin prompt"
+
 
 ## Results
 
