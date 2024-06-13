@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
     def main(
         base_lm: Literal[ 'llama2',' exllama', 'llama3']  = 'exllama',
-        model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
+        model_dir = '/path/to/model',
         llama_size = None,
         lora_dir = None,
         batch_size = 1,
@@ -240,16 +240,14 @@ if __name__ == '__main__':
 
     fire.Fire(main)
 
-def evaluate():
-    # eval_non_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/11062023-070513/algo_output', resume_s=0, resume_e=1000)
-    eval_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/11062023-070513/algo_output', resume_s=0, resume_e=209)
 
 
 
+# def evaluate():
+#     # eval_non_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/11062023-070513/algo_output', resume_s=0, resume_e=1000)
+#     eval_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/11062023-070513/algo_output', resume_s=0, resume_e=209)
 
 #fire.Fire(evaluate())
-
-
     
 '''
 def main_hf(hf_path = "/data/haotian/RAP_tune/Llama-2-13b-hf",

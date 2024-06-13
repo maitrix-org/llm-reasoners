@@ -29,13 +29,13 @@ def data_reader(filename, split=None, sample_size=100):
             raise ValueError("Unexpected data format")
     return Dataset.from_dict({"question": questions, "answer": answers, "options":options})
 
-def aggregate_AQuA(log_dir: str='/data/haotian/RAP_tune/llm-reasoners/logs/aqua_MCTS/09112023-183738',
+def aggregate_AQuA(log_dir: str,
                         start: int = 0):
     print(log_dir)
     aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge_inverse_depth')
     files = glob.glob(f'{log_dir}/algo_output/*.pkl')
     indices = sorted(filter(lambda index: index >= start, (int(os.path.basename(f)[:-4]) for f in files)))
-    dataset = data_reader('/data/haotian/RAP_tune/llm-reasoners/dataset/AQuA/AQuA_clean.json')
+    dataset = data_reader('/path/to/AQuA/data.json')
     correct_count = 0
     for i, index in enumerate(tqdm(indices)):
         with open(f'{log_dir}/algo_output/{index}.pkl', 'rb') as f:
@@ -50,7 +50,7 @@ def aggregate_AQuA(log_dir: str='/data/haotian/RAP_tune/llm-reasoners/logs/aqua_
         log_str = f'Case #{i + 1}({index}): {correct=}, {output=}, {answer=} ; {accuracy=:.3f} ({correct_count}/{i+1})'
         tqdm.write(log_str)
 
-
+# It's not used. 
 if __name__ == '__main__':
     import fire
     fire.Fire(aggregate_AQuA)
