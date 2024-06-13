@@ -13,7 +13,7 @@ PromptAgent optimizes prompts by treating the process as a strategic planning pr
 #### Hyperparameters
 - `depth_limit`: The maximum depth for searching.
 - `origin_prompt`: Initial prompt.
-- `num_batches`: Number of batches for processing,.
+- `num_batches`: Number of batches.
 - `steps_per_gradient`: Number of prompts per gradient computation.
 - `batch_size`: Number of items per batch.
 - `w_exp`: Exponential weight factor for computations.
