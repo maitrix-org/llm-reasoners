@@ -189,7 +189,7 @@ def main():
 
     def main_exllama(
         base_lm = 'exllama',
-        model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
+        model_dir = '/path/to/model',
         lora_dir = None,
         batch_size = 1,
         mem_map = [16,22],
@@ -218,12 +218,12 @@ def main():
 
 
 def evaluate():
-    eval_non_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/10252023-064332/algo_output', resume_s=0, resume_e=1000)
+    eval_non_aggregate(pkl_pth='/path/to/llm-reasoners/logs/AQuA/time/algo_output', resume_s=0, resume_e=1000)
     # eval_aggregate(pkl_pth='/data/haotian/RAP_tune/llm-reasoners/logs/AQuA_clean_MCTS/10252023-064332/algo_output', resume_s=0, resume_e=1000)
 
 
 #fire.Fire(main())
-
+#It is not used.
 fire.Fire(evaluate())
 
 

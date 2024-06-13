@@ -29,7 +29,7 @@ def data_reader(filename, split=None, sample_size=100):
             raise ValueError("Unexpected data format")
     return Dataset.from_dict({"question": questions, "answer": answers, "options":options})
 
-def aggregate_AQuA(log_dir: str='/data/haotian/RAP_tune/llm-reasoners/logs/aqua_MCTS/09112023-183738',
+def aggregate_AQuA(log_dir: str,
                         start: int = 0):
     print(log_dir)
     aggregator = MCTSAggregation(utils.retrieve_answer, weight_policy='edge_inverse_depth')
@@ -50,7 +50,7 @@ def aggregate_AQuA(log_dir: str='/data/haotian/RAP_tune/llm-reasoners/logs/aqua_
         log_str = f'Case #{i + 1}({index}): {correct=}, {output=}, {answer=} ; {accuracy=:.3f} ({correct_count}/{i+1})'
         tqdm.write(log_str)
 
-
+#It is not used.
 if __name__ == '__main__':
     import fire
     fire.Fire(aggregate_AQuA)

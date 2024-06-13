@@ -112,7 +112,7 @@ if __name__ == '__main__':
 
     def main(
         base_lm: Literal['llama2',' exllama', 'llama3']  = 'exllama',
-        model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
+        model_dir = '/path/to/model',
         llama_size = "7B",
         lora_dir = None,
         batch_size = 1,

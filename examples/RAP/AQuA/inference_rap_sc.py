@@ -121,7 +121,7 @@ if __name__ == '__main__':
 
     def main_exllama(
         base_lm = 'exllama',
-        model_dir = '/data/haotian/RAP_tune/Llama-2-70B-GPTQ',
+        model_dir = '/path/to/model',
         lora_dir = None,
         batch_size = 1,
         mem_map = [16,22],

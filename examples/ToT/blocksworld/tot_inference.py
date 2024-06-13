@@ -200,7 +200,7 @@ if __name__ == '__main__':
 
     def main(
             base_lm: Literal[ 'llama2',' exllama', 'llama3']  = 'exllama',
-            model_dir = '/data/haotian/RAP_tune/Llama-2-13B-GPTQ',
+            model_dir = '/path/to/model',
             llama_size = "7B",
             lora_dir = None,
             prompt_path: str = 'examples/CoT/blocksworld/prompts/pool_prompt_v1.json',
