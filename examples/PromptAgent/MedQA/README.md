@@ -39,7 +39,7 @@ PromptAgent optimizes prompts by treating the process as a strategic planning pr
 #### `extract_answer`
 - **Usage**: Extracts the answer from a response provided by a language model.
 - **Parameters**: `message` - the string containing the model's response.
-- **Returns**: The extracted answer key as a string.
+- **Returns**: The extracted answer.
 
 #### `check_answer`
 - **Usage**: Checks if the answer provided by the model matches the correct answer.
