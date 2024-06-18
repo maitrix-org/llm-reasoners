@@ -54,7 +54,7 @@ Prerequisites:
 - Set the environment variable `OPENAI_API_KEY` to your API key. Each run may cost approximately $5 USD.
 
 How to run:
-- python inference.py --prompt "The origin prompt"
+- python inference.py
 
 
 ## Results
