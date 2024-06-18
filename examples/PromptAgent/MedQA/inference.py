@@ -62,6 +62,11 @@ class PromptWorldModel(WorldModel[PromptState, PromptAction, str]):
             max_threshold = self.best_accuracy
             current_reward = self.get_accuracy(state.text)
             if current_reward < min_threshold or current_reward > max_threshold:
+                if current_reward > self.best_accuracy:
+                    self.best_accuracy = current_reward
+                    print("New Best Prompt: ",state.text)
+                    print("The Evaluate Accuracy: ",current_reward)
+                    print("________________________________________________")
                 return True
         return False
 
