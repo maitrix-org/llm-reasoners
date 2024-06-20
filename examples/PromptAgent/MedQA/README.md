@@ -34,7 +34,7 @@ PromptAgent optimizes prompts by treating the process as a strategic planning pr
 #### `reformat_data`
 - **Usage**: Reformats the dataset entries for compatibility with the prompt generation process.
 - **Parameters**: `question_list` - a list of question entries to be reformatted.
-- **Returns**: A reformatted list of question entries. Include keys 'question0' and 'answer'
+- **Returns**: A reformatted list of question entries. Include keys 'question' and 'answer'
 
 #### `extract_answer`
 - **Usage**: Extracts the answer from a response provided by a language model.
