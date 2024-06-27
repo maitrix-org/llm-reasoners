@@ -1,0 +1,205 @@
+action_obfuscation:
+  drive-truck: ucb7r68xuhd352zp
+  fly-airplane: i43ia3g2ygc7vwqf
+  load-airplane: e6tbvxb13cxqiqfm
+  load-truck: v1pjso2krv6sk1wj
+  unload-airplane: kl6t91ujyqzora0b
+  unload-truck: ozh031mvw6d4smqa
+actions:
+  e6tbvxb13cxqiqfm: e6tbvxb13cxqiqfm {} {} {}
+  i43ia3g2ygc7vwqf: i43ia3g2ygc7vwqf {} {} {}
+  kl6t91ujyqzora0b: kl6t91ujyqzora0b {} {} {}
+  ozh031mvw6d4smqa: ozh031mvw6d4smqa {} {} {}
+  ucb7r68xuhd352zp: ucb7r68xuhd352zp {} {} {} {}
+  v1pjso2krv6sk1wj: v1pjso2krv6sk1wj {} {} {}
+domain_file: obfuscated_randomized_logistics/generated_domain.pddl
+domain_intro: 'I am playing with a set of objects. Here are the actions I can do
+
+
+  E6tbvxb13cxqiqfm object_0 object_1 object_2.
+
+  I43ia3g2ygc7vwqf object_0 object_1 object_2.
+
+  V1pjso2krv6sk1wj object_0 object_1 object_2.
+
+  Ozh031mvw6d4smqa object_0 object_1 object_2.
+
+  Ucb7r68xuhd352zp object_0 object_1 object_2 object_3.
+
+  Kl6t91ujyqzora0b object_0 object_1 object_2.
+
+
+  I have the following restrictions on my actions:
+
+  To perform e6tbvxb13cxqiqfm action, the following facts need to be true: zwcd0caosqrvypn9
+  object_0, anav4gem8e8nrk78 object_1, cbaj1n1wo5bq3ezl object_2, uiat7ywwr0i6j87c
+  object_0 object_2, and uiat7ywwr0i6j87c object_1 object_2
+
+  Once e6tbvxb13cxqiqfm is performed the following facts will be true: hdqlgp6pqzse6p2n
+  object_0 object_1
+
+  Once e6tbvxb13cxqiqfm is performed the following facts will be false: uiat7ywwr0i6j87c
+  object_0 object_2
+
+  To perform i43ia3g2ygc7vwqf action, the following facts need to be true: anav4gem8e8nrk78
+  object_0, slhkq82juy2qo1pi object_1, slhkq82juy2qo1pi object_2, and uiat7ywwr0i6j87c
+  object_0 object_1
+
+  Once i43ia3g2ygc7vwqf is performed the following facts will be true: uiat7ywwr0i6j87c
+  object_0 object_2
+
+  Once i43ia3g2ygc7vwqf is performed the following facts will be false: uiat7ywwr0i6j87c
+  object_0 object_1
+
+  To perform v1pjso2krv6sk1wj action, the following facts need to be true: zwcd0caosqrvypn9
+  object_0, qg9duf682li1kpbe object_1, cbaj1n1wo5bq3ezl object_2, uiat7ywwr0i6j87c
+  object_1 object_2, and uiat7ywwr0i6j87c object_0 object_2
+
+  Once v1pjso2krv6sk1wj is performed the following facts will be true: hdqlgp6pqzse6p2n
+  object_0 object_1
+
+  Once v1pjso2krv6sk1wj is performed the following facts will be false: uiat7ywwr0i6j87c
+  object_0 object_2
+
+  To perform ozh031mvw6d4smqa action, the following facts need to be true: zwcd0caosqrvypn9
+  object_0, qg9duf682li1kpbe object_1, cbaj1n1wo5bq3ezl object_2, uiat7ywwr0i6j87c
+  object_1 object_2, and hdqlgp6pqzse6p2n object_0 object_1
+
+  Once ozh031mvw6d4smqa is performed the following facts will be true: uiat7ywwr0i6j87c
+  object_0 object_2
+
+  Once ozh031mvw6d4smqa is performed the following facts will be false: hdqlgp6pqzse6p2n
+  object_0 object_1
+
+  To perform ucb7r68xuhd352zp action, the following facts need to be true: qg9duf682li1kpbe
+  object_0, cbaj1n1wo5bq3ezl object_1, cbaj1n1wo5bq3ezl object_2, arsbumagdtb748l6
+  object_3, uiat7ywwr0i6j87c object_0 object_1, s8mp0xjykmt0fawa object_1 object_3,
+  and s8mp0xjykmt0fawa object_2 object_3
+
+  Once ucb7r68xuhd352zp is performed the following facts will be true: uiat7ywwr0i6j87c
+  object_0 object_2
+
+  Once ucb7r68xuhd352zp is performed the following facts will be false: uiat7ywwr0i6j87c
+  object_0 object_1
+
+  To perform kl6t91ujyqzora0b action, the following facts need to be true: zwcd0caosqrvypn9
+  object_0, anav4gem8e8nrk78 object_1, cbaj1n1wo5bq3ezl object_2, hdqlgp6pqzse6p2n
+  object_0 object_1, and uiat7ywwr0i6j87c object_1 object_2
+
+  Once kl6t91ujyqzora0b is performed the following facts will be true: uiat7ywwr0i6j87c
+  object_0 object_2
+
+  Once kl6t91ujyqzora0b is performed the following facts will be false: hdqlgp6pqzse6p2n
+  object_0 object_1
+
+  '
+domain_intro_cost: 'I am playing with a set of objects. Here are the actions I can
+  do
+
+
+  E6tbvxb13cxqiqfm object_0 object_1 object_2. It takes one minute to e6tbvxb13cxqiqfm.
+
+  I43ia3g2ygc7vwqf object_0 object_1 object_2. It takes one minute to i43ia3g2ygc7vwqf.
+
+  V1pjso2krv6sk1wj object_0 object_1 object_2. It takes one minute to v1pjso2krv6sk1wj.
+
+  Ozh031mvw6d4smqa object_0 object_1 object_2. It takes one minute to ozh031mvw6d4smqa.
+
+  Ucb7r68xuhd352zp object_0 object_1 object_2 object_3. It takes one minute to ucb7r68xuhd352zp.
+
+  Kl6t91ujyqzora0b object_0 object_1 object_2. It takes one minute to kl6t91ujyqzora0b.
+
+
+  I have the following restrictions on my actions:
+
+  To perform e6tbvxb13cxqiqfm action, the following facts need to be true: zwcd0caosqrvypn9
+  object_0, anav4gem8e8nrk78 object_1, cbaj1n1wo5bq3ezl object_2, uiat7ywwr0i6j87c
+  object_0 object_2, and uiat7ywwr0i6j87c object_1 object_2
+
+  Once e6tbvxb13cxqiqfm is performed the following facts will be true: hdqlgp6pqzse6p2n
+  object_0 object_1
+
+  Once e6tbvxb13cxqiqfm is performed the following facts will be false: uiat7ywwr0i6j87c
+  object_0 object_2
+
+  To perform i43ia3g2ygc7vwqf action, the following facts need to be true: anav4gem8e8nrk78
+  object_0, slhkq82juy2qo1pi object_1, slhkq82juy2qo1pi object_2, and uiat7ywwr0i6j87c
+  object_0 object_1
+
+  Once i43ia3g2ygc7vwqf is performed the following facts will be true: uiat7ywwr0i6j87c
+  object_0 object_2
+
+  Once i43ia3g2ygc7vwqf is performed the following facts will be false: uiat7ywwr0i6j87c
+  object_0 object_1
+
+  To perform v1pjso2krv6sk1wj action, the following facts need to be true: zwcd0caosqrvypn9
+  object_0, qg9duf682li1kpbe object_1, cbaj1n1wo5bq3ezl object_2, uiat7ywwr0i6j87c
+  object_1 object_2, and uiat7ywwr0i6j87c object_0 object_2
+
+  Once v1pjso2krv6sk1wj is performed the following facts will be true: hdqlgp6pqzse6p2n
+  object_0 object_1
+
+  Once v1pjso2krv6sk1wj is performed the following facts will be false: uiat7ywwr0i6j87c
+  object_0 object_2
+
+  To perform ozh031mvw6d4smqa action, the following facts need to be true: zwcd0caosqrvypn9
+  object_0, qg9duf682li1kpbe object_1, cbaj1n1wo5bq3ezl object_2, uiat7ywwr0i6j87c
+  object_1 object_2, and hdqlgp6pqzse6p2n object_0 object_1
+
+  Once ozh031mvw6d4smqa is performed the following facts will be true: uiat7ywwr0i6j87c
+  object_0 object_2
+
+  Once ozh031mvw6d4smqa is performed the following facts will be false: hdqlgp6pqzse6p2n
+  object_0 object_1
+
+  To perform ucb7r68xuhd352zp action, the following facts need to be true: qg9duf682li1kpbe
+  object_0, cbaj1n1wo5bq3ezl object_1, cbaj1n1wo5bq3ezl object_2, arsbumagdtb748l6
+  object_3, uiat7ywwr0i6j87c object_0 object_1, s8mp0xjykmt0fawa object_1 object_3,
+  and s8mp0xjykmt0fawa object_2 object_3
+
+  Once ucb7r68xuhd352zp is performed the following facts will be true: uiat7ywwr0i6j87c
+  object_0 object_2
+
+  Once ucb7r68xuhd352zp is performed the following facts will be false: uiat7ywwr0i6j87c
+  object_0 object_1
+
+  To perform kl6t91ujyqzora0b action, the following facts need to be true: zwcd0caosqrvypn9
+  object_0, anav4gem8e8nrk78 object_1, cbaj1n1wo5bq3ezl object_2, hdqlgp6pqzse6p2n
+  object_0 object_1, and uiat7ywwr0i6j87c object_1 object_2
+
+  Once kl6t91ujyqzora0b is performed the following facts will be true: uiat7ywwr0i6j87c
+  object_0 object_2
+
+  Once kl6t91ujyqzora0b is performed the following facts will be false: hdqlgp6pqzse6p2n
+  object_0 object_1
+
+  '
+domain_name: obfuscated_randomized_logistics
+encoded_objects:
+  o: object_{}
+end: 285
+generalized_instance_dir: obfuscated_randomized_logistics/generated
+instance_dir: obfuscated_randomized_logistics/generated_basic
+instances_template: instance-{}.pddl
+n_instances: 285
+predicate_obfuscation:
+  airplane: anav4gem8e8nrk78
+  airport: slhkq82juy2qo1pi
+  at: uiat7ywwr0i6j87c
+  city: arsbumagdtb748l6
+  in: hdqlgp6pqzse6p2n
+  in-city: s8mp0xjykmt0fawa
+  location: cbaj1n1wo5bq3ezl
+  obj: zwcd0caosqrvypn9
+  truck: qg9duf682li1kpbe
+predicates:
+  anav4gem8e8nrk78: anav4gem8e8nrk78 {}
+  arsbumagdtb748l6: arsbumagdtb748l6 {}
+  cbaj1n1wo5bq3ezl: cbaj1n1wo5bq3ezl {}
+  hdqlgp6pqzse6p2n: hdqlgp6pqzse6p2n {} {}
+  qg9duf682li1kpbe: qg9duf682li1kpbe {}
+  s8mp0xjykmt0fawa: s8mp0xjykmt0fawa {} {}
+  slhkq82juy2qo1pi: slhkq82juy2qo1pi {}
+  uiat7ywwr0i6j87c: uiat7ywwr0i6j87c {} {}
+  zwcd0caosqrvypn9: zwcd0caosqrvypn9 {}
+start: 1

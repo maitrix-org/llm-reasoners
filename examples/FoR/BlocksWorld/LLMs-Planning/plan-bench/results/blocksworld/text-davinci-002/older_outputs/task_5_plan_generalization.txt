@@ -1,0 +1,2001 @@
+
+ Instance ./instances/generated/instance-1.pddl
+
+ Instance ./instances/generated/instance-2.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-2.pddl
+
+ Instance ./instances/generated/instance-3.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-3.pddl
+
+ Instance ./instances/generated/instance-4.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-4.pddl
+
+ Instance ./instances/generated/instance-5.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-5.pddl
+
+ Instance ./instances/generated/instance-6.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-6.pddl
+
+ Instance ./instances/generated/instance-7.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-7.pddl
+
+ Instance ./instances/generated/instance-8.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-8.pddl
+
+ Instance ./instances/generated/instance-9.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-9.pddl
+
+ Instance ./instances/generated/instance-10.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-10.pddl
+
+ Instance ./instances/generated/instance-11.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-11.pddl
+
+ Instance ./instances/generated/instance-12.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-12.pddl
+
+ Instance ./instances/generated/instance-13.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-13.pddl
+
+ Instance ./instances/generated/instance-14.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-14.pddl
+
+ Instance ./instances/generated/instance-15.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-15.pddl
+
+ Instance ./instances/generated/instance-16.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-16.pddl
+
+ Instance ./instances/generated/instance-17.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-17.pddl
+
+ Instance ./instances/generated/instance-18.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-18.pddl
+
+ Instance ./instances/generated/instance-19.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-19.pddl
+
+ Instance ./instances/generated/instance-20.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-20.pddl
+
+ Instance ./instances/generated/instance-21.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-21.pddl
+
+ Instance ./instances/generated/instance-22.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-22.pddl
+
+ Instance ./instances/generated/instance-23.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-23.pddl
+
+ Instance ./instances/generated/instance-24.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-24.pddl
+
+ Instance ./instances/generated/instance-25.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-25.pddl
+
+ Instance ./instances/generated/instance-26.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-26.pddl
+
+ Instance ./instances/generated/instance-27.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-27.pddl
+
+ Instance ./instances/generated/instance-28.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-28.pddl
+
+ Instance ./instances/generated/instance-29.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-29.pddl
+
+ Instance ./instances/generated/instance-30.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-30.pddl
+
+ Instance ./instances/generated/instance-31.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-31.pddl
+
+ Instance ./instances/generated/instance-32.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-32.pddl
+
+ Instance ./instances/generated/instance-33.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-33.pddl
+
+ Instance ./instances/generated/instance-34.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-34.pddl
+
+ Instance ./instances/generated/instance-35.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-35.pddl
+
+ Instance ./instances/generated/instance-36.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-36.pddl
+
+ Instance ./instances/generated/instance-37.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-37.pddl
+
+ Instance ./instances/generated/instance-38.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-38.pddl
+
+ Instance ./instances/generated/instance-39.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-39.pddl
+
+ Instance ./instances/generated/instance-40.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-40.pddl
+
+ Instance ./instances/generated/instance-41.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-41.pddl
+
+ Instance ./instances/generated/instance-42.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-42.pddl
+
+ Instance ./instances/generated/instance-43.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-43.pddl
+
+ Instance ./instances/generated/instance-44.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-44.pddl
+
+ Instance ./instances/generated/instance-45.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-45.pddl
+
+ Instance ./instances/generated/instance-46.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-46.pddl
+
+ Instance ./instances/generated/instance-47.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-47.pddl
+
+ Instance ./instances/generated/instance-48.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-48.pddl
+
+ Instance ./instances/generated/instance-49.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-49.pddl
+
+ Instance ./instances/generated/instance-50.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-50.pddl
+
+ Instance ./instances/generated/instance-51.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-51.pddl
+
+ Instance ./instances/generated/instance-52.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-52.pddl
+
+ Instance ./instances/generated/instance-53.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-53.pddl
+
+ Instance ./instances/generated/instance-54.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-54.pddl
+
+ Instance ./instances/generated/instance-55.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-55.pddl
+
+ Instance ./instances/generated/instance-56.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-56.pddl
+
+ Instance ./instances/generated/instance-57.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-57.pddl
+
+ Instance ./instances/generated/instance-58.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-58.pddl
+
+ Instance ./instances/generated/instance-59.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-59.pddl
+
+ Instance ./instances/generated/instance-60.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-60.pddl
+
+ Instance ./instances/generated/instance-61.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-61.pddl
+
+ Instance ./instances/generated/instance-62.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-62.pddl
+
+ Instance ./instances/generated/instance-63.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-63.pddl
+
+ Instance ./instances/generated/instance-64.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-64.pddl
+
+ Instance ./instances/generated/instance-65.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-65.pddl
+
+ Instance ./instances/generated/instance-66.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-66.pddl
+
+ Instance ./instances/generated/instance-67.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-67.pddl
+
+ Instance ./instances/generated/instance-68.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-68.pddl
+
+ Instance ./instances/generated/instance-69.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-69.pddl
+
+ Instance ./instances/generated/instance-70.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-70.pddl
+
+ Instance ./instances/generated/instance-71.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-71.pddl
+
+ Instance ./instances/generated/instance-72.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-72.pddl
+
+ Instance ./instances/generated/instance-73.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-73.pddl
+
+ Instance ./instances/generated/instance-74.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-74.pddl
+
+ Instance ./instances/generated/instance-75.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-75.pddl
+
+ Instance ./instances/generated/instance-76.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-76.pddl
+
+ Instance ./instances/generated/instance-77.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-77.pddl
+
+ Instance ./instances/generated/instance-78.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-78.pddl
+
+ Instance ./instances/generated/instance-79.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-79.pddl
+
+ Instance ./instances/generated/instance-80.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-80.pddl
+
+ Instance ./instances/generated/instance-81.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-81.pddl
+
+ Instance ./instances/generated/instance-82.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-82.pddl
+
+ Instance ./instances/generated/instance-83.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-83.pddl
+
+ Instance ./instances/generated/instance-84.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-84.pddl
+
+ Instance ./instances/generated/instance-85.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-85.pddl
+
+ Instance ./instances/generated/instance-86.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-86.pddl
+
+ Instance ./instances/generated/instance-87.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-87.pddl
+
+ Instance ./instances/generated/instance-88.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-88.pddl
+
+ Instance ./instances/generated/instance-89.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-89.pddl
+
+ Instance ./instances/generated/instance-90.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-90.pddl
+
+ Instance ./instances/generated/instance-91.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-91.pddl
+
+ Instance ./instances/generated/instance-92.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-92.pddl
+
+ Instance ./instances/generated/instance-93.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-93.pddl
+
+ Instance ./instances/generated/instance-94.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-94.pddl
+
+ Instance ./instances/generated/instance-95.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-95.pddl
+
+ Instance ./instances/generated/instance-96.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-96.pddl
+
+ Instance ./instances/generated/instance-97.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-97.pddl
+
+ Instance ./instances/generated/instance-98.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-98.pddl
+
+ Instance ./instances/generated/instance-99.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-99.pddl
+
+ Instance ./instances/generated/instance-100.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-100.pddl
+
+ Instance ./instances/generated/instance-101.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-101.pddl
+
+ Instance ./instances/generated/instance-102.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-102.pddl
+
+ Instance ./instances/generated/instance-103.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-103.pddl
+
+ Instance ./instances/generated/instance-104.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-104.pddl
+
+ Instance ./instances/generated/instance-105.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-105.pddl
+
+ Instance ./instances/generated/instance-106.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-106.pddl
+
+ Instance ./instances/generated/instance-107.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-107.pddl
+
+ Instance ./instances/generated/instance-108.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-108.pddl
+
+ Instance ./instances/generated/instance-109.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-109.pddl
+
+ Instance ./instances/generated/instance-110.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-110.pddl
+
+ Instance ./instances/generated/instance-111.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-111.pddl
+
+ Instance ./instances/generated/instance-112.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-112.pddl
+
+ Instance ./instances/generated/instance-113.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-113.pddl
+
+ Instance ./instances/generated/instance-114.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-114.pddl
+
+ Instance ./instances/generated/instance-115.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-115.pddl
+
+ Instance ./instances/generated/instance-116.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-116.pddl
+
+ Instance ./instances/generated/instance-117.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-117.pddl
+
+ Instance ./instances/generated/instance-118.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-118.pddl
+
+ Instance ./instances/generated/instance-119.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-119.pddl
+
+ Instance ./instances/generated/instance-120.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-120.pddl
+
+ Instance ./instances/generated/instance-121.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-121.pddl
+
+ Instance ./instances/generated/instance-122.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-122.pddl
+
+ Instance ./instances/generated/instance-123.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-123.pddl
+
+ Instance ./instances/generated/instance-124.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-124.pddl
+
+ Instance ./instances/generated/instance-125.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-125.pddl
+
+ Instance ./instances/generated/instance-126.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-126.pddl
+
+ Instance ./instances/generated/instance-127.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-127.pddl
+
+ Instance ./instances/generated/instance-128.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-128.pddl
+
+ Instance ./instances/generated/instance-129.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-129.pddl
+
+ Instance ./instances/generated/instance-130.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-130.pddl
+
+ Instance ./instances/generated/instance-131.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-131.pddl
+
+ Instance ./instances/generated/instance-132.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-132.pddl
+
+ Instance ./instances/generated/instance-133.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-133.pddl
+
+ Instance ./instances/generated/instance-134.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-134.pddl
+
+ Instance ./instances/generated/instance-135.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-135.pddl
+
+ Instance ./instances/generated/instance-136.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-136.pddl
+
+ Instance ./instances/generated/instance-137.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-137.pddl
+
+ Instance ./instances/generated/instance-138.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-138.pddl
+
+ Instance ./instances/generated/instance-139.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-139.pddl
+
+ Instance ./instances/generated/instance-140.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-140.pddl
+
+ Instance ./instances/generated/instance-141.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-141.pddl
+
+ Instance ./instances/generated/instance-142.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-142.pddl
+
+ Instance ./instances/generated/instance-143.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-143.pddl
+
+ Instance ./instances/generated/instance-144.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-144.pddl
+
+ Instance ./instances/generated/instance-145.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-145.pddl
+
+ Instance ./instances/generated/instance-146.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-146.pddl
+
+ Instance ./instances/generated/instance-147.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-147.pddl
+
+ Instance ./instances/generated/instance-148.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-148.pddl
+
+ Instance ./instances/generated/instance-149.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-149.pddl
+
+ Instance ./instances/generated/instance-150.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-150.pddl
+
+ Instance ./instances/generated/instance-151.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-151.pddl
+
+ Instance ./instances/generated/instance-152.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-152.pddl
+
+ Instance ./instances/generated/instance-153.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-153.pddl
+
+ Instance ./instances/generated/instance-154.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-154.pddl
+
+ Instance ./instances/generated/instance-155.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-155.pddl
+
+ Instance ./instances/generated/instance-156.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-156.pddl
+
+ Instance ./instances/generated/instance-157.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-157.pddl
+
+ Instance ./instances/generated/instance-158.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-158.pddl
+
+ Instance ./instances/generated/instance-159.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-159.pddl
+
+ Instance ./instances/generated/instance-160.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-160.pddl
+
+ Instance ./instances/generated/instance-161.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-161.pddl
+
+ Instance ./instances/generated/instance-162.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-162.pddl
+
+ Instance ./instances/generated/instance-163.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-163.pddl
+
+ Instance ./instances/generated/instance-164.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-164.pddl
+
+ Instance ./instances/generated/instance-165.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-165.pddl
+
+ Instance ./instances/generated/instance-166.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-166.pddl
+
+ Instance ./instances/generated/instance-167.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-167.pddl
+
+ Instance ./instances/generated/instance-168.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-168.pddl
+
+ Instance ./instances/generated/instance-169.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-169.pddl
+
+ Instance ./instances/generated/instance-170.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-170.pddl
+
+ Instance ./instances/generated/instance-171.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-171.pddl
+
+ Instance ./instances/generated/instance-172.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-172.pddl
+
+ Instance ./instances/generated/instance-173.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-173.pddl
+
+ Instance ./instances/generated/instance-174.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-174.pddl
+
+ Instance ./instances/generated/instance-175.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-175.pddl
+
+ Instance ./instances/generated/instance-176.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-176.pddl
+
+ Instance ./instances/generated/instance-177.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-177.pddl
+
+ Instance ./instances/generated/instance-178.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-178.pddl
+
+ Instance ./instances/generated/instance-179.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-179.pddl
+
+ Instance ./instances/generated/instance-180.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-180.pddl
+
+ Instance ./instances/generated/instance-181.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-181.pddl
+
+ Instance ./instances/generated/instance-182.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-182.pddl
+
+ Instance ./instances/generated/instance-183.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-183.pddl
+
+ Instance ./instances/generated/instance-184.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-184.pddl
+
+ Instance ./instances/generated/instance-185.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-185.pddl
+
+ Instance ./instances/generated/instance-186.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-186.pddl
+
+ Instance ./instances/generated/instance-187.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-187.pddl
+
+ Instance ./instances/generated/instance-188.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-188.pddl
+
+ Instance ./instances/generated/instance-189.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-189.pddl
+
+ Instance ./instances/generated/instance-190.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-190.pddl
+
+ Instance ./instances/generated/instance-191.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-191.pddl
+
+ Instance ./instances/generated/instance-192.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-192.pddl
+
+ Instance ./instances/generated/instance-193.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-193.pddl
+
+ Instance ./instances/generated/instance-194.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-194.pddl
+
+ Instance ./instances/generated/instance-195.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-195.pddl
+
+ Instance ./instances/generated/instance-196.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-196.pddl
+
+ Instance ./instances/generated/instance-197.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-197.pddl
+
+ Instance ./instances/generated/instance-198.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-198.pddl
+
+ Instance ./instances/generated/instance-199.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-199.pddl
+
+ Instance ./instances/generated/instance-200.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-200.pddl
+
+ Instance ./instances/generated/instance-201.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-201.pddl
+
+ Instance ./instances/generated/instance-202.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-202.pddl
+
+ Instance ./instances/generated/instance-203.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-203.pddl
+
+ Instance ./instances/generated/instance-204.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-204.pddl
+
+ Instance ./instances/generated/instance-205.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-205.pddl
+
+ Instance ./instances/generated/instance-206.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-206.pddl
+
+ Instance ./instances/generated/instance-207.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-207.pddl
+
+ Instance ./instances/generated/instance-208.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-208.pddl
+
+ Instance ./instances/generated/instance-209.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-209.pddl
+
+ Instance ./instances/generated/instance-210.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-210.pddl
+
+ Instance ./instances/generated/instance-211.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-211.pddl
+
+ Instance ./instances/generated/instance-212.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-212.pddl
+
+ Instance ./instances/generated/instance-213.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-213.pddl
+
+ Instance ./instances/generated/instance-214.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-214.pddl
+
+ Instance ./instances/generated/instance-215.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-215.pddl
+
+ Instance ./instances/generated/instance-216.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-216.pddl
+
+ Instance ./instances/generated/instance-217.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-217.pddl
+
+ Instance ./instances/generated/instance-218.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-218.pddl
+
+ Instance ./instances/generated/instance-219.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-219.pddl
+
+ Instance ./instances/generated/instance-220.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-220.pddl
+
+ Instance ./instances/generated/instance-221.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-221.pddl
+
+ Instance ./instances/generated/instance-222.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-222.pddl
+
+ Instance ./instances/generated/instance-223.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-223.pddl
+
+ Instance ./instances/generated/instance-224.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-224.pddl
+
+ Instance ./instances/generated/instance-225.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-225.pddl
+
+ Instance ./instances/generated/instance-226.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-226.pddl
+
+ Instance ./instances/generated/instance-227.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-227.pddl
+
+ Instance ./instances/generated/instance-228.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-228.pddl
+
+ Instance ./instances/generated/instance-229.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-229.pddl
+
+ Instance ./instances/generated/instance-230.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-230.pddl
+
+ Instance ./instances/generated/instance-231.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-231.pddl
+
+ Instance ./instances/generated/instance-232.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-232.pddl
+
+ Instance ./instances/generated/instance-233.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-233.pddl
+
+ Instance ./instances/generated/instance-234.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-234.pddl
+
+ Instance ./instances/generated/instance-235.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-235.pddl
+
+ Instance ./instances/generated/instance-236.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-236.pddl
+
+ Instance ./instances/generated/instance-237.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-237.pddl
+
+ Instance ./instances/generated/instance-238.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-238.pddl
+
+ Instance ./instances/generated/instance-239.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-239.pddl
+
+ Instance ./instances/generated/instance-240.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-240.pddl
+
+ Instance ./instances/generated/instance-241.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-241.pddl
+
+ Instance ./instances/generated/instance-242.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-242.pddl
+
+ Instance ./instances/generated/instance-243.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-243.pddl
+
+ Instance ./instances/generated/instance-244.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-244.pddl
+
+ Instance ./instances/generated/instance-245.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-245.pddl
+
+ Instance ./instances/generated/instance-246.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-246.pddl
+
+ Instance ./instances/generated/instance-247.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-247.pddl
+
+ Instance ./instances/generated/instance-248.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-248.pddl
+
+ Instance ./instances/generated/instance-249.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-249.pddl
+
+ Instance ./instances/generated/instance-250.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-250.pddl
+
+ Instance ./instances/generated/instance-251.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-251.pddl
+
+ Instance ./instances/generated/instance-252.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-252.pddl
+
+ Instance ./instances/generated/instance-253.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-253.pddl
+
+ Instance ./instances/generated/instance-254.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-254.pddl
+
+ Instance ./instances/generated/instance-255.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-255.pddl
+
+ Instance ./instances/generated/instance-256.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-256.pddl
+
+ Instance ./instances/generated/instance-257.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-257.pddl
+
+ Instance ./instances/generated/instance-258.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-258.pddl
+
+ Instance ./instances/generated/instance-259.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-259.pddl
+
+ Instance ./instances/generated/instance-260.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-260.pddl
+
+ Instance ./instances/generated/instance-261.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-261.pddl
+
+ Instance ./instances/generated/instance-262.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-262.pddl
+
+ Instance ./instances/generated/instance-263.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-263.pddl
+
+ Instance ./instances/generated/instance-264.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-264.pddl
+
+ Instance ./instances/generated/instance-265.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-265.pddl
+
+ Instance ./instances/generated/instance-266.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-266.pddl
+
+ Instance ./instances/generated/instance-267.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-267.pddl
+
+ Instance ./instances/generated/instance-268.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-268.pddl
+
+ Instance ./instances/generated/instance-269.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-269.pddl
+
+ Instance ./instances/generated/instance-270.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-270.pddl
+
+ Instance ./instances/generated/instance-271.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-271.pddl
+
+ Instance ./instances/generated/instance-272.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-272.pddl
+
+ Instance ./instances/generated/instance-273.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-273.pddl
+
+ Instance ./instances/generated/instance-274.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-274.pddl
+
+ Instance ./instances/generated/instance-275.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-275.pddl
+
+ Instance ./instances/generated/instance-276.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-276.pddl
+
+ Instance ./instances/generated/instance-277.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-277.pddl
+
+ Instance ./instances/generated/instance-278.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-278.pddl
+
+ Instance ./instances/generated/instance-279.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-279.pddl
+
+ Instance ./instances/generated/instance-280.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-280.pddl
+
+ Instance ./instances/generated/instance-281.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-281.pddl
+
+ Instance ./instances/generated/instance-282.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-282.pddl
+
+ Instance ./instances/generated/instance-283.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-283.pddl
+
+ Instance ./instances/generated/instance-284.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-284.pddl
+
+ Instance ./instances/generated/instance-285.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-285.pddl
+
+ Instance ./instances/generated/instance-286.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-286.pddl
+
+ Instance ./instances/generated/instance-287.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-287.pddl
+
+ Instance ./instances/generated/instance-288.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-288.pddl
+
+ Instance ./instances/generated/instance-289.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-289.pddl
+
+ Instance ./instances/generated/instance-290.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-290.pddl
+
+ Instance ./instances/generated/instance-291.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-291.pddl
+
+ Instance ./instances/generated/instance-292.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-292.pddl
+
+ Instance ./instances/generated/instance-293.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-293.pddl
+
+ Instance ./instances/generated/instance-294.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-294.pddl
+
+ Instance ./instances/generated/instance-295.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-295.pddl
+
+ Instance ./instances/generated/instance-296.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-296.pddl
+
+ Instance ./instances/generated/instance-297.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-297.pddl
+
+ Instance ./instances/generated/instance-298.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-298.pddl
+
+ Instance ./instances/generated/instance-299.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-299.pddl
+
+ Instance ./instances/generated/instance-300.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-300.pddl
+
+ Instance ./instances/generated/instance-301.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-301.pddl
+
+ Instance ./instances/generated/instance-302.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-302.pddl
+
+ Instance ./instances/generated/instance-303.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-303.pddl
+
+ Instance ./instances/generated/instance-304.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-304.pddl
+
+ Instance ./instances/generated/instance-305.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-305.pddl
+
+ Instance ./instances/generated/instance-306.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-306.pddl
+
+ Instance ./instances/generated/instance-307.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-307.pddl
+
+ Instance ./instances/generated/instance-308.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-308.pddl
+
+ Instance ./instances/generated/instance-309.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-309.pddl
+
+ Instance ./instances/generated/instance-310.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-310.pddl
+
+ Instance ./instances/generated/instance-311.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-311.pddl
+
+ Instance ./instances/generated/instance-312.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-312.pddl
+
+ Instance ./instances/generated/instance-313.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-313.pddl
+
+ Instance ./instances/generated/instance-314.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-314.pddl
+
+ Instance ./instances/generated/instance-315.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-315.pddl
+
+ Instance ./instances/generated/instance-316.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-316.pddl
+
+ Instance ./instances/generated/instance-317.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-317.pddl
+
+ Instance ./instances/generated/instance-318.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-318.pddl
+
+ Instance ./instances/generated/instance-319.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-319.pddl
+
+ Instance ./instances/generated/instance-320.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-320.pddl
+
+ Instance ./instances/generated/instance-321.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-321.pddl
+
+ Instance ./instances/generated/instance-322.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-322.pddl
+
+ Instance ./instances/generated/instance-323.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-323.pddl
+
+ Instance ./instances/generated/instance-324.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-324.pddl
+
+ Instance ./instances/generated/instance-325.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-325.pddl
+
+ Instance ./instances/generated/instance-326.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-326.pddl
+
+ Instance ./instances/generated/instance-327.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-327.pddl
+
+ Instance ./instances/generated/instance-328.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-328.pddl
+
+ Instance ./instances/generated/instance-329.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-329.pddl
+
+ Instance ./instances/generated/instance-330.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-330.pddl
+
+ Instance ./instances/generated/instance-331.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-331.pddl
+
+ Instance ./instances/generated/instance-332.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-332.pddl
+
+ Instance ./instances/generated/instance-333.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-333.pddl
+
+ Instance ./instances/generated/instance-334.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-334.pddl
+
+ Instance ./instances/generated/instance-335.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-335.pddl
+
+ Instance ./instances/generated/instance-336.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-336.pddl
+
+ Instance ./instances/generated/instance-337.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-337.pddl
+
+ Instance ./instances/generated/instance-338.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-338.pddl
+
+ Instance ./instances/generated/instance-339.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-339.pddl
+
+ Instance ./instances/generated/instance-340.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-340.pddl
+
+ Instance ./instances/generated/instance-341.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-341.pddl
+
+ Instance ./instances/generated/instance-342.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-342.pddl
+
+ Instance ./instances/generated/instance-343.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-343.pddl
+
+ Instance ./instances/generated/instance-344.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-344.pddl
+
+ Instance ./instances/generated/instance-345.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-345.pddl
+
+ Instance ./instances/generated/instance-346.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-346.pddl
+
+ Instance ./instances/generated/instance-347.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-347.pddl
+
+ Instance ./instances/generated/instance-348.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-348.pddl
+
+ Instance ./instances/generated/instance-349.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-349.pddl
+
+ Instance ./instances/generated/instance-350.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-350.pddl
+
+ Instance ./instances/generated/instance-351.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-351.pddl
+
+ Instance ./instances/generated/instance-352.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-352.pddl
+
+ Instance ./instances/generated/instance-353.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-353.pddl
+
+ Instance ./instances/generated/instance-354.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-354.pddl
+
+ Instance ./instances/generated/instance-355.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-355.pddl
+
+ Instance ./instances/generated/instance-356.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-356.pddl
+
+ Instance ./instances/generated/instance-357.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-357.pddl
+
+ Instance ./instances/generated/instance-358.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-358.pddl
+
+ Instance ./instances/generated/instance-359.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-359.pddl
+
+ Instance ./instances/generated/instance-360.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-360.pddl
+
+ Instance ./instances/generated/instance-361.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-361.pddl
+
+ Instance ./instances/generated/instance-362.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-362.pddl
+
+ Instance ./instances/generated/instance-363.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-363.pddl
+
+ Instance ./instances/generated/instance-364.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-364.pddl
+
+ Instance ./instances/generated/instance-365.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-365.pddl
+
+ Instance ./instances/generated/instance-366.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-366.pddl
+
+ Instance ./instances/generated/instance-367.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-367.pddl
+
+ Instance ./instances/generated/instance-368.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-368.pddl
+
+ Instance ./instances/generated/instance-369.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-369.pddl
+
+ Instance ./instances/generated/instance-370.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-370.pddl
+
+ Instance ./instances/generated/instance-371.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-371.pddl
+
+ Instance ./instances/generated/instance-372.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-372.pddl
+
+ Instance ./instances/generated/instance-373.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-373.pddl
+
+ Instance ./instances/generated/instance-374.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-374.pddl
+
+ Instance ./instances/generated/instance-375.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-375.pddl
+
+ Instance ./instances/generated/instance-376.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-376.pddl
+
+ Instance ./instances/generated/instance-377.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-377.pddl
+
+ Instance ./instances/generated/instance-378.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-378.pddl
+
+ Instance ./instances/generated/instance-379.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-379.pddl
+
+ Instance ./instances/generated/instance-380.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-380.pddl
+
+ Instance ./instances/generated/instance-381.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-381.pddl
+
+ Instance ./instances/generated/instance-382.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-382.pddl
+
+ Instance ./instances/generated/instance-383.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-383.pddl
+
+ Instance ./instances/generated/instance-384.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-384.pddl
+
+ Instance ./instances/generated/instance-385.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-385.pddl
+
+ Instance ./instances/generated/instance-386.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-386.pddl
+
+ Instance ./instances/generated/instance-387.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-387.pddl
+
+ Instance ./instances/generated/instance-388.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-388.pddl
+
+ Instance ./instances/generated/instance-389.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-389.pddl
+
+ Instance ./instances/generated/instance-390.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-390.pddl
+
+ Instance ./instances/generated/instance-391.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-391.pddl
+
+ Instance ./instances/generated/instance-392.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-392.pddl
+
+ Instance ./instances/generated/instance-393.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-393.pddl
+
+ Instance ./instances/generated/instance-394.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-394.pddl
+
+ Instance ./instances/generated/instance-395.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-395.pddl
+
+ Instance ./instances/generated/instance-396.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-396.pddl
+
+ Instance ./instances/generated/instance-397.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-397.pddl
+
+ Instance ./instances/generated/instance-398.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-398.pddl
+
+ Instance ./instances/generated/instance-399.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-399.pddl
+
+ Instance ./instances/generated/instance-400.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-400.pddl
+
+ Instance ./instances/generated/instance-401.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-401.pddl
+
+ Instance ./instances/generated/instance-402.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-402.pddl
+
+ Instance ./instances/generated/instance-403.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-403.pddl
+
+ Instance ./instances/generated/instance-404.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-404.pddl
+
+ Instance ./instances/generated/instance-405.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-405.pddl
+
+ Instance ./instances/generated/instance-406.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-406.pddl
+
+ Instance ./instances/generated/instance-407.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-407.pddl
+
+ Instance ./instances/generated/instance-408.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-408.pddl
+
+ Instance ./instances/generated/instance-409.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-409.pddl
+
+ Instance ./instances/generated/instance-410.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-410.pddl
+
+ Instance ./instances/generated/instance-411.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-411.pddl
+
+ Instance ./instances/generated/instance-412.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-412.pddl
+
+ Instance ./instances/generated/instance-413.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-413.pddl
+
+ Instance ./instances/generated/instance-414.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-414.pddl
+
+ Instance ./instances/generated/instance-415.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-415.pddl
+
+ Instance ./instances/generated/instance-416.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-416.pddl
+
+ Instance ./instances/generated/instance-417.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-417.pddl
+
+ Instance ./instances/generated/instance-418.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-418.pddl
+
+ Instance ./instances/generated/instance-419.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-419.pddl
+
+ Instance ./instances/generated/instance-420.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-420.pddl
+
+ Instance ./instances/generated/instance-421.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-421.pddl
+
+ Instance ./instances/generated/instance-422.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-422.pddl
+
+ Instance ./instances/generated/instance-423.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-423.pddl
+
+ Instance ./instances/generated/instance-424.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-424.pddl
+
+ Instance ./instances/generated/instance-425.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-425.pddl
+
+ Instance ./instances/generated/instance-426.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-426.pddl
+
+ Instance ./instances/generated/instance-427.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-427.pddl
+
+ Instance ./instances/generated/instance-428.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-428.pddl
+
+ Instance ./instances/generated/instance-429.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-429.pddl
+
+ Instance ./instances/generated/instance-430.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-430.pddl
+
+ Instance ./instances/generated/instance-431.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-431.pddl
+
+ Instance ./instances/generated/instance-432.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-432.pddl
+
+ Instance ./instances/generated/instance-433.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-433.pddl
+
+ Instance ./instances/generated/instance-434.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-434.pddl
+
+ Instance ./instances/generated/instance-435.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-435.pddl
+
+ Instance ./instances/generated/instance-436.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-436.pddl
+
+ Instance ./instances/generated/instance-437.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-437.pddl
+
+ Instance ./instances/generated/instance-438.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-438.pddl
+
+ Instance ./instances/generated/instance-439.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-439.pddl
+
+ Instance ./instances/generated/instance-440.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-440.pddl
+
+ Instance ./instances/generated/instance-441.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-441.pddl
+
+ Instance ./instances/generated/instance-442.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-442.pddl
+
+ Instance ./instances/generated/instance-443.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-443.pddl
+
+ Instance ./instances/generated/instance-444.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-444.pddl
+
+ Instance ./instances/generated/instance-445.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-445.pddl
+
+ Instance ./instances/generated/instance-446.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-446.pddl
+
+ Instance ./instances/generated/instance-447.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-447.pddl
+
+ Instance ./instances/generated/instance-448.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-448.pddl
+
+ Instance ./instances/generated/instance-449.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-449.pddl
+
+ Instance ./instances/generated/instance-450.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-450.pddl
+
+ Instance ./instances/generated/instance-451.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-451.pddl
+
+ Instance ./instances/generated/instance-452.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-452.pddl
+
+ Instance ./instances/generated/instance-453.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-453.pddl
+
+ Instance ./instances/generated/instance-454.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-454.pddl
+
+ Instance ./instances/generated/instance-455.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-455.pddl
+
+ Instance ./instances/generated/instance-456.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-456.pddl
+
+ Instance ./instances/generated/instance-457.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-457.pddl
+
+ Instance ./instances/generated/instance-458.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-458.pddl
+
+ Instance ./instances/generated/instance-459.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-459.pddl
+
+ Instance ./instances/generated/instance-460.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-460.pddl
+
+ Instance ./instances/generated/instance-461.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-461.pddl
+
+ Instance ./instances/generated/instance-462.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-462.pddl
+
+ Instance ./instances/generated/instance-463.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-463.pddl
+
+ Instance ./instances/generated/instance-464.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-464.pddl
+
+ Instance ./instances/generated/instance-465.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-465.pddl
+
+ Instance ./instances/generated/instance-466.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-466.pddl
+
+ Instance ./instances/generated/instance-467.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-467.pddl
+
+ Instance ./instances/generated/instance-468.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-468.pddl
+
+ Instance ./instances/generated/instance-469.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-469.pddl
+
+ Instance ./instances/generated/instance-470.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-470.pddl
+
+ Instance ./instances/generated/instance-471.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-471.pddl
+
+ Instance ./instances/generated/instance-472.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-472.pddl
+
+ Instance ./instances/generated/instance-473.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-473.pddl
+
+ Instance ./instances/generated/instance-474.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-474.pddl
+
+ Instance ./instances/generated/instance-475.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-475.pddl
+
+ Instance ./instances/generated/instance-476.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-476.pddl
+
+ Instance ./instances/generated/instance-477.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-477.pddl
+
+ Instance ./instances/generated/instance-478.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-478.pddl
+
+ Instance ./instances/generated/instance-479.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-479.pddl
+
+ Instance ./instances/generated/instance-480.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-480.pddl
+
+ Instance ./instances/generated/instance-481.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-481.pddl
+
+ Instance ./instances/generated/instance-482.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-482.pddl
+
+ Instance ./instances/generated/instance-483.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-483.pddl
+
+ Instance ./instances/generated/instance-484.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-484.pddl
+
+ Instance ./instances/generated/instance-485.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-485.pddl
+
+ Instance ./instances/generated/instance-486.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-486.pddl
+
+ Instance ./instances/generated/instance-487.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-487.pddl
+
+ Instance ./instances/generated/instance-488.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-488.pddl
+
+ Instance ./instances/generated/instance-489.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-489.pddl
+
+ Instance ./instances/generated/instance-490.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-490.pddl
+
+ Instance ./instances/generated/instance-491.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-491.pddl
+
+ Instance ./instances/generated/instance-492.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-492.pddl
+
+ Instance ./instances/generated/instance-493.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-493.pddl
+
+ Instance ./instances/generated/instance-494.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-494.pddl
+
+ Instance ./instances/generated/instance-495.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-495.pddl
+
+ Instance ./instances/generated/instance-496.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-496.pddl
+
+ Instance ./instances/generated/instance-497.pddl
+=================================== 4_generalization SUCCESS ===================================
+ Instance ./instances/generated/instance-497.pddl
+
+ Instance ./instances/generated/instance-498.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-498.pddl
+
+ Instance ./instances/generated/instance-499.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-499.pddl
+
+ Instance ./instances/generated/instance-500.pddl
+=================================== 4_generalization FAILURE ===================================
+ Instance ./instances/generated/instance-500.pddl
+
+ Instance ./instances/generated/instance-501.pddl
+=================================== 4_generalization FAILURE ===================================[+]: The number of correct plans is 49/500=9.8%

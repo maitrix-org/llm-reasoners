@@ -1,0 +1,72 @@
+# Edit this file to define constants and custom build targets.
+# Please refer to the makemake documentation for more information.
+#
+# To compile multiple versions of a program or library, please study
+#     http://www.its.caltech.edu/~jafl/jcc/multi_version.html
+
+# Useful directories
+
+MYCODEDIR := .
+
+# Directories to search for header files
+
+SEARCHDIRS := -I- -I${MYCODEDIR}
+# Note that -I- should be -iquote for g++ version 4
+
+# makemake variables
+
+DEPENDFLAGS := -g -Wall -Werror ${SEARCHDIRS}
+
+# C preprocessor (C, C++, FORTRAN)
+
+CPPFLAGS =
+
+# C compiler
+
+CC     := gcc
+CFLAGS  = ${DEPENDFLAGS}
+
+%.o : %.c
+	${CC} ${CPPFLAGS} ${CFLAGS} -c $< -o $@
+
+# C++ compiler
+
+CXX      := g++
+CXXFLAGS  = ${DEPENDFLAGS} -ansi -Wall
+
+%.o : %.cc
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c $< -o $@
+
+%.o : %.C
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c $< -o $@
+
+%.o : %.cpp
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c $< -o $@
+
+%.o : %.cxx
+	${CXX} ${CPPFLAGS} ${CXXFLAGS} -c $< -o $@
+
+%.cpp : %.yacc
+	flex++ pddl+.lex ; bison $< -o $@
+
+	
+
+# FORTRAN compiler
+
+FC     := f77
+FFLAGS  = 
+
+# C/C++/Eiffel/FORTRAN linker
+
+LINKER    := g++ -g 
+LDFLAGS    = 
+LOADLIBES := 
+
+# Java compiler
+
+JAVAC  := javac
+JFLAGS  = 
+JAR    := jar
+
+%.class : %.java
+	${JAVAC} ${JFLAGS} $<

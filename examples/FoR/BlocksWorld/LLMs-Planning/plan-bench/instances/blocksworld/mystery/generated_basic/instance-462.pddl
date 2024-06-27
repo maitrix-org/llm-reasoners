@@ -1,0 +1,22 @@
+
+
+(define (problem MY-rand-5)
+(:domain mystery-4ops)
+(:objects a b c d e )
+(:init
+(harmony)
+(craves a b)
+(planet b)
+(planet c)
+(craves d a)
+(craves e d)
+(province c)
+(province e)
+)
+(:goal
+(and
+(craves a e))
+)
+)
+
+

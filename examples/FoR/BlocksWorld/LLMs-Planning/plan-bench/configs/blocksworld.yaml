@@ -1,0 +1,84 @@
+instance_dir: blocksworld/generated_basic
+generalized_instance_dir: blocksworld/generated
+domain_file: blocksworld/generated_domain.pddl
+domain_name: blocksworld
+n_instances: 501
+start: 1
+end: 500
+instances_template: instance-{}.pddl
+domain_intro: |
+   I am playing with a set of blocks where I need to arrange the blocks into stacks. Here are the actions I can do
+
+   Pick up a block
+   Unstack a block from on top of another block
+   Put down a block
+   Stack a block on top of another block
+
+   I have the following restrictions on my actions:
+   I can only pick up or unstack one block at a time.
+   I can only pick up or unstack a block if my hand is empty.
+   I can only pick up a block if the block is on the table and the block is clear. A block is clear if the block has no other blocks on top of it and if the block is not picked up.
+   I can only unstack a block from on top of another block if the block I am unstacking was really on top of the other block.
+   I can only unstack a block from on top of another block if the block I am unstacking is clear.
+   Once I pick up or unstack a block, I am holding the block.
+   I can only put down a block that I am holding.
+   I can only stack a block on top of another block if I am holding the block being stacked.
+   I can only stack a block on top of another block if the block onto which I am stacking the block is clear.
+   Once I put down or stack a block, my hand becomes empty.
+   Once you stack a block on top of a second block, the second block is no longer clear.
+
+
+domain_intro_cost: |
+   I am playing with a set of blocks where I need to arrange the blocks into stacks. Here are the actions I can do:
+
+   Pick up a block. It takes 1 minute to pick up a block.
+   Unstack a block from on top of another block. It takes 1 minute to unstack a block from on top of another block.
+   Put down a block. It takes 1 minute to put down a block.
+   Stack a block on top of another block. It takes 1 minute to stack a block on top of another block.
+
+   I have the following restrictions on my actions:
+   I can only pick up or unstack one block at a time.
+   I can only pick up or unstack a block if my hand is empty.
+   I can only pick up a block if the block is on the table and the block is clear. A block is clear if the block has no other blocks on top of it and if the block is not picked up.
+   I can only unstack a block from on top of another block if the block I am unstacking was really on top of the other block.
+   I can only unstack a block from on top of another block if the block I am unstacking is clear.
+   Once I pick up or unstack a block, I am holding the block.
+   I can only put down a block that I am holding.
+   I can only stack a block on top of another block if I am holding the block being stacked.
+   I can only stack a block on top of another block if the block onto which I am stacking the block is clear.
+   Once I put down or stack a block, my hand becomes empty.
+   Once you stack a block on top of a second block, the second block is no longer clear.
+
+
+actions:
+  {pick-up: "pick up the {}",
+   put-down: "put down the {}",
+   stack: "stack the {} on top of the {}",
+   unstack: "unstack the {} from on top of the {}"}
+
+
+predicates:
+  {ontable: "the {} is on the table",
+   clear: "the {} is clear",
+   handempty: "the hand is empty",
+   holding: "the hand is currently holding {}",
+   "on": "the {} is on top of the {}"}
+
+predicate_mapping:
+   {
+   "ontable": "on the table",
+   "clear": "clear",
+   "handempty": "hand is empty",
+   "holding": "holding",
+   "on": "on top of"
+   }  
+
+
+# encoded_objects: dictionary of object names, have to be alphabetical
+encoded_objects:
+  {"a": "red block", "b": "blue block", "c": "orange block", "d": "yellow block",
+   "e": "white block", "f": "magenta block", "g": "black block", "h": "cyan block",
+   "i": "green block", "j": "violet block", "k": "silver block", "l": "gold block" }
+
+callbacks:
+   - t1_gen_goal_directed_instances

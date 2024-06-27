@@ -1,0 +1,169 @@
+action_obfuscation:
+  drive-truck: wretched
+  fly-airplane: memory
+  load-airplane: sip
+  load-truck: clip
+  unload-airplane: paltry
+  unload-truck: tightfisted
+actions:
+  clip: clip {} {} {}
+  memory: memory {} {} {}
+  paltry: paltry {} {} {}
+  sip: sip {} {} {}
+  tightfisted: tightfisted {} {} {}
+  wretched: wretched {} {} {} {}
+domain_file: obfuscated_deceptive_logistics/generated_domain.pddl
+domain_intro: 'I am playing with a set of objects. Here are the actions I can do
+
+
+  Paltry object_0 object_1 object_2.
+
+  Sip object_0 object_1 object_2.
+
+  Clip object_0 object_1 object_2.
+
+  Wretched object_0 object_1 object_2 object_3.
+
+  Memory object_0 object_1 object_2.
+
+  Tightfisted object_0 object_1 object_2.
+
+
+  I have the following restrictions on my actions:
+
+  To perform paltry action, the following facts need to be true: hand object_0, cats
+  object_1, texture object_2, vase object_0 object_1, and next object_1 object_2
+
+  Once paltry is performed the following facts will be true: next object_0 object_2
+
+  Once paltry is performed the following facts will be false: vase object_0 object_1
+
+  To perform sip action, the following facts need to be true: hand object_0, cats
+  object_1, texture object_2, next object_0 object_2, and next object_1 object_2
+
+  Once sip is performed the following facts will be true: vase object_0 object_1
+
+  Once sip is performed the following facts will be false: next object_0 object_2
+
+  To perform clip action, the following facts need to be true: hand object_0, sneeze
+  object_1, texture object_2, next object_1 object_2, and next object_0 object_2
+
+  Once clip is performed the following facts will be true: vase object_0 object_1
+
+  Once clip is performed the following facts will be false: next object_0 object_2
+
+  To perform wretched action, the following facts need to be true: sneeze object_0,
+  texture object_1, texture object_2, stupendous object_3, next object_0 object_1,
+  collect object_1 object_3, and collect object_2 object_3
+
+  Once wretched is performed the following facts will be true: next object_0 object_2
+
+  Once wretched is performed the following facts will be false: next object_0 object_1
+
+  To perform memory action, the following facts need to be true: cats object_0, spring
+  object_1, spring object_2, and next object_0 object_1
+
+  Once memory is performed the following facts will be true: next object_0 object_2
+
+  Once memory is performed the following facts will be false: next object_0 object_1
+
+  To perform tightfisted action, the following facts need to be true: hand object_0,
+  sneeze object_1, texture object_2, next object_1 object_2, and vase object_0 object_1
+
+  Once tightfisted is performed the following facts will be true: next object_0 object_2
+
+  Once tightfisted is performed the following facts will be false: vase object_0 object_1
+
+  '
+domain_intro_cost: 'I am playing with a set of objects. Here are the actions I can
+  do
+
+
+  Paltry object_0 object_1 object_2. It takes one minute to paltry.
+
+  Sip object_0 object_1 object_2. It takes one minute to sip.
+
+  Clip object_0 object_1 object_2. It takes one minute to clip.
+
+  Wretched object_0 object_1 object_2 object_3. It takes one minute to wretched.
+
+  Memory object_0 object_1 object_2. It takes one minute to memory.
+
+  Tightfisted object_0 object_1 object_2. It takes one minute to tightfisted.
+
+
+  I have the following restrictions on my actions:
+
+  To perform paltry action, the following facts need to be true: hand object_0, cats
+  object_1, texture object_2, vase object_0 object_1, and next object_1 object_2
+
+  Once paltry is performed the following facts will be true: next object_0 object_2
+
+  Once paltry is performed the following facts will be false: vase object_0 object_1
+
+  To perform sip action, the following facts need to be true: hand object_0, cats
+  object_1, texture object_2, next object_0 object_2, and next object_1 object_2
+
+  Once sip is performed the following facts will be true: vase object_0 object_1
+
+  Once sip is performed the following facts will be false: next object_0 object_2
+
+  To perform clip action, the following facts need to be true: hand object_0, sneeze
+  object_1, texture object_2, next object_1 object_2, and next object_0 object_2
+
+  Once clip is performed the following facts will be true: vase object_0 object_1
+
+  Once clip is performed the following facts will be false: next object_0 object_2
+
+  To perform wretched action, the following facts need to be true: sneeze object_0,
+  texture object_1, texture object_2, stupendous object_3, next object_0 object_1,
+  collect object_1 object_3, and collect object_2 object_3
+
+  Once wretched is performed the following facts will be true: next object_0 object_2
+
+  Once wretched is performed the following facts will be false: next object_0 object_1
+
+  To perform memory action, the following facts need to be true: cats object_0, spring
+  object_1, spring object_2, and next object_0 object_1
+
+  Once memory is performed the following facts will be true: next object_0 object_2
+
+  Once memory is performed the following facts will be false: next object_0 object_1
+
+  To perform tightfisted action, the following facts need to be true: hand object_0,
+  sneeze object_1, texture object_2, next object_1 object_2, and vase object_0 object_1
+
+  Once tightfisted is performed the following facts will be true: next object_0 object_2
+
+  Once tightfisted is performed the following facts will be false: vase object_0 object_1
+
+  '
+domain_name: obfuscated_deceptive_logistics
+encoded_objects:
+  o: object_{}
+end: 285
+generalized_instance_dir: obfuscated_deceptive_logistics/generated
+instance_dir: obfuscated_deceptive_logistics/generated_basic
+instances_template: instance-{}.pddl
+n_instances: 285
+predicate_obfuscation:
+  airplane: cats
+  airport: spring
+  at: next
+  city: stupendous
+  in: vase
+  in-city: collect
+  location: texture
+  obj: hand
+  truck: sneeze
+predicates:
+  cats: cats {}
+  collect: collect {} {}
+  hand: hand {}
+  next: next {} {}
+  sneeze: sneeze {}
+  spring: spring {}
+  stupendous: stupendous {}
+  texture: texture {}
+  vase: vase {} {}
+start: 1

@@ -1,0 +1,75 @@
+---
+instance_dir: blocksworld/generated_basic_3
+domain_file: blocksworld/generated_domain.pddl
+domain_name: random_blocksworld_3
+n_instances: 132
+start: 1
+end: 100
+instances_template: instance-{}.pddl
+domain_intro: |
+   I am playing with a set of objects. Here are the actions I can do
+   
+      1jpkithdyjmlikck object
+      xptxjrdkbi3pqsqr object from another object
+      9big8ruzarkkquyu object
+      2ijg9q8swj2shjel object from another object
+   
+   I have the following restrictions on my actions:
+       To perform 1jpkithdyjmlikck action, the following facts need to be true: aqcjuuehivl8auwt object, 51nbwlachmfartjn object, 3covmuy4yrjthijd.
+       Once 1jpkithdyjmlikck action is performed the following facts will be true: gk5asm3f7u1fekpj object.
+       Once 1jpkithdyjmlikck action is performed the following facts will be false: aqcjuuehivl8auwt object, 51nbwlachmfartjn object, 3covmuy4yrjthijd.
+       To perform 9big8ruzarkkquyu action, the following facts need to be true: gk5asm3f7u1fekpj object.
+       Once 9big8ruzarkkquyu action is performed the following facts will be true: aqcjuuehivl8auwt object, 51nbwlachmfartjn object, 3covmuy4yrjthijd.    
+       Once 9big8ruzarkkquyu action is performed the following facts will be false: gk5asm3f7u1fekpj object.
+       To perform 2ijg9q8swj2shjel action, the following needs to be true: aqcjuuehivl8auwt other object, gk5asm3f7u1fekpj object.
+       Once 2ijg9q8swj2shjel action is performed the following will be true: 3covmuy4yrjthijd, aqcjuuehivl8auwt object, Object 4DMF1cMTYXGSP94G other object.
+       Once 2ijg9q8swj2shjel action is performed the following will be false: aqcjuuehivl8auwt other object, gk5asm3f7u1fekpj object.
+       To perform xptxjrdkbi3pqsqr action, the following needs to be true: Object 4DMF1cMTYXGSP94G other object, aqcjuuehivl8auwt object, 3covmuy4yrjthijd.
+       Once xptxjrdkbi3pqsqr action is performed the following will be true: gk5asm3f7u1fekpj object, aqcjuuehivl8auwt other object.
+       Once xptxjrdkbi3pqsqr action is performed the following will be false:, Object 4DMF1cMTYXGSP94G other object, aqcjuuehivl8auwt object, 3covmuy4yrjthijd.
+
+
+domain_intro_cost: |
+   I am playing with a set of objects. Here are the actions I can do
+   
+   1jpkithdyjmlikck object. It takes 1 minute to do the 1jpkithdyjmlikck action.
+   xptxjrdkbi3pqsqr object from another object. It takes 1 minute to do the xptxjrdkbi3pqsqr action.
+   9big8ruzarkkquyu object. It takes 1 minute to do the 9big8ruzarkkquyu action.
+   2ijg9q8swj2shjel object from another object. It takes 1 minute to do the 2ijg9q8swj2shjel action.
+   
+   I have the following restrictions on my actions:
+   To perform 1jpkithdyjmlikck action, the following facts need to be true: aqcjuuehivl8auwt object, 51nbwlachmfartjn object, 3covmuy4yrjthijd.
+   Once 1jpkithdyjmlikck action is performed the following facts will be true: gk5asm3f7u1fekpj object.
+   Once 1jpkithdyjmlikck action is performed the following facts will be false: aqcjuuehivl8auwt object, 51nbwlachmfartjn object, 3covmuy4yrjthijd.
+   To perform 9big8ruzarkkquyu action, the following facts need to be true: gk5asm3f7u1fekpj object.
+   Once 9big8ruzarkkquyu action is performed the following facts will be true: aqcjuuehivl8auwt object, 51nbwlachmfartjn object, 3covmuy4yrjthijd.    
+   Once 9big8ruzarkkquyu action is performed the following facts will be false: gk5asm3f7u1fekpj object.
+   To perform 2ijg9q8swj2shjel action, the following needs to be true: aqcjuuehivl8auwt other object, gk5asm3f7u1fekpj object.
+   Once 2ijg9q8swj2shjel action is performed the following will be true: 3covmuy4yrjthijd, aqcjuuehivl8auwt object, Object 4DMF1cMTYXGSP94G other object.
+   Once 2ijg9q8swj2shjel action is performed the following will be false: aqcjuuehivl8auwt other object, gk5asm3f7u1fekpj object.
+   To perform xptxjrdkbi3pqsqr action, the following needs to be true: Object 4DMF1cMTYXGSP94G other object, aqcjuuehivl8auwt object, 3covmuy4yrjthijd.
+   Once xptxjrdkbi3pqsqr action is performed the following will be true: gk5asm3f7u1fekpj object, aqcjuuehivl8auwt other object.
+   Once xptxjrdkbi3pqsqr action is performed the following will be false:, Object 4DMF1cMTYXGSP94G other object, aqcjuuehivl8auwt object, 3covmuy4yrjthijd.
+
+actions:
+  {pick-up: "1jpkithdyjmlikck {}",
+   put-down: "9big8ruzarkkquyu {}",
+   stack: "2ijg9q8swj2shjel {} from {}",
+   unstack: "xptxjrdkbi3pqsqr {} from {}"}
+
+
+predicates:
+  {ontable: "51nbwlachmfartjn {}",
+   clear: "aqcjuuehivl8auwt {}",
+   handempty: "3covmuy4yrjthijd",
+   "on": "{} 4dmf1cmtyxgsp94g {}",
+  "holding": "gk5asm3f7u1fekpj {}"}
+
+# encoded_objects: dictionary of object names, have to be alphabetical
+encoded_objects:
+  {"a": "object a", "b": "object b", "c": "object c", "d": "object d",
+   "e": "object e", "f": "object f", "g": "object g", "h": "object h",
+   "i": "object i", "j": "object j", "k": "object k", "l": "object l" }
+
+callbacks:
+   - t1_gen_goal_directed_instances

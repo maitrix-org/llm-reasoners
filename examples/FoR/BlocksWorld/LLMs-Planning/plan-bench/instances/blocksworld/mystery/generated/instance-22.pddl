@@ -1,0 +1,22 @@
+(define (problem BW-generalization-4)
+(:domain mystery-4ops)(:objects g c b k f)
+(:init 
+(harmony)
+(planet g)
+(planet c)
+(planet b)
+(planet k)
+(planet f)
+(province g)
+(province c)
+(province b)
+(province k)
+(province f)
+)
+(:goal
+(and
+(craves g c)
+(craves c b)
+(craves b k)
+(craves k f)
+)))

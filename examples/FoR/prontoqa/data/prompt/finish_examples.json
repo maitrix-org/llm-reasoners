@@ -1,0 +1,6 @@
+{
+  "input": "Given a query and the last step of a reasoning chain, output \"Yes\" or \"No\" whether the reasoning is finished.\n\nQuery: True or false: Sally is not bony.\nClaim: Sally is not bony.\nAre we finished? Yes\n\nQuery: True or false: Sally is not bony.\nClaim: Sally is a butterfly.\nAre we finished? No\n\nQuery: True or false: Sally is not bony.\nClaim: Sally is six-legged.\nAre we finished? No\n\nQuery: True or false: 127 is not real.\nClaim: 127 is a real number.\nAre we finished? No\n\nQuery: True or false: 127 is not real.\nClaim: 127 is real.\nAre we finished? Yes\n\nQuery: True or false: 127 is not real.\nClaim: 127 is a natural number.\nAre we finished? No\n\nQuery: True or false: Polly is not small.\nClaim: Polly is not six-legged.\nAre we finished? No\n\nQuery: True or false: Polly is not small.\nClaim: Polly is small.\nAre we finished? Yes\n\nQuery: True or false: Polly is not small.\nClaim: Polly is multicellular.\nAre we finished? No\n\n",
+  "target_format": "Query: {}\n",
+  "claim_format": "Claim: {}\n",
+  "output_prefix": "Are we finished?"
+}
