@@ -13,9 +13,6 @@ from nltk.tokenize import word_tokenize
 
 import sys
 import os
-if os.path.isdir('/var/karen'):
-    os.environ['TRANSFORMERS_CACHE'] = '/var/karen/workspace/Refinement-Generation/cache'
-    sys.path.insert(0, '/var/karen/workspace/Refinement-Generation/')
 
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from tqdm import tqdm
@@ -174,10 +171,6 @@ def initialize(model, x, length, temperature, batch_size, device, tokenizer):
     output = model.generate(x, max_length=length + x.shape[-1], do_sample=True, top_k=10)
     logits = model(output).logits
     logits_so_far = logits[:, -(length+1):-1, :] / temperature
-    # print(logits_so_far.shape)
-
-    # generated_text = tokenizer.decode(output[0], skip_special_tokens=True)
-        
     return logits_so_far
 
 
@@ -192,33 +185,30 @@ def decode_with_model_topk(model, y_logits, topk, x_onehot, x_past, tokenizer, e
     input_embeds = torch.matmul(x_onehot.float().to(embeddings_weight.dtype), embeddings_weight)
     mask_t_all = None
     logits_so_far = None
-    # print(y_logits.shape)
-    # print(x_onehot.shape)
-    # print(x_past)
     for i in range(length):
-        model_outputs = model(past_key_values=past, inputs_embeds=input_embeds, use_cache=True) #送进去历史信息
+        model_outputs = model(past_key_values=past, inputs_embeds=input_embeds, use_cache=True) 
         past = model_outputs.past_key_values    
-        logits_t = model_outputs.logits[:, -1:, :]  #选出来最后一个单词的logits
+        logits_t = model_outputs.logits[:, -1:, :]  
         assert logits_t.shape[1] == 1, logits_t.shape   
-        _, indices_t = torch.topk(logits_t, topk)   #最后一个单词的topk logits
-        mask_t = torch.zeros_like(logits_t).scatter_(2, indices_t, 1)   #变mask
+        _, indices_t = torch.topk(logits_t, topk)  
+        mask_t = torch.zeros_like(logits_t).scatter_(2, indices_t, 1)  
         if bad_mask != None:
             mask_t = torch.mul(mask_t, bad_mask)
-        mask_t_all = mask_t if mask_t_all is None else torch.cat((mask_t_all, mask_t), dim=1)   #第i个单词的topk-mask
-        logits_so_far = logits_t if logits_so_far is None else torch.cat((logits_so_far, logits_t), dim=1)  # 生成的y的logits
+        mask_t_all = mask_t if mask_t_all is None else torch.cat((mask_t_all, mask_t), dim=1)  
+        logits_so_far = logits_t if logits_so_far is None else torch.cat((logits_so_far, logits_t), dim=1)  
         if i < length - 1:
             if extra_mask is None:
                 y_logits_i_topk = top_k_filter_3d(y_logits[:,i:i+1,:], topk, mask=mask_t) / 0.001
             else:
                 y_logits_i_topk = top_k_filter_3d(y_logits[:,i:i+1,:], topk, mask=mask_t, extra_mask=extra_mask[:,i:i+1,:]) / 0.001
-            input_embeds = torch.matmul(F.softmax(y_logits_i_topk, dim=-1).to(embeddings_weight.dtype), embeddings_weight)   # 得到第i个单词的embedding
+            input_embeds = torch.matmul(F.softmax(y_logits_i_topk, dim=-1).to(embeddings_weight.dtype), embeddings_weight)  
     return get_text_from_logits(
         top_k_filter_3d(y_logits, topk, mask=mask_t_all, extra_mask=extra_mask),
         tokenizer)
 
 def soft_forward_loss(model, y_logits, topk, x_onehot, x_past, extra_mask=None, bad_mask=None):
     # y_logits : [bsz, length, vocab_size]
-    # x_onehot : [bsz, 1     , vocab_size]
+    # x_onehot : [bsz, 1, vocab_size]
     # extra_mask:[bsz, length, vocab_size]
     xy_embeds = embed_inputs(
         model.get_input_embeddings().weight,
@@ -226,8 +216,6 @@ def soft_forward_loss(model, y_logits, topk, x_onehot, x_past, extra_mask=None, 
         x_onehot=x_onehot,
         device=x_onehot.device
     )
-    # print(x_past.shape)
-    # embed_inputs: [bsz, length, embed_size]
     xy_logits = model(past_key_values=x_past, inputs_embeds=xy_embeds).logits
     x_length = x_onehot.shape[1]
     y_logits = xy_logits[:, x_length - 1:-1, :]
@@ -259,7 +247,6 @@ def soft_backward_loss(model, y_logits_, yz_logits_rev, topk):
     repetition_mask = torch.cat([F.softmax(tmp_logits[:, 1:, :], dim=-1),
                                  torch.zeros_like(tmp_logits[:, -1:, :])], dim=1)
     yz_logits_rev_rev_t_ = yz_logits_rev_rev_t_ - repetition_mask * 1e4
-    # yz_logits_rev_rev_t_ = yz_logits_rev_rev_t_.detach()
 
     _, indices_t = torch.topk(yz_logits_rev_rev_t_, topk)   
     mask_t_all = torch.zeros_like(yz_logits_rev_rev_t_).scatter_(2, indices_t, 1)   
@@ -314,17 +301,7 @@ def sentence_completion(text_ids, model, max_length, device):
 
         last = _greedy(logits[:, -1, :])
         output_so_far = last if output_so_far is None else torch.cat((output_so_far, last), dim=1)
-        # last_embeds = get_input_embeds(model.get_input_embeddings(), logits[:, -1:, :], device=device)
         last_embeds = model.get_input_embeddings()(last)
-
-    # output = model.generate(text_ids, max_length=max_length)
-    # logits = model(output).logits
-    # output_so_far = None
-    # for i in range(max_length):
-    #     last = _greedy(logits[:, i, :])
-    #     output_so_far = last if output_so_far is None else torch.cat((output_so_far, last), dim=1)
-
-
     return output_so_far
 
 
@@ -344,13 +321,6 @@ def soft_nll_detach(logits_perturbed, logits):
     return -(p * logp).sum(dim=-1).mean()
 
 
-def additional_nll(logits, cur_text_ids):
-    return torch.nn.CrossEntropyLoss()(
-        logits.view(-1, logits.shape[-1]),
-        cur_text_ids.view(-1)
-    )
-
-
 def soft_forward(model, x_onehot, y_logits, topk, extra_mask=None, x_past=None, detach=True, bad_mask=None):
     '''
     computes logits for $y$, based on a fixed context $y$ and the current logit distribution of $y$
@@ -367,7 +337,6 @@ def soft_forward(model, x_onehot, y_logits, topk, extra_mask=None, x_past=None, 
     )
     # embed_inputs: [bsz, length, embed_size]
     xy_logits = model(past_key_values=x_past, inputs_embeds=xy_embeds, use_cache=True).logits
-    # print(xy_logits.shape)
     if x_onehot != None:
         x_length = x_onehot.shape[1]
         y_logits = xy_logits[:, x_length - 1:-1, :]
@@ -381,13 +350,11 @@ def soft_forward(model, x_onehot, y_logits, topk, extra_mask=None, x_past=None, 
     length = y_logits.shape[1]
     past = x_past
     input_embeds = torch.matmul(x_onehot.float(), model.get_input_embeddings().weight)
-    
-
     mask_t_all = None
     logits_so_far = None
     length = y_logits.shape[1]
     for i in range(length):
-        model_outputs = model(past_key_values=past, inputs_embeds=input_embeds) #送进去历史信息
+        model_outputs = model(past_key_values=past, inputs_embeds=input_embeds) 
         
         # past = model_outputs.past_key_values    
         logits_t = model_outputs.logits[:, -1:, :]  
@@ -486,8 +453,6 @@ def soft_backward_steps(model, y_logits):
         logits_so_far = logits if logits_so_far is None else torch.cat((logits_so_far, logits), dim=1)
 
     return logits_so_far
-
-
 
 def constraint_loss(logits, cs_onehot, cs_ids):
     """
@@ -647,17 +612,6 @@ def _constraint_loss2(logits, cs_onehot):
     loss = - max_logits_per_constraint.sum() / selected_logits.size(1)
     return loss
 
-def print_topk_stats(logits, tokenizer):
-    logits_lg, topk_index_y = torch.topk(F.softmax(logits[0, :3, :], dim=-1), 3)
-    print(logits_lg.data.cpu().numpy())
-    print(topk_index_y.data.cpu().numpy())
-    lgs = [int(x[0]) for x in topk_index_y.data.cpu().numpy()]
-    for a in lgs:
-        print('|', tokenizer.decode(a), '| ', end='', flush=True)
-    print()
-    print("===============================")
-    return topk_index_y
-
 def pre_filter(model, y_logits, topk, x_onehot, x_past, tokenizer, extra_mask=None):
     # y_logits : [bsz, length, vocab_size]
     # x_onehot : [bsz, 1     , vocab_size]
@@ -668,9 +622,6 @@ def pre_filter(model, y_logits, topk, x_onehot, x_past, tokenizer, extra_mask=No
     input_embeds = torch.matmul(x_onehot.float(), model.get_input_embeddings().weight)
     mask_t_all = None
     logits_so_far = None
-    # print(y_logits.shape)
-    # print(x_onehot.shape)
-    # print(x_past)
     for i in range(length):
         model_outputs = model(past_key_values=past, inputs_embeds=input_embeds)
         past = model_outputs.past_key_values
@@ -753,34 +704,8 @@ def has_repeat(sents_for_substr):
         has_repeat_substring = has_repeat_substring or _has_repeat_substring(h) or _has_repeat_substring(h, MINLEN=20, MINCNT=2)
     return has_repeat_substring
 
-
-def write_json_lines(json_lines, fout, model, tokenizer, device):
-    with open(fout, 'w') as fw:
-        for line in json_lines:
-            input_text = line['generation_complete'][0][0]
-            # input_text = line['counterfactual']
-
-            ori_ending = line['original_ending']
-            ori_endings = tokenize.sent_tokenize(ori_ending)
-            z = ori_endings[0].strip()
-
-            gens = line['generation_complete'][0][1]
-            proc_gens = [post_sent(x) for x in gens]
-            pg_dict, gens_ranked, pg_dict_top, gens_ranked_top = process_batching_counterfactual_outputs(
-                proc_gens, input_text, z, model, tokenizer, device)
-            line['proced'] = proc_gens
-            line['ppl_gens'] = pg_dict
-            line['gens_ranked'] = gens_ranked
-            line['ppl_gens_top'] = pg_dict_top
-            line['gens_ranked_top'] = gens_ranked_top
-            # print(line)
-            # exit()
-            fw.write(json.dumps(line) + '\n')
-
-
 def compute_ppl_line(model, tokenizer, line):
     line = line.strip()
-    #print(line)
     line_ = tokenizer.encode(line)
     line_t = torch.tensor(line_, dtype=torch.long).cuda()
     loss = model(input_ids=line_t, labels=line_t).loss
@@ -825,81 +750,6 @@ def compute_loss(model, tokenizer, device, x="", z="", y="", constraints=None, a
 
     return c_loss.mean().item()
 
-
-def rank_and_filter(candidates, input_text, z, model, tokenizer, device, no_loss_rerank):
-
-    # de-duplicate
-    candidates = list(dict.fromkeys(candidates))
-
-    ppl_list = []
-    ppl_y_list = []
-    loss_list = []
-    for line in candidates:
-        line = line.strip()
-        y = ' '.join(line.split())
-        # y = line
-        xy = input_text + ' ' + line
-        # print(xy)
-        # exit()
-        x_sents = nltk.sent_tokenize(input_text)
-        if has_repeat(sents_for_substr=[y], sents_for_sent=x_sents+[y]) or len(tokenizer.encode(y)) <= 4:
-            ppl_list.append(10000.0)
-            ppl_y_list.append(10000.0)
-            loss_list.append(10000.0)
-        else:
-            ppl = compute_ppl_line(model, tokenizer, device, xy)
-            ppl_list.append(round(ppl, 2))
-
-            ppl_y = compute_ppl_line(model, tokenizer, device, y)
-            ppl_y_list.append(round(ppl_y, 2))
-
-            loss = compute_loss(model, tokenizer, device,
-                                x=input_text, z=". " + z, y=". " + y)
-            loss_list.append(loss)
-
-    sort_index = sorted(range(len(ppl_list)), key=lambda k: ppl_list[k])
-    ppls_reorder = [ppl_list[i] for i in sort_index]
-    ppls_y_reorder = [ppl_y_list[i] for i in sort_index]
-    loss_reorder = [loss_list[i] for i in sort_index]
-    gens_complete_reorder = [candidates[i] for i in sort_index]
-
-    pg_dict = []
-    for p, py, l, g in zip(ppls_reorder, ppls_y_reorder, loss_reorder, gens_complete_reorder):
-        pg_dict.append({"ppl": str(p), "ppl_y": str(py), "loss": str(l), "gen": g})
-
-    if len(ppls_reorder) <= 1:
-        sort_len = 1
-    elif ppls_reorder[1]-ppls_reorder[0] > 10:
-        sort_len = 1
-    elif len(ppls_reorder) <= 2:
-        sort_len = 1
-    elif ppls_reorder[2]-ppls_reorder[0] > 10:
-        sort_len = 2
-    else:
-        sort_len = 3
-
-    if no_loss_rerank:
-        return gens_complete_reorder[0]
-
-    sort_index = sorted(range(sort_len), key=lambda k: loss_reorder[k])
-    sort_index = sort_index
-    ppls_reorder_top = [ppls_reorder[i] for i in sort_index]
-    ppls_y_reorder_top = [ppls_y_reorder[i] for i in sort_index]
-    loss_reorder_top = [loss_reorder[i] for i in sort_index]
-    gens_complete_reorder_top = [gens_complete_reorder[i] for i in sort_index]
-
-    pg_dict_top = []
-    for p, py, l, g in zip(ppls_reorder_top, ppls_y_reorder_top, loss_reorder_top, gens_complete_reorder_top):
-        pg_dict_top.append({"ppl": str(p), "ppl_y": str(py), "loss": str(l), "gen": g})
-
-    return gens_complete_reorder_top[0]
-
-def _get_adverbs_and_nnps(z_words):
-    pos = nltk.pos_tag(z_words)
-    adverbs = [w[0] for w in pos if 'RB' in w[1]]
-    nnps = [w[0] for w in pos if 'NNP' in w[1]]
-    return adverbs, nnps
-
 def _get_keywords(z, x, args):
     stop_words = set(stopwords.words('english'))
     z_words = word_tokenize(z)
@@ -920,17 +770,7 @@ def _get_keywords(z, x, args):
 
     return ' '.join(ret_words)
 
-
-def calculate_coverage(output_ln, key_words):
-    x_words = word_tokenize(x)
-    x_words = set(x_words)
-    count = len(x_words.intersection(key_words))
-    ratio = count / len(key_words)
-    return ratio
-
 def get_gpt_ppl(text_list, gpt_model, gpt_tokenizer, device):
-    # gpt_model = GPT2LMHeadModel.from_pretrained("./models/gpt2-medium").to(device)
-    # gpt_tokenizer = GPT2Tokenizer.from_pretrained("./models/gpt2-")
     gpt_tokenizer.add_special_tokens({'pad_token': '[PAD]'})
     
     ppl_list = []
@@ -946,57 +786,6 @@ def get_gpt_ppl(text_list, gpt_model, gpt_tokenizer, device):
 
     return ppl_list
 
-def rank_generations(text_list, x, z, mode="abductive"):
-    if "abductive" in mode:
-        text_xyz = []
-        text_yz = []
-        for text in text_list:
-            yz = text + " " + z
-            xyz = x + " " + yz
-            text_xyz.append(xyz)
-            text_yz.append(yz)
-
-        rank_score = get_gpt_ppl(text_xyz, "cuda")
-        combined_list = list(zip(rank_score, text_xyz, text_list))
-        sorted_list = sorted(combined_list, key=lambda x: x[0])
-        sorted_list2 = [li[2] for li in sorted_list]
-        # print(sorted_list2)
-        text_candidates = [x + " " + li for li in sorted_list2]
-
-        rank_score = get_gpt_ppl(text_candidates, "cuda")
-        combined_list = list(zip(rank_score, text_candidates, sorted_list2))
-        sorted_list = sorted(combined_list, key=lambda x: x[0])
-        result = sorted_list[0][2]
-        # print(combined_list)
-    
-    return result
-
-def vocab_prune(model, y_logits, topk, x_onehot, x_past, tokenizer, extra_mask=None):
-    assert x_onehot.shape[1] == 1, x_onehot.shape
-    length = y_logits.shape[1]
-    past = x_past
-    input_embeds = torch.matmul(x_onehot.float(), model.get_input_embeddings().weight)
-    mask_t_all = None
-    logits_so_far = None
-
-    for i in range(length):
-        model_outputs = model(past_key_values=past, inputs_embeds=input_embeds, use_cache=True) # 送进去历史信息
-        past = model_outputs.past_key_values    
-        logits_t = model_outputs.logits[:, -1:, :]  # 选出来最后一个单词的logits
-        assert logits_t.shape[1] == 1, logits_t.shape   
-        _, indices_t = torch.topk(logits_t, topk)   # 最后一个单词的topk logits
-        mask_t = torch.zeros_like(logits_t).scatter_(2, indices_t, 1)   # 变mask
-        mask_t_all = mask_t if mask_t_all is None else torch.cat((mask_t_all, mask_t), dim=1)   # 第i个单词的topk-mask
-        logits_so_far = logits_t if logits_so_far is None else torch.cat((logits_so_far, logits_t), dim=1)  # 生成的y的logits
-        if i < length - 1:
-            if extra_mask is None:
-                y_logits_i_topk = top_k_filter_3d(y_logits[:,i:i+1,:], topk, mask=mask_t) / 0.001
-            else:
-                y_logits_i_topk = top_k_filter_3d(y_logits[:,i:i+1,:], topk, mask=mask_t, extra_mask=extra_mask[:,i:i+1,:]) / 0.001
-            input_embeds = torch.matmul(F.softmax(y_logits_i_topk, dim=-1), model.get_input_embeddings().weight)
-
-    return logits_so_far, mask_t_all
-
 def forw(model, y_logits, topk, x_onehot, x_past):
     xy_embeds = embed_inputs(
         model.get_input_embeddings().weight,
@@ -1004,7 +793,6 @@ def forw(model, y_logits, topk, x_onehot, x_past):
         x_onehot=x_onehot,
         device=x_onehot.device
     )
-    # print(x_past.shape)
     # embed_inputs: [bsz, length, embed_size]
     xy_logits = model(past_key_values=x_past, inputs_embeds=xy_embeds, use_cache=True).logits
     x_length = x_onehot.shape[1]
@@ -1025,20 +813,6 @@ def contrastive_loss(y_logits):
     loss_matrix = torch.nn.functional.relu(loss_matrix)
     cl_loss = torch.sum(loss_matrix) / (bsz * length * vocab_size)
     return cl_loss
-
-def find_nearest_vectors_pytorch(target_vectors, candidate_vectors, batch_size):
-    # 将target_vectors扩展为(batch_size * num_targets, vector_size)
-    extended_target_vectors = target_vectors.view(-1, target_vectors.size(-1))
-    
-    distances = torch.cdist(extended_target_vectors, candidate_vectors)
-    
-    nearest_indices = torch.argmin(distances, dim=1)
-    
-    nearest_vectors = candidate_vectors[nearest_indices]
-    
-    nearest_vectors = nearest_vectors.view(batch_size, -1, nearest_vectors.size(-1))
-    
-    return nearest_vectors
 
 def sim_score(model, y_logits, ref_vec):
     y_embeds = embed_inputs(
@@ -1081,7 +855,7 @@ def bert_score(embedding1, embedding2):
     # Calculate precision, recall, and F1 score
     # precision = similarity_matrix.max(dim=2)[0]/embedding1.shape[1]
     # recall = similarity_matrix.max(dim=1)[1]/embedding2.shape[1]
-    # f1_score = 2 * (precision * recall) / (precision + recall + 1e-8)  # Adding a small epsilon to avoid division by zero
+    # f1_score = 2 * (precision * recall) / (precision + recall + 1e-8)  
 
     return f1_score
 
