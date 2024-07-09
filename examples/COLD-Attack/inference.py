@@ -53,6 +53,11 @@ class COLDSearch(SearchAlgorithm):
                 optim.zero_grad()
                 y_logits_ = y_logits + epsilon
                 loss = config.get_actions(y_logits_)
+                # print("%d, loss: %.4f" % (iter + 1, loss.item()))
+                # randomly sample an action
+                # reward, _ = config.reward(state, action)
+                # loss.backward()
+                # optim.step()
                 world.step(optim, loss)
                 if iter < self.max_depth - 1:
 
@@ -80,10 +85,8 @@ class COLDSearch(SearchAlgorithm):
 
 
 class PromptWorldModel(WorldModel[PromptState, PromptAction, str]):
-    def __init__(self, args, language_model, tokenizer, device, x, z, depth_limit: int = 400) -> None:
+    def __init__(self, args, language_model, tokenizer, device, depth_limit: int = 400) -> None:
         super().__init__()
-        self.x = x
-        self.z = z
         self.language_model = language_model
         self.accuracy_cache = {}
         self.example = None
@@ -97,6 +100,8 @@ class PromptWorldModel(WorldModel[PromptState, PromptAction, str]):
 
     def update_example(self, example: str, prompt: dict = None) -> None:
         self.example = example
+        self.x = example[0]
+        self.z = example[-1]
 
     def init_state(self, x, length, temperature) -> PromptState:
         x_ = self.tokenizer.encode(x)[1:]
@@ -125,33 +130,27 @@ class PromptWorldModel(WorldModel[PromptState, PromptAction, str]):
 class PromptSearchConfig(SearchConfig[PromptState, PromptAction, str]):
     def __init__(self, world_model: AutoModelForCausalLM, 
                 tokenizer,
-                args, 
-                y_logits,
-                x_model_past,
-                x_mask,
-                x,
-                soft_forward_x,
-                z_onehot,
-                z_t,
-                bad_words_t) -> None:
+                args
+                ) -> None:
+        # Example: 
         super().__init__()
         self.world_model = world_model
         self.tokenizer = tokenizer
         self.example = None
         self.args = args
-        self.y_logits = y_logits
+        self.mask_t = None
+
+    def update_example(self, example, prompt: dict = None) -> None:
+        self.example = example
+        x, x_mask, x_model_past, soft_forward_x, z_onehot, z_t, bad_words_t, z = example  
         self.x_model_past = x_model_past
         self.x_mask = x_mask
-        self.args = args
         self.soft_forward_x = soft_forward_x
         self.z_onehot = z_onehot
         self.z_t = z_t
         self.bad_words_t = bad_words_t
         self.x = x
-        self.mask_t = None
-
-    def update_example(self, example, prompt: dict = None) -> None:
-        self.example = example
+        self.z = z
 
     def get_actions(self, y_logits_: PromptState):
         # y_logits_ = y_logits + epsilon
@@ -207,12 +206,16 @@ class PromptSearchConfig(SearchConfig[PromptState, PromptAction, str]):
         return loss
 
     def reward(self, state: PromptState, action: PromptAction) -> Tuple[float, dict]:
+        # return 0
         pass
 
     def decode(self, y_logits_: PromptState):
+        
         text, _, last_text_ids = decode_with_model_topk(
         self.world_model, y_logits_, self.args.topk, self.soft_forward_x, self.x_model_past, self.tokenizer, extra_mask=None, bad_mask=None)
         text_post = text
+        
+
         return text_post
 
 def optimize_prompt(requests, goals, args):
@@ -265,6 +268,28 @@ def optimize_prompt(requests, goals, args):
               'satisfy', 'complete', 'execute',
               'fair-minded', 'impartial', 'equitable',
               'reliable', 'trustable', 'faithful', 'invalid','safe', 'not', "can't", "but", "against"]
+    # Initialize the world model
+    world_model = PromptWorldModel(args, model, tokenizer, device, depth_limit=args.num_iters)
+    # Configure search parameters
+    search_config = PromptSearchConfig(
+            world_model.language_model,
+            tokenizer,
+            args
+        )
+
+    # Initialize the search algorithm
+    search_algo = COLDSearch(
+        args,
+        n_shoot = 1
+    )
+    # Initialize the reasoner
+    reasoner = Reasoner(
+        world_model=world_model, 
+        search_config=search_config, 
+        search_algo=search_algo
+    )
+    
+
     for x, z in zip(requests, goals):
         
         lowercase_words = [word.upper() for word in words]
@@ -272,8 +297,6 @@ def optimize_prompt(requests, goals, args):
         bad_words = words + lowercase_words
         
         bad_words = ' '.join(bad_words)
-
-        BIG_CONST = 1e10
         
         x_ = tokenizer.encode(x)[1:]
         x_t = torch.tensor(x_, device=device, dtype=torch.long)
@@ -326,7 +349,6 @@ def optimize_prompt(requests, goals, args):
 
         
         init_logits = initialize(model, x_t, args.length, 0.1, args.batch_size ,device, tokenizer)
-        y_logits = init_logits
 
         soft_forward_x = x_onehot[:, -1:, :] 
         if x_t.shape[1] == 1:
@@ -334,40 +356,15 @@ def optimize_prompt(requests, goals, args):
         else:
             x_model_outputs = model(x_t[:, :-1], use_cache=True)
             x_model_past = x_model_outputs.past_key_values
-
-        mask_t = None
-        world_model = PromptWorldModel(args, model, tokenizer, device, x, z, depth_limit=args.num_iters)
-
-        # Configure search parameters
-        search_config = PromptSearchConfig(
-            world_model.language_model,
-            tokenizer,
-            args,
-            y_logits,
-            x_model_past,
-            x_mask,
-            x,
-            soft_forward_x,
-            z_onehot,
-            z_t,
-            bad_words_t,
-        )
-
-        # Initialize the search algorithm
-        search_algo = COLDSearch(
-            args,
-            n_shoot = 1
-        )
-        # saerch_algo = 
-
-        # Initialize the reasoner
-        reasoner = Reasoner(
-            world_model=world_model, 
-            search_config=search_config, 
-            search_algo=search_algo
-        )
         
-        prompts = reasoner(None)
+        example = (x, x_mask, x_model_past, soft_forward_x, z_onehot, z_t, bad_words_t, z)
+        world_model.update_example(example)
+        search_config.update_example(example)
+        
+       
+        
+        
+        prompts = reasoner(example)
         print(prompts)
         decoded_text = []
         for bi in range(args.batch_size):
@@ -431,9 +428,9 @@ def options():
     # lr
     parser.add_argument("--stepsize", type=float, default=0.1, help="learning rate in the backward pass.")
     parser.add_argument("--stepsize-ratio", type=float, default=1, help="")
-    parser.add_argument("--stepsize-iters", type=int, default=2000, help="")
+    parser.add_argument("--stepsize-iters", type=int, default=1000, help="")
     # iterations
-    parser.add_argument("--num-iters", type=int, default=100)
+    parser.add_argument("--num-iters", type=int, default=2000)
     parser.add_argument("--min-iters", type=int, default=0, help="record best only after N iterations")
     parser.add_argument("--noise-iters", type=int, default=1, help="add noise at every N iterations")
     parser.add_argument("--win-anneal-iters", type=int, default=1000, help="froze the optimization window after N iters")
