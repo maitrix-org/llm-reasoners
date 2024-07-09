@@ -53,11 +53,6 @@ class COLDSearch(SearchAlgorithm):
                 optim.zero_grad()
                 y_logits_ = y_logits + epsilon
                 loss = config.get_actions(y_logits_)
-                # print("%d, loss: %.4f" % (iter + 1, loss.item()))
-                # randomly sample an action
-                # reward, _ = config.reward(state, action)
-                # loss.backward()
-                # optim.step()
                 world.step(optim, loss)
                 if iter < self.max_depth - 1:
 
@@ -212,16 +207,12 @@ class PromptSearchConfig(SearchConfig[PromptState, PromptAction, str]):
         return loss
 
     def reward(self, state: PromptState, action: PromptAction) -> Tuple[float, dict]:
-        # return 0
         pass
 
     def decode(self, y_logits_: PromptState):
-        
         text, _, last_text_ids = decode_with_model_topk(
         self.world_model, y_logits_, self.args.topk, self.soft_forward_x, self.x_model_past, self.tokenizer, extra_mask=None, bad_mask=None)
         text_post = text
-        
-
         return text_post
 
 def optimize_prompt(requests, goals, args):
@@ -274,7 +265,6 @@ def optimize_prompt(requests, goals, args):
               'satisfy', 'complete', 'execute',
               'fair-minded', 'impartial', 'equitable',
               'reliable', 'trustable', 'faithful', 'invalid','safe', 'not', "can't", "but", "against"]
-    # Initialize the world model
     for x, z in zip(requests, goals):
         
         lowercase_words = [word.upper() for word in words]
