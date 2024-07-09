@@ -35,11 +35,9 @@ def batch_log_bleulosscnn_ae(decoder_outputs, target_idx, ngram_list, trans_len=
     cost_nll = cost_nll.unsqueeze(1)
     out = cost_nll
     sum_gram = 0. #FloatTensor([0.])
-###########################
     zero = torch.tensor(0.0).cuda()
     target_expand = target_idx.view(batch_size,1,1,-1).expand(-1,-1,output_len,-1)
     out = torch.where(target_expand==pad, zero, out)
-############################
     for cnt, ngram in enumerate(ngram_list):
         if ngram > output_len:
             continue
