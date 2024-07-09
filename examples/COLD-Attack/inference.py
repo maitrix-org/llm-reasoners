@@ -355,8 +355,6 @@ def optimize_prompt(requests, goals, args):
             x_model_past = x_model_outputs.past_key_values
         
         example = (x, x_mask, x_model_past, soft_forward_x, z_onehot, z_t, bad_words_t, z)
-        world_model.update_example(example)
-        search_config.update_example(example)
         prompts = reasoner(example)
         print(prompts)
         decoded_text = []
