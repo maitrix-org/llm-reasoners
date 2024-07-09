@@ -277,9 +277,6 @@ def sentence_completion(text_ids, model, max_length, device):
     return output_so_far
 
 
-def soft_distance(logits_perturbed, logits):
-    return torch.nn.MSELoss()(logits_perturbed, logits)
-
 
 def soft_nll(logits_perturbed, logits):
     p = F.softmax(logits_perturbed, dim=-1)
