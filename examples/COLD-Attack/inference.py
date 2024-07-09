@@ -347,9 +347,6 @@ def optimize_prompt(requests, goals, args):
 
         bad_words_t = bad_words_t.unsqueeze(0).repeat(args.batch_size, 1)
 
-        
-        init_logits = initialize(model, x_t, args.length, 0.1, args.batch_size ,device, tokenizer)
-
         soft_forward_x = x_onehot[:, -1:, :] 
         if x_t.shape[1] == 1:
             x_model_past = None
@@ -360,10 +357,6 @@ def optimize_prompt(requests, goals, args):
         example = (x, x_mask, x_model_past, soft_forward_x, z_onehot, z_t, bad_words_t, z)
         world_model.update_example(example)
         search_config.update_example(example)
-        
-       
-        
-        
         prompts = reasoner(example)
         print(prompts)
         decoded_text = []
