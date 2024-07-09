@@ -228,34 +228,6 @@ def soft_forward_loss(model, y_logits, topk, x_onehot, x_past, extra_mask=None, 
     p = mask_t_all
 
     return -(p * logp).sum(dim=-1).mean(dim=-1)
-    
-
-def soft_backward_loss(model, y_logits_, yz_logits_rev, topk):
-    # y_logits_rev: 
-    embeddings_weight = model.get_input_embeddings().weight[1:yz_logits_rev.shape[-1]+1]
-    y_embeds = embed_inputs(
-        embeddings_weight,
-        yz_logits_rev,
-        device=yz_logits_rev.device
-    )
-    y_logits = model(inputs_embeds=y_embeds).logits
-    yz_logits_rev_rev_t = torch.flip(y_logits, [1])                      
-    yz_logits_rev_rev_t = yz_logits_rev_rev_t[:, :, 1:y_logits_.shape[-1] + 1]   
-    yz_logits_rev_rev_t_ = yz_logits_rev_rev_t[:, :y_logits_.shape[1], :]
-    
-    tmp_logits = yz_logits_rev_rev_t_
-    repetition_mask = torch.cat([F.softmax(tmp_logits[:, 1:, :], dim=-1),
-                                 torch.zeros_like(tmp_logits[:, -1:, :])], dim=1)
-    yz_logits_rev_rev_t_ = yz_logits_rev_rev_t_ - repetition_mask * 1e4
-
-    _, indices_t = torch.topk(yz_logits_rev_rev_t_, topk)   
-    mask_t_all = torch.zeros_like(yz_logits_rev_rev_t_).scatter_(2, indices_t, 1)   
-
-    logp = F.log_softmax(yz_logits_rev_rev_t_, dim=-1)
-
-    p = mask_t_all
-    
-    return -(p * logp).sum(dim=-1).mean(dim=-1)
 
 def post_process(text_ids, model, max_length, length, tokenizer, device):
     # sentence completion
@@ -376,8 +348,6 @@ def soft_forward(model, x_onehot, y_logits, topk, extra_mask=None, x_past=None, 
     else:
         return logits_so_far
 
-
-
 def soft_forward_xyz(model, x_onehot, y_logits, z_onehot):
     '''
     computes logits for $y$, based on a fixed context $y$ and the current logit distribution of $y$
@@ -423,195 +393,7 @@ def soft_forward_xyz_target(model, x_onehot, y_logits, z_onehot, target_onehot):
     else:
         xyz_length = y_logits.shape[1]
     return xyz_target_logits, xyz_length
-
-def soft_backward(model, y_logits_rev):
-    embeddings_weight = model.get_input_embeddings().weight[1:y_logits_rev.shape[-1]+1]
-    y_embeds = embed_inputs(
-        embeddings_weight,
-        y_logits_rev,
-        device=y_logits_rev.device
-    )
-    y_logits_ = model(inputs_embeds=y_embeds).logits
-    return y_logits_[:, :-1, :]
-
-
-def soft_backward_steps(model, y_logits):
-    device = y_logits.device
-    past = None
-    last_embeds = None
-    logits_so_far = None
-    for i in range(y_logits.shape[1]-2, -1, -1):
-        last = y_logits[:, i:i+1]
-        last_embeds = embed_inputs(model.get_input_embeddings(), last, device=device)
-
-        model_outputs = model(past_key_values=past, inputs_embeds=last_embeds, use_cache=True)
-        past = model_outputs.past_key_values
-
-        logits = model_outputs.logits
-        logits = logits[:, -1, :]
-        logits = logits.unsqueeze(1)
-        logits_so_far = logits if logits_so_far is None else torch.cat((logits_so_far, logits), dim=1)
-
-    return logits_so_far
-
-def constraint_loss(logits, cs_onehot, cs_ids):
-    """
-    constraint loss with mask
-    cs_ids: [batch_size, num_cs]
-    """
-    log_ps = logits.log_softmax(-1).unsqueeze(2)  # shape: [batch_size, length, 1, vocab_size]
-    constraint_max_log_ps_ = (log_ps * cs_onehot.unsqueeze(1)).max(1)[0].sum(-1)  # shape: [batch_size, num_cs]
-
-    log_ps_max_ids = log_ps[:, :, 0, :].argmax(-1)  # shape: [batch_size, length]
-    cs_ids_repeat = cs_ids.unsqueeze(2).repeat([1, 1, log_ps_max_ids.shape[1]])  # shape: [batch_size, num_cs, length]
-    mask = (log_ps_max_ids.unsqueeze(1) == cs_ids_repeat).type(torch.FloatTensor).sum(-1)  # shape: [batch_size, num_cs]
-    mask = (mask < 1).type(torch.FloatTensor)
-    mask = mask.to(constraint_max_log_ps_.device)
-
-    loss = - (constraint_max_log_ps_ * mask).sum()
-
-    if mask.sum() != 0:
-        loss = loss / mask.sum()
-    else:
-        loss = 0
-
-    return loss
-
-
-def constraint_loss_with_variants(logits, cs_onehot_all, cs_ids_all):
-    """
-    constraint loss with mask
-    cs_ids_all: list of tensor [batch_size, num_variants], of length num_cs
-    """
-    device = logits.device
-    log_ps = logits.log_softmax(-1).unsqueeze(2)  # shape: [batch_size, length, 1, vocab_size]
-
-    num_cs = len(cs_onehot_all)
-    loss_all = 0
-    mask_sum = 0
-    for i in range(num_cs):
-        cs_onehot = cs_onehot_all[i]
-        cs_ids = cs_ids_all[i]
-        constraint_max_log_ps_ = (log_ps * cs_onehot.unsqueeze(1)).max(1)[0].sum(-1)  # shape: [batch_size, num_variants]
-
-        log_ps_max_ids = log_ps[:, :, 0, :].argmax(-1)  # shape: [batch_size, length]
-        cs_ids_repeat = cs_ids.unsqueeze(2).repeat([1, 1, log_ps_max_ids.shape[1]])  # shape: [batch_size, num_variants, length]
-        mask = (log_ps_max_ids.unsqueeze(1) == cs_ids_repeat).type(torch.FloatTensor).sum(-1)  # shape: [batch_size, num_variants]
-        #mask = (mask >= 1).type(torch.FloatTensor)
-        mask = (mask.sum(1) < 1).type(torch.FloatTensor)  # shape: [batch_size]. mask = 0 if any of the variants already occurs
-        mask = mask.to(device)
-
-        loss_i = - (constraint_max_log_ps_.max(1)[0] * mask).mean()  # average over batch_size
-
-        loss_all += loss_i
-        mask_sum += mask
-
-    if mask_sum != 0:
-        loss_all = loss_all / mask_sum
-
-    return loss_all #, mask_sum
-
-
-def constraint_loss_with_variants_by_ppl(logits, cs_onehot_all, cs_ids_all, probs_t):
-    device = logits.device
-    batch_size = logits.shape[0]
-    log_ps = logits.log_softmax(-1).unsqueeze(2)
-    ps_t = probs_t.unsqueeze(2)
-
-    num_cs = len(cs_onehot_all)
-    loss_all = 0
-    mask_sum = 0
-    for i in range(num_cs):
-        cs_onehot = cs_onehot_all[i]
-        cs_ids = cs_ids_all[i]
-
-        cs_onehot_ = cs_onehot.unsqueeze(1).type(torch.FloatTensor).to(device)
-        cs_onehot_ = cs_onehot_.repeat(batch_size, 1, 1, 1).type(torch.FloatTensor).to(device)
-        ppl_max_idx = (ps_t * cs_onehot_).argmax(1)  # [batch_size, num_variants, vocab_size]
-        ppl_max_idx_onehot = torch.zeros_like(log_ps * cs_onehot_).scatter_(1, ppl_max_idx.unsqueeze(1), cs_onehot_)
-
-        constraint_max_log_ps_ = (log_ps * ppl_max_idx_onehot).sum(1).sum(-1)  # shape: [batch_size, num_variants]
-
-        ## Mask
-        log_ps_max_ids = log_ps[:, :, 0, :].argmax(-1)  # shape: [batch_size, length]
-        cs_ids_repeat = cs_ids.unsqueeze(2).repeat([1, 1, log_ps_max_ids.shape[1]])  # shape: [batch_size, num_variants, length]
-        mask = (log_ps_max_ids.unsqueeze(1) == cs_ids_repeat).type(torch.FloatTensor).sum(-1)  # shape: [batch_size, num_variants]
-        mask = (mask.sum(1) < 1).type(torch.FloatTensor)  # shape: [batch_size]. mask = 0 if any of the variants already occurs
-        mask = mask.to(device)
-
-        loss_i = - constraint_max_log_ps_.max(1)[0] * mask
-
-        loss_all += loss_i  # shape: [batch_size]
-        mask_sum += mask  # shape: [batch_size]
-
-    loss_all = loss_all / (mask_sum + 1e-8)
-
-    return loss_all
-
-
-def constraint_loss_by_ppl(logits, cs_onehot, cs_ids, logits_t):
-    device = logits.device
-    log_ps = logits.log_softmax(-1).unsqueeze(2)
-
-    cs_onehot_ = cs_onehot.unsqueeze(1).type(torch.FloatTensor).to(device)
-    ps_t = logits_t.softmax(-1).unsqueeze(2)
-    ppl_max_idx = (ps_t * cs_onehot_).argmax(1)  # [batch_size, num_cs, vocab_size]
-    ppl_max_idx_onehot = torch.zeros_like(log_ps * cs_onehot_).scatter_(1, ppl_max_idx.unsqueeze(1), cs_onehot_)
-
-    constraint_max_log_ps_ = (log_ps * ppl_max_idx_onehot).sum(1).sum(-1)  # shape: [batch_size, num_cs]
-
-    ## Mask
-    log_ps_max_ids = log_ps[:, :, 0, :].argmax(-1)  # shape: [batch_size, length]
-    cs_ids_repeat = cs_ids.unsqueeze(2).repeat([1, 1, log_ps_max_ids.shape[1]])  # shape: [batch_size, num_cs, length]
-    mask = (log_ps_max_ids.unsqueeze(1) == cs_ids_repeat).type(torch.FloatTensor).sum(-1)  # shape: [batch_size, num_cs]
-    mask = (mask < 1).type(torch.FloatTensor)
-    mask = mask.to(device)
-
-    loss = - (constraint_max_log_ps_ * mask).sum()
-
-    if mask.sum() != 0:
-        loss = loss / mask.sum()
-    else:
-        loss = 0
-
-    return loss
-
-
-def constraint_loss_all(logits, cs_onehot, cs_ids):
-    device = logits.device
-
-    log_ps = logits.log_softmax(-1).unsqueeze(2)
-    constraint_max_log_ps_ = (log_ps * cs_onehot.unsqueeze(1)).mean(1).sum(-1)  # shape: [batch_size, num_cs]
-
-    ## Mask
-    log_ps_max_ids = log_ps[:, :, 0, :].argmax(-1)  # shape: [batch_size, length]
-    cs_ids_repeat = cs_ids.unsqueeze(2).repeat([1, 1, log_ps_max_ids.shape[1]])  # shape: [batch_size, num_cs, length]
-    mask = (log_ps_max_ids.unsqueeze(1) == cs_ids_repeat).type(torch.FloatTensor).sum(-1)  # shape: [batch_size, num_cs]
-    mask = (mask < 1).type(torch.FloatTensor)
-    mask = mask.to(device)
-
-    loss = - (constraint_max_log_ps_ * mask).sum()
-
-    if mask.sum() != 0:
-        loss = loss / mask.sum()
-    else:
-        loss = 0
-
-    return loss
-
-def _constraint_loss2(logits, cs_onehot):
-    '''
-    a re-implementation of `_constraint_loss` with a slightly different logic.
-    TODO: keep only one of these functions
-    '''
-    logits = logits.squeeze(0) # drop the empty dimension
-    cs_onehot = cs_onehot.float().squeeze(0) # drop the empty dimension and change into float (since torch matrix multiplication does not support integers)
-    cs_onehot = torch.transpose(cs_onehot, 0, 1)
-    selected_logits = torch.matmul(logits, cs_onehot) # dim: length x # of constraints
-    max_logits_per_constraint, _ = selected_logits.max(0) # select the highest logits for each constraint
-    loss = - max_logits_per_constraint.sum() / selected_logits.size(1)
-    return loss
-
+    
 def pre_filter(model, y_logits, topk, x_onehot, x_past, tokenizer, extra_mask=None):
     # y_logits : [bsz, length, vocab_size]
     # x_onehot : [bsz, 1     , vocab_size]
@@ -641,68 +423,12 @@ def pre_filter(model, y_logits, topk, x_onehot, x_past, tokenizer, extra_mask=No
         top_k_filter_3d(y_logits, topk, mask=mask_t_all, extra_mask=extra_mask),
         tokenizer)
 
-def collect_json_lines(model_output_json_file):
-    with open(model_output_json_file, 'r') as fr:
-        lines = fr.readlines()
-        json_lines = [json.loads(x.strip()) for x in lines]
-        return json_lines
-
 def post_sent(text_complete):
     sents = nltk.sent_tokenize(text_complete)
     sent = ' '.join(sents[0].strip().split())
     return sent
     # return sents[0]
 
-def _has_repeat_sent(hyp):
-    """
-    Detect if the sentences in `hyp` are repeat.
-    Args:
-        hyp: A list of three sentences.
-    """
-    if len(hyp) <= 1:
-        return False
-
-    for i in range(1, len(hyp)):
-        a = hyp[i-1]
-        b = hyp[i]
-
-        if a == b:
-            return True
-
-        s = SequenceMatcher(None, a, b)
-        if len(a) > 5 and len(b) > 5 and s.ratio() >= 0.85:
-            return True
-
-    return False
-
-
-def _has_repeat_substring(s, MINLEN=4, MINCNT=4):
-    d = {}
-    has_repeat = False
-    for sublen in range(int(len(s)/MINCNT)-1, MINLEN-1, -1):
-        for i in range(0, len(s)-sublen):
-            sub = s[i:i+sublen]
-            if len(sub.strip()) < sublen:
-                continue
-            cnt = s.count(sub)
-            if cnt >= MINCNT and sub not in d:
-                 d[sub] = cnt
-                 # print('repeat_substring: |' + sub + '| in |' + s + '|')
-                 has_repeat = True
-                 break
-        if has_repeat:
-            break
-    return has_repeat
-
-
-def has_repeat(sents_for_substr):
-    """
-    Detect if the hypothesis text has repeat patterns.
-    """
-    has_repeat_substring = False
-    for h in sents_for_substr:
-        has_repeat_substring = has_repeat_substring or _has_repeat_substring(h) or _has_repeat_substring(h, MINLEN=20, MINCNT=2)
-    return has_repeat_substring
 
 def compute_ppl_line(model, tokenizer, line):
     line = line.strip()
@@ -712,43 +438,6 @@ def compute_ppl_line(model, tokenizer, line):
     loss = loss.detach().clone().data.cpu().numpy()
     ppl = np.exp(loss)
     return ppl
-
-
-def compute_loss(model, tokenizer, device, x="", z="", y="", constraints=None, args=None, model_back=None, zz=None):
-    '''
-    x: left context   (prompt in lexical constrained task)
-    z: optimization target  (original ending in counterfactual task)
-    constraints: (constraint set in lexical constrained task)
-    '''
-    batch_size = 2
-
-    x_ = tokenizer.encode(x)
-    x_t = torch.tensor(x_, device=device, dtype=torch.long)
-    x_onehot = one_hot(x_t, dimension=tokenizer.vocab_size)
-
-    # repeat batch_size times
-    x_t = x_t.unsqueeze(0).repeat(batch_size, 1)
-    x_onehot = x_onehot.repeat(batch_size, 1, 1)
-
-    z_ = tokenizer.encode(z)[1:] # delete the "." token we appended before
-    z_t = torch.tensor(z_, device=device, dtype=torch.long)
-    z_t = z_t.unsqueeze(0).repeat(batch_size, 1)
-
-    y_ = tokenizer.encode(y)[1:] # delete the "." token we appended before
-    y_t = torch.tensor(y_, device=device, dtype=torch.long)
-    y_onehot = one_hot(y_t, dimension=tokenizer.vocab_size)
-    y_onehot = y_onehot.repeat(batch_size, 1, 1)
-    y_t = y_t.unsqueeze(0).repeat(batch_size, 1)
-
-    y_logits_ = y_onehot / 0.0001
-
-    c_loss = batch_log_bleulosscnn_ae(
-        decoder_outputs=y_logits_.transpose(0, 1),
-        target_idx=z_t,
-        ngram_list=[2, 3]
-    )
-
-    return c_loss.mean().item()
 
 def _get_keywords(z, x, args):
     stop_words = set(stopwords.words('english'))
@@ -800,20 +489,6 @@ def forw(model, y_logits, topk, x_onehot, x_past):
 
     return logits_so_far
 
-def contrastive_loss(y_logits):
-    # y_logits: B, L, |V|
-    bsz, length, vocab_size = y_logits.shape
-    norm_rep = y_logits / y_logits.norm(dim=2, keepdim=True)
-    cosine_scores = torch.matmul(norm_rep, norm_rep.transpose(1,2))
-    gold_score = torch.diagonal(cosine_scores, offset=0, dim1=1, dim2=2) # bsz x seqlen
-    gold_score = torch.unsqueeze(gold_score, -1)
-    assert gold_score.size() == torch.Size([bsz, length, 1])
-    difference_matrix = gold_score - cosine_scores
-    loss_matrix = 0.5 - difference_matrix # bsz x seqlen x seqlen
-    loss_matrix = torch.nn.functional.relu(loss_matrix)
-    cl_loss = torch.sum(loss_matrix) / (bsz * length * vocab_size)
-    return cl_loss
-
 def sim_score(model, y_logits, ref_vec):
     y_embeds = embed_inputs(
         model.get_input_embeddings().weight,
@@ -838,54 +513,3 @@ def get_ref_embedding(model, ref, device, tokenizer):
     ref_vec = model(ref_, output_hidden_states=True).hidden_states[-1].mean(dim=1).detach()
     # print(len(output.hidden_states))
     return ref_vec
-
-def bert_score(embedding1, embedding2):
-    # Normalize embeddings
-    # embedding2 = embedding2.repeat(embedding1.shape[0], 1, 1)
-    embedding1 = embedding1 / torch.norm(embedding1, dim=-1).unsqueeze(-1)
-    embedding2 = embedding2 / torch.norm(embedding2, dim=-1).unsqueeze(-1)
-    # Calculate similarity matrix
-    similarity_matrix = torch.bmm(embedding1, embedding2.transpose(1, 2))
-    word_precision = similarity_matrix.max(dim=2)[0]
-    word_recall = similarity_matrix.max(dim=1)[0]
-    P = (word_precision / word_precision.shape[-1]).sum(dim=1)
-    R = (word_recall / word_recall.shape[-1]).sum(dim=1)
-    F = 2 * P * R / (P + R)
-    return F
-    # Calculate precision, recall, and F1 score
-    # precision = similarity_matrix.max(dim=2)[0]/embedding1.shape[1]
-    # recall = similarity_matrix.max(dim=1)[1]/embedding2.shape[1]
-    # f1_score = 2 * (precision * recall) / (precision + recall + 1e-8)  
-
-    return f1_score
-
-def score_by_bert(A, hyps, B, model, tokenizer, device='cuda'):
-    """
-    Use BERT next-sentence-prediction to compute the scores of
-    (A-hyps, B) and (A, hyps-B)
-
-    Args:
-        A: O1
-        hyps: hypothesis
-        B: O2
-    """
-    def _score(a, b):
-        encoded = tokenizer.encode_plus(a, text_pair=b, return_tensors='pt')
-        for k in encoded:
-            encoded[k] = encoded[k].to(device)
-        seq_relationship_logits = model(**encoded)[0]
-        return (seq_relationship_logits[0, 0].tolist())
-
-    res_A_hB = []
-    res_Ah_B = []
-    for hyp in hyps:
-        if hyp == 'DEPRECATED':
-            res_A_hB.append(-1)
-            res_Ah_B.append(-1)
-            continue
-        hB = ' '.join([hyp, B])
-        Ah = ' '.join([A, hyp])
-        res_A_hB.append(_score(A, hB))
-        res_Ah_B.append(_score(Ah, B))
-
-    return res_A_hB, res_Ah_B
