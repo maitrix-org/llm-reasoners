@@ -171,34 +171,6 @@ def one_hot(tensor, dimension):
 def initialize(model, x, length, temperature, batch_size, device, tokenizer):
     if x.dim() == 1:
         x = x.unsqueeze(0)
-    # print(x.shape)
-    # past = None
-    # last_token_embedding = None
-    # logits_so_far = None
-    # for i in range(length):
-    #     # for the first iteration, `past` is None
-    #     if past is None:
-    #         x_last_token = x[:, -1:]
-    #         last_token_embedding = model.get_input_embeddings()(x_last_token)
-
-    #         # if the input length is longer than a single token
-    #         if x.shape[1] > 1:
-    #             x_except_last_token = x[:, :-1]
-    #             model_outputs = model(x_except_last_token)
-    #             past = model_outputs.past_key_values
-        
-    #     model_outputs = model(past_key_values=past, inputs_embeds=last_token_embedding)
-    #     logits = model_outputs.logits
-    #     # print(logits.shape)
-    #     past = model_outputs.past_key_values
-
-    #     logits = logits[:, -1, :] / temperature
-    #     logits = logits.unsqueeze(1)
-    #     logits_so_far = logits if logits_so_far is None else torch.cat((logits_so_far, logits), dim=1)
-
-    # output = model.generate(x, max_length=length + x.shape[-1])
-    # logits = model(output).logits
-
     output = model.generate(x, max_length=length + x.shape[-1], do_sample=True, top_k=10)
     logits = model(output).logits
     logits_so_far = logits[:, -(length+1):-1, :] / temperature
@@ -260,75 +232,14 @@ def soft_forward_loss(model, y_logits, topk, x_onehot, x_past, extra_mask=None, 
     x_length = x_onehot.shape[1]
     y_logits = xy_logits[:, x_length - 1:-1, :]
 
-    # past = x_past
-
-    # # 初始化输入的嵌入表示
-    # input_embeds = embed_inputs(
-    #     model.get_input_embeddings().weight,
-    #     y_logits,
-    #     x_onehot=x_onehot,
-    #     device=x_onehot.device
-    # )
-
-    # # 获取输入文本的长度
-    # x_length = x_onehot.shape[1]
-
-    # # 初始化y_logits
-    # y_logits = None
-
-    # # 循环生成y_logits
-    # for i in range(x_length - 1, input_embeds.shape[1]):
-    #     # 从历史信息和输入嵌入计算模型的输出
-    #     model_outputs = model(past_key_values=past, inputs_embeds=input_embeds[:, i:i+1, :])
-        
-    #     # 更新历史信息
-    #     past = model_outputs.past_key_values
-        
-    #     # 提取当前时间步骤的logits
-    #     logits_t = model_outputs.logits[:, -1:, :]
-        
-    #     # 将logits_t追加到y_logits
-    #     if y_logits is None:
-    #         y_logits = logits_t
-    #     else:
-    #         y_logits = torch.cat((y_logits, logits_t), dim=1)
-    _, indices_t = torch.topk(y_logits, topk)   #最后一个单词的topk logits
+    
+    _, indices_t = torch.topk(y_logits, topk)   
     mask_t_all = torch.zeros_like(y_logits).scatter_(2, indices_t, 1)
 
     logp = F.log_softmax(y_logits, dim=-1)
     p = mask_t_all
 
     return -(p * logp).sum(dim=-1).mean(dim=-1)
-
-    # mask_t_all = None
-    # logits_so_far = None
-    # # print(y_logits.shape)
-    # # print(x_onehot.shape)
-    # # print(x_past)
-    # length = y_logits.shape[1]
-    # for i in range(length):
-    #     model_outputs = model(past_key_values=past, inputs_embeds=input_embeds) #送进去历史信息
-    #     past = model_outputs.past_key_values    
-    #     logits_t = model_outputs.logits[:, -1:, :]  #选出来最后一个单词的logits
-    #     assert logits_t.shape[1] == 1, logits_t.shape   
-    #     _, indices_t = torch.topk(logits_t, topk)   #最后一个单词的topk logits
-    #     mask_t = torch.zeros_like(logits_t).scatter_(2, indices_t, 1)   #变mask
-    #     mask_t_all = mask_t if mask_t_all is None else torch.cat((mask_t_all, mask_t), dim=1)   #第i个单词的topk-mask
-    #     logits_so_far = logits_t if logits_so_far is None else torch.cat((logits_so_far, logits_t), dim=1)  # 生成的y的logits
-    #     if i < length - 1:
-    #         if extra_mask is None:
-    #             y_logits_i_topk = top_k_filter_3d(y_logits[:,i:i+1,:], topk, mask=mask_t) / 0.001
-    #         else:
-    #             y_logits_i_topk = top_k_filter_3d(y_logits[:,i:i+1,:], topk, mask=mask_t, extra_mask=extra_mask[:,i:i+1,:]) / 0.001
-    #         input_embeds = torch.matmul(F.softmax(y_logits_i_topk, dim=-1), model.get_input_embeddings().weight)   # 得到第i个单词的embedding
-
-    # _, indices_t = torch.topk(logits_so_far, topk)   #最后一个单词的topk logits
-    # mask_t_all = torch.zeros_like(logits_so_far).scatter_(2, indices_t, 1)
-
-    # logp = F.log_softmax(logits_so_far, dim=-1)
-    # p = mask_t_all
-
-    # return -(p * logp).sum(dim=-1).mean(dim=-1)
     
 
 def soft_backward_loss(model, y_logits_, yz_logits_rev, topk):
@@ -340,7 +251,7 @@ def soft_backward_loss(model, y_logits_, yz_logits_rev, topk):
         device=yz_logits_rev.device
     )
     y_logits = model(inputs_embeds=y_embeds).logits
-    yz_logits_rev_rev_t = torch.flip(y_logits, [1])                      # 再翻转回来
+    yz_logits_rev_rev_t = torch.flip(y_logits, [1])                      
     yz_logits_rev_rev_t = yz_logits_rev_rev_t[:, :, 1:y_logits_.shape[-1] + 1]   
     yz_logits_rev_rev_t_ = yz_logits_rev_rev_t[:, :y_logits_.shape[1], :]
     
@@ -350,8 +261,8 @@ def soft_backward_loss(model, y_logits_, yz_logits_rev, topk):
     yz_logits_rev_rev_t_ = yz_logits_rev_rev_t_ - repetition_mask * 1e4
     # yz_logits_rev_rev_t_ = yz_logits_rev_rev_t_.detach()
 
-    _, indices_t = torch.topk(yz_logits_rev_rev_t_, topk)   #最后一个单词的topk logits
-    mask_t_all = torch.zeros_like(yz_logits_rev_rev_t_).scatter_(2, indices_t, 1)   #变mask
+    _, indices_t = torch.topk(yz_logits_rev_rev_t_, topk)   
+    mask_t_all = torch.zeros_like(yz_logits_rev_rev_t_).scatter_(2, indices_t, 1)   
 
     logp = F.log_softmax(yz_logits_rev_rev_t_, dim=-1)
 
@@ -479,22 +390,20 @@ def soft_forward(model, x_onehot, y_logits, topk, extra_mask=None, x_past=None, 
         model_outputs = model(past_key_values=past, inputs_embeds=input_embeds) #送进去历史信息
         
         # past = model_outputs.past_key_values    
-        logits_t = model_outputs.logits[:, -1:, :]  #选出来最后一个单词的logits
+        logits_t = model_outputs.logits[:, -1:, :]  
         assert logits_t.shape[1] == 1, logits_t.shape   
-        _, indices_t = torch.topk(logits_t, topk)   #最后一个单词的topk logits
-        mask_t = torch.zeros_like(logits_t).scatter_(2, indices_t, 1)   #变mask
+        _, indices_t = torch.topk(logits_t, topk)  
+        mask_t = torch.zeros_like(logits_t).scatter_(2, indices_t, 1)  
         if bad_mask != None:
             mask_t = torch.mul(mask_t, bad_mask)
-        mask_t_all = mask_t if mask_t_all is None else torch.cat((mask_t_all, mask_t), dim=1)   #第i个单词的topk-mask
-        logits_so_far = logits_t if logits_so_far is None else torch.cat((logits_so_far, logits_t), dim=1)  # 生成的y的logits
+        mask_t_all = mask_t if mask_t_all is None else torch.cat((mask_t_all, mask_t), dim=1)  
+        logits_so_far = logits_t if logits_so_far is None else torch.cat((logits_so_far, logits_t), dim=1) 
         if i < length - 1:
             if extra_mask is None:
                 y_logits_i_topk = top_k_filter_3d(y_logits[:,i:i+1,:], topk, mask=mask_t) / 0.001
             else:
                 y_logits_i_topk = top_k_filter_3d(y_logits[:,i:i+1,:], topk, mask=mask_t, extra_mask=extra_mask[:,i:i+1,:]) / 0.001
-            input_embeds = torch.matmul(F.softmax(y_logits_i_topk, dim=-1), model.get_input_embeddings().weight)   # 得到第i个单词的embedding
-        # memory_difference = end_memory - start_memory
-        # print(f"Memory Difference: {end_memory / (1024 ** 2)} MB")
+            input_embeds = torch.matmul(F.softmax(y_logits_i_topk, dim=-1), model.get_input_embeddings().weight)   
     if detach:
         return logits_so_far.detach()
     else:
@@ -842,8 +751,6 @@ def has_repeat(sents_for_substr):
     has_repeat_substring = False
     for h in sents_for_substr:
         has_repeat_substring = has_repeat_substring or _has_repeat_substring(h) or _has_repeat_substring(h, MINLEN=20, MINCNT=2)
-    # print(has_repeat_substring)
-    # print(_has_repeat_sent(hyp))
     return has_repeat_substring
 
 
@@ -1091,30 +998,6 @@ def vocab_prune(model, y_logits, topk, x_onehot, x_past, tokenizer, extra_mask=N
     return logits_so_far, mask_t_all
 
 def forw(model, y_logits, topk, x_onehot, x_past):
-    # BIG_CONST = 1e10
-    # assert x_onehot.shape[1] == 1, x_onehot.shape
-    # length = y_logits.shape[1]
-    # past = x_past
-    # input_embeds = torch.matmul(x_onehot.float(), model.get_input_embeddings().weight)
-    # mask_t_all = None
-    # logits_so_far = None
-
-    # for i in range(length):
-    #     model_outputs = model(past_key_values=past, inputs_embeds=input_embeds) # 送进去历史信息
-    #     past = model_outputs.past_key_values    
-    #     logits_t = model_outputs.logits[:, -1:, :]  # 选出来最后一个单词的logits
-    #     assert logits_t.shape[1] == 1, logits_t.shape   
-    #     _, indices_t = torch.topk(logits_t, topk)   # 最后一个单词的topk logits
-    #     mask_t = mask_[:, i:i+1, :]
-    #     # logits_t[~mask_t] = -1 * BIG_CONST
-    #     mask_t_all = mask_t if mask_t_all is None else torch.cat((mask_t_all, mask_t), dim=1)   # 第i个单词的topk-mask
-
-    #     logits_so_far = logits_t if logits_so_far is None else torch.cat((logits_so_far, logits_t), dim=1)  # 生成的y的logits
-
-    #     if i < length - 1:
-    #         y_logits_i_topk = y_logits[:, i:i+1, :] / 0.001
-    #         input_embeds = torch.matmul(F.softmax(y_logits_i_topk, dim=-1), model.get_input_embeddings().weight)    
-    
     xy_embeds = embed_inputs(
         model.get_input_embeddings().weight,
         y_logits / 0.0001,
@@ -1147,16 +1030,12 @@ def find_nearest_vectors_pytorch(target_vectors, candidate_vectors, batch_size):
     # 将target_vectors扩展为(batch_size * num_targets, vector_size)
     extended_target_vectors = target_vectors.view(-1, target_vectors.size(-1))
     
-    # 计算距离矩阵
     distances = torch.cdist(extended_target_vectors, candidate_vectors)
     
-    # 找到最小距离对应的索引
     nearest_indices = torch.argmin(distances, dim=1)
     
-    # 根据最小距离的索引获取最近的向量
     nearest_vectors = candidate_vectors[nearest_indices]
     
-    # 将结果重新组织为(batch_size, num_targets, vector_size)
     nearest_vectors = nearest_vectors.view(batch_size, -1, nearest_vectors.size(-1))
     
     return nearest_vectors
@@ -1167,7 +1046,6 @@ def sim_score(model, y_logits, ref_vec):
         y_logits / 0.0001,
         device=y_logits.device
     )
-    # print(y_embeds.grad)
     y_vec = model(inputs_embeds=y_embeds, use_cache=True, output_hidden_states=True).hidden_states[-1].mean(dim=1)
     return F.cosine_similarity(ref_vec, y_vec)
 
