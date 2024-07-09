@@ -283,13 +283,6 @@ def soft_nll(logits_perturbed, logits):
     logp = F.log_softmax(logits, dim=-1)
     return -(p * logp).sum(dim=-1).mean(dim=-1)
 
-
-def soft_nll_detach(logits_perturbed, logits):
-    p = F.softmax(logits_perturbed, dim=-1).detach()
-    logp = F.log_softmax(logits, dim=-1)
-    return -(p * logp).sum(dim=-1).mean()
-
-
 def soft_forward(model, x_onehot, y_logits, topk, extra_mask=None, x_past=None, detach=True, bad_mask=None):
     '''
     computes logits for $y$, based on a fixed context $y$ and the current logit distribution of $y$
@@ -426,16 +419,6 @@ def post_sent(text_complete):
     return sent
     # return sents[0]
 
-
-def compute_ppl_line(model, tokenizer, line):
-    line = line.strip()
-    line_ = tokenizer.encode(line)
-    line_t = torch.tensor(line_, dtype=torch.long).cuda()
-    loss = model(input_ids=line_t, labels=line_t).loss
-    loss = loss.detach().clone().data.cpu().numpy()
-    ppl = np.exp(loss)
-    return ppl
-
 def _get_keywords(z, x, args):
     stop_words = set(stopwords.words('english'))
     z_words = word_tokenize(z)
@@ -471,21 +454,7 @@ def get_gpt_ppl(text_list, gpt_model, gpt_tokenizer, device):
         ppl_list.append(torch.exp(loss).detach().cpu().numpy())
 
     return ppl_list
-
-def forw(model, y_logits, topk, x_onehot, x_past):
-    xy_embeds = embed_inputs(
-        model.get_input_embeddings().weight,
-        y_logits / 0.0001,
-        x_onehot=x_onehot,
-        device=x_onehot.device
-    )
-    # embed_inputs: [bsz, length, embed_size]
-    xy_logits = model(past_key_values=x_past, inputs_embeds=xy_embeds, use_cache=True).logits
-    x_length = x_onehot.shape[1]
-    logits_so_far = xy_logits[:, x_length - 1:-1, :]
-
-    return logits_so_far
-
+    
 def sim_score(model, y_logits, ref_vec):
     y_embeds = embed_inputs(
         model.get_input_embeddings().weight,
