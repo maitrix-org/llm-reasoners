@@ -244,9 +244,7 @@ def optimize_prompt(train_data, questions_eval, questions_test):
         search_algo=search_algo
     )
     questions=train_data
-    world_model.update_example(questions)
-    search_config.update_example(questions)  
-    optimized_result = reasoner(world_model.example)
+    optimized_result = reasoner(questions)
     best_prompt = optimized_result.trace_of_nodes[0].state.text
     best_accuracy = optimized_result.trace_of_nodes[1].state.accuracy_trajectory[0]
     with open("result.txt", "w") as file:
