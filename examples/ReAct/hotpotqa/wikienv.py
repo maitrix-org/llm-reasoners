@@ -5,17 +5,16 @@ from bs4 import BeautifulSoup
 import re
 
 def fix_incomplete_escape_sequences(s):
-    # 处理不完整的 \uXXXX 转义序列
     def replace_incomplete(match):
         escape_seq = match.group(0)
         if len(escape_seq) == 2:  # '\u'
             return ''
         elif len(escape_seq) == 3:  # '\uX'
-            return escape_seq[1]  # 返回 'u'
+            return escape_seq[1]  
         elif len(escape_seq) == 4:  # '\uXX'
-            return escape_seq[1:3]  # 返回 'uX'
+            return escape_seq[1:3] 
         elif len(escape_seq) == 5:  # '\uXXX'
-            return escape_seq[1:4]  # 返回 'uXX'
+            return escape_seq[1:4]  
         return escape_seq
 
     return re.sub(r'\\u[0-9A-Fa-f]{0,4}', replace_incomplete, s)

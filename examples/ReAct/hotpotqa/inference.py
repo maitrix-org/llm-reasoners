@@ -8,15 +8,13 @@ import copy
 import json
 import fire
 from typing import NamedTuple
-    
+from langchain.tools import StructuredTool
+
 HotpotqaAction = str
 HotpotqaExample = str
 
 class HotpotqaState(NamedTuple):
-    """The state of the Blocksworld.
-    
-    See the docstring of BlocksWorldModel for more details.
-    """
+    "The state of the Hotpotqa."
     step_idx: int
     last_state: str
     current_state: str
@@ -51,14 +49,15 @@ class ReActSearchConfig(SearchConfig):
 class ReActWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExample]):
     def __init__(self,
                  base_model,
+                 toolset,
                  max_steps: int = 8) -> None:
         self.base_model = base_model
+        self.toolset = toolset
         self.max_steps = max_steps
         self.terminal = False
 
     def init_state(self):
         """Initialize the world model.
-
         :return: the initial state
         """
         current_state = self.prompt["ReAct"]+"Question: "+self.example+'\n'+"Thought 1: "
@@ -73,7 +72,6 @@ class ReActWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExample]
         """
 
         state = copy.deepcopy(state)
-        buffered_action = state.buffered_action
         current_state = state.current_state
         step_idx = state.step_idx
         current_state = self.update_state(current_state, action, step_idx)
@@ -110,9 +108,13 @@ class ReActWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExample]
                 self.terminal = True
                 return None
             new_state = current_state + f" {thought}\nAction {step_idx}:"
-        
-        new_state = current_state + utils.webthink(self.base_model, step_idx, action, thought)
+            return new_state
 
+        print(thought,action)
+        # The case we need to use search tool
+        if "Search" in action or "Lookup" in action or "Finish" in action:
+            new_state = current_state + self.toolset[0].run({'env':self.base_model, 'step_idx': step_idx, 'action': action, 'thought': thought})
+        
         return new_state
 
     def is_terminal(self, state: HotpotqaState) -> bool:
@@ -133,10 +135,17 @@ class ReActWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExample]
 def main(model_dir, llama_size="8B", prompt="examples/ReAct/hotpotqa/prompts/react.json", data_path="examples/ReAct/hotpotqa/data/hotpot_dev_v1_simplified.json"):
     
     base_model = Llama3Model(model_dir, llama_size, max_batch_size=1, max_seq_len=20000)
-    
-    env = wikienv.WikiEnv()
-    env = wrappers.HotPotQAWrapper(env, split="dev")
-    env = wrappers.LoggingWrapper(env)
+
+    search = StructuredTool.from_function(
+        func=utils.webthink,
+        name="Search",
+        description="Action can be three types: \n(1) Search[entity], which searches the exact entity on Wikipedia and returns the first paragraph if it exists. If not, it will return some similar entities to search.\n(2) Lookup[keyword], which returns the next sentence containing keyword in the current passage.\n(3) Finish[answer], which returns the answer and finishes the task.\nHere are some examples.\n",
+        )    
+    print(search.name)
+    print(search.description)
+    print(search.args)
+
+    toolset = [search]
     
     with open(prompt) as f:
         prompt = json.load(f)
@@ -145,18 +154,23 @@ def main(model_dir, llama_size="8B", prompt="examples/ReAct/hotpotqa/prompts/rea
         output_extractor=utils.retrieve_answer,
         answer_extractor=lambda x: x["answer"],
         data_path=data_path,
+        toolset=toolset,
         init_prompt=prompt,
         disable_log=False,
         disable_tqdm=False)
 
+    world_base_model = wikienv.WikiEnv()
+    world_base_model = wrappers.HotPotQAWrapper(world_base_model, split="dev")
+    world_base_model = wrappers.LoggingWrapper(world_base_model)
+
     reasoner = Reasoner(
-        world_model=ReActWorldModel(env),
+        world_model=ReActWorldModel(world_base_model,toolset),
         search_config=ReActSearchConfig(base_model),
         search_algo=GreedySearch(7)
     )
 
     # run the reasoner
-    accuracy = evaluator.evaluate(reasoner, shuffle_prompt=False, num_shot=5)
+    accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4)
 
     print(accuracy)
     

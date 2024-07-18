@@ -1,0 +1,9 @@
+{
+    "react_pool":
+    [
+     "Question: Which magazine was started first Arthur's Magazine or First for Women?\nAnser: Arthur's Magazine.\n",
+     "Question: The Oberoi family is part of a hotel company that has a head office in what city?\nAnser: Delhi.\n",
+     "Question: What nationality was James Henry Miller's wife?\nAnser: American.\n"
+    ],
+    "prefix": "Solve a question answering task directly.\n"
+}

@@ -9,6 +9,7 @@ class Hotpotqaevaluator(Evaluator):
                  output_extractor,
                  answer_extractor,
                  data_path,
+                 toolset,
                  init_prompt=None,
                  disable_log=False,
                  disable_tqdm=False) -> None:
@@ -16,6 +17,7 @@ class Hotpotqaevaluator(Evaluator):
         self.init_prompt = init_prompt
         self.output_extractor = output_extractor
         self.answer_extractor = answer_extractor
+        self.toolset = toolset
         self.input_processor = lambda x: x["question"]
         with open(data_path, 'r', encoding='utf-8') as json_file:
             self.full_dataset = json.load(json_file)[:1000]
@@ -33,7 +35,7 @@ class Hotpotqaevaluator(Evaluator):
             examples = random.sample(self.init_prompt["react_pool"], num_shot)
         else:
             examples = self.init_prompt["react_pool"][:num_shot]
-        prompt['ReAct'] = self.init_prompt["prefix"] +  "".join(examples)
+        prompt['ReAct'] = self.init_prompt["prefix"] + self.toolset[0].description + "".join(examples)
         return prompt
 
     def eval_output(self, answer, output):
