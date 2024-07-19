@@ -64,12 +64,7 @@ class ReActWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExample]
         return HotpotqaState(step_idx=1, last_state="", current_state=current_state, buffered_action="")
 
     def step(self, state, action):
-        """Take a step in the world model.
-        
-        :param state: the current state (see the docstring of BlocksWorldModel)
-        :param action: the action to take
-        :return: the next state and additional information cached for reward calculation
-        """
+        "Take a step in the world model."
 
         state = copy.deepcopy(state)
         current_state = state.current_state
@@ -93,13 +88,6 @@ class ReActWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExample]
         return state, aux
 
     def update_state(self, current_state: str, action: HotpotqaAction, step_idx) -> str:
-        """Update the block states with the action.
-
-        :param block_states: the current block states. Note that this argument is a string,
-            and it's only a part of 'BWState'
-        :param action: the action to take
-        :return: the updated block states
-        """
         try:
             thought, action = action.strip().split(f"\nAction {step_idx}: ")
         except:
@@ -114,7 +102,9 @@ class ReActWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExample]
         # The case we need to use search tool
         if "Search" in action or "Lookup" in action or "Finish" in action:
             new_state = current_state + self.toolset[0].run({'env':self.base_model, 'step_idx': step_idx, 'action': action, 'thought': thought})
-        
+        else:
+            self.terminal = True
+            return None
         return new_state
 
     def is_terminal(self, state: HotpotqaState) -> bool:
@@ -170,7 +160,7 @@ def main(model_dir, llama_size="8B", prompt="examples/ReAct/hotpotqa/prompts/rea
     )
 
     # run the reasoner
-    accuracy = evaluator.evaluate(reasoner, shuffle_prompt=True, num_shot=4)
+    accuracy = evaluator.evaluate(reasoner, shuffle_prompt=False, num_shot=6)
 
     print(accuracy)
     

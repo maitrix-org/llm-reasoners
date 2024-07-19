@@ -1,7 +1,5 @@
 import json
 from tqdm import tqdm
-import sys
-sys.path.append("")
 from reasoners.lm import Llama3Model
 import utils
 import fire
