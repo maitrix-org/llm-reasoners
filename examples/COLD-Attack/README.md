@@ -11,10 +11,20 @@ The controllability enabled by COLD-Attack leads to diverse new jailbreak scenar
 
 ### How to Run
 
-To run COLD-Attack on Advbench datasets, simply using:
-
+To run COLD-Attack on Advbench dataset, simply using:
+1. Fluent suffix attack:
 ```
-python examples/COLD-Attack/inference.py
+python examples/COLD-Attack/inference.py suffix
+```
+
+2. Paraphrase attack:
+```
+python examples/COLD-Attack/inference.py paraphrase
+```
+
+3. Left-right-coherence control:
+```
+python examples/COLD-Attack/inference.py control
 ```
 
 ## Reference
