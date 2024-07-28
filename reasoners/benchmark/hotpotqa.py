@@ -35,7 +35,8 @@ class Hotpotqaevaluator(Evaluator):
             examples = random.sample(self.init_prompt["react_pool"], num_shot)
         else:
             examples = self.init_prompt["react_pool"][:num_shot]
-        prompt['ReAct'] = self.init_prompt["prefix"] + self.toolset[0].description + "".join(examples)
+        prompt['prefix'] = self.init_prompt["prefix"]
+        prompt['examples'] = examples
         return prompt
 
     def eval_output(self, answer, output):

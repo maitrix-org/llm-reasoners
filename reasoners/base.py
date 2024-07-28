@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from transformers import StoppingCriteriaList
+from langchain.tools import StructuredTool
+import inspect
 from datetime import datetime
 import os, sys, pickle
 from tqdm import tqdm
@@ -326,4 +328,22 @@ class Evaluator():
     def eval_output(self, answer, output):
         pass
 
-    
+class ToolModule():
+    def __init__(self, func, name, description):
+        self.func = func
+        self.name = name
+        self.description = description
+        self.call_params = inspect.signature(func).parameters
+        self.tool = StructuredTool.from_function(
+                func=self.func,
+                name=self.name,
+                description=self.description
+                )  
+    def __call__(self, **kwargs):
+        for param in self.call_params:
+            if param not in kwargs:
+                raise ValueError(f"Missing required parameter: {param}")
+        try:
+            return self.tool.run(kwargs)
+        except Exception as e:
+            return f"An error occurred: {str(e)}"

@@ -1,5 +1,7 @@
 import wikienv, wrappers
-from reasoners import Reasoner, SearchConfig, WorldModel
+import sys
+sys.path.append("")
+from reasoners import Reasoner, SearchConfig, WorldModel, ToolModule
 from reasoners.algorithm import GreedySearch, GreedySearchResult
 from reasoners.lm import Llama3Model
 from reasoners.benchmark import Hotpotqaevaluator
@@ -18,9 +20,9 @@ class HotpotqaState(NamedTuple):
     step_idx: int
     last_state: str
     current_state: str
-    buffered_action: HotpotqaAction
+    action: str
 
-class ReActSearchConfig(SearchConfig):
+class HotpotqaSearchConfig(SearchConfig):
 
     def __init__(self,
                  base_model,
@@ -46,7 +48,7 @@ class ReActSearchConfig(SearchConfig):
     def reward(self, state, action, ans_finished):
         return 0
     
-class ReActWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExample]):
+class HotpotqaWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExample]):
     def __init__(self,
                  base_model,
                  toolset,
@@ -60,8 +62,13 @@ class ReActWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExample]
         """Initialize the world model.
         :return: the initial state
         """
-        current_state = self.prompt["ReAct"]+"Question: "+self.example+'\n'+"Thought 1: "
-        return HotpotqaState(step_idx=1, last_state="", current_state=current_state, buffered_action="")
+        current_state = self.prompt["prefix"]+", and Action can be three types: \n"
+        for idx,tool in enumerate(self.toolset):
+            current_state += f"({str(idx+1)}) " + tool.description + "\n"
+        current_state += "Here are some examples.\n" + "".join(self.prompt["examples"])
+        current_state += "Question: "+self.example+'\n'+"Thought 1: "
+        
+        return HotpotqaState(step_idx=1, last_state="", current_state=current_state, action="")
 
     def step(self, state, action):
         "Take a step in the world model."
@@ -69,50 +76,52 @@ class ReActWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExample]
         state = copy.deepcopy(state)
         current_state = state.current_state
         step_idx = state.step_idx
-        current_state = self.update_state(current_state, action, step_idx)
-        new_buffered_action = action
-
-        if action == "exceed maxlength":
-            self.terminal = True
-
-        if self.terminal == True:
-            state = HotpotqaState(step_idx=self.max_steps, last_state=None,
-                        current_state=None, buffered_action= "Finish[]")
-            aux = {"ans_finished": self.terminal}
-            return state, aux
-
-        state = HotpotqaState(step_idx=step_idx+1, last_state=state.current_state,
-                        current_state=current_state, buffered_action=new_buffered_action)
-        aux = {"ans_finished": self.terminal}
-
-        return state, aux
-
-    def update_state(self, current_state: str, action: HotpotqaAction, step_idx) -> str:
         try:
             thought, action = action.strip().split(f"\nAction {step_idx}: ")
+            if "Search" in action:
+                new_state = current_state + self.toolset[0](env=self.base_model, step_idx=step_idx, action=action, thought=thought)
+                print("Search tool is used")
+            elif "Lookup" in action:
+                new_state = current_state + self.toolset[1](env=self.base_model, step_idx=step_idx, action=action, thought=thought)
+                print("Lookup tool is used")
+            elif "Finish" in action:
+                new_state = current_state + self.toolset[2](env=self.base_model, step_idx=step_idx, action=action, thought=thought)
+                print("Finish tool is used")
+            else:
+                self.terminal = True
+                new_state =  None
         except:
             thought = action.strip().split('\n')[0]
             if step_idx != 1 and thought == "":
                 self.terminal = True
                 return None
             new_state = current_state + f" {thought}\nAction {step_idx}:"
-            return new_state
 
+        current_state = new_state
         print(thought,action)
-        # The case we need to use search tool
-        if "Search" in action or "Lookup" in action or "Finish" in action:
-            new_state = current_state + self.toolset[0].run({'env':self.base_model, 'step_idx': step_idx, 'action': action, 'thought': thought})
-        else:
+        action = action
+
+        if action == "exceed maxlength":
             self.terminal = True
-            return None
-        return new_state
+
+        if self.terminal == True:
+            state = HotpotqaState(step_idx=self.max_steps, last_state=None,
+                        current_state=None, action= "Finish[]")
+            aux = {"ans_finished": self.terminal}
+            return state, aux
+
+        state = HotpotqaState(step_idx=step_idx+1, last_state=state.current_state,
+                        current_state=current_state, action=action)
+        aux = {"ans_finished": self.terminal}
+
+        return state, aux
 
     def is_terminal(self, state: HotpotqaState) -> bool:
         if self.terminal == True:
             self.base_model.reset()
             self.terminal = False
             return True
-        if utils.finished_check(state.buffered_action):
+        if utils.finished_check(state.action):
             self.base_model.reset()
             self.terminal = False
             return True
@@ -126,16 +135,23 @@ def main(model_dir, llama_size="8B", prompt="examples/ReAct/hotpotqa/prompts/rea
     
     base_model = Llama3Model(model_dir, llama_size, max_batch_size=1, max_seq_len=20000)
 
-    search = StructuredTool.from_function(
+    wikisearch = ToolModule(
         func=utils.webthink,
-        name="Search",
-        description="Action can be three types: \n(1) Search[entity], which searches the exact entity on Wikipedia and returns the first paragraph if it exists. If not, it will return some similar entities to search.\n(2) Lookup[keyword], which returns the next sentence containing keyword in the current passage.\n(3) Finish[answer], which returns the answer and finishes the task.\nHere are some examples.\n",
-        )    
-    print(search.name)
-    print(search.description)
-    print(search.args)
+        name="wikisearch",
+        description="Search[entity], which searches the exact entity on Wikipedia and returns the first paragraph if it exists. If not, it will return some similar entities to search."
+    )
+    wikilookup = ToolModule(
+        func=utils.webthink,
+        name="wikilookup",
+        description="Lookup[keyword], which returns the next sentence containing keyword in the current passage."
+    )
+    finish = ToolModule(
+        func=utils.webthink,
+        name="finish",
+        description="Finish[answer], which returns the answer and finishes the task."
+    )
 
-    toolset = [search]
+    toolset = [wikisearch,wikilookup,finish]
     
     with open(prompt) as f:
         prompt = json.load(f)
@@ -154,8 +170,8 @@ def main(model_dir, llama_size="8B", prompt="examples/ReAct/hotpotqa/prompts/rea
     world_base_model = wrappers.LoggingWrapper(world_base_model)
 
     reasoner = Reasoner(
-        world_model=ReActWorldModel(world_base_model,toolset),
-        search_config=ReActSearchConfig(base_model),
+        world_model=HotpotqaWorldModel(world_base_model,toolset),
+        search_config=HotpotqaSearchConfig(base_model),
         search_algo=GreedySearch(7)
     )
 
