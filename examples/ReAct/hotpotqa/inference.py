@@ -1,10 +1,9 @@
 import wikienv, wrappers
-import sys
-sys.path.append("")
-from reasoners import Reasoner, SearchConfig, WorldModel, ToolModule
+from reasoners import Reasoner, SearchConfig, WorldModel, Tool
 from reasoners.algorithm import GreedySearch, GreedySearchResult
 from reasoners.lm import Llama3Model
 from reasoners.benchmark import Hotpotqaevaluator
+from reasoners.tools import wikisearch,wikilookup,wikifinish
 import utils
 import copy
 import json
@@ -89,16 +88,18 @@ class HotpotqaWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExamp
                 print("Finish tool is used")
             else:
                 self.terminal = True
-                new_state =  None
+                aux = {"ans_finished": self.terminal}
+                return None, aux
         except:
             thought = action.strip().split('\n')[0]
             if step_idx != 1 and thought == "":
                 self.terminal = True
-                return None
+                aux = {"ans_finished": self.terminal}
+                return None, aux
             new_state = current_state + f" {thought}\nAction {step_idx}:"
 
         current_state = new_state
-        print(thought,action)
+        # print(thought,action)
         action = action
 
         if action == "exceed maxlength":
@@ -135,23 +136,7 @@ def main(model_dir, llama_size="8B", prompt="examples/ReAct/hotpotqa/prompts/rea
     
     base_model = Llama3Model(model_dir, llama_size, max_batch_size=1, max_seq_len=20000)
 
-    wikisearch = ToolModule(
-        func=utils.webthink,
-        name="wikisearch",
-        description="Search[entity], which searches the exact entity on Wikipedia and returns the first paragraph if it exists. If not, it will return some similar entities to search."
-    )
-    wikilookup = ToolModule(
-        func=utils.webthink,
-        name="wikilookup",
-        description="Lookup[keyword], which returns the next sentence containing keyword in the current passage."
-    )
-    finish = ToolModule(
-        func=utils.webthink,
-        name="finish",
-        description="Finish[answer], which returns the answer and finishes the task."
-    )
-
-    toolset = [wikisearch,wikilookup,finish]
+    toolset = [wikisearch,wikilookup,wikifinish]
     
     with open(prompt) as f:
         prompt = json.load(f)
