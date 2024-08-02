@@ -11,6 +11,11 @@ import fire
 from typing import NamedTuple
 from langchain.tools import StructuredTool
 
+class HotpotQATools(NamedTuple):
+   search: wikisearch
+   lookup: wikilookup
+   finish: wikifinish
+
 HotpotqaAction = str
 HotpotqaExample = str
 
@@ -50,10 +55,8 @@ class HotpotqaSearchConfig(SearchConfig):
 class HotpotqaWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExample]):
     def __init__(self,
                  base_model,
-                 toolset,
                  max_steps: int = 8) -> None:
         self.base_model = base_model
-        self.toolset = toolset
         self.max_steps = max_steps
         self.terminal = False
 
@@ -78,13 +81,13 @@ class HotpotqaWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExamp
         try:
             thought, action = action.strip().split(f"\nAction {step_idx}: ")
             if "Search" in action:
-                new_state = current_state + self.toolset[0](env=self.base_model, step_idx=step_idx, action=action, thought=thought)
+                new_state = current_state + HotpotQATools.wikisearch(env=self.base_model, step_idx=step_idx, action=action, thought=thought)
                 print("Search tool is used")
             elif "Lookup" in action:
-                new_state = current_state + self.toolset[1](env=self.base_model, step_idx=step_idx, action=action, thought=thought)
+                new_state = current_state + HotpotQATools.wikilookup(env=self.base_model, step_idx=step_idx, action=action, thought=thought)
                 print("Lookup tool is used")
             elif "Finish" in action:
-                new_state = current_state + self.toolset[2](env=self.base_model, step_idx=step_idx, action=action, thought=thought)
+                new_state = current_state + HotpotQATools.wikifinish(env=self.base_model, step_idx=step_idx, action=action, thought=thought)
                 print("Finish tool is used")
             else:
                 self.terminal = True
@@ -135,8 +138,6 @@ class HotpotqaWorldModel(WorldModel[HotpotqaState, HotpotqaAction, HotpotqaExamp
 def main(model_dir, llama_size="8B", prompt="examples/ReAct/hotpotqa/prompts/react.json", data_path="examples/ReAct/hotpotqa/data/hotpot_dev_v1_simplified.json"):
     
     base_model = Llama3Model(model_dir, llama_size, max_batch_size=1, max_seq_len=20000)
-
-    toolset = [wikisearch,wikilookup,wikifinish]
     
     with open(prompt) as f:
         prompt = json.load(f)
@@ -145,7 +146,6 @@ def main(model_dir, llama_size="8B", prompt="examples/ReAct/hotpotqa/prompts/rea
         output_extractor=utils.retrieve_answer,
         answer_extractor=lambda x: x["answer"],
         data_path=data_path,
-        toolset=toolset,
         init_prompt=prompt,
         disable_log=False,
         disable_tqdm=False)

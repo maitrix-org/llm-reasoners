@@ -332,13 +332,6 @@ class Tool():
         self.func = func
         self.name = name
         self.description = description
-        self.call_params = inspect.signature(func).parameters
 
     def __call__(self, **kwargs):
-        for param in self.call_params:
-            if param not in kwargs:
-                raise ValueError(f"Missing required parameter: {param}")
-        try:
-            return self.func(**kwargs)
-        except Exception as e:
-            return f"An error occurred: {str(e)}"
+        return self.func(**kwargs)
