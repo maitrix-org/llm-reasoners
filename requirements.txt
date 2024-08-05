@@ -5,6 +5,8 @@ scipy
 torch
 datasets
 pandas
+bs4
+gym
 # hf
 transformers
 # llama

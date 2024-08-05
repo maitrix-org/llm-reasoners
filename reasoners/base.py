@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 
 import numpy as np
 from transformers import StoppingCriteriaList
+import inspect
 from datetime import datetime
 import os, sys, pickle
 from tqdm import tqdm
@@ -326,4 +327,11 @@ class Evaluator():
     def eval_output(self, answer, output):
         pass
 
-    
+class Tool():
+    def __init__(self, func, name, description):
+        self.func = func
+        self.name = name
+        self.description = description
+
+    def __call__(self, **kwargs):
+        return self.func(**kwargs)
