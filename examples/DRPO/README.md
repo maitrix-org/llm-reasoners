@@ -115,8 +115,6 @@ The model will be tested on a set of 180 seed samples such as:
 You can see the full trace in the log folder.
 ## Reference
 
-If you're interested in learning more about this method, please visit  the official github of DRPO at: [https://github.com/Singla17/dynamic-alignment-optimization/tree/master](https://github.com/Singla17/dynamic-alignment-optimization/tree/master)
-
 ```bibtex
 @inproceedings{singla-etal-2024-dynamic,
     title = "Dynamic Rewarding with Prompt Optimization Enables Tuning-free Self-Alignment of Language Models",
