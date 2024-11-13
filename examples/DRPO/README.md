@@ -6,8 +6,8 @@ This part is the implementation of **Dynamic Rewarding with Prompt Optimization 
 
 **Dynamic Rewarding with Prompt Optimization (DRPO)** is a novel approach for aligning LLMs without requiring extensive tuning or human supervision. By dynamically optimizing prompts based on model feedback, DRPO enhances alignment performance, enabling LLMs to self-correct and adapt effectively to various challenges. This method significantly reduces alignment costs and improves the versatility of LLM applications.
 
-## LLM Reasoners with DRPO
-Integrating DRPO within the LLM-Reasoner framework is particularly advantageous because LLM-Reasoner provides a robust set of tools that facilitate the comparison and evaluation of various reasoning methodologies. This environment is designed to tackle complex, multi-step reasoning tasks, making it a suitable testbed for DRPO's dynamic adjustment capabilities. The availability of multiple reasoning tools within LLM-Reasoners allows researchers and developers to conduct side-by-side comparisons, optimizing reasoning strategies and enhancing the overall effectiveness of the models deployed.
+## Exploring DRPO with the LLM-REASONER Framework
+Using the DRPO  within the LLM-REASONER framework provides numerous advantages, including the ability to test various reasoning and search algorithms effortlessly. The framework also offers a suite of robust tools that could potentially enhance DRPO. For comprehensive access to training and inference code, optimized prompts, and APIs that facilitate easy integration of DRPO into downstream tasks as described in the original paper, please visit the official repository at [Official DRPO Github Repo](https://github.com/Singla17/dynamic-alignment-optimization/tree/master)
 
 
 ## Key Parameters
@@ -63,13 +63,13 @@ Upon completing training, the following files are generated in the `log_dir`:
 To quickly start optimizing alignment instructions for the Mistral-7B model using the default settings, simply run:
 
 ```bash
-python inference.py 
+python train.py 
 ```
 
 For a customized training setup, you can adjust the parameters as shown below:
 
 ```bash
-python -m inference.py \
+python -m train.py \
     --base_model_name=mistralai/Mistral-7B-Instruct-v0.1 \
     --base_model_family=mistral \
     --eval_model_name=gpt-4-0125-preview \
@@ -115,7 +115,7 @@ The model will be tested on a set of 180 seed samples such as:
 You can see the full trace in the log folder.
 ## Reference
 
-If you are interested in this method, please also check the official GitHub repository: [https://github.com/Singla17/dynamic-alignment-optimization/tree/master](https://github.com/Singla17/dynamic-alignment-optimization/tree/master)
+If you are interested in this method, and want to know more details. Please visit: [https://github.com/Singla17/dynamic-alignment-optimization/tree/master](https://github.com/Singla17/dynamic-alignment-optimization/tree/master)
 
 ```bibtex
 @inproceedings{singla-etal-2024-dynamic,
