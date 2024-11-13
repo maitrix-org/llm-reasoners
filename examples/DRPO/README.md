@@ -1,6 +1,6 @@
 # Dynamic Rewarding with Prompt Optimization (DRPO)
 
-This repository demonstrates the implementation of **Dynamic Rewarding with Prompt Optimization (DRPO)**, as introduced by [Somanshu et al., 2024](https://aclanthology.org/2024.emnlp-main.1220/). DRPO is the first tuning-free, inference-time algorithm designed to self-align large language models (LLMs) with human preferences.
+This part is the implementation of **Dynamic Rewarding with Prompt Optimization (DRPO)** in LLM Reasoner, as introduced by [Somanshu et al., 2024](https://aclanthology.org/2024.emnlp-main.1220/). DRPO is the first tuning-free, inference-time algorithm designed to self-align large language models (LLMs) with human preferences.
 
 ## Introduction
 
