@@ -1,6 +1,6 @@
 # Dynamic Rewarding with Prompt Optimization (DRPO)
 
-This part is the implementation of **Dynamic Rewarding with Prompt Optimization (DRPO)** in LLM Reasoner, as introduced by [Somanshu et al., 2024](https://aclanthology.org/2024.emnlp-main.1220/). DRPO is the first tuning-free, inference-time algorithm designed to self-align large language models (LLMs) with human preferences.
+This part is the implementation of **Dynamic Rewarding with Prompt Optimization (DRPO)** in LLM Reasoner, as introduced by [Singla et al., 2024](https://aclanthology.org/2024.emnlp-main.1220/). DRPO is the first tuning-free, inference-time algorithm designed to self-align large language models (LLMs) with human preferences.
 
 ## Introduction
 
@@ -40,6 +40,8 @@ This part is the implementation of **Dynamic Rewarding with Prompt Optimization 
 - **`k`** (int): Number of retrievals.
 - **`cuda_visible_devices`** (str): Specifies which CUDA devices are visible.
 - **`num_gpus`** (int): Number of GPUs to use.
+
+**Note:** All scripts have been tested on a single A100 GPU with 80GB memory. If they fail on your GPU, consider adjusting the `num_gpus` and `gpu_memory_utilization` parameters when using local models like LLAMA or MITRAL, as defined in the [vLLM API](https://github.com/vllm-project/vllm).
 
 ## Training Outputs
 
