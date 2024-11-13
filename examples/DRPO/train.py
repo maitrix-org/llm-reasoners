@@ -13,7 +13,10 @@ from datetime import datetime
 import pytz
 
 from reasoners import LanguageModel as Model, SearchAlgorithm, Reasoner
-from search_algo import BeamSearch, MCTS
+#Reimplemented the Beam Search Algorithm in the llm-reasoner to accommodate the new dynamic max depth setting
+from search_algo import BeamSearch
+
+from reasoners.algorithm import MCTS
 from models import VLLMModel, OpenAIChatModel
 
 from world_model import PromptAlignWorldModel
