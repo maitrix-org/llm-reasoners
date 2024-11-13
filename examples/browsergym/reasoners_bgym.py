@@ -100,7 +100,7 @@ class SearchConfigBrowsergym(SearchConfig):
         return self.fast_reward(state, action)
 
 
-def run_task(task_name: str, seed: int = 16):
+def run_task(task_name: str, seed: int = 16, llm: LanguageModel = None) -> bool:
     logger = create_logger(task_name)
 
     start_time = time.time()
@@ -108,7 +108,8 @@ def run_task(task_name: str, seed: int = 16):
     env = get_env(task_name, action_set, seed)
 
     # export OPENAI_API_KEY=[key]
-    llm = OpenAIModel(model="gpt-4o-mini")
+    if llm is None:
+        llm = OpenAIModel(model="gpt-4o-mini")
 
     world_model = WorldModelBrowsergym(env=env, env_seed=seed, logger=logger, max_steps=20)
     search_config = SearchConfigBrowsergym(action_set=action_set, llm=llm, use_axtree=True, use_html=False, use_screenshot=False, logger=logger)
@@ -118,6 +119,8 @@ def run_task(task_name: str, seed: int = 16):
     #                  output_trace_in_each_iter=True)
     algorithm = BeamSearch(beam_size=3, max_depth=3) # beam is pretty nice to test on
     reasoner = Reasoner(world_model, search_config, algorithm)
+
+    # print("sanity check")
 
     result = reasoner("") # relies on a simulator for state - no explicit example needed
 
