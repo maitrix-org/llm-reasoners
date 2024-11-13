@@ -41,7 +41,6 @@ This part is the implementation of **Dynamic Rewarding with Prompt Optimization 
 - **`cuda_visible_devices`** (str): Specifies which CUDA devices are visible.
 - **`num_gpus`** (int): Number of GPUs to use.
 
-**Note:** All scripts have been tested on a single A100 GPU with 80GB memory. If they fail on your GPU, consider adjusting the `num_gpus` and `gpu_memory_utilization` parameters when using local models like LLAMA or MITRAL, as defined in the [vLLM API](https://github.com/vllm-project/vllm).
 
 ## Training Outputs
 
@@ -53,6 +52,8 @@ Upon completing training, the following files are generated in the `log_dir`:
 4. **`algo_output/trace.txt`**: Trace of prompt evolution across the search process.
 
 ## Running the Training Process
+
+**Note:** The script have been tested on a single A100 GPU with 80GB memory. If they fail on your GPU, consider adjusting the `num_gpus` and `gpu_memory_utilization` parameters when using local models like LLAMA or MITRAL, as defined in the [vLLM API](https://github.com/vllm-project/vllm).
 
 Start training with a simple command:
 Replace <parameters> with any desired arguments to customize your training.
