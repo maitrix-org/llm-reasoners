@@ -6,8 +6,8 @@ This part is the implementation of **Dynamic Rewarding with Prompt Optimization 
 
 **Dynamic Rewarding with Prompt Optimization (DRPO)** is a novel approach for aligning LLMs without requiring extensive tuning or human supervision. By dynamically optimizing prompts based on model feedback, DRPO enhances alignment performance, enabling LLMs to self-correct and adapt effectively to various challenges. This method significantly reduces alignment costs and improves the versatility of LLM applications.
 
-## Exploring DRPO with the LLM-REASONER Framework
-Using the DRPO  within the LLM-REASONER framework provides numerous advantages, including the ability to test various reasoning and search algorithms effortlessly. The framework also offers a suite of robust tools that could potentially enhance DRPO. For comprehensive access to training and inference code, optimized prompts, and APIs that facilitate easy integration of DRPO into downstream tasks as described in the original paper, please visit the official repository at [Official DRPO Github Repo](https://github.com/Singla17/dynamic-alignment-optimization/tree/master)
+## Exploring DRPO with the llm-reasoners Framework
+Using the DRPO  within the llm-reasoners framework provides numerous advantages, including the ability to test various reasoning and search algorithms effortlessly. The framework also offers a suite of robust tools that could potentially enhance DRPO. For comprehensive access to training and inference code, optimized prompts, and APIs that facilitate easy integration of DRPO into downstream tasks as described in the original paper, please visit the official repository at [Official DRPO Github Repo](https://github.com/Singla17/dynamic-alignment-optimization/tree/master)
 
 
 ## Key Parameters
