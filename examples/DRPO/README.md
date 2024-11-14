@@ -120,7 +120,7 @@ The LLM reasoner also provides a visualization feature, allowing you to easily e
 
 ![Example of DRPO](https://github.com/sora1998/llm-reasoners/blob/drpo/examples/DRPO/imgs/visualization.png?raw=true "DRPO Visualization")
 
-To try it yourself, we’ve included the necessary code. Run the following command:
+To try it yourself, we’ve included the necessary code for the demo. Run the following command:
 
 ```bash
 python visualize_log.py
