@@ -25,7 +25,7 @@ from search_config import PromptAlignSearchConfig
 from utils import parse_algo_output
 
 #TODO: update GPU numbers if running out of CUDA memory.
-os.environ["CUDA_VISIBLE_DEVICES"]= "0,1,2,3"
+os.environ["CUDA_VISIBLE_DEVICES"]= "1,2,3,4"
 
 def interleave_data_arrays(alpaca_data, lima_data, mal_data):
     total_data = len(lima_data) + len(mal_data) + len(alpaca_data)

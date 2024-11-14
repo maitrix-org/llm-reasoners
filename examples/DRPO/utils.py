@@ -1,5 +1,6 @@
 import json
-from search_algo import BeamSearchResult, MCTSResult
+from search_algo import BeamSearchResult
+from reasoners.algorithm import MCTSResult
 from typing import Union
 
 def parse_json_output(output: str) -> dict:
