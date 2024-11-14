@@ -116,7 +116,7 @@ You can see the full trace in the log folder.
 
 ## Visualization
 
-The LLM reasoner also provides a visualization feature, allowing you to easily explore the reasoning trace.
+The LLM reasoners also provides a visualization feature, allowing you to easily explore the reasoning trace.
 
 ![Example of DRPO](https://github.com/sora1998/llm-reasoners/blob/drpo/examples/DRPO/imgs/visualization.png?raw=true "DRPO Visualization")
 
