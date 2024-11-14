@@ -2,7 +2,7 @@ import pickle
 from reasoners.visualization import visualize
 from search_algo.beam_search import BeamSearchNode
 from reasoners.algorithm.beam_search import BeamSearchResult as reasoner_bs
-with open("/data/enze/llm-reasoners/examples/DRPO/logs/mistral-7b-chain/algo_output/output.pkl", 'rb') as f:
+with open("logs/mistral-7b-chain/algo_output/output.pkl", 'rb') as f:
     beam_result = pickle.load(f)
     
 beam_result = reasoner_bs(
