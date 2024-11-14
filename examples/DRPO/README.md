@@ -118,7 +118,7 @@ You can see the full trace in the log folder.
 
 The LLM reasoner also provides a visualization feature, allowing you to easily explore the reasoning trace.
 
-![Example of DRPO](https://example.com/image.jpg "DRPO Visualization")
+![Example of DRPO](https://github.com/sora1998/llm-reasoners/tree/drpo/examples/DRPO/imgs "DRPO Visualization")
 
 To try it yourself, we’ve included the necessary code. Run the following command:
 
