@@ -58,14 +58,3 @@ class VLLMModel(Model):
             return outputs[0].outputs[0].text
         else:
             return [output.outputs[0].text for output in outputs]
-
-    def get_next_token_logits(self,
-                              prompt: Union[str, list[str]],
-                              candidates: Union[list[str], list[list[str]]],
-                              **kwargs) -> list[np.ndarray]:
-        raise NotImplementedError("GPTCompletionModel does not support get_next_token_logits")
-
-    def get_loglikelihood(self,
-                          prompt: Union[str, list[str]],
-                          **kwargs) -> list[np.ndarray]:
-        raise NotImplementedError("GPTCompletionModel does not support get_log_prob")
