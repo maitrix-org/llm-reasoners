@@ -113,6 +113,18 @@ The model will be tested on a set of 180 seed samples such as:
 - Prioritize personalization in your responses, aiming to understand and address the user's specific context, needs, and emotions, making each interaction feel uniquely valuable."
 
 You can see the full trace in the log folder.
+
+## Visualization
+
+The LLM reasoner also provides a visualization feature, allowing you to easily explore the reasoning trace.
+
+![Example of DRPO](https://example.com/image.jpg "DRPO Visualization")
+
+To try it yourself, we’ve included the necessary code. Run the following command:
+
+```bash
+python visualize_log.py
+```
 ## Reference
 
 ```bibtex
