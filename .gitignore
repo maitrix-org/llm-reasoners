@@ -24,5 +24,6 @@ examples/MATH
 examples/AQuA_rap/test.ipynb
 temp_plan
 temp_problem
+.python-version
 
 !autorace/data/eval_model/*.jsonl
