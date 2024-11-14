@@ -73,3 +73,14 @@ class OpenAIChatModel(Model):
             return response.choices[0].message.content
         else:
             return [choice.message.content for choice in response.choices]
+
+    def get_next_token_logits(self,
+                            prompt: Union[str, list[str]],
+                            candidates: Union[list[str], list[list[str]]],
+                            **kwargs) -> list[np.ndarray]:
+        raise NotImplementedError("GPTCompletionModel does not support get_next_token_logits")
+
+    def get_loglikelihood(self,
+                          prompt: Union[str, list[str]],
+                          **kwargs) -> list[np.ndarray]:
+        raise NotImplementedError("GPTCompletionModel does not support get_log_prob")
