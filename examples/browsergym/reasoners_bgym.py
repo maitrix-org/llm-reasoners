@@ -113,11 +113,13 @@ def run_task(task_name: str, seed: int = 16, llm: LanguageModel = None) -> bool:
 
     world_model = WorldModelBrowsergym(env=env, env_seed=seed, logger=logger, max_steps=20)
     search_config = SearchConfigBrowsergym(action_set=action_set, llm=llm, use_axtree=True, use_html=False, use_screenshot=False, logger=logger)
-    # algorithm = MCTS(n_iters=20,
-    #                  depth_limit=4, # depending on how long the task is, increase/decrease
-    #                  disable_tqdm=False, 
-    #                  output_trace_in_each_iter=True)
-    algorithm = BeamSearch(beam_size=3, max_depth=3) # beam is pretty nice to test on
+    algorithm = MCTS(n_iters=20,
+                     depth_limit=4, # depending on how long the task is, increase/decrease
+                     w_exp=2**.5,
+                     uct_with_fast_reward=False,
+                     disable_tqdm=False, 
+                     output_trace_in_each_iter=True)
+    # algorithm = BeamSearch(beam_size=3, max_depth=3) # beam is pretty nice to test on
     reasoner = Reasoner(world_model, search_config, algorithm)
 
     # print("sanity check")
