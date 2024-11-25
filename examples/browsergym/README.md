@@ -102,6 +102,12 @@ python vwa_test.py
 ```
 to run a visualwebarena task.
 
+## Visualize search tree
+
+```bash
+python visualize.py --tree_log_file=<path_to_tree_log_pickle_file>
+```
+
 ## Troubleshooting
 If you meet the error:
 ```
