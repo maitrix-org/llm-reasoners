@@ -1,3 +1,6 @@
+examples/AgentModel/default_api_key.txt
+examples/AgentModel/*.sh
+examples/AgentModel/task_data
 .idea/
 notebooks/
 __pycache__/
