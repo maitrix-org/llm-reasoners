@@ -25,12 +25,12 @@ agent_args = [AGENT_4o_MINI]
 
 
 # ## select the benchmark to run on
-benchmark = "miniwob_tiny_test"
+# benchmark = "miniwob_tiny_test"
 # benchmark = "miniwob"
 # benchmark = "workarena_l1"
 # benchmark = "workarena_l2"
 # benchmark = "workarena_l3"
-# benchmark = "webarena"
+benchmark = "webarena"
 
 # Set reproducibility_mode = True for reproducibility
 # this will "ask" agents to be deterministic. Also, it will prevent you from launching if you have
@@ -45,7 +45,19 @@ relaunch = False
 n_jobs = 4  # Make sure to use 1 job when debugging in VSCode
 # n_jobs = -1  # to use all available cores
 
-tiny_test_task_names = ["webarena.410"]
+tiny_test_task_names = [
+    "webarena.410",
+    "webarena.27",
+    "webarena.28",
+    "webarena.66",
+    "webarena.399",
+    "webarena.596",
+    "webarena.619",
+    "webarena.642",
+    "webarena.718",
+    "webarena.731",
+]
+ignore_dependencies = True
 
 if __name__ == "__main__":  # necessary for dask backend
 
@@ -63,6 +75,7 @@ if __name__ == "__main__":  # necessary for dask backend
             benchmark,
             logging_level_stdout=logging.WARNING,
             tiny_test_task_names=tiny_test_task_names,
+            ignore_dependencies=ignore_dependencies,
         )
 
     study.run(
