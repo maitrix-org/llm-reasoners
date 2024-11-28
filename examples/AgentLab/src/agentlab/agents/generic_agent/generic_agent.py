@@ -23,7 +23,8 @@ class GenericAgentArgs(AgentArgs):
 
     def __post_init__(self):
         try:  # some attributes might be temporarily args.CrossProd for hyperparameter generation
-            self.agent_name = f"GenericAgent-{self.chat_model_args.model_name}".replace("/", "_")
+            self.agent_name = f"GenericAgent-{self.chat_model_args.model_name}".replace(
+                "/", "_")
         except AttributeError:
             pass
 
@@ -33,7 +34,8 @@ class GenericAgentArgs(AgentArgs):
             self.flags.obs.use_html = True
 
         self.flags.obs.use_tabs = benchmark.is_multi_tab
-        self.flags.action.action_set = deepcopy(benchmark.high_level_action_set_args)
+        self.flags.action.action_set = deepcopy(
+            benchmark.high_level_action_set_args)
 
         # for backward compatibility with old traces
         if self.flags.action.multi_actions is not None:
@@ -85,8 +87,8 @@ class GenericAgent(Agent):
 
     @cost_tracker_decorator
     def get_action(self, obs):
-
         self.obs_history.append(obs)
+
         main_prompt = MainPrompt(
             action_set=self.action_set,
             obs_history=self.obs_history,
@@ -190,9 +192,6 @@ does not support vision. Disabling use_screenshot."""
             else 20  # dangerous to change the default value here?
         )
         return max_prompt_tokens, max_trunc_itr
-
-
-from functools import partial
 
 
 def get_action_post_hoc(agent: GenericAgent, obs: dict, ans_dict: dict):
