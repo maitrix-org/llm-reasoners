@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentlab"
+dynamic = ["version", "dependencies"]
+description = "Main package for developing agents and experiments"
+authors = [
+    {name = "Rim Assouel", email = "rim.assouel@gmail.com"},
+    {name = "Alex Drouin", email = "alex.drouin@servicenow.com"},
+    {name = "Maxime Gasse", email = "maxime.gasse@servicenow.com"},
+    {name = "Alex Lacoste", email = "alex.lacoste@servicenow.com"},
+    {name = "Tom Marty", email = "tom.marty@polymtl.ca"},
+    {name = "Massimo Caccia", email = "massimo.caccia1@servicenow.com"},
+    {name = "Thibault Le Sellier de Chezelles", email = "thibault.de.chezelles@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">3.7"
+license = {text = "Apache-2.0"}
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: Apache Software License",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/ServiceNow/AgentLab"
+
+[tool.setuptools.dynamic]
+version = {attr = "agentlab.__version__"}
+dependencies = {file = ["requirements.txt"]}
+
+[tool.black]
+line-length = 100
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.nox
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+
+[project.scripts]
+agentlab-assistant = "agentlab.ui_assistant:main"
+agentlab-xray = "agentlab.analyze.agent_xray:main"

@@ -6,4 +6,4 @@
 	url = https://github.com/karthikv792/LLMs-Planning
 [submodule "examples/AgentLab"]
 	path = examples/AgentLab
-	url = https://github.com/ServiceNow/AgentLab.git
+	url = git@github.com:BlankCheng/AgentLab.git
