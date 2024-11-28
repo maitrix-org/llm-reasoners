@@ -27,6 +27,7 @@ def make_study(
     suffix="",
     comment=None,
     ignore_dependencies=False,
+    tiny_test_task_names=None,
 ):
     """Run a list of agents on a benchmark.
 
@@ -95,6 +96,7 @@ def make_study(
             suffix=suffix,
             comment=comment,
             ignore_dependencies=ignore_dependencies,
+            tiny_test_task_names=tiny_test_task_names,
         )
 
 
@@ -131,7 +133,8 @@ class AbstractStudy(ABC):
     def get_results(self, suffix="", also_save=True):
         """Recursively load all results from the study directory and summarize them."""
         result_df = inspect_results.load_result_df(self.dir)
-        error_report = inspect_results.error_report(result_df, max_stack_trace=3, use_log=True)
+        error_report = inspect_results.error_report(
+            result_df, max_stack_trace=3, use_log=True)
         summary_df = inspect_results.summarize_study(result_df)
 
         if also_save:
@@ -247,7 +250,8 @@ class Study(AbstractStudy):
             list[ExpArgs]: The list of all experiments with completed ones replaced by a
                 dummy exp_args to keep the task dependencies.
         """
-        self.exp_args_list = find_incomplete(self.dir, include_errors=include_errors)
+        self.exp_args_list = find_incomplete(
+            self.dir, include_errors=include_errors)
         n_incomplete = non_dummy_count(self.exp_args_list)
         n_error = [
             getattr(exp_args, "status", "incomplete") == "error" for exp_args in self.exp_args_list
@@ -256,7 +260,8 @@ class Study(AbstractStudy):
 
     def load_exp_args_list(self):
         logger.info(f"Loading experiments from {self.dir}")
-        self.exp_args_list = list(inspect_results.yield_all_exp_results(savedir_base=self.dir))
+        self.exp_args_list = list(
+            inspect_results.yield_all_exp_results(savedir_base=self.dir))
 
     def set_reproducibility_info(self, strict_reproducibility=False, comment=None):
         """Gather relevant information that may affect the reproducibility of the experiment
@@ -302,17 +307,20 @@ class Study(AbstractStudy):
         last_error_count = None
 
         for i in range(n_relaunch):
-            logger.info(f"Launching study {self.name} - trial {i + 1} / {n_relaunch}")
+            logger.info(
+                f"Launching study {self.name} - trial {i + 1} / {n_relaunch}")
             self._run(n_jobs, parallel_backend, strict_reproducibility)
 
             suffix = f"trial_{i + 1}_of_{n_relaunch}"
             _, summary_df, _ = self.get_results(suffix=suffix)
             logger.info("\n" + str(summary_df))
 
-            n_incomplete, n_error = self.find_incomplete(include_errors=relaunch_errors)
+            n_incomplete, n_error = self.find_incomplete(
+                include_errors=relaunch_errors)
 
             if n_error / n_exp > 0.3:
-                logger.warning(f"More than 30% of the experiments errored. Stopping the study.")
+                logger.warning(
+                    f"More than 30% of the experiments errored. Stopping the study.")
                 return
 
             if last_error_count is not None and n_error >= last_error_count:
@@ -346,7 +354,8 @@ class Study(AbstractStudy):
         """
 
         if self.exp_args_list is None:
-            raise ValueError("exp_args_list is None. Please set exp_args_list before running.")
+            raise ValueError(
+                "exp_args_list is None. Please set exp_args_list before running.")
 
         logger.info("Preparing backends...")
         self.benchmark.prepare_backends()
@@ -390,11 +399,14 @@ class Study(AbstractStudy):
         if not study_path.exists() and dir.is_dir():
             # For backward compatibility
             first_result = next(
-                inspect_results.yield_all_exp_results(savedir_base=dir, progress_fn=None)
+                inspect_results.yield_all_exp_results(
+                    savedir_base=dir, progress_fn=None)
             )
-            benchmark_name = first_result.exp_args.env_args.task_name.split(".")[0]
+            benchmark_name = first_result.exp_args.env_args.task_name.split(".")[
+                0]
             agent_args = first_result.exp_args.agent_args
-            study = Study(agent_args=agent_args, benchmark=benchmark_name, dir=dir)
+            study = Study(agent_args=agent_args,
+                          benchmark=benchmark_name, dir=dir)
         else:
             with gzip.open(dir / "study.pkl.gz", "rb") as f:
                 study = pickle.load(f)  # type: Study
@@ -447,7 +459,8 @@ class SequentialStudies(AbstractStudy):
     @property
     def name(self):
         """The name of the study."""
-        agent_names = [a.agent_name for study in self.studies for a in study.agent_args]
+        agent_names = [
+            a.agent_name for study in self.studies for a in study.agent_args]
         benchmark_names = [study.benchmark.name for study in self.studies]
         return _make_study_name(agent_names, benchmark_names, self.suffix)
 
@@ -466,7 +479,8 @@ class SequentialStudies(AbstractStudy):
         self.save()
 
         for study in self.studies:
-            study.run(n_jobs, parallel_backend, strict_reproducibility, n_relaunch)
+            study.run(n_jobs, parallel_backend,
+                      strict_reproducibility, n_relaunch)
         _, summary_df, _ = self.get_results()
         logger.info("\n" + str(summary_df))
         logger.info(f"SequentialStudies {self.name} finished.")
@@ -477,7 +491,8 @@ class SequentialStudies(AbstractStudy):
 
     def append_to_journal(self, strict_reproducibility=True):
         for study in self.studies:
-            study.append_to_journal(strict_reproducibility=strict_reproducibility)
+            study.append_to_journal(
+                strict_reproducibility=strict_reproducibility)
 
 
 def get_most_recent_study(
@@ -505,7 +520,8 @@ def get_most_recent_study(
             if contains is not None and contains not in item.name:
                 continue
             try:
-                folder_date = datetime.strptime("_".join(item.name.split("_")[:2]), date_format)
+                folder_date = datetime.strptime(
+                    "_".join(item.name.split("_")[:2]), date_format)
                 if folder_date > most_recent_time:
                     most_recent_time = folder_date
                     most_recent_folder = item
@@ -565,7 +581,8 @@ def _agents_on_benchmark(
             )
 
     for agent in agents:
-        agent.set_benchmark(benchmark, demo_mode)  # the agent can adapt (lightly?) to the benchmark
+        # the agent can adapt (lightly?) to the benchmark
+        agent.set_benchmark(benchmark, demo_mode)
 
     env_args_list = benchmark.env_args_list
     if demo_mode:
@@ -591,7 +608,8 @@ def _agents_on_benchmark(
 
     if not ignore_dependencies:
         # populate the depends_on field based on the task dependencies in the benchmark
-        exp_args_list = add_dependencies(exp_args_list, benchmark.dependency_graph_over_tasks())
+        exp_args_list = add_dependencies(
+            exp_args_list, benchmark.dependency_graph_over_tasks())
     else:
         logger.warning(
             f"Ignoring dependencies for benchmark {benchmark.name}. This could lead to different results."

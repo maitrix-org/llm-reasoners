@@ -44,7 +44,8 @@ class Flags:
             return flags_dict
 
         if not isinstance(flags_dict, dict):
-            raise ValueError(f"Unregcognized type for flags_dict of type {type(flags_dict)}.")
+            raise ValueError(
+                f"Unregcognized type for flags_dict of type {type(flags_dict)}.")
         return ObsFlags(**flags_dict)
 
 
@@ -99,7 +100,8 @@ class ObsFlags(Flags):
 
 @dataclass
 class ActionFlags(Flags):
-    action_set: bgym.HighLevelActionSetArgs = None  # should be set by the set_benchmark method
+    # should be set by the set_benchmark method
+    action_set: bgym.HighLevelActionSetArgs = None
     long_description: bool = True
     individual_examples: bool = False
 
@@ -251,7 +253,8 @@ def fit_tokens(
         additional_prompts = [additional_prompts]
 
     for prompt in additional_prompts:
-        max_prompt_tokens -= count_tokens(prompt, model=model_name) + 1  # +1 because why not ?
+        # +1 because why not ?
+        max_prompt_tokens -= count_tokens(prompt, model=model_name) + 1
 
     for _ in range(max_iterations):
         prompt = shrinkable.prompt
@@ -263,7 +266,8 @@ def fit_tokens(
                 "Using list of prompts is deprecated. Use a Discussion object instead.",
                 DeprecationWarning,
             )
-            prompt_str = "\n".join([p["text"] for p in prompt if p["type"] == "text"])
+            prompt_str = "\n".join([p["text"]
+                                   for p in prompt if p["type"] == "text"])
         elif isinstance(prompt, BaseMessage):
             prompt_str = prompt.__str__(warn_if_image=False)
         else:
@@ -456,7 +460,8 @@ class Observation(Shrinkable):
                 )
             else:
                 screenshot = self.obs["screenshot"]
-                prompt.add_text("\n## Screenshot:\nHere is a screenshot of the page:")
+                prompt.add_text(
+                    "\n## Screenshot:\nHere is a screenshot of the page:")
             img_url = image_to_jpg_base64_url(screenshot)
             prompt.add_image(img_url, detail=self.flags.openai_vision_detail)
         return prompt
@@ -478,6 +483,84 @@ class BeCautious(PromptElement):
 actions. Take the time to explore the effect of safe actions first. For example
 you can fill a few elements of a form, but don't click submit before verifying
 that everything was filled correctly.\n"""
+
+
+class EncoderInstructions(PromptElement):
+    def __init__(self, visible: bool = True) -> None:
+        super().__init__(visible)
+        self._prompt = [
+            dict(
+                type="text",
+                text=f"""\
+# Instructions
+Summarize the current state of the webpage observation, focusing on the most \
+recent action you took and any errors encountered. Note any dialogs, progress \
+indicators, or significant changes such as items in your cart or sites visited. \
+Describe the impact of your previous action on the webpage, including any new \
+interactive elements. Include any inferred information that may help achieve \
+the goal. Information from steps earlier are for reference only. Focus on \
+objective description of the current observation and any inferences you can \
+draw from it. Report any error messages displayed. Do not include your next \
+planned actions; focus solely on providing an objective summary.
+
+Wrap your response in the tag <state> and </state>.\
+""",
+            )
+        ]
+
+
+class PolicyInstructions(PromptElement):
+    def __init__(self, visible: bool = True) -> None:
+        super().__init__(visible)
+        self._prompt = [
+            dict(
+                type="text",
+                text=f"""\
+# Instructions
+Describe the action the assistant should take next to carry out the user's \
+instruction. \
+Avoid using phrases such as "To accomplish the goal," "I will," "To \
+proceed.". Avoid ending with phrases like "to execute the search." \
+Describe one action at a time and avoid combining multiple steps. \
+Refrain from mentioning specific element IDs as they may change \
+during execution. Limit your response to one phrase and include any details \
+that help select the correct action. Be creative and propose novel \
+methods to achieve the goal. Avoid creating accounts without user \
+permission or providing personal information. Concrete example \
+would be "Go to the home page of Google Flights." and "Click on the 'Search' button."
+
+Wrap your response in the following format:
+
+<think>
+Your thoughts and reasoning process
+</think>
+
+<intent>
+Description of the action to perform next
+</intent>\
+""",
+            )
+        ]
+
+
+class ActorInstructions(PromptElement):
+    def __init__(self, visible: bool = True) -> None:
+        super().__init__(visible)
+        self._prompt = [
+            dict(
+                type="text",
+                text=f"""\
+# Instructions
+Choose an API call that will carry out the intent when executed in the webpage. \
+Use only one action at a time. You must not enclose bid inputs in [brackets] but instead in 'single quotes'. \
+Interact only with elements in the current step observation. Your response \
+will be executed as a Python function call, so ensure it adheres to the format \
+and argument data type specifications defined in the action space.
+
+Wrap your response in the tag <action> and </action>.\
+""",
+            )
+        ]
 
 
 class GoalInstructions(PromptElement):
@@ -613,7 +696,8 @@ elements in the page is through bid which are specified in your observations.
 
     def _parse_answer(self, text_answer):
         try:
-            ans_dict = parse_html_tags_raise(text_answer, keys=["action"], merge_multiple=True)
+            ans_dict = parse_html_tags_raise(
+                text_answer, keys=["action"], merge_multiple=True)
         except ParseError as e:
             if self.action_flags.is_strict:
                 raise e
