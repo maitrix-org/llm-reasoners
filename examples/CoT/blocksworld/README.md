@@ -8,7 +8,7 @@
    ```bash
    git clone https://github.com/karthikv792/LLMs-Planning.git
    cd LLMs-Planning && git checkout 34e6841
-   echo 'export PLANBENCH_PATH=$(pwd)' >> ~/.bashrc && source ~/.bashrc
+   echo "export PLANBENCH_PATH=$(pwd)" >> ~/.bashrc && source ~/.bashrc
    ```
 
 2. Set up `Val` for evaluation. Ideally you can directly use the executable files from [there](https://github.com/karthikv792/LLMs-Planning/tree/34e6841f81ca7708f2f8b8241504bfe8a908e40b/planner_tools/VAL), and there is no need to build the tool yourself. If that doesn't work you could try install the tools locally following their instruction.

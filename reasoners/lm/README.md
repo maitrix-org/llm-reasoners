@@ -21,7 +21,7 @@
 - **If you pip installed reasoners**: Please clone exllama first and add the path to environment variable. 
   ```bash
   git clone https://github.com/turboderp/exllama.git && cd exllama && git checkout 3b013cd
-  echo 'export EXLLAMA_PATH=$(pwd)' >> ~/.bashrc && source ~/.bashrc
+  echo "export EXLLAMA_PATH=$(pwd)" >> ~/.bashrc && source ~/.bashrc
   ```
 ### Usage
 - Choose any quantized [models](https://github.com/turboderp/exllama/blob/master/doc/model_compatibility.md) available from Hugging Face. You can also use the path of a local quantized model in the same format as Hugging Face.

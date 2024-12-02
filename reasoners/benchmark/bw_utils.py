@@ -182,13 +182,14 @@ def load_blocksworld(config_file, domain_file, data_file=None, data_list=None, r
         cur_data = {}
         # if cur_instance[0] is not a valid path, add a prefix to the path
         
-        if not os.path.exists(cur_instance[0]) and os.getenv("PLANBENCH_PATH") is not None:
-            # find the environment variable PLANBENCH_PATH
-            planbench_path = os.getenv("PLANBENCH_PATH")
-        else:
-            raise Exception(f"Instance file {cur_instance[0]} not found.")
+        if not os.path.exists(cur_instance[0]):
+            if os.getenv("PLANBENCH_PATH") is not None:
+                # find the environment variable PLANBENCH_PATH
+                planbench_path = os.getenv("PLANBENCH_PATH")
+                cur_instance[0] = os.path.join(planbench_path, os.path.pardir, cur_instance[0])
+            else:
+                raise Exception(f"Instance file {cur_instance[0]} not found.")
 
-        cur_instance[0] = os.path.join(planbench_path, os.path.pardir, cur_instance[0])
         problem = get_problem(cur_instance[0], domain_pddl)
         gt_plan_code = cur_instance[1]
         

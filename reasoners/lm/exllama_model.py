@@ -44,7 +44,9 @@ class ExLlamaModel(LanguageModel):
         except ImportError as e:
             README_PATH = os.path.join(os.path.dirname(reasoners.__file__), 'lm', 'README.md')
             raise ImportError(
-                f'Cannot find exllama submodule. If you installed reasoners from github repo without "--recursive", running "\033[1mgit submodule update --init\033[0m" under the repo can solve this problem. Or if you pip installed reasoners, please follow the instructions in the "{README_PATH}" to install exllama.')
+                f'Cannot find exllama submodule. If you installed reasoners from github repo without "--recursive", '
+                'running "\033[1mgit submodule update --init\033[0m" under the repo can solve this problem. '
+                'Or if you pip installed reasoners, please follow the instructions in the "{README_PATH}" to install exllama.')
 
         if not os.path.isdir(model_dir):
             model_dir = snapshot_download(model_dir)
