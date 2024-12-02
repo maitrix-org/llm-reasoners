@@ -265,6 +265,7 @@ visualize(mcts_result, node_data_factory=blocksworld_node_data_factory,
 ```
 Then a URL of the visualized results will pop up. The figure will be interactive and look like the examples shown on our [demo website](https://llm-reasoners.net/).
 ## Installation
+
 Make sure to use Python 3.10 or later.
 
 ```bash
@@ -272,7 +273,15 @@ conda create -n reasoners python=3.10
 conda activate reasoners
 ```
 
-Clone the repository and install the package:
+### Install from `pip`
+
+```bash
+pip install llm-reasoners
+```
+
+### Install from github
+(Recommended if you want to run the examples in the github repo)
+
 ```bash
 git clone https://github.com/Ber666/llm-reasoners --recursive
 cd llm-reasoners
