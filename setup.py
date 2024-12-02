@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='llm-reasoners',
-      version='1.0.1',
+      version='1.0.2',
       description='A library for advanced reasoning methods with large language models',
       packages=find_packages(include=['reasoners', 'reasoners.*']),
       # packages=find_packages(exclude=('examples', 'examples.*')),

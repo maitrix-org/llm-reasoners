@@ -188,7 +188,10 @@ def load_blocksworld(config_file, domain_file, data_file=None, data_list=None, r
                 planbench_path = os.getenv("PLANBENCH_PATH")
                 cur_instance[0] = os.path.join(planbench_path, os.path.pardir, cur_instance[0])
             else:
-                raise Exception(f"Instance file {cur_instance[0]} not found.")
+                raise Exception(f"Instance file {cur_instance[0]} not found."
+                                f"If you cloned reasoners from github, please use `git submodule update --init`"
+                                f"Or if you pip installed reasoners, please follow the instruction in "
+                                f"{os.path.join(__file__, os.pardir, 'README.md')} to set PLANBENCH_PATH in the environment.")
 
         problem = get_problem(cur_instance[0], domain_pddl)
         gt_plan_code = cur_instance[1]

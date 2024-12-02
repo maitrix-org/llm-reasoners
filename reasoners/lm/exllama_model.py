@@ -36,7 +36,9 @@ class ExLlamaModel(LanguageModel):
             import reasoners
             sys.path.append(os.path.join(os.path.dirname(reasoners.__file__), os.path.pardir, 'exllama'))
             # or if we have specify the path to exllama in the environment variable
-            sys.path.append(os.environ['EXLLAMA_PATH'])
+            if 'EXLLAMA_PATH' in os.environ:
+                sys.path.append(os.path.join(os.environ['EXLLAMA_PATH'], os.path.pardir))
+                sys.path.append(os.environ['EXLLAMA_PATH'])
             from exllama.generator import ExLlamaGenerator
             from exllama.model import ExLlama, ExLlamaCache, ExLlamaConfig
             from exllama.tokenizer import ExLlamaTokenizer
