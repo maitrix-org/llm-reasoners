@@ -1,1 +1,1 @@
-recursive-include exllama/exllama_ext *.h *.cpp *.cu *.cuh
+recursive-include reasoners *.md

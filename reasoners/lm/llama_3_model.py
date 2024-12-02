@@ -18,8 +18,7 @@ from fairscale.nn.model_parallel.initialize import (
     get_model_parallel_rank,
 )
 
-from llama3.model import ModelArgs, Transformer
-from llama3.tokenizer import ChatFormat, Dialog, Message, Tokenizer
+
 from reasoners import LanguageModel, GenerateOutput
 
 
@@ -101,6 +100,14 @@ class Llama3Model(LanguageModel):
 
     def __init__(self, path, size, max_batch_size=1, max_seq_len=2048, **kwargs):
         super().__init__()
+        try:
+            from llama3.model import ModelArgs, Transformer
+            from llama3.tokenizer import ChatFormat, Dialog, Message, Tokenizer
+        except ImportError:
+            raise ImportError("llama3 is not installed."
+                              "Please install it using"
+                              "`pip install llama3@git+https://github.com/Ber666/llama3@llama3`.")
+        
         print(path, size, max_batch_size, max_seq_len)
         self.model, self.tokenizer = self.build(
             os.path.join(path, f"Meta-Llama-3-{size.upper()}"),

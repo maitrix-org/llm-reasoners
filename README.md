@@ -278,7 +278,7 @@ git clone https://github.com/Ber666/llm-reasoners --recursive
 cd llm-reasoners
 pip install -e .
 ```
-Adding `--recursive` will help you clone exllama automatically. Note that some other optional modules may need other dependencies. Please refer to the error message for details.
+Adding `--recursive` will help you clone exllama and LLM-Planning automatically. Note that some other optional modules may require other dependencies. Please refer to the error message for details.
 
 ## Citation
 This project is an extension of the following paper:

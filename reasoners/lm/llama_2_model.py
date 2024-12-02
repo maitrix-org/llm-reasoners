@@ -18,7 +18,6 @@ from fairscale.nn.model_parallel.initialize import (
     model_parallel_is_initialized,
     get_model_parallel_rank,
 )
-from llama import ModelArgs, Transformer, Tokenizer
 
 from reasoners import LanguageModel, GenerateOutput
 
@@ -30,7 +29,7 @@ class Llama2Model(LanguageModel):
         max_seq_len: int,
         max_batch_size: int,
         model_parallel_size: Optional[int] = None,
-    ) -> Tuple[Transformer, Tokenizer]:
+    ):
         if not torch.distributed.is_initialized():
             torch.distributed.init_process_group("nccl")
         if not model_parallel_is_initialized():
@@ -74,6 +73,11 @@ class Llama2Model(LanguageModel):
     
     def __init__(self, path, size, max_batch_size=1, max_seq_len=2048, **kwargs):
         super().__init__()
+        try:
+            from llama import ModelArgs, Transformer, Tokenizer
+        except ImportError:
+            raise ImportError("The dependency of Llama2 model is not installed. Please install with "
+                              "pip install llama@git+https://github.com/facebookresearch/llama@main")
         print(os.path.join(path, f"llama-2-{size.lower()}"))
         print(os.path.join(path, "tokenizer.model"))
         self.model, self.tokenizer = self.build(os.path.join(path, f"llama-2-{size.lower()}"), os.path.join(path, "tokenizer.model"),
