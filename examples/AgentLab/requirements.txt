@@ -1,0 +1,25 @@
+black[jupyter]>=24.2.0
+blacken-docs
+pre-commit
+pytest==7.3.2
+pytest-xdist
+pytest-playwright
+dask
+distributed
+browsergym>=0.7.1
+joblib>=1.2.0
+openai>=1.7,<2
+langchain_community
+tiktoken
+huggingface_hub
+contexttimer
+ipython
+pyyaml>=6
+pandas
+gradio>=5.5 # issue with DataFrame scrolling before 5.5
+gitpython # for the reproducibility script
+requests
+matplotlib
+ray[default]
+python-slugify
+pillow

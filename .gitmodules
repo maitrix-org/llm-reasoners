@@ -4,3 +4,6 @@
 [submodule "LLMs-Planning"]
 	path = LLMs-Planning
 	url = https://github.com/karthikv792/LLMs-Planning
+[submodule "examples/AgentLab"]
+	path = examples/AgentLab
+	url = git@github.com:BlankCheng/AgentLab.git
