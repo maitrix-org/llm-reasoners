@@ -46,7 +46,7 @@ def run_task(task_name: str, task_seed: int = 42):
                      uct_with_fast_reward=True, disable_tqdm=False, output_trace_in_each_iter=True)
     reasoner = Reasoner(world_model, search_config, algorithm)
 
-    result_rap = reasoner("")
+    result_rap = reasoner()
 
     with open(f"./results/tree-search/{task_name}/result.pkl", "wb") as f:
         pickle.dump(result_rap, f)

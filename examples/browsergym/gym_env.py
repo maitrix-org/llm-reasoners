@@ -1,6 +1,6 @@
 import gymnasium as gym
 from typing import NamedTuple, Optional, Callable, Any
-from reasoners import WorldModel
+from reasoners import Environment
 
 
 ActionGym = Any
@@ -19,7 +19,7 @@ class StateGym(NamedTuple):
     truncated: bool
 
 
-class EnvironmentGym(WorldModel):
+class EnvironmentGym(Environment):
     """
     WorldModel, but for gym environments. Instead of being based off of a textual example, takes in a gym environment. An LLM will not be used for generating new states. The gym environment's step function takes care of that. 
 
