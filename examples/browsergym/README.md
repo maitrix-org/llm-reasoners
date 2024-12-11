@@ -83,7 +83,7 @@ export OPENAI_API_KEY="your_openai_api_key"
 
 ```bash
 
-# python run.py <task_name> <model_name> <model_path>
+python inference.py <task_name>
 
 ```
 
