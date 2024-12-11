@@ -4,6 +4,16 @@ https://github.com/ServiceNow/BrowserGym
 
 ## Overview
 
+BrowserGym provides an OpenAI gym-like interface for interacting with web environments. It also comes with built in support for various web benchmarks such as Miniwob++, Webarena, VisualWebArena, WorkArena, etc. With browsergym, you can essentially provide a task name string (i.e. "miniwob.login-user", "webarena.599", etc.), and get a gym environment object preloaded with the task information along with systems to automatically analyze traces and provide rewards. This provides a great deal of convenience for creating/testing web agents.
+
+For browsergym's step function, you pass in an action string (i.e. "click(element_id)"), and it will directly execute that code on the environment. It should be noted that the action code string provided is appended to another code string that contains all the function definitions (click, hover, fill, etc.) and that combined code is what is actually executed. These function definitions are generated from BrowserGym's HighLevelActionSet class. Currently, the action space is the minimal set needed for WebArena, so if more actions are needed, specify them during the instantiation of HighLevelActionSet.
+
+LLM-Reasoners is here to provide tree search algorithms for exploring this environment. At every step, SearchConfigBrowsergym, uses a LLM to generate a list of possible actions, and then also uses a LLM to evaluate the quality of those actions. This is identical to most examples in LLM-Reasoners. The only main difference is that on top of the LLM's evaluation (fast reward), the environment also provides a reward signal, which needs to be considered when calculating the reward after expanding a node.
+
+EnvironmentGym essentially takes on the same functionality as a WorldModel, but instead of relying on an LLM for the state transitions, you can just use the environment directly.
+
+Since tree search is being directly performed on the environment, backtracking becomes more complicated. Before taking an action on a state, you have to make sure that the environment is aligned. This is currently done by additionally storing the action history in the state tuples, and then resetting + replaying the actions. This is inefficient, but it is generic and should work for any openai gym-like environment. Depending on the task, there may be more efficient ways to handle this.
+
 gym_env.py - Contains EnvironmentGym, an implementation of the Environment class. Mainly a wrapper class for the BrowserGym environment.
 searchconfig.py - Contains SearchConfigBrowsergym, which defines how to generate/evaluate nodes in tree search. Also defines how to calculate fast_reward (sa pair hasn't been expanded), and reward (sa pair has been expanded).
 visualize.py - Script to visualize the search tree. For convenience, some MCTSResult pickle objects have been provided in the results/tree-search directory.
