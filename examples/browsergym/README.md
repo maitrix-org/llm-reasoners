@@ -4,6 +4,10 @@ https://github.com/ServiceNow/BrowserGym
 
 ## Overview
 
+gym_env.py - Contains EnvironmentGym, an implementation of the Environment class. Mainly a wrapper class for the BrowserGym environment.
+searchconfig.py - Contains SearchConfigBrowsergym, which defines how to generate/evaluate nodes in tree search. Also defines how to calculate fast_reward (sa pair hasn't been expanded), and reward (sa pair has been expanded).
+visualize.py - Script to visualize the search tree. For convenience, some MCTSResult pickle objects have been provided in the results/tree-search directory.
+
 ## Setting up browsergym
 
 ```bash
