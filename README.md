@@ -2,9 +2,13 @@
 
 
 <p align="center">
-  [<a href="https://www.llm-reasoners.net/">Home</a>]
-  [<a href="https://arxiv.org/abs/2404.05221">Paper (COLM2024)</a>]
-  [<a href="https://www.llm-reasoners.net/blog">Blog</a>]
+  <a href="https://www.llm-reasoners.net/">Home</a>
+  |
+  <a href="https://arxiv.org/abs/2404.05221">Paper (COLM2024)</a>
+  |
+  <a href="https://www.llm-reasoners.net/blog">Blog</a>
+  |
+  <a href="https://maitrix.org/">@Maitrix.org</a>
 </p>
 
 ---
