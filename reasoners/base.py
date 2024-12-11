@@ -90,11 +90,7 @@ class LanguageModel(ABC):
         """
         ...
 
-
-class WorldModel(ABC, Generic[State, Action, Example]):
-    def __init__(self) -> None:
-        self.example = None
-        self.prompt = None
+class Dynamics(ABC, Generic[State, Action]):
 
     @abstractmethod
     def init_state(self) -> State: ...
@@ -111,6 +107,11 @@ class WorldModel(ABC, Generic[State, Action, Example]):
 
     @abstractmethod
     def is_terminal(self, state: State) -> bool: ...
+
+class WorldModel(Dynamics, Generic[State, Action, Example]):
+    def __init__(self) -> None:
+        self.example = None
+        self.prompt = None
 
     def update_example(self, example: Example, prompt = None) -> None:        
         if prompt is not None:
@@ -135,6 +136,9 @@ class DefaultWorldModel(WorldModel):
         # By default the state is never terminal
         return False
 
+class Environment(Dynamics, Generic[State, Action]):
+    def __init__(self) -> None:
+        self.env = None
 
 class SearchConfig(ABC, Generic[State, Action, Example]):
     def __init__(self) -> None:
@@ -171,17 +175,20 @@ class SearchAlgorithm(ABC):
 
 class Reasoner(ABC, Generic[State, Action, Example]):
     def __init__(self,
-                 world_model: WorldModel[State, Action, Example],
+                 dynamics: Dynamics[State, Action],
                  search_config: SearchConfig[State, Action, Example],
                  search_algo: SearchAlgorithm) -> None:
-        self.world_model = world_model
+        self.dynamics = dynamics
         self.search_config = search_config
         self.search_algo = search_algo
 
-    def __call__(self, example: Example, prompt = None, **kwargs) -> AlgorithmOutput[State]:
-        self.world_model.update_example(example, prompt=prompt)
-        self.search_config.update_example(example, prompt=prompt)
-        return self.search_algo(self.world_model, self.search_config, **kwargs)
+    def __call__(self, example: Optional[Example] = None, prompt = None, **kwargs) -> AlgorithmOutput[State]:
+        if isinstance(self.dynamics, WorldModel):
+            if example is None:
+                raise ValueError("An example must be provided when using WorldModel")
+            self.dynamics.update_example(example, prompt=prompt)
+            self.search_config.update_example(example, prompt=prompt)
+        return self.search_algo(self.dynamics, self.search_config, **kwargs)
 
 class Evaluator():
     @abstractmethod
