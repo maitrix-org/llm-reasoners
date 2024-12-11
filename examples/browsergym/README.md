@@ -93,7 +93,7 @@ to run a webarena task.
 export OPENAI_API_KEY="your_openai_api_key"
 ```
 
-## Running Reasoning-as-Planning (RAP) on a Task
+## Running Search on the BrowserGym Environment
 
 ```bash
 
@@ -109,3 +109,7 @@ Some MCTSResult pickle objects have been provided in the results/tree-search dir
 # python visualize.py <task_name>
 python visualize.py webarena.599
 ```
+
+Visualization for webarena.599:
+
+https://www.llm-reasoners.net/visualizer/fe8f19f5-91b4-4fae-9830-c273f62cafc6?accessKey=647375d5
