@@ -3,7 +3,14 @@
 
 ## Preparation
 
-1. Download the test cases. If you have cloned `llm-reasoners` with the `--recursive` option, there should be a `LLMs-Planning` folder in the root directory already. Otherwise, you could run `git submodule update --init` to get it.
+1. Download the test cases.
+   - **If you cloned `llm-reasoners` from github**: If you have cloned with the `--recursive` option, there should be a `LLMs-Planning` folder in the root directory already. Otherwise, you could run `git submodule update --init` to get it.
+   - **If you installed `llm-reasoners` with pip**: Please clone the `LLM-Planning` repo and add it to the environment variable:
+   ```bash
+   git clone https://github.com/karthikv792/LLMs-Planning.git
+   cd LLMs-Planning && git checkout 34e6841
+   echo "export PLANBENCH_PATH=$(pwd)" >> ~/.bashrc && source ~/.bashrc
+   ```
 
 2. Set up `Val` for evaluation. Ideally you can directly use the executable files from [there](https://github.com/karthikv792/LLMs-Planning/tree/34e6841f81ca7708f2f8b8241504bfe8a908e40b/planner_tools/VAL), and there is no need to build the tool yourself. If that doesn't work you could try install the tools locally following their instruction.
 

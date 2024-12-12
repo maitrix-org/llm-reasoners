@@ -5,9 +5,11 @@ __pycache__/
 *.log
 *.egg-info/
 *.tmp
+*.txt
 .env
 .run/
 logs/
+dist/
 temp/
 scripts/
 gpt-plan-benchmark/

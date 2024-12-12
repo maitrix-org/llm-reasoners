@@ -2,9 +2,13 @@
 
 
 <p align="center">
-  [<a href="https://www.llm-reasoners.net/">Home</a>]
-  [<a href="https://arxiv.org/abs/2404.05221">Paper (COLM2024)</a>]
-  [<a href="https://www.llm-reasoners.net/blog">Blog</a>]
+  <a href="https://www.llm-reasoners.net/">Home</a>
+  |
+  <a href="https://arxiv.org/abs/2404.05221">Paper (COLM2024)</a>
+  |
+  <a href="https://www.llm-reasoners.net/blog">Blog</a>
+  |
+  <a href="https://maitrix.org/">@Maitrix.org</a>
 </p>
 
 ---
@@ -14,6 +18,7 @@
 Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Reasoning Algorithms, Visualization, LLM calling, and more!
 
 ## News
+- Nov. 13, 2024: We integrated [DRPO](https://aclanthology.org/2024.emnlp-main.1220/), a tuning-free alignment method published at EMNLP 2024 ([link](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/DRPO)).
 - Jul. 10, 2024: Our paper on [LLM Reasoners](https://arxiv.org/abs/2404.05221) is accepted to [COLM 2024](https://colmweb.org/index.html)!
 - Jun. 24, 2024: [PromptAgent](https://arxiv.org/abs/2310.16427) is in LLM Reasoners! Let it help you write down a super detailed prompt for your task ([here](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/PromptAgent)).
 - May. 14, 2024: Check out [Eurus](https://arxiv.org/abs/2404.02078), a suit of LLMs optimized for reasoning. With LLM Reasoners, Eurus-RM can easily boost Llama-8B from 0.49 to 0.73 📈 on GSM8k ([code](examples/Eurus)).
@@ -42,8 +47,9 @@ Given any reasoning problem, simply define the reward function and an optional w
   - [Grace Decoding](examples/Grace) ([Khalifa et al., 2023](https://arxiv.org/abs/2305.14934))
   - [Eurus](examples/Eurus) ([Yuan et al., 2024](https://arxiv.org/abs/2404.02078))
   - [PromptAgent](examples/PromptAgent) ([Wang et al., 2023](https://arxiv.org/abs/2310.16427))
+  - [DRPO](examples/DRPO) ([Singla et al., 2024](https://aclanthology.org/2024.emnlp-main.1220/))
 - **Intuitive Visualization and Interpretation**: Our library provides a [visualization tool](https://www.llm-reasoners.net/) to aid users in comprehending the reasoning process. Even for complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand the process with **one line of python code**. See an exmaple in the tutorial [notebook](demo.ipynb).
-
+ 
 - **Compatibility with popular LLM libraries**: Our framework is compatible with popular LLM frameworks, e.g. `Huggingface transformers`, `OpenAI`/`Google`/`Anthropic` API, etc. Specifically, we have integrated LLaMA-1/2/3 with the option of using `fairscale` ([1,2](https://github.com/facebookresearch/llama), [3](https://github.com/meta-llama/llama3)), [LLaMA.cpp](https://github.com/ggerganov/llama.cpp), [Exllama](https://github.com/Ber666/llm-reasoners/tree/main/reasoners/lm#exllama) or `huggingface` for different needs, e.g., fastest inference speed, minimal hardware requirements, etc.
 
 
@@ -263,6 +269,7 @@ visualize(mcts_result, node_data_factory=blocksworld_node_data_factory,
 ```
 Then a URL of the visualized results will pop up. The figure will be interactive and look like the examples shown on our [demo website](https://llm-reasoners.net/).
 ## Installation
+
 Make sure to use Python 3.10 or later.
 
 ```bash
@@ -270,13 +277,21 @@ conda create -n reasoners python=3.10
 conda activate reasoners
 ```
 
-Clone the repository and install the package:
+### Install from `pip`
+
+```bash
+pip install llm-reasoners
+```
+
+### Install from github
+(Recommended if you want to run the examples in the github repo)
+
 ```bash
 git clone https://github.com/Ber666/llm-reasoners --recursive
 cd llm-reasoners
 pip install -e .
 ```
-Adding `--recursive` will help you clone exllama automatically. Note that some other optional modules may need other dependencies. Please refer to the error message for details.
+Adding `--recursive` will help you clone exllama and LLM-Planning automatically. Note that some other optional modules may require other dependencies. Please refer to the error message for details.
 
 ## Citation
 This project is an extension of the following paper:
