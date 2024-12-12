@@ -9,11 +9,11 @@ from gym_env import StateGym
 import pickle
 
 
-def blocksworld_node_data_factory(n: MCTSNode) -> NodeData:
+def browsergym_node_data_factory(n: MCTSNode) -> NodeData:
     return NodeData({"expanded": "expanded"} if n.state is not None else {"expanded": "not expanded"})
 
 
-def blocksworld_edge_data_factory(n: MCTSNode) -> EdgeData:
+def browsergym_edge_data_factory(n: MCTSNode) -> EdgeData:
     function_calls = highlevel_action_parser.search_string(
         n.action
     )
@@ -36,8 +36,8 @@ def load_and_visualize(task_name: str):
         open(f"./results/tree-search/{task_name}/result.pkl", "rb"))
 
     visualize(result,
-              node_data_factory=blocksworld_node_data_factory,
-              edge_data_factory=blocksworld_edge_data_factory)
+              node_data_factory=browsergym_node_data_factory,
+              edge_data_factory=browsergym_edge_data_factory)
 
 
 if __name__ == "__main__":
