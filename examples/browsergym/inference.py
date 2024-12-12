@@ -51,6 +51,8 @@ def run_task(task_name: str, task_seed: int = 42):
     with open(f"./results/tree-search/{task_name}/result.pkl", "wb") as f:
         pickle.dump(result_rap, f)
 
+    env.close()
+
     return result_rap.terminal_state and result_rap.terminal_state.reward == 1.0
 
 
