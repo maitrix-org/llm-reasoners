@@ -1,6 +1,6 @@
-examples/AgentModel/default_api_key.txt
-examples/AgentModel/*.sh
-examples/AgentModel/task_data
+examples/WebAgent/default_api_key.txt
+examples/WebAgent/*.sh
+examples/WebAgent/browsing_data
 .idea/
 notebooks/
 __pycache__/
