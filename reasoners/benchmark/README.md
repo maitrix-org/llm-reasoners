@@ -26,15 +26,3 @@ There are two settings to run Blocksworld: Hard (v1) and Easy (v2).
 - In the Hard setting, we randomly select 10 cases from the full dataset to form a demonstration pool and subsequently exclude these cases from the test set (590 cases in total). During inference, we randomly sample 4-shot demonstration cases from this global pool, irrespective of the minimum number of actions required for the test case.
 
 In the paper [Reasoning-via-Planning](https://arxiv.org/pdf/2305.14992), we report results of both settings in Table 4. In the paper [LLM Reasoners](https://arxiv.org/abs/2404.05221), we report the results on the hard setting (v1) in Table 3 and Figure 6.
-
-## Run
-
-We provide the scripts to reproduce the results of RAP with llama3 and llama2. To use other model providers in `reasoners/lm`, simply change the line to load the model in `rap_inference.py`, and change the command lines correspondingly.
-
-```bash
-./examples/RAP/blocksworld/test_rap_llama2.sh
-```
-
-After the run, you can use `aggregate.py` to calculate an overall accuracy of all subsets.
-
-If you want to modify the experiment settings or develop your own method, you may look at `rap_inference.py`.

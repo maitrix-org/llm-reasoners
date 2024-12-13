@@ -35,15 +35,20 @@ class ExLlamaModel(LanguageModel):
         try:
             import reasoners
             sys.path.append(os.path.join(os.path.dirname(reasoners.__file__), os.path.pardir, 'exllama'))
+            # or if we have specify the path to exllama in the environment variable
+            if 'EXLLAMA_PATH' in os.environ:
+                sys.path.append(os.path.join(os.environ['EXLLAMA_PATH'], os.path.pardir))
+                sys.path.append(os.environ['EXLLAMA_PATH'])
             from exllama.generator import ExLlamaGenerator
             from exllama.model import ExLlama, ExLlamaCache, ExLlamaConfig
             from exllama.tokenizer import ExLlamaTokenizer
             from exllama.lora import ExLlamaLora
         except ImportError as e:
-            print(
-                '\033[31mError\033[0m: Cannot find exllama submodule. If you clone our repo without "--recursive", running "\033[1mgit submodule update --init\033[0m" under the repo can solve this problem.',
-                file=sys.stderr)
-            raise e
+            README_PATH = os.path.join(os.path.dirname(reasoners.__file__), 'lm', 'README.md')
+            raise ImportError(
+                f'Cannot find exllama submodule. If you installed reasoners from github repo without "--recursive", '
+                'running "\033[1mgit submodule update --init\033[0m" under the repo can solve this problem. '
+                'Or if you pip installed reasoners, please follow the instructions in the "{README_PATH}" to install exllama.')
 
         if not os.path.isdir(model_dir):
             model_dir = snapshot_download(model_dir)

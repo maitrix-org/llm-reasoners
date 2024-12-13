@@ -180,9 +180,22 @@ def load_blocksworld(config_file, domain_file, data_file=None, data_list=None, r
     data = []
     for cur_instance in data_list:
         cur_data = {}
+        # if cur_instance[0] is not a valid path, add a prefix to the path
+        
+        if not os.path.exists(cur_instance[0]):
+            if os.getenv("PLANBENCH_PATH") is not None:
+                # find the environment variable PLANBENCH_PATH
+                planbench_path = os.getenv("PLANBENCH_PATH")
+                cur_instance[0] = os.path.join(planbench_path, os.path.pardir, cur_instance[0])
+            else:
+                raise Exception(f"Instance file {cur_instance[0]} not found."
+                                f"If you cloned reasoners from github, please use `git submodule update --init`"
+                                f"Or if you pip installed reasoners, please follow the instruction in "
+                                f"{os.path.join(__file__, os.pardir, 'README.md')} to set PLANBENCH_PATH in the environment.")
+
         problem = get_problem(cur_instance[0], domain_pddl)
         gt_plan_code = cur_instance[1]
-        # compute_plan(domain_pddl, cur_instance[0], "sas_plan")
+        
         INIT, GOAL, PLAN = instance_to_text_blocksworld(problem, True, config_data, plan_code=gt_plan_code)
         cur_data["init"] = INIT
         cur_data["goal"] = GOAL

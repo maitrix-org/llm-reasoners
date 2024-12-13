@@ -11,7 +11,6 @@ import numpy as np
 import torch
 import torch.distributed
 from fairscale.nn.model_parallel.initialize import initialize_model_parallel
-from llama1 import ModelArgs, Transformer, Tokenizer
 
 from reasoners import LanguageModel, GenerateOutput
 
@@ -31,6 +30,14 @@ class LlamaModel(LanguageModel):
     def __init__(self, path, size, max_batch_size=1, max_seq_len=2048,
                  local_rank=-1, world_size=-1):
         super().__init__()
+        
+        try:
+            from llama1 import ModelArgs, Transformer, Tokenizer
+        except ImportError:
+            raise ImportError("Please install the llama1 package from"
+                            "pip install llama1@git+https://github.com/AegeanYan/llama@llama_v1")
+
+        
         if local_rank == -1 or world_size == -1:
             local_rank, world_size = setup_model_parallel()
         self.tokenizer, self.model = self.load(os.path.join(path, size), os.path.join(path, "tokenizer.model"),
@@ -41,7 +48,7 @@ class LlamaModel(LanguageModel):
 
     @staticmethod
     def load(ckpt_dir: str, tokenizer_path: str, local_rank: int, world_size: int, max_batch_size: int,
-             max_seq_len: int) -> Tuple[Tokenizer, Transformer]:
+             max_seq_len: int):
         start_time = time.time()
         checkpoints = sorted(Path(ckpt_dir).glob("*.pth"))
         assert (
