@@ -30,16 +30,11 @@ class WorldModelWrapper(ReasonersWorldModel):
         memory_update = {
             'state': state['state'],
             self.action_name: action['action'],
+            'plan': action['action'],
         }
         next_memory.update(**memory_update)
 
-        # llm_output = self.world_model(state['state'], next_memory, action['action'])
-        kwargs = {k: v for k, v in next_memory.current_step.items() \
-                  if k not in ['state', 'plan', self.action_name]}
-        llm_output = self.world_model(memory=next_memory, 
-                                      state=state['state'], 
-                                      plan=action['action'],
-                                      **kwargs)
+        llm_output = self.world_model(memory=next_memory, **next_memory.current_step)
         next_memory.step()
 
         next_state = {

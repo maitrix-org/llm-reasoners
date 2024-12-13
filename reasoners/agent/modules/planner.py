@@ -36,7 +36,7 @@ class ReasonerPlanner(Planner):
         self.critic = critic
         self.policy_output_name = policy_output_name
 
-        self.reasoner_world_model = WorldModelWrapper(world_model)
+        self.reasoner_world_model = WorldModelWrapper(world_model, action_name=self.policy_output_name)
         self.reasoner_search_config = SearchConfigWrapper(policy, critic, 
                                                           policy_freq_top_k=search_num_actions,
                                                           policy_output_name=policy_output_name,
