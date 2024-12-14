@@ -48,6 +48,10 @@ def check_validity_of_action_proposal(action_proposal: str):
 
     function_calls = highlevel_action_parser.search_string(action_proposal)
     function_calls = sum(function_calls.as_list(), [])
+
+    if len(function_calls) == 0:
+        return False
+
     for function_name, function_args in function_calls:
         if function_name not in valid_action_types:
             return False

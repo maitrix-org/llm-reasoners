@@ -1,3 +1,8 @@
+"""
+Referencing prompt building from. 
+https://github.com/ServiceNow/BrowserGym/blob/main/demo_agent/agent.py
+"""
+
 import logging
 import os
 import re
