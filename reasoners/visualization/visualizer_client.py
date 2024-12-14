@@ -7,8 +7,8 @@ import requests
 from reasoners.algorithm import MCTSResult, BeamSearchResult, DFSResult
 from reasoners.visualization import TreeLog, TreeLogEncoder
 
-_API_DEFAULT_BASE_URL = "https://2wz3t0av30.execute-api.us-west-1.amazonaws.com/staging"
-_VISUALIZER_DEFAULT_BASE_URL = "https://www.llm-reasoners.net"
+_API_DEFAULT_BASE_URL = "https://4lgdwukvng.execute-api.us-east-1.amazonaws.com/main"
+_VISUALIZER_DEFAULT_BASE_URL = "https://main.d1puk3wdon4rk8.amplifyapp.com"
 
 
 class VisualizerClient:
@@ -31,11 +31,13 @@ class VisualizerClient:
             data = json.dumps(data)
 
         url = f"{self.base_url}/logs"
-        headers = {'Content-Type': 'application/json'}
+        headers = {"Content-Type": "application/json"}
         response = requests.post(url, headers=headers, data=data)
 
         if response.status_code != 200:
-            print(f"POST Log failed with status code: {response.status_code}, message: {response.text}")
+            print(
+                f"POST Log failed with status code: {response.status_code}, message: {response.text}"
+            )
             return None
 
         return self.TreeLogReceipt(**response.json())
@@ -43,11 +45,14 @@ class VisualizerClient:
 
 def present_visualizer(receipt: VisualizerClient.TreeLogReceipt):
     import webbrowser
+
     print(f"Visualizer URL: {receipt.access_url}")
     webbrowser.open(receipt.access_url)
 
 
-def visualize(result: Union[TreeLog, MCTSResult, BeamSearchResult, DFSResult], **kwargs):
+def visualize(
+    result: Union[TreeLog, MCTSResult, BeamSearchResult, DFSResult], **kwargs
+):
     tree_log: TreeLog
 
     if isinstance(result, TreeLog):
