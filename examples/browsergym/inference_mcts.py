@@ -9,50 +9,18 @@ from reasoners.lm import OpenAIModel
 from browsergym.core.action.highlevel import HighLevelActionSet
 from browsergym.experiments import EnvArgs
 
-from examples.browsergym.gym_env import EnvironmentGym
-from examples.browsergym.search_config import SearchConfigBrowsergym
-from examples.browsergym.utils.misc import obs_preprocessor
+from gym_env import EnvironmentGym
+from search_config import SearchConfigBrowsergym
+from utils.misc import obs_preprocessor
+from utils.parse import parse_common_arguments
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Run a task with specified parameters."
     )
-    # Task parameters
-    parser.add_argument(
-        "--task_name",
-        type=str,
-        required=True,
-        help="Name of the task to run. e.g., webarena.<task_id>. Note you have to host the task website somewhere.",
-    )
-    parser.add_argument("--task_seed", type=int, default=42, help="Seed for the task.")
-    # Path parameters
-    parser.add_argument(
-        "--exp_dir",
-        type=str,
-        default="results/tree-search",
-        help="Directory to save the results.",
-    )
-    # Model parameters
-    parser.add_argument(
-        "--model",
-        type=str,
-        default="gpt-4o-mini",
-        help="OpenAI model to use in the demo, while you can adapt to any other model from `reasoners.lm`.",
-    )
-    parser.add_argument(
-        "--temperature", type=float, default=0.7, help="Temperature for the model."
-    )
-    parser.add_argument(
-        "--max_tokens", type=int, default=2048, help="Maximum tokens for the model."
-    )
-    parser.add_argument(
-        "--backend",
-        type=str,
-        default="openai",
-        choices=["openai", "sglang"],
-        help="Backend for the model. Currently support `openai` and `sglang`.",
-    )
+    parse_common_arguments(parser)
+
     # MCTS parameters
     parser.add_argument(
         "--n_iters", type=int, default=2, help="Number of iterations for MCTS."
@@ -65,40 +33,6 @@ def parse_arguments():
         type=float,
         default=10**0.5,
         help="Exploration weight of the UCT score for MCTS.",
-    )
-    # Environment parameters
-    parser.add_argument(
-        "--max_steps",
-        type=int,
-        default=15,
-        help="Maximum steps allowed for the environment.",
-    )
-    parser.add_argument(
-        "--action_set", type=str, default="webarena", help="Action set to use."
-    )
-    parser.add_argument(
-        "--use_axtree",
-        type=bool,
-        default=True,
-        help="Use a11y tree for the observation to LLM.",
-    )
-    parser.add_argument(
-        "--use_html",
-        type=bool,
-        default=False,
-        help="Use HTML for the observation to LLM.",
-    )
-    parser.add_argument(
-        "--use_screenshot",
-        type=bool,
-        default=False,
-        help="Use screenshot for the observation to LLM. Make sure the model can process images if set to `True`.",
-    )
-    parser.add_argument(
-        "--record_video",
-        type=bool,
-        default=False,
-        help="Record the video of the browser.",
     )
 
     return parser.parse_args()
@@ -152,6 +86,7 @@ def run_task(args):
         disable_tqdm=False,
         output_trace_in_each_iter=True,
     )
+
     reasoner = Reasoner(world_model, search_config, algorithm)
 
     plan_result = reasoner()

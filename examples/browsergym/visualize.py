@@ -3,9 +3,12 @@ import pickle
 import numpy as np
 from reasoners.visualization import visualize
 from reasoners.visualization.tree_snapshot import NodeData, EdgeData
+from typing import Union
 from reasoners.algorithm.mcts import MCTSNode
+from reasoners.algorithm.beam_search import BeamSearchNode
+from reasoners.algorithm.dfs import DFSNode
 from browsergym.core.action.parsers import highlevel_action_parser
-from examples.browsergym.gym_env import StateGym
+from gym_env import StateGym
 
 
 from PIL import Image
@@ -125,7 +128,7 @@ def browsergym_node_data_factory(x: MCTSNode, verbose: bool = False):
         }
 
 
-def browsergym_edge_data_factory(n: MCTSNode, verbose: bool = False) -> EdgeData:
+def browsergym_edge_data_factory(n: Union[MCTSNode, BeamSearchNode, DFSNode], verbose: bool = False) -> EdgeData:
     function_calls = highlevel_action_parser.search_string(n.action)
     function_calls = sum(function_calls.as_list(), [])
 
@@ -138,13 +141,21 @@ def browsergym_edge_data_factory(n: MCTSNode, verbose: bool = False) -> EdgeData
             + ")\n"
         )
 
-    return EdgeData(
-        {
-            "Q": n.Q,
-            "self_eval": n.fast_reward_details["self_eval"],
-            "action": python_code,
-        }
-    )
+    if isinstance(n, MCTSNode):
+        return EdgeData(
+            {
+                "Q": n.Q,
+                "self_eval": n.fast_reward_details["self_eval"],
+                "action": python_code,
+            }
+        )
+    else:
+        return EdgeData(
+            {
+                "reward": n.reward,
+                "action": python_code,
+            }
+        )
 
 
 def load_and_visualize(args):

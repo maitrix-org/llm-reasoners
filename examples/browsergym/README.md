@@ -98,10 +98,10 @@ python -c "import nltk; nltk.download('punkt_tab')"
 
 ## Run Tree Search
 
-Run tree search on a web agent task.
+Run tree search (MCTS) on a web agent task.
 ```bash
 
-python inference.py \
+python inference_mcts.py \
     --task_name <task_name, e.g. webarena.599> \
     --action_set <action_set, the action set to use, e.g. webarena> \
     --exp_dir <exp_dir, default results/tree-search> \
@@ -109,7 +109,7 @@ python inference.py \
     --n_iters <n_iters, default 10> \
     --depth_limit <depth_limit, default 10> \
 ```
-Check more options in `inference.py`.
+Check more options in `inference_mcts.py`.
 
 The search takes a few minutes to complete mainly consisting of the three following time consumptions:
 1. LLM call as the policy and reward function
@@ -117,6 +117,32 @@ The search takes a few minutes to complete mainly consisting of the three follow
 3. Tree search expansion
 
 For example, the default params above will take about 10 minutes to complete.
+
+For DFS and Beam Search, you can run the respective files:
+
+```bash
+# DFS 
+python inference_dfs.py \
+    --task_name <task_name> \
+    --action_set <action_set> \
+    --exp_dir <exp_dir> \
+    --model <model> \
+    --total_states <total_states> \
+    --max_per_state <max_per_state> \
+    --depth <depth> \
+
+# Beam Search
+python inference_beam.py \
+    --task_name <task_name> \
+    --action_set <action_set> \
+    --exp_dir <exp_dir> \
+    --model <model> \
+    --beam_size <beam_size> \
+    --max_depth <max_depth> \
+
+```
+
+
 
 ## Visualize Search Tree
 
