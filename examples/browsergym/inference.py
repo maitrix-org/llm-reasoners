@@ -10,7 +10,7 @@ from browsergym.core.action.highlevel import HighLevelActionSet
 from browsergym.experiments import EnvArgs
 
 from examples.browsergym.gym_env import EnvironmentGym
-from examples.browsergym.searchconfig import SearchConfigBrowsergym
+from examples.browsergym.search_config import SearchConfigBrowsergym
 from examples.browsergym.utils.misc import obs_preprocessor
 
 

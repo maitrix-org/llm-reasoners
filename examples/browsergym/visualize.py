@@ -8,6 +8,51 @@ from browsergym.core.action.parsers import highlevel_action_parser
 from examples.browsergym.gym_env import StateGym
 
 
+from PIL import Image
+import io
+import base64
+
+from PIL import Image, UnidentifiedImageError
+import io
+import base64
+
+
+def compress_base64_image(base64_str, output_format="JPEG", quality=50):
+    try:
+        # Determine the prefix
+        prefix = ""
+        if base64_str.startswith("data:image"):
+            prefix, base64_str = base64_str.split(",", 1)
+
+        # Decode the base64 string to bytes
+        image_data = base64.b64decode(base64_str)
+
+        # Open the image using PIL
+        image = Image.open(io.BytesIO(image_data))
+
+        # Create a BytesIO object to hold the compressed image
+        compressed_image_io = io.BytesIO()
+
+        # Save the image to the BytesIO object with the desired compression
+        image.save(compressed_image_io, format=output_format, quality=quality)
+
+        # Get the compressed image bytes
+        compressed_image_bytes = compressed_image_io.getvalue()
+
+        # Encode the compressed image bytes back to a base64 string
+        compressed_base64_str = base64.b64encode(compressed_image_bytes).decode("utf-8")
+
+        # Add the prefix back if it was present
+        if prefix:
+            compressed_base64_str = f"{prefix},{compressed_base64_str}"
+
+        return compressed_base64_str
+
+    except (base64.binascii.Error, UnidentifiedImageError) as e:
+        print(f"Error processing image: {e}")
+        return None
+
+
 def process_obs_for_viz(obs: dict[str, any], verbose: bool = False):
     """Process the observation for visualization"""
     processed_obs = {}
@@ -28,15 +73,16 @@ def process_obs_for_viz(obs: dict[str, any], verbose: bool = False):
     # Extract clean action history from the whole action history string
     if "action_history" in obs:
         processed_obs["clean_action_history"] = list(
-            map(simple_parse_action_from_proposal_string, obs["action_history"])
+            map(simple_parse_action_from_string, obs["action_history"])
         )
     # Extract clean action from the last action string
     if "last_action" in obs:
-        processed_obs["clean_last_action"] = simple_parse_action_from_proposal_string(
+        processed_obs["clean_last_action"] = simple_parse_action_from_string(
             obs["last_action"]
         )
 
-    # FIXME: hardcode to stringfy screenshot as it's too large for server upload; remove this line if the server supports large file upload
+    # FIXME: the screenshot is too large to be uploaded to the visualizer server; uncomment this when the issue is fixed
+    # processed_obs["screenshot"] = compress_base64_image(processed_obs["screenshot"])
     processed_obs["screenshot"] = str(processed_obs["screenshot"])[:50]
 
     if not verbose:
@@ -48,12 +94,12 @@ def process_obs_for_viz(obs: dict[str, any], verbose: bool = False):
     return processed_obs
 
 
-def simple_parse_action_from_proposal_string(proposal: str):
+def simple_parse_action_from_string(proposal: str):
     """Extract the action from the proposal string wrapped in triple backticks"""
     import re
 
     match = re.search(r"```(.+?)```", proposal)
-    return match.group(1) if match else proposal
+    return match.group(1).strip() if match else proposal
 
 
 def browsergym_node_data_factory(x: MCTSNode, verbose: bool = False):
@@ -102,7 +148,7 @@ def browsergym_edge_data_factory(n: MCTSNode, verbose: bool = False) -> EdgeData
 
 
 def load_and_visualize(args):
-    result = pickle.load(open(f"{args.input_dir}/{args.task_name}/result.pkl", "rb"))
+    result = pickle.load(open(f"{args.exp_dir}/{args.task_name}/result.pkl", "rb"))
 
     visualize(
         result,
@@ -122,7 +168,7 @@ if __name__ == "__main__":
         help="The name of the task to visualize.",
     )
     parser.add_argument(
-        "--input_dir",
+        "--exp_dir",
         type=str,
         default="results/tree-search",
         help="The directory to save the visualization results.",
