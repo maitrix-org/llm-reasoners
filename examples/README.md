@@ -2,7 +2,7 @@
 LLM Reasoners now provides the example code for the following methods:
   - [Reasoning-via-Planning, MCTS](RAP) ([Hao et al., 2023](https://arxiv.org/abs/2305.14992))
   - [StructChem](StructChem) ([Ouyang et al., 2023](https://arxiv.org/abs/2311.09656))
-  - [Chain-of-thoughts](CoT) ([Wei et al., 202](https://arxiv.org/abs/2201.11903))
+  - [Chain-of-thoughts](CoT) ([Wei et al., 2022](https://arxiv.org/abs/2201.11903))
   - [Least-to-most prompting](Least-to-most) ([Zhou et al., 2022](https://arxiv.org/abs/2205.10625))
   - [Tree-of-Thoughts, BFS](ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
   - [Tree-of-Thoughts, DFS](ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
