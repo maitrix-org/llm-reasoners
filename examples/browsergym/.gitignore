@@ -1,0 +1,7 @@
+Browsergym
+**/chat_video/
+**/task_video/
+
+__pycache__/
+**/results/
+**/logs/
