@@ -175,10 +175,10 @@ class SearchAlgorithm(ABC):
 
 class Reasoner(ABC, Generic[State, Action, Example]):
     def __init__(self,
-                 dynamics: Dynamics[State, Action],
+                 world_model: Dynamics[State, Action],
                  search_config: SearchConfig[State, Action, Example],
                  search_algo: SearchAlgorithm) -> None:
-        self.dynamics = dynamics
+        self.dynamics = world_model
         self.search_config = search_config
         self.search_algo = search_algo
 
