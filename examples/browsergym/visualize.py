@@ -84,10 +84,6 @@ def process_obs_for_viz(obs: dict[str, any], verbose: bool = False):
             obs["last_action"]
         )
 
-    # FIXME: the screenshot is too large to be uploaded to the visualizer server; uncomment this when the issue is fixed
-    # processed_obs["screenshot"] = compress_base64_image(processed_obs["screenshot"])
-    processed_obs["screenshot"] = str(processed_obs["screenshot"])[:50]
-
     if not verbose:
         return {
             "screenshot": processed_obs["screenshot"],
@@ -128,7 +124,9 @@ def browsergym_node_data_factory(x: MCTSNode, verbose: bool = False):
         }
 
 
-def browsergym_edge_data_factory(n: Union[MCTSNode, BeamSearchNode, DFSNode], verbose: bool = False) -> EdgeData:
+def browsergym_edge_data_factory(
+    n: Union[MCTSNode, BeamSearchNode, DFSNode], verbose: bool = False
+) -> EdgeData:
     function_calls = highlevel_action_parser.search_string(n.action)
     function_calls = sum(function_calls.as_list(), [])
 

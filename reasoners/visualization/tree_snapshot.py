@@ -14,6 +14,7 @@ class TreeSnapshot:
         id: NodeId
         data: NodeData
         selected_edge: Optional[EdgeId] = None
+        convert_images: bool = True
 
     @dataclass
     class Edge:
@@ -21,6 +22,7 @@ class TreeSnapshot:
         source: NodeId
         target: NodeId
         data: EdgeData
+        convert_images: bool = True
 
     def __init__(self, nodes: Collection[Node], edges: Collection[Edge]) -> None:
         self.nodes: dict[NodeId, TreeSnapshot.Node] = {node.id: node for node in nodes}
@@ -51,10 +53,18 @@ class TreeSnapshot:
         return self.edges[edge_id]
 
     def out_edges(self, node_id: NodeId) -> Collection[Edge]:
-        return [self.edge(edge_id) for edge_id in self.edges if self.edge(edge_id).source == node_id]
+        return [
+            self.edge(edge_id)
+            for edge_id in self.edges
+            if self.edge(edge_id).source == node_id
+        ]
 
     def in_edges(self, node_id: NodeId) -> Collection[Edge]:
-        return [self.edge(edge_id) for edge_id in self.edges if self.edge(edge_id).target == node_id]
+        return [
+            self.edge(edge_id)
+            for edge_id in self.edges
+            if self.edge(edge_id).target == node_id
+        ]
 
     def parent(self, node_id: NodeId) -> NodeId:
         return self._parent[node_id]
