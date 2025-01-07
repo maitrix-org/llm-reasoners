@@ -44,7 +44,7 @@ class WorldModelWrapper(ReasonersWorldModel):
             'action_history': state['action_history'] + [action['action']],
         }
 
-        # next_state['memory'].update(state=state['state'], intent=action['action'])
+        # next_state['memory'].update(state=state['state'], plan=action['action'])
         # next_state['memory'].step()
         
         if self.logger:
@@ -332,16 +332,16 @@ goto(url: str)
 Only a single action can be provided at once. Example:
     fill('a12', 'example with "quotes"')
 
-Below, you will find lists of intents, or natural language descriptions of actions that, when executed, will translate to one of the function calls above. \
-The intents will be provided in the following JSON format:
+Below, you will find lists of plans, or natural language descriptions of actions that, when executed, will translate to one of the function calls above. \
+The plans will be provided in the following JSON format:
 
 ```json
 {
-  "intent_id": "intent description"
+  "plan_id": "plan description"
 }
 ```
 
-Your task is to cluster list of intents into semantically equivalent groups, where each group represents intents that lead to the same action when executed \
+Your task is to cluster list of plans into semantically equivalent groups, where each group represents plans that lead to the same action when executed \
 (i.e., navigating to the Google homepage is translated to goto('https://www.google.com')) and would therefore correspond to the same API call \
 in a Playwright browser. Intents that use different wording but convey the same action should be grouped together. Try to minimize the number of clusters.
 
@@ -351,9 +351,9 @@ See below for an abstract example:
 ```json
 {
   "cluster_id": {
-    "intent": "representative intent name for this cluster",
+    "plan": "representative plan name for this cluster",
     "candidates": [
-      "<list of intent ids that belong to this cluster>
+      "<list of plan ids that belong to this cluster>
     ]
   }
 }
@@ -383,7 +383,7 @@ Clustering Results:
 ```json
 {
   "cluster_1": {
-    "intent": "Navigate to the Google homepage",
+    "plan": "Navigate to the Google homepage",
     "candidates": [0, 1, 2, 3, 4]
   }
 }

@@ -74,10 +74,11 @@ class OpenDevinParserLLM(LLM):
         ans_dict['prompt'] = user_prompt
 
         # DEBUG
-        # if LOG_FOLDER and os.path.isdir(LOG_FOLDER):
-        #     with open(f'{LOG_FOLDER}/{str(int(time.time()))}.log', 'w') as f:
-        #         for m in messages:
-        #             f.write(f"{m['role']}\n\n{m['content']}\n\n\n")
+        LOG_FOLDER = os.environ.get('DEBUG_LOG_FOLDER', None)
+        if LOG_FOLDER and os.path.isdir(LOG_FOLDER):
+            with open(f'{LOG_FOLDER}/{str(int(time.time()))}.log', 'w') as f:
+                for m in messages:
+                    f.write(f"{m['role']}\n\n{m['content']}\n\n\n")
 
         return ans_dict
 
