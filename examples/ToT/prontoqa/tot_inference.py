@@ -1,4 +1,3 @@
-from reasoners.lm import ExLlamaModel
 import json
 import fire
 from typing import Sequence, Any
@@ -169,7 +168,7 @@ def main(
     elif base_lm == 'llama3':
         from reasoners.lm import Llama3Model
         base_model = Llama3Model(model_dir, llama_size, max_batch_size=batch_size)
-    else:
+    elif base_lm == 'exllama':
         from reasoners.lm import ExLlamaModel  # Maybe other transformer models also support
         base_model = ExLlamaModel(model_dir, 
                                 lora_dir=None, 
@@ -178,7 +177,11 @@ def main(
                                 max_new_tokens=200, 
                                 max_seq_length=2048, 
                                 mem_map=mem_map)
-
+    elif base_lm == "hf":
+        from reasoners.lm import HFModel
+        base_model = HFModel(model_dir, model_dir)
+    else:
+        raise ValueError(f"base_lm {base_lm} is not supported")
     world_model = ProntoQAToTWorldModel()
     search_config = ProntoQAToTSearchConfig(base_model=base_model, temperature=temperature)
     
