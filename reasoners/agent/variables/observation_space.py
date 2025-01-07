@@ -90,29 +90,32 @@ class BrowserGymObservationSpace(ObservationSpace):
             # cur_axtree_txt = 'Error when trying to process the accessibility tree. No observation is available.'
             return None, {'return_action': "send_msg_to_user('Error encountered when browsing.')"}
         
-        clean_axtree_lines = []
-        num_static_text_lines = 0
-        max_static_text_lines = 20
-        last_bracket_line = 0
-        max_after_last_bracket_lines = 10
-        for i, line in enumerate(cur_axtree_txt.split('\n')):
-            if line.strip().startswith('['):
-                last_bracket_line = i
+        if self.truncation:
+            clean_axtree_lines = []
+            num_static_text_lines = 0
+            max_static_text_lines = 20
+            last_bracket_line = 0
+            max_after_last_bracket_lines = 10
+            for i, line in enumerate(cur_axtree_txt.split('\n')):
+                if line.strip().startswith('['):
+                    last_bracket_line = i
 
-        for i, line in enumerate(cur_axtree_txt.split('\n')):
-            if line.strip().startswith('StaticText') or line.strip().startswith(
-                'ListMarker'
-            ):
-                num_static_text_lines += 1
-            else:
-                num_static_text_lines = 0
+            for i, line in enumerate(cur_axtree_txt.split('\n')):
+                if line.strip().startswith('StaticText') or line.strip().startswith(
+                    'ListMarker'
+                ):
+                    num_static_text_lines += 1
+                else:
+                    num_static_text_lines = 0
 
-            if num_static_text_lines <= max_static_text_lines and i < (
-                last_bracket_line + max_after_last_bracket_lines
-            ):
-                clean_axtree_lines.append(line)
+                if num_static_text_lines <= max_static_text_lines and i < (
+                    last_bracket_line + max_after_last_bracket_lines
+                ):
+                    clean_axtree_lines.append(line)
 
-        clean_axtree_txt = '\n'.join(clean_axtree_lines)
+            clean_axtree_txt = '\n'.join(clean_axtree_lines)
+        else:
+            clean_axtree_txt = cur_axtree_txt
 
         scroll_progress = (
             1 - scroll_position['remainingPixels'] / scroll_position['documentHeight']
@@ -125,28 +128,6 @@ class BrowserGymObservationSpace(ObservationSpace):
             f"Remaining Pixels: {scroll_position['remainingPixels']}, "
             f"Scrolling Progress: {scroll_progress:.1%}\n"
         ) + clean_axtree_txt
-        
-        if self.truncation:
-            clean_axtree_lines = []
-            num_static_text_lines = 0
-            max_static_text_lines = 20
-            last_bracket_line = 0
-            max_after_last_bracket_lines = 10
-            for i, line in enumerate(cur_axtree_txt.split('\n')):
-                if line.strip().startswith('['):
-                    last_bracket_line = i
-            for i, line in enumerate(cur_axtree_txt.split('\n')):
-                if line.strip().startswith('StaticText') or line.strip().startswith(
-                    'ListMarker'
-                ):
-                    num_static_text_lines += 1
-                else:
-                    num_static_text_lines = 0
-                if num_static_text_lines <= max_static_text_lines and i < (
-                    last_bracket_line + max_after_last_bracket_lines
-                ):
-                    clean_axtree_lines.append(line)
-            clean_axtree_txt = '\n'.join(clean_axtree_lines)
 
         obs_prompt = clean_axtree_txt
         if len(error_prefix) > 0:
