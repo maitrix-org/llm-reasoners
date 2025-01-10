@@ -153,9 +153,7 @@ def main(
             print("Error in output extraction,", e)
             return ""
 
-    if base_lm in ['llama2', 'llama3']:    
-        import torch
-        import torch.backends.cudnn
+    if base_lm in ['llama2', 'llama3']:
         np.random.seed(0)
         random.seed(0)
         torch.manual_seed(0)
