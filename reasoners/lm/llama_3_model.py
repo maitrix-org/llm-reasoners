@@ -112,8 +112,8 @@ class Llama3Model(LanguageModel):
         
         print(path, size, max_batch_size, max_seq_len)
         self.model, self.tokenizer = self.build(
-            os.path.join(path, f"Meta-Llama-3.1-{size}"),
-            os.path.join(path, f"Meta-Llama-3.1-{size}", "tokenizer.model"),
+            os.path.join(path, f"Meta-Llama-3-{size.upper()}"),
+            os.path.join(path, f"Meta-Llama-3-{size.upper()}", "tokenizer.model"),
             max_seq_len=max_seq_len,
             max_batch_size=max_batch_size,
             **kwargs)
