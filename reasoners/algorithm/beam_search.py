@@ -223,7 +223,7 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
 
                     actions = config.get_actions(
                         state
-                    )  # TODO: Moved up; check if actually a bug
+                    )
                     if self.action_dedup:
                         actions = [a for a in actions if a not in cache_for_dedup]
                         cache_for_dedup.update(actions)
