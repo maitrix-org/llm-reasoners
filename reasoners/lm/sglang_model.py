@@ -6,9 +6,6 @@ import time
 import requests
 from reasoners.base import LanguageModel, GenerateOutput
 from openai import OpenAI
-import sglang as sgl
-from sglang.api import set_default_backend
-from sglang import RuntimeEndpoint, function, gen
 
 PROMPT_TEMPLATE_ANSWER = 'Your response need to be ended with "So the answer is"\n\n'
 PROMPT_TEMPLATE_CONTINUE = "Please continue to answer the last question, following the format of previous examples. Don't say any other words.\n\n"
@@ -22,6 +19,10 @@ class SGLangModel(LanguageModel):
         additional_prompt=None,
         is_instruct_model: bool = False,
     ):
+        try:
+            import sglang as sgl
+        except ImportError:
+            raise ImportError("Please install sglang package to use SGLangModel")
         self.model = model
         self.max_tokens = max_tokens
         self.temperature = temperature
@@ -42,16 +43,26 @@ class SGLangModel(LanguageModel):
         num_return_sequences: int = 1,
         rate_limit_per_min: Optional[int] = 20,
         stop: Optional[str] = None,
+        eos_token_id: Optional[int] = None,
         logprobs: Optional[int] = None,
         temperature=None,
         additional_prompt=None,
-        retry=64,
+        retry=1,
+        hide_input=True,
         **kwargs,
     ) -> GenerateOutput:
-
+        if not hide_input:
+            raise ValueError("hide_input must be True for SGLangModel")
         max_tokens = self.max_tokens if max_tokens is None else max_tokens
         temperature = self.temperature if temperature is None else temperature
         logprobs = 0 if logprobs is None else logprobs
+        
+        if eos_token_id is not None:
+            # the eos_token_id is for the compatibility with the other models
+            assert stop is None and isinstance(eos_token_id, list) and all(isinstance(e, str) for e in eos_token_id), \
+                "eos_token_id should be a list of strings for SGLangModel"
+            stop = eos_token_id
+
         if isinstance(prompt, list):
             assert len(prompt) == 1 
             prompt = prompt[0]
@@ -69,7 +80,7 @@ class SGLangModel(LanguageModel):
             # Recheck if the model is an instruct model with model name
             model_name = self.model.lower()
             if ("instruct" in model_name):
-                is_instruct_model = True
+                print(f"Warning: The model name '{self.model}' contains 'instruct', but is_instruct_model is set to False.")
 
         for i in range(1, retry + 1):
             try:
@@ -129,6 +140,11 @@ class SGLangModel(LanguageModel):
         )
 
     def get_loglikelihood(self, prefix: str, contents: list[str], **kwargs) -> np.ndarray:
+        
+        import sglang as sgl
+        from sglang.api import set_default_backend
+        from sglang import RuntimeEndpoint
+        
         actions = []
         for c in contents:
             if c.startswith(prefix):
@@ -149,8 +165,8 @@ class SGLangModel(LanguageModel):
         state = helper.run()
         meta_info = state.get_meta_info("logprob")
         return np.array(meta_info['normalized_prompt_logprobs'])
-        
-        
+    
+    
 
 if __name__ == "__main__":
     model = OpenAIModel(
