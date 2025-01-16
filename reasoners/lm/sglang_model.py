@@ -6,6 +6,8 @@ import time
 import requests
 from reasoners.base import LanguageModel, GenerateOutput
 from openai import OpenAI
+import warnings
+from transformers import AutoTokenizer
 
 PROMPT_TEMPLATE_ANSWER = 'Your response need to be ended with "So the answer is"\n\n'
 PROMPT_TEMPLATE_CONTINUE = "Please continue to answer the last question, following the format of previous examples. Don't say any other words.\n\n"
@@ -14,7 +16,7 @@ class SGLangModel(LanguageModel):
     def __init__(
         self,
         model: str,
-        max_tokens: int = 2048,
+        max_new_tokens: int = 2048,
         temperature=0.0,
         additional_prompt=None,
         is_instruct_model: bool = False,
@@ -24,10 +26,11 @@ class SGLangModel(LanguageModel):
         except ImportError:
             raise ImportError("Please install sglang package to use SGLangModel")
         self.model = model
-        self.max_tokens = max_tokens
+        self.max_new_tokens = max_new_tokens
         self.temperature = temperature
         self.additional_prompt = additional_prompt
         self.is_instruct_model = is_instruct_model
+        self.tokenizer = AutoTokenizer.from_pretrained(model, lagacy=False, trust_remote_code=True)
         self.__init_client__()
 
     def __init_client__(self):
@@ -38,7 +41,9 @@ class SGLangModel(LanguageModel):
     def generate(
         self,
         prompt: Optional[Union[str, list[str]]],
-        max_tokens: int = None,
+        max_length: Optional[int] = None,
+        max_new_tokens: int = None,
+        top_k: int = None,
         top_p: float = 1.0,
         num_return_sequences: int = 1,
         rate_limit_per_min: Optional[int] = 20,
@@ -49,18 +54,33 @@ class SGLangModel(LanguageModel):
         additional_prompt=None,
         retry=1,
         hide_input=True,
+        do_sample: bool = False,
         **kwargs,
     ) -> GenerateOutput:
         if not hide_input:
             raise ValueError("hide_input must be True for SGLangModel")
-        max_tokens = self.max_tokens if max_tokens is None else max_tokens
+
+        if max_length is not None:
+            warnings.warn("max_length is not supported by SGLangModel for generation. Use max_new_tokens instead.")
+
+        if top_k is not None:
+            warnings.warn("top_k is not supported by SGLangModel for generation. Use top_p (nucleus sampling) instead.")
+        
+        max_new_tokens = self.max_new_tokens if max_new_tokens is None else max_new_tokens
         temperature = self.temperature if temperature is None else temperature
         logprobs = 0 if logprobs is None else logprobs
         
+        if not do_sample or temperature == 0.0:
+            warnings.warn('temperature=0.0 is equivalent to greedy search, ')
+            do_sample = False
+            temperature = 1.0
+
         if eos_token_id is not None:
+            if isinstance(eos_token_id, str):
+                eos_token_id = [eos_token_id]
             # the eos_token_id is for the compatibility with the other models
             assert stop is None and isinstance(eos_token_id, list) and all(isinstance(e, str) for e in eos_token_id), \
-                "eos_token_id should be a list of strings for SGLangModel"
+                "eos_token_id should be a string or list of strings for SGLangModel"
             stop = eos_token_id
 
         if isinstance(prompt, list):
@@ -92,7 +112,7 @@ class SGLangModel(LanguageModel):
                     response = self.client.chat.completions.create(
                         model=self.model,
                         messages=messages,
-                        max_tokens=max_tokens,
+                        max_tokens=max_new_tokens,
                         temperature=temperature,
                         top_p=top_p,
                         n=num_return_sequences,
@@ -101,13 +121,13 @@ class SGLangModel(LanguageModel):
                     )
                     return GenerateOutput(
                         text=[choice.message.content for choice in response.choices],
-                        log_prob=[token.logprob for token in response.choices[0].logprobs.content],
+                        log_prob=[token.logprob for token in response.choices[0].logprobs.content] if logprobs else None,
                     )
                 else:
                     response = self.client.completions.create(
                         model=self.model,
                         prompt=prompt,
-                        max_tokens=max_tokens,
+                        max_tokens=max_new_tokens,
                         temperature=temperature,
                         top_p=top_p,
                         n=num_return_sequences,
@@ -117,7 +137,7 @@ class SGLangModel(LanguageModel):
                     )
                     return GenerateOutput(
                         text=[choice.text for choice in response.choices],
-                        log_prob=[choice.logprobs.token_logprobs for choice in response.choices],
+                        log_prob=[choice.logprobs.token_logprobs for choice in response.choices] if logprobs else None,
                     )
 
             except Exception as e:
