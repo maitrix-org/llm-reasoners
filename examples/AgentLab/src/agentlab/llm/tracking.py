@@ -52,10 +52,23 @@ def set_tracker():
         TRACKER.instance = previous_tracker
 
 
+# def cost_tracker_decorator(get_action):
+#     def wrapper(self, obs):
+#         with set_tracker() as tracker:
+#             action, agent_info = get_action(self, obs)
+#         agent_info.get("stats").update(tracker.stats)
+#         return action, agent_info
+
+#     return wrapper
+
+
 def cost_tracker_decorator(get_action):
-    def wrapper(self, obs):
+    def wrapper(self, obs, step: int = None, exp_dir: str = None):
         with set_tracker() as tracker:
-            action, agent_info = get_action(self, obs)
+            if step is not None and exp_dir is not None:
+                action, agent_info = get_action(self, obs, step=step, exp_dir=exp_dir)
+            else:
+                action, agent_info = get_action(self, obs)
         agent_info.get("stats").update(tracker.stats)
         return action, agent_info
 

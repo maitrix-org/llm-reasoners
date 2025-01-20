@@ -1,78 +1,70 @@
-# Browsergym
+# Web Agent Planning
 
-https://github.com/ServiceNow/BrowserGym
+This is an example of using LLM-Reasoners to perform Monte Carlo Tree Search (MCTS) and other planning methods (e.g. Greedy/Beam Search/DFS, etc.) on the [BrowserGym](https://github.com/ServiceNow/BrowserGym) environment. LLMs as agent policies are strong baselines, while the absolute performance on agent tasks are still far from human level. The inference-time planning (1) improves the policy's accuracy and (2) can be scaled up smoothly.
 
-## Setting up browsergym
+## Code Overview
+
+BrowserGym offers an OpenAI gym-like interface for web environments, supporting benchmarks like Miniwob++, Webarena, and more. It simplifies web agent creation/testing by providing preloaded gym environments with task information and reward systems.
+
+LLM-Reasoners enhance this setup with tree search algorithms, using LLMs to generate and evaluate actions. Besides LLM evaluations, the environment provides reward signals for node expansion.
+
+- `inference_mcts.py`: Performs tree search on the environment w. MCTS. Currently it is a _open-loop_ planner, meaning it doesn't use a world model to predict the next state; instead, it directly interacts with the environment.
+- `inference_dfs.py`: Performs tree search on the environment w. DFS.
+- `inference_beam.py`: Performs tree search on the environment w. Beam Search.
+- `gym_env.py`: Implements `EnvironmentGym`, wrapping the BrowserGym environment. `EnvironmentGym` functions like a `WorldModel`, using the environment for state transitions. Tree search requires careful backtracking, achieved by storing and replaying action histories, though this method is generic and applicable to any OpenAI gym-like environment.
+- `search_config.py`: Defines `SearchConfigBrowsergym` for node generation/evaluation and reward calculation. This is the core of the tree search.
+- `visualize.py`: Visualizes the search tree with saved search results in `.pickle` files.
+
+## Setup
+
+### Setup BrowserGym
 
 ```bash
-cd ./examples/browsergym
-
 git clone https://github.com/ServiceNow/BrowserGym.git
 cd BrowserGym
 make install
 ```
 
-## Installing datasets
-### 1. Miniwob++
+### Installing datasets (just install the ones you want to use)
 
-Can choose an arbitrary dataset to install, but miniwob is the easiest to setup.
-For other datasets, go to the browsergym readme, and follow the instructions there.
+**1. [Webarena](https://webarena.dev/) - Locally Hosted**
 
-```bash
-cd ./examples/browsergym
-git clone https://github.com/Farama-Foundation/miniwob-plusplus.git
-
-cd miniwob-plusplus/miniwob/html/miniwob
-export MINIWOB_URL="file://$(pwd)/"
-```
-
-### 2. Webarena - locally hosted
-
-Note: There seems to be a bug in browsergym/playwright which makes using demo_mode on webarena infinitely stall the browser for fill() actions. Be sure to set demo_mode to off in the HighlevelActionSet.
+First set up the environment variables:
 
 ```bash
-# download nltk punkt_tab
-python -c "import nltk; nltk.download('punkt_tab')"
-
-# set up webarena environment variables
 export BASE_URL="http://localhost"
-export WA_SHOPPING="$BASE_URL:7770"
-export WA_SHOPPING_ADMIN="$BASE_URL:7780"
-export WA_REDDIT="$BASE_URL:9999"
-export WA_GITLAB="$BASE_URL:8023"
-# using 8898 here due to lab server having 8888 in use. change to whatever port configured for webarena wikipedia
-export WA_WIKIPEDIA="$BASE_URL:8898/wikipedia_en_all_maxi_2022-05/A/User:The_other_Kiwix_guy/Landing"
-export WA_MAP="$BASE_URL:3000"
-export WA_HOMEPAGE="$BASE_URL:4399"
 
-# set up openai api key
-export OPENAI_API_KEY=...
+# webarena environment variables (change ports as needed)
+export WA_SHOPPING="$BASE_URL:8082/"
+export WA_SHOPPING_ADMIN="$BASE_URL:8083/admin"
+export WA_REDDIT="$BASE_URL:8080"
+export WA_GITLAB="$BASE_URL:9001"
+export WA_WIKIPEDIA="$BASE_URL:8081/wikipedia_en_all_maxi_2022-05/A/User:The_other_Kiwix_guy/Landing"
+export WA_MAP="$BASE_URL:443"
+export WA_HOMEPAGE="$BASE_URL:80"
+
+# if your webarena instance offers the FULL_RESET feature (optional)
+export WA_FULL_RESET="$BASE_URL:7565"
+
+# otherwise, be sure to NOT set WA_FULL_RESET, or set it to an empty string
+export WA_FULL_RESET=""
 ```
 
-Then serve the webarena server following the [webarena instructions](https://github.com/web-arena-x/webarena/blob/main/environment_docker/README.md). e.g., for the shopping instance (note the .tar file needs downloading), run
-```bash
-docker load --input shopping_final_0712.tar
-docker run --name shopping -p 7770:80 -d shopping_final_0712
-# wait ~1 min to wait all services to start
+Then host the webarena server following the [webarena docker instructions](https://github.com/web-arena-x/webarena/blob/main/environment_docker/README.md).
 
-docker exec shopping /var/www/magento2/bin/magento setup:store-config:set --base-url="${WA_SHOPPING}" # no trailing slash
-docker exec shopping mysql -u magentouser -pMyPassword magentodb -e  'UPDATE core_config_data SET value="${WA_SHOPPING}" WHERE path = "web/secure/base_url";'
-docker exec shopping /var/www/magento2/bin/magento cache:flush
-```
+When you finish, you can test the shopping instance by running
 
-Test the shopping instance by running
 ```bash
 curl $WA_SHOPPING
 ```
 
-After that, you should be able to run
-```bash
-python wa_test.py
-```
-to run a webarena task.
+**2. [VisualWebArena](https://jykoh.com/vwa) - Locally Hosted**
 
-### 3. VisualWebArena -- locally hosted
+First, set up the environment variables:
+
 ```bash
+export BASE_URL="http://localhost"
+
 # visualwebarena environment variables (change ports as needed)
 export VWA_CLASSIFIEDS="$BASE_URL:8083"
 export VWA_CLASSIFIEDS_RESET_TOKEN="4b61655535e7ed388f0d40a93600254c"
@@ -81,49 +73,100 @@ export VWA_REDDIT="$BASE_URL:8080"
 export VWA_WIKIPEDIA="$BASE_URL:8081"
 export VWA_HOMEPAGE="$BASE_URL:80"
 
-# if your webarena instances offers the FULL_RESET feature (optional)
+# if your webarena instance offers the FULL_RESET feature (optional)
 export VWA_FULL_RESET="$BASE_URL:7565"
+
+# otherwise, be sure to NOT set VWA_FULL_RESET, or set it to an empty string
+export VWA_FULL_RESET=""
 ```
 
-Then serve the visualwebarena server following the [visualwebarena instructions](https://github.com/web-arena-x/visualwebarena/blob/main/environment_docker/README.md). e.g., for the reddit instance (note the .tar file needs downloading), run
-```bash
-docker load --input postmill-populated-exposed-withimg.tar
-docker run --name forum -p 8080:80 -d postmill-populated-exposed-withimg
-```
+Then, host the VisualWebArena server following the [visualwebarena docker instructions](https://github.com/web-arena-x/visualwebarena/blob/main/environment_docker/README.md).
 
-Test the reddit instance by running
-```bash
-curl $VWA_REDDIT
-```
-
-After that, you should be able to run
-```bash
-python vwa_test.py
-```
-to run a visualwebarena task.
-
-## Visualize search tree
+When you finish, you can test the shopping instance by running
 
 ```bash
-python visualize.py --tree_log_file=<path_to_tree_log_pickle_file>
+curl $VWA_SHOPPING
 ```
 
-## Troubleshooting
-If you meet the error:
-```
-ModuleNotFoundError: No module named 'huggingface_hub.errors'
-```
-That's due to a conflict of huggingface-hub version. You can fix it by running:
+### Misc Setup
+
+Set up your LLM API keys and setup nltk
+
 ```bash
-pip install huggingface_hub==0.24.7
+# Take OpenAI as an example. Feel free to use other LLMs.
+export OPENAI_API_KEY="your_openai_api_key"
 ```
 
-If you meet the error:
-```
-playwright._impl._errors.TargetClosedError: BrowserType.launch: Target page, context or browser has been closed Browser logs: ╔════════════════════════════════════════════════════════════════════════════════════════════════╗ ║ Looks like you launched a headed browser without having a XServer running. ║ ║ Set either 'headless: true' or use 'xvfb-run <your-playwright-app>' before running Playwright. ║ ║ ║ ║ <3 Playwright Team
-```
-Try set `headless=True` in the `get_env` function in `support.py`. This usually happens if you run the code in a remote server without a display.
+Download nltk punkt_tab if you haven't done so.
 
-## NOTES
+```bash
+python -c "import nltk; nltk.download('punkt_tab')"
+```
 
-Since browsergym relies on an external environment for state, it doesn't make sense to try to textually represent the environment state. For the "example" passed into the Reasoner object, it's just empty, and instead it's the environment configuration with the "name" attribute that loads in the example.
+## Run Tree Search
+
+Run tree search (MCTS) on a web agent task.
+
+```bash
+
+python inference_mcts.py \
+    --task_name <task_name, e.g. webarena.599> \
+    --action_set <action_set, the action set to use, e.g. webarena> \
+    --exp_dir <exp_dir, default results/tree-search> \
+    --model <model, default gpt-4o-mini> \
+    --n_iters <n_iters, default 10> \
+    --depth_limit <depth_limit, default 10> \
+```
+
+Check more options in `inference_mcts.py`.
+
+The search takes a few minutes to complete mainly consisting of the three following time consumptions:
+
+1. LLM call as the policy and reward function
+2. Environment interaction
+3. Tree search expansion
+
+For example, the default params above will take about 10 minutes to complete.
+
+For DFS and Beam Search, you can run the respective files:
+
+```bash
+# DFS
+python inference_dfs.py \
+    --task_name <task_name> \
+    --action_set <action_set> \
+    --exp_dir <exp_dir> \
+    --model <model> \
+    --total_states <total_states> \
+    --max_per_state <max_per_state> \
+    --depth <depth> \
+
+# Beam Search
+python inference_beam.py \
+    --task_name <task_name> \
+    --action_set <action_set> \
+    --exp_dir <exp_dir> \
+    --model <model> \
+    --beam_size <beam_size> \
+    --max_depth <max_depth> \
+
+```
+
+## Visualize Search Tree
+
+One key feature of LLM-Reasoners planner is we provide an online visualizer to smoothly visualize and debug the search tree.
+
+```bash
+python visualize.py \
+    --task_name <task_name> \
+    --exp_dir <exp_dir> \
+```
+
+If running successfully, you should see a visualizer link like this (hosted by LLM-Reasoners), e.g.,
+https://main.d1puk3wdon4rk8.amplifyapp.com/visualizer/266f7660-0b9c-4cb8-96f3-1cd4aa719afa?accessKey=75503b6e
+
+## Acknowledgements
+
+Huge thanks to [WebArena](https://webarena.dev/) and [VisualWebArena](https://jykoh.com/vwa) for the amazing testbeds for web agent research.
+
+Huge thanks to ServiceNow for providing the [BrowserGym](https://github.com/ServiceNow/BrowserGym) and the following [AgentLab](https://github.com/ServiceNow/AgentLab) (we're working in progress to integrate) infras for streamlining web agent task experiments.

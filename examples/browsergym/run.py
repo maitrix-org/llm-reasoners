@@ -33,16 +33,6 @@ class AgentReasoner(Reasoner):
             raise ValueError("Algorithm must be a string")
         self.algorithm = self._get_algorithm(algorithm)
 
-    def _get_algorithm(self, algorithm_name: str):
-        """Map algorithm name to actual implementation."""
-        algorithms = {
-            "MCTS": self._mcts_algorithm
-            # Add other algorithms here
-        }
-        if algorithm_name not in algorithms:
-            raise ValueError(f"Unsupported algorithm: {algorithm_name}")
-        return algorithms[algorithm_name]
-
     def __call__(self, task_id: str):
         """
         Execute reasoning process for given task.

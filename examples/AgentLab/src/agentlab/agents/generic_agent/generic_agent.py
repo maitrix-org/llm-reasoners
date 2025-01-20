@@ -23,8 +23,7 @@ class GenericAgentArgs(AgentArgs):
 
     def __post_init__(self):
         try:  # some attributes might be temporarily args.CrossProd for hyperparameter generation
-            self.agent_name = f"GenericAgent-{self.chat_model_args.model_name}".replace(
-                "/", "_")
+            self.agent_name = f"GenericAgent-{self.chat_model_args.model_name}".replace("/", "_")
         except AttributeError:
             pass
 
@@ -34,8 +33,7 @@ class GenericAgentArgs(AgentArgs):
             self.flags.obs.use_html = True
 
         self.flags.obs.use_tabs = benchmark.is_multi_tab
-        self.flags.action.action_set = deepcopy(
-            benchmark.high_level_action_set_args)
+        self.flags.action.action_set = deepcopy(benchmark.high_level_action_set_args)
 
         # for backward compatibility with old traces
         if self.flags.action.multi_actions is not None:
@@ -86,7 +84,7 @@ class GenericAgent(Agent):
         return self._obs_preprocessor(obs)
 
     @cost_tracker_decorator
-    def get_action(self, obs):
+    def get_action(self, obs, step: int = None, exp_dir: str = None):
         self.obs_history.append(obs)
 
         main_prompt = MainPrompt(
@@ -104,7 +102,7 @@ class GenericAgent(Agent):
 
         system_prompt = SystemMessage(dp.SystemPrompt().prompt)
 
-        human_prompt = dp.fit_tokens(
+        human_prompt = dp.fit_tokens(  # TODO: @zj (1) process as planner input (2) change to our prompt w/ planner results
             shrinkable=main_prompt,
             max_prompt_tokens=max_prompt_tokens,
             model_name=self.chat_model_args.model_name,

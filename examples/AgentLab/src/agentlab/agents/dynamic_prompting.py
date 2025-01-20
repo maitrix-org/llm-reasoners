@@ -44,8 +44,7 @@ class Flags:
             return flags_dict
 
         if not isinstance(flags_dict, dict):
-            raise ValueError(
-                f"Unregcognized type for flags_dict of type {type(flags_dict)}.")
+            raise ValueError(f"Unregcognized type for flags_dict of type {type(flags_dict)}.")
         return ObsFlags(**flags_dict)
 
 
@@ -186,6 +185,9 @@ class PromptElement:
         else:
             return {}
 
+    def __str__(self):
+        return self.prompt.__str__(warn_if_image=False)
+
 
 class Shrinkable(PromptElement, abc.ABC):
     @abc.abstractmethod
@@ -266,8 +268,7 @@ def fit_tokens(
                 "Using list of prompts is deprecated. Use a Discussion object instead.",
                 DeprecationWarning,
             )
-            prompt_str = "\n".join([p["text"]
-                                   for p in prompt if p["type"] == "text"])
+            prompt_str = "\n".join([p["text"] for p in prompt if p["type"] == "text"])
         elif isinstance(prompt, BaseMessage):
             prompt_str = prompt.__str__(warn_if_image=False)
         else:
@@ -460,8 +461,7 @@ class Observation(Shrinkable):
                 )
             else:
                 screenshot = self.obs["screenshot"]
-                prompt.add_text(
-                    "\n## Screenshot:\nHere is a screenshot of the page:")
+                prompt.add_text("\n## Screenshot:\nHere is a screenshot of the page:")
             img_url = image_to_jpg_base64_url(screenshot)
             prompt.add_image(img_url, detail=self.flags.openai_vision_detail)
         return prompt
@@ -696,8 +696,7 @@ elements in the page is through bid which are specified in your observations.
 
     def _parse_answer(self, text_answer):
         try:
-            ans_dict = parse_html_tags_raise(
-                text_answer, keys=["action"], merge_multiple=True)
+            ans_dict = parse_html_tags_raise(text_answer, keys=["action"], merge_multiple=True)
         except ParseError as e:
             if self.action_flags.is_strict:
                 raise e

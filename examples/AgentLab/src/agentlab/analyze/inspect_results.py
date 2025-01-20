@@ -603,7 +603,7 @@ def error_report(df: pd.DataFrame, max_stack_trace=10, use_log=False):
     return "\n".join(report)
 
 
-def _format_log(exp_result: ExpResult, head_lines=10, tail_lines=50):
+def _format_log(exp_result: ExpResult, head_lines=1000, tail_lines=1000):
     """Extract head and tail of the log. Try to find the traceback."""
     log = exp_result.logs
     if log is None:

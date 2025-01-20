@@ -143,6 +143,16 @@ class SelfHostedModelArgs(BaseModelArgs):
                 max_new_tokens=self.max_new_tokens,
                 n_retry_server=self.n_retry_server,
             )
+        elif self.backend == "sglang":
+            # TODO: @zj implement sglang model
+            return SGLangChatModel(
+                model_name=self.model_name,
+                model_url=self.model_url,
+                token=self.token,
+                temperature=self.temperature,
+                max_new_tokens=self.max_new_tokens,
+                n_retry_server=self.n_retry_server,
+            )
         else:
             raise ValueError(f"Backend {self.backend} is not supported")
 
@@ -195,6 +205,11 @@ class RetryError(Exception):
 def handle_error(error, itr, min_retry_wait_time, max_retry):
     if not isinstance(error, openai.OpenAIError):
         raise error
+    import traceback
+
+    print("==========traceback==========")
+    traceback.print_exc()
+
     logging.warning(
         f"Failed to get a response from the API: \n{error}\n" f"Retrying... ({itr+1}/{max_retry})"
     )
@@ -266,6 +281,15 @@ class ChatModel(AbstractChatModel):
         self.retries = 0
         self.success = False
         self.error_types = []
+
+        print("==========messages in chat api==========")
+        print("type of messages: ", type(messages))
+        print("messages: ")
+        print(messages)
+        print("all the input params of client:")
+        print("model_name: ", self.model_name)
+        print("temperature: ", self.temperature)
+        print("max_tokens: ", self.max_tokens)
 
         completion = None
         e = None
@@ -415,6 +439,30 @@ class HuggingFaceURLChatModel(HFBaseChatModel):
             token = os.environ["TGI_TOKEN"]
 
         client = InferenceClient(model=model_url, token=token)
+        self.llm = partial(
+            client.text_generation, temperature=temperature, max_new_tokens=max_new_tokens
+        )
+
+
+class SGLangChatModel(ChatModel):
+    def __init__(
+        self,
+        model_name: str,
+        model_url: str,
+        token: Optional[str] = None,
+        temperature: Optional[int] = 1e-1,
+        max_new_tokens: Optional[int] = 2048,
+        n_retry_server: Optional[int] = 4,
+    ):
+        super().__init__(model_name, n_retry_server)
+        import openai
+
+        # TODO: @zj implement sglang model
+        if temperature < 1e-3:
+            logging.warning("Models might behave weirdly when temperature is too low.")
+
+        # client = InferenceClient(model=model_url, token=token)
+        client = openai.OpenAI(base_url=model_url, api_key=token)
         self.llm = partial(
             client.text_generation, temperature=temperature, max_new_tokens=max_new_tokens
         )

@@ -4,6 +4,7 @@ from agentlab.llm.chat_api import (
     OpenRouterModelArgs,
     SelfHostedModelArgs,
 )
+import os
 
 default_oss_llms_args = {
     "n_retry_server": 4,
@@ -17,6 +18,17 @@ CLOSED_SOURCE_APIS = [
 ]
 
 CHAT_MODEL_ARGS_DICT = {
+    # ---------------- SGLang ----------------#
+    "Qwen/Qwen2-VL-72B-Instruct": SelfHostedModelArgs(
+        model_name="Qwen/Qwen2-VL-72B-Instruct",
+        model_url=os.getenv("QWEN2_VL_72B_INSTRUCT_URL", "<QWEN2_VL_72B_INSTRUCT_URL>"),
+        max_total_tokens=128_000,
+        max_input_tokens=128_000,
+        max_new_tokens=16_384,
+        vision_support=True,
+        backend="sglang",
+    ),
+    # ---------------- Closed-source LLMs ----------------#
     "openai/gpt-4o-mini-2024-07-18": OpenAIModelArgs(
         model_name="gpt-4o-mini-2024-07-18",
         max_total_tokens=128_000,
