@@ -14,6 +14,11 @@ from search_config import SearchConfigBrowsergym
 from utils.misc import obs_preprocessor
 from utils.parse import parse_common_arguments
 
+import traceback
+import signal 
+from utils.timeout import timeout_handler
+signal.signal(signal.SIGALRM, timeout_handler)
+
 
 def run_exp(exp_name: str, task_names: str):
     exp_dir = f"./results/{exp_name}"
@@ -26,15 +31,22 @@ def run_exp(exp_name: str, task_names: str):
     status = open(f"{exp_dir}/status.txt", "r+").readlines()
     completed_tasks = [line.strip().split(" ")[0] for line in status]
 
-    with open(f"{exp_dir}/status.txt", "a") as f:
-        for task_name in task_names:
+    for task_name in task_names:
+        with open(f"{exp_dir}/status.txt", "a") as f:
             if task_name in completed_tasks:
                 print(f"skipping {task_name}")
                 continue
             else:
                 print(f"working on {task_name}")
-                success = run_task(exp_name, task_name)
-                f.write(f"{task_name} {success}\n")
+                try:
+                    signal.alarm(60 * 10)
+                    success = run_task(exp_name, task_name)
+                    f.write(f"{task_name} {success}\n")
+                except Exception as e:
+                    f.write(f"{task_name} ERROR\n")
+                    f.write(traceback.format_exc())
+                finally:
+                    signal.alarm(0)
 
 
 def run_task(exp_name: str, task_name: str) -> bool:
