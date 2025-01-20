@@ -106,7 +106,7 @@ class SearchConfigBrowsergym(SearchConfig):
 
         json_string = re.search(r"\{.*\}", evaluation, re.DOTALL).group()
         json_object = json.loads(json_string)
-        evaluation = json_object["score"] / 10
+        evaluation = json_object["score"] / 100
 
         return evaluation, {"self_eval": evaluation}
 
