@@ -52,7 +52,7 @@ def run_task(exp_name: str, task_name: str) -> bool:
         task_name=task_name,
         task_seed=42,
         max_steps=10,
-        headless=False,
+        headless=True,
         record_video=True,
     )
 
@@ -75,7 +75,7 @@ def run_task(exp_name: str, task_name: str) -> bool:
     # greedy search
     search_config = SearchConfigBrowsergym(
         action_set=browser_action_set,
-        n_proposals=1,
+        n_proposals=4,
         llm=llm,
         use_axtree=True,
         use_html=False,
@@ -118,7 +118,7 @@ def run_task(exp_name: str, task_name: str) -> bool:
     return plan_result.terminal_state and plan_result.terminal_state.reward == 1.0
 
 
-run_exp("best-of-n", [
+run_exp("best-of-4", [
 "webarena.27",
 "webarena.28",
 "webarena.29",
@@ -203,14 +203,14 @@ run_exp("best-of-n", [
 "webarena.650",
 "webarena.651",
 "webarena.652",
-"webarena.681",
-"webarena.682",
-"webarena.683",
-"webarena.684",
-"webarena.685",
-"webarena.686",
-"webarena.687",
-"webarena.688",
+# "webarena.681",
+# "webarena.682",
+# "webarena.683",
+# "webarena.684",
+# "webarena.685",
+# "webarena.686",
+# "webarena.687",
+# "webarena.688",
 "webarena.714",
 "webarena.715",
 "webarena.716",
