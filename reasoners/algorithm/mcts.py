@@ -15,6 +15,9 @@ from tqdm import trange
 
 from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action, Example, Trace
 
+import time
+from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 class MCTSNode(Generic[State, Action, Example]):
     id_iter = itertools.count()
@@ -130,7 +133,8 @@ class MCTS(SearchAlgorithm, Generic[State, Action, Example]):
                  uct_with_fast_reward: bool = True,
                  aggregator: Optional[MCTSAggregation] = None,
                  disable_tqdm: bool = True,
-                 node_visualizer: Callable[[MCTSNode], dict] = lambda x: x.__dict__):
+                 node_visualizer: Callable[[MCTSNode], dict] = lambda x: x.__dict__,
+                 task_dir: str = None):
         """
         MCTS algorithm
 
@@ -180,6 +184,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action, Example]):
         self.aggregator = aggregator
         self.node_visualizer = node_visualizer
         self.aggregator = aggregator
+        self.task_dir = task_dir
 
     def iterate(self, node: MCTSNode) -> list[MCTSNode]:
         path = self._select(node)
@@ -234,12 +239,38 @@ class MCTS(SearchAlgorithm, Generic[State, Action, Example]):
 
         children = []
         actions = self.search_config.get_actions(node.state)
-        for action in actions:
-            fast_reward, fast_reward_details = self.search_config.fast_reward(node.state, action)
-            child = MCTSNode(state=None, action=action, parent=node,
-                             fast_reward=fast_reward, fast_reward_details=fast_reward_details, calc_q=self.calc_q)
-            children.append(child)
+        def get_fast_reward(action):
+            fast_reward, fast_reward_details = self.search_config.fast_reward(
+                node.state, action)
+            return action, fast_reward, fast_reward_details
 
+        start = time.time()
+        with ThreadPoolExecutor() as executor:
+            futures = [executor.submit(get_fast_reward, action)
+                       for action in actions]
+
+            for future in as_completed(futures):
+                action, fast_reward, fast_reward_details = future.result()
+                child = MCTSNode(
+                    state=None,
+                    action=action,
+                    parent=node,
+                    fast_reward=fast_reward,
+                    fast_reward_details=fast_reward_details,
+                    calc_q=self.calc_q
+                )
+                children.append(child)
+        end = time.time()
+        print(f"total action evaluation time: {end - start}")
+
+        with open(f"{self.task_dir}/time.txt", "a+") as f:
+            f.write(f"total action evaluation time: {end - start}\n")
+
+        # for action in actions:
+        #     fast_rewArd, fast_reward_details = self.search_config.fast_reward(node.state, action)
+        #     child = MCTSNode(state=None, action=action, parent=node,
+        #                      fast_reward=fast_reward, fast_reward_details=fast_reward_details, calc_q=self.calc_q)
+        # children.append(child)
         node.children = children
 
     def _simulate(self, path: list[MCTSNode]):

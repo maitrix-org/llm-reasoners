@@ -27,6 +27,8 @@ def create_directory_if_not_exists(directory):
 class GenerateOutput(NamedTuple):
     text: list[str]
     log_prob: Optional[list[np.ndarray]] = None
+    prompt_tokens: Optional[int] = None
+    completion_tokens: Optional[int] = None
 
 
 class LanguageModel(ABC):
