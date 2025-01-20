@@ -17,7 +17,7 @@ from .. import SearchAlgorithm, WorldModel, SearchConfig, State, Action, Example
 
 import time
 from datetime import datetime
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, ProcessPoolExecutor
 
 class MCTSNode(Generic[State, Action, Example]):
     id_iter = itertools.count()
@@ -245,7 +245,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action, Example]):
             return action, fast_reward, fast_reward_details
 
         start = time.time()
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=64) as executor:
             futures = [executor.submit(get_fast_reward, action)
                        for action in actions]
 
