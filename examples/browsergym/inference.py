@@ -15,102 +15,107 @@ from utils.misc import obs_preprocessor
 from utils.parse import parse_common_arguments
 
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(
-        description="Run a task with specified parameters."
-    )
-    parse_common_arguments(parser)
+def run_exp(exp_name: str, task_names: str):
+    exp_dir = f"./results/{exp_name}"
+    exp_dir_abspath = os.path.abspath(exp_dir)
+    if not os.path.exists(exp_dir_abspath):
+        os.makedirs(exp_dir)
+        with open(f"{exp_dir}/status.txt", "w+") as f:
+            f.write("")
+    
+    status = open(f"{exp_dir}/status.txt", "r+").readlines()
+    completed_tasks = [line.strip().split(" ")[0] for line in status]
 
-    # MCTS parameters
-    parser.add_argument(
-        "--n_iters", type=int, default=2, help="Number of iterations for MCTS."
-    )
-    parser.add_argument(
-        "--depth_limit", type=int, default=10, help="Depth limit for MCTS."
-    )
-    parser.add_argument(
-        "--w_exp",
-        type=float,
-        default=10**0.5,
-        help="Exploration weight of the UCT score for MCTS.",
-    )
-
-    return parser.parse_args()
+    with open(f"{exp_dir}/status.txt", "a") as f:
+        for task_name in task_names:
+            if task_name in completed_tasks:
+                print(f"skipping {task_name}")
+                continue
+            else:
+                print(f"working on {task_name}")
+                success = run_task(exp_name, task_name)
+                f.write(f"{task_name} {success}\n")
 
 
-def run_task(args):
+def run_task(exp_name: str, task_name: str) -> bool:
+
+    start = time.time()
+
     browser_action_set = HighLevelActionSet(
-        subsets=[args.action_set],
+        subsets=["webarena"],
         strict=False,
         multiaction=True,
         demo_mode="off",
     )
 
     env_args = EnvArgs(
-        task_name=args.task_name,
-        task_seed=args.task_seed,
-        max_steps=args.max_steps,
-        headless=True,
+        task_name=task_name,
+        task_seed=42,
+        max_steps=10,
+        headless=False,
         record_video=True,
     )
 
-    exp_dir = os.path.join(args.exp_dir, args.task_name)
-    os.makedirs(exp_dir, exist_ok=True)
+    task_dir = os.path.join("./results", exp_name, task_name)
+    os.makedirs(task_dir, exist_ok=True)
 
     env = env_args.make_env(
         action_mapping=browser_action_set.to_python_code,
-        exp_dir=exp_dir,
+        exp_dir=task_dir,
     )
 
     llm = OpenAIModel(
-        model=args.model,
-        temperature=args.temperature,
-        max_tokens=args.max_tokens,
-        backend=args.backend,
+        model="gpt-4o-mini",
+        temperature=0.7,
+        task_dir=task_dir
     )
 
-    world_model = EnvironmentGym(env=env, obs_preprocessor=obs_preprocessor)
+    world_model = EnvironmentGym(env=env, obs_preprocessor=obs_preprocessor, task_dir=task_dir)
+
+    # greedy search
     search_config = SearchConfigBrowsergym(
         action_set=browser_action_set,
-        n_proposals=10,
+        n_proposals=1,
         llm=llm,
         use_axtree=True,
         use_html=False,
         use_screenshot=False,
+        task_dir=task_dir
     )
     algorithm = MCTS(
-        n_iters=args.n_iters,
-        depth_limit=args.depth_limit,
-        w_exp=args.w_exp,
+        n_iters=1,
+        depth_limit=10,
+        w_exp=10**0.5,
         uct_with_fast_reward=True,
         disable_tqdm=False,
         output_trace_in_each_iter=True,
+        task_dir=task_dir
     )
+
+    # algorithm = MCTS(
+    #     n_iters=10,
+    #     depth_limit=10,
+    #     w_exp=10**0.5,
+    #     uct_with_fast_reward=True,
+    #     disable_tqdm=False,
+    #     output_trace_in_each_iter=True,
+    # )
 
     reasoner = Reasoner(world_model, search_config, algorithm)
 
     plan_result = reasoner()
 
-    with open(f"{exp_dir}/result.pkl", "wb") as f:
+    with open(f"{task_dir}/result.pkl", "wb") as f:
         pickle.dump(plan_result, f)
 
     env.close()
 
+    end = time.time()
+
+    with open(f"{task_dir}/time.txt", "a+") as f:
+        f.write(f"total time taken: {end - start}\n")
+
     return plan_result.terminal_state and plan_result.terminal_state.reward == 1.0
 
 
-if __name__ == "__main__":
-    args = parse_arguments()
-
-    start_time = time.time()
-    success = run_task(args)
-
-    if success:
-        print("Task completed successfully.")
-    else:
-        print(
-            "Task didn't reach the goal. Please check the detailed result w/ visualization (python visualize.py --task_name <task_name>).",
-        )
-
-    end_time = time.time()
-    print(f"Time taken: {end_time - start_time} seconds")
+run_exp("best-of-n", ["webarena.27", "webarena.28", "webarena.29", "webarena.30"])

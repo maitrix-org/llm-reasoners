@@ -6,6 +6,7 @@ from utils.prompts import build_propose_prompt, build_evaluation_prompt
 from utils.misc import check_validity_of_action_proposal
 
 from gym_env import ActionGym, StateGym
+import time
 
 
 class SearchConfigBrowsergym(SearchConfig):
@@ -29,7 +30,8 @@ class SearchConfigBrowsergym(SearchConfig):
                  llm: LanguageModel,
                  n_proposals: int = 5, proposal_temperature: float = 0.7,
                  evaluation_temperature: float = 0.25,
-                 use_axtree: bool = True, use_html: bool = False, use_screenshot: bool = False) -> None:
+                 use_axtree: bool = True, use_html: bool = False, use_screenshot: bool = False,
+                 task_dir: str = None) -> None:
         super().__init__()
         self.action_set = action_set
         self.llm = llm
@@ -39,6 +41,7 @@ class SearchConfigBrowsergym(SearchConfig):
         self.use_axtree = use_axtree
         self.use_html = use_html
         self.use_screenshot = use_screenshot
+        self.task_dir = task_dir
 
     def get_actions(self, state: StateGym) -> list[ActionGym]:
         """
@@ -57,9 +60,15 @@ class SearchConfigBrowsergym(SearchConfig):
             self.use_axtree, self.use_html, self.use_screenshot
         )
 
+        start = time.time()
         response = self.llm.generate(
             full_prompt_text, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
         action_proposals = response.text
+        end = time.time()
+        print(f"action proposal time: {end - start}")
+
+        with open(f"{self.task_dir}/time.txt", "a+") as f:
+            f.write(f"action proposal time: {end - start}\n")
 
         clustered_actions = []
         action_codes = set()
