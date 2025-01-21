@@ -14,27 +14,37 @@ export HOMEPAGE="$BASE_URL:4399"
 cd ../..
 CURR_DIR=$PWD
 
+cd ~
+bash reset_webarena_host.sh
+bash run_webarena_host.sh
+sleep 180
+cd $CURR_DIR
 DEBUG=1 python main.py webarena \
     --agent reasoner \
-    --output_dir evaluation/webarena/results/baseline-2 \
+    --output_dir evaluation/webarena/results/baseline-100-3 \
     --model gpt-4o \
     --dataset webarena \
     --config_name browsergym_webarena \
-    --end_idx 2 \
+    --end_idx 100 \
     --shuffle \
     --seed 21 \
     --max_steps 15 
 
-DEBUG=1 python main.py webarena \
-    --agent reasoner \
-    --output_dir evaluation/webarena/results/wmp-2 \
-    --model gpt-4o \
-    --dataset webarena \
-    --config_name browsergym_webarena_world_model \
-    --end_idx 2 \
-    --shuffle \
-    --seed 21 \
-    --max_steps 15 
+# cd ~
+# bash reset_webarena_host.sh
+# bash run_webarena_host.sh
+# sleep 180
+# cd $CURR_DIR
+# DEBUG=1 python main.py webarena \
+#     --agent reasoner \
+#     --output_dir evaluation/webarena/results/wmp-100-2 \
+#     --model gpt-4o \
+#     --dataset webarena \
+#     --config_name browsergym_webarena_world_model \
+#     --end_idx 100 \
+#     --shuffle \
+#     --seed 21 \
+#     --max_steps 15 
 
 # cd ~
 # bash reset_webarena_host.sh

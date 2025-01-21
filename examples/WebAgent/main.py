@@ -130,6 +130,8 @@ def main(job_name,
         'error': error,
     }
     if agent.config['eval_mode']:
+        if rewards == []:
+            rewards = [0.0]
         session_data['rewards'] = rewards
         session_data['test_result'] = float(max(rewards) > 0)
         with open(os.path.join(output_dir, 'output.jsonl'), 'a') as f:
