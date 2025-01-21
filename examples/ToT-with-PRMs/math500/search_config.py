@@ -197,8 +197,8 @@ class MathConfig(SearchConfig):
         else:
             return intuition + goal_reward
 
-    def batch_reward(self, states: list[MathState], actions: list[MathAction]):
-        return self.batched_fast_reward(states, actions)
+    # def batch_reward(self, states: list[MathState], actions: list[MathAction]):
+    #     return self.batched_fast_reward(states, actions)
 
     def reward(
         self,

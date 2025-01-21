@@ -154,9 +154,6 @@ class SearchConfig(ABC, Generic[State, Action, Example]):
     @abstractmethod
     def reward(self, state, action, **kwargs) -> tuple[float, dict]: ...
 
-    @abstractmethod
-    def batch_reward(self, states, actions, **kwargs) -> tuple[list[float], list[dict]]: ...
-
     def update_example(self, example: Example, prompt = None) -> None:
         if prompt is not None:
             self.prompt = prompt
