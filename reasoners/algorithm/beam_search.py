@@ -216,28 +216,43 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                 state = node.state
                 if self.early_terminate and world.is_terminal(state):
                     terminal_beam.append(beam_item)
-                    
                 else:
-                    
                     if depth == self.max_depth:
                         terminal_beam.append(beam_item)
                         continue
 
+                    actions = config.get_actions(
+                        state
+                    )
                     if self.action_dedup:
-                        # deduplicate the actions
                         actions = [a for a in actions if a not in cache_for_dedup]
                         cache_for_dedup.update(actions)
 
-                    actions = config.get_actions(state)
+                    can_batch = (type(config).batch_reward is not SearchConfig.batch_reward) # TODO: Check if this works
+                    
+                    if can_batch:
+                        batch_rewards, batch_reward_aux = config.batch_reward(
+                            state, actions
+                        )
+                    else:
+                        batch_rewards = []
+                        batch_reward_aux = []
+                        for action in actions:
+                            fast_reward, fast_reward_aux = config.fast_reward(state, action)
+                            reward, reward_aux = config.reward(state, action, **aux, **fast_reward_aux)
+                            if isinstance(reward, tuple):
+                                reward, reward_aux = reward
+                            
+                            batch_rewards.append(reward)
+                            batch_reward_aux.append(reward_aux)
 
-                    for action in actions:
+
+                    for action, reward, reward_aux in zip(actions, batch_rewards, batch_reward_aux):
                         next_state, aux = world.step(state, action)
 
                         if self.unbiased and self.sampling_strategy == 'stochastic':
                             # the action should have action.action_prob
                             try:
-                                fast_reward, fast_reward_aux = config.fast_reward(state, action)
-                                reward, reward_aux = config.reward(state, action, **aux, **fast_reward_aux)
                                 acc_action_prob = reward_aux['acc_action_prob']
                                 cur_action_prob = reward_aux['cur_action_prob']
                             except KeyError:
@@ -246,13 +261,6 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
                                                    a dictionary with keys 'acc_action_prob', which \
                                                    is the accumulated action probability, and \
                                                    'cur_action_prob', which is the current action probability.")
-                        else:
-                            fast_reward, fast_reward_aux = config.fast_reward(state, action)
-                            reward = config.reward(state, action, **aux, **fast_reward_aux)
-
-                            # if the reward is a tuple, then it is (reward, aux)
-                            if isinstance(reward, tuple):
-                                reward, reward_aux = reward
 
                         # Add new reward to list of rewards
                         new_reward_list = reward_list + [reward]
