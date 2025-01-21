@@ -26,7 +26,7 @@ python main.py \
     --dataset [fanout, flightqa] \
     --agent [reasoner, openhands] \
     --config_name [only applies to reasoner agent; 
-                   options: browsergym, browsergym-world-model, browsergym-llama; 
+                   options: browsergym, browsergym_world_model, opendevin, opendevin_llama, opendevin_world_model
                    default: browsergym]
     --model [any model accessible via litellm; default: gpt-4o]
     --start_idx [index of the first example] \

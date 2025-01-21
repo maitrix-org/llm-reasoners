@@ -229,6 +229,14 @@ class SearchConfigWrapper(ReasonersSearchConfig):
 
         return reward, {'scores': scores, 'thoughts': thoughts}
 
+    def batch_reward(self, states, actions, next_states, **kwargs):
+        batched_rewards, batched_data = [], []
+        for state, action, next_state in zip(states, actions, next_states):
+            reward, data = self.reward(state, action, next_state, **kwargs)
+            batched_rewards.append(reward)
+            batched_data.append(data)
+        return batched_rewards, batched_data
+
     def _cluster_actions(self, action2freqs):
         client = OpenAI(base_url=self.llm_base_url,
                         api_key=self.llm_api_key)

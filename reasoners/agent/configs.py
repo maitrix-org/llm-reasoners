@@ -17,6 +17,7 @@ end the task once it sends a message to the user.""",
     'module_error_message': 'send_msg_to_user("LLM output parsing error")',
     'with_datetime': True,
     'eval_mode': False,
+    'truncate_axtree': True,
 }
 
 browsergym_config = copy.copy(default_web_agent_config)
@@ -37,7 +38,6 @@ opendevin_config = copy.copy(default_web_agent_config)
 opendevin_config.update({
     'environment': 'opendevin',
     'use_nav': True,
-    'truncate_axtree': True,
 })
 
 opendevin_llama_config = copy.copy(opendevin_config)
