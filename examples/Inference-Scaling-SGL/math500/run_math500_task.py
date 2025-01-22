@@ -46,7 +46,6 @@ def setup_logging(log_file):
     logger.remove(0)
 
 def load_models(args):
-    # Set environment variables
 
     # Initialize base model
 
