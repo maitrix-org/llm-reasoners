@@ -5,6 +5,7 @@ import json
 import os
 import time
 from typing import NamedTuple
+import traceback
 
 import torch
 from datasets import Dataset, load_dataset
@@ -13,7 +14,7 @@ from tqdm.auto import tqdm
 
 from reasoners import WorldModel, LanguageModel, SearchConfig, State, Reasoner
 from reasoners.algorithm import BeamSearch, MCTS
-from reasoners.lm import HFModel, OpenAIModel
+from reasoners.lm import HFModel, SGLangModel
 from reasoners.visualization import visualize
 from qwen_math_parser import math_equal
 
@@ -22,18 +23,14 @@ from search_config import MathConfig
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Math 500 Evaluation Script')
-    # parser.add_argument('--base-model-path', type=str, required=True,
-    #                   help='Path to the base LLM model')
-    parser.add_argument('--reward-model-path', type=str, required=True,
-                      help='Path to the reward model')
+    parser.add_argument('--reward-sglang-url', type=str, default='http://127.0.0.1:30002',
+                      help='SGLang API URL (default: http://127.0.0.1:30002/v1)')
     parser.add_argument('--prompt-path', type=str, required=True,
                       help='Path to prompts JSON file')
     parser.add_argument('--output-path', type=str, default='answers.json',
                       help='Path to save results (default: answers.json)')
-    parser.add_argument('--sglang-url', type=str, default='http://127.0.0.1:30001/v1',
+    parser.add_argument('--policy-sglang-url', type=str, default='http://127.0.0.1:30001',
                       help='SGLang API URL (default: http://127.0.0.1:30001/v1)')
-    parser.add_argument('--reward-model-device', type=str, default='cuda:0',
-                      help='Device to run reward model on (default: cuda:0)')
     parser.add_argument('--beam-size', type=int, default=2,
                       help='Beam size for search (default: 2)')
     parser.add_argument('--max-depth', type=int, default=40,
@@ -49,22 +46,19 @@ def setup_logging(log_file):
     logger.remove(0)
 
 def load_models(args):
-    # Set environment variables
-    os.environ["OPENAI_API_KEY"] = "dummy"
-    os.environ["SGLANG_API_URL"] = args.sglang_url
 
     # Initialize base model
-    llm = OpenAIModel(
-        model="model",
-        backend="sglang",
-        is_instruct_model=True
+
+    llm = SGLangModel(
+        model="",
+        is_instruct_model=True,
+        url=args.policy_sglang_url
     )
 
-    # Initialize reward model
-    reward_model = HFModel(
-        model_pth=args.reward_model_path,
-        tokenizer_pth=args.reward_model_path,
-        device=args.reward_model_device,
+    reward_model = SGLangModel(
+        model="",
+        is_instruct_model=False,
+        url=args.reward_sglang_url
     )
 
     return llm, reward_model
@@ -74,7 +68,7 @@ def setup_reasoner(llm, reward_model, prompt, args):
         base_model=llm,
         prm=reward_model,
         prompt=prompt,
-        num_actions=2,
+        num_actions=args.beam_size,
         temperature=args.temperature
     )
     

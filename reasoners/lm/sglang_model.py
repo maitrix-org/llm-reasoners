@@ -20,6 +20,7 @@ class SGLangModel(LanguageModel):
         temperature=0.0,
         additional_prompt=None,
         is_instruct_model: bool = False,
+        url: Optional[str] = None,
     ):
         try:
             import sglang as sgl
@@ -30,14 +31,20 @@ class SGLangModel(LanguageModel):
         self.temperature = temperature
         self.additional_prompt = additional_prompt
         self.is_instruct_model = is_instruct_model
-        self.tokenizer = AutoTokenizer.from_pretrained(model, lagacy=False, trust_remote_code=True)
-        self.__init_client__()
+        self.url = url if url is not None else os.getenv("SGLANG_API_URL", None)
+        self.__init_client__(self.url)
 
-    def __init_client__(self):
+    def __init_client__(self, url):
+        
+        import sglang as sgl
+        from sglang.api import set_default_backend
+        from sglang import RuntimeEndpoint
+        
         self.client = OpenAI(
-            base_url=os.getenv("SGLANG_API_URL", None),
+            base_url=url + "/v1",
         )
-
+        set_default_backend(RuntimeEndpoint(url))
+        
     def generate(
         self,
         prompt: Optional[Union[str, list[str]]],
@@ -70,10 +77,8 @@ class SGLangModel(LanguageModel):
         temperature = self.temperature if temperature is None else temperature
         logprobs = 0 if logprobs is None else logprobs
         
-        if not do_sample or temperature == 0.0:
-            warnings.warn('temperature=0.0 is equivalent to greedy search, ')
-            do_sample = False
-            temperature = 1.0
+        if not do_sample:
+            temperature = 0.0
 
         if eos_token_id is not None:
             if isinstance(eos_token_id, str):
@@ -120,7 +125,7 @@ class SGLangModel(LanguageModel):
                         logprobs=logprobs,
                     )
                     return GenerateOutput(
-                        text=[choice.message.content for choice in response.choices],
+                        text=[choice.message.content + (choice.matched_stop if isinstance(choice.matched_stop, str) else "") for choice in response.choices],
                         log_prob=[token.logprob for token in response.choices[0].logprobs.content] if logprobs else None,
                     )
                 else:
@@ -136,7 +141,7 @@ class SGLangModel(LanguageModel):
                         **kwargs,
                     )
                     return GenerateOutput(
-                        text=[choice.text for choice in response.choices],
+                        text=[choice.text + (choice.matched_stop if isinstance(choice.matched_stop, str) else "") for choice in response.choices],
                         log_prob=[choice.logprobs.token_logprobs for choice in response.choices] if logprobs else None,
                     )
 
@@ -144,9 +149,9 @@ class SGLangModel(LanguageModel):
                 print(f"An Error Occured: {e}, sleeping for {i} seconds")
                 time.sleep(i)
 
-        # after 64 tries, still no luck
+        # after {retry} tries, still no luck
         raise RuntimeError(
-            "CompletionModel failed to generate output, even after 64 tries"
+            f"CompletionModel failed to generate output, even after {retry} tries"
         )
 
     def get_next_token_logits(
@@ -162,9 +167,6 @@ class SGLangModel(LanguageModel):
     def get_loglikelihood(self, prefix: str, contents: list[str], **kwargs) -> np.ndarray:
         
         import sglang as sgl
-        from sglang.api import set_default_backend
-        from sglang import RuntimeEndpoint
-        
         actions = []
         for c in contents:
             if c.startswith(prefix):
@@ -173,11 +175,6 @@ class SGLangModel(LanguageModel):
             else:
                 raise ValueError(f"'{prefix}' is not a prefix of '{c}'")
         
-        base_url=os.getenv("SGLANG_API_URL", None)
-        url = base_url.split("/", 3)[:3]
-        url = "/".join(url)
-        set_default_backend(RuntimeEndpoint(url))
-
         @sgl.function
         def helper(s):
             s += prefix + sgl.gen("logprob", choices=actions)
