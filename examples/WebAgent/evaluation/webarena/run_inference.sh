@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-BASE_URL="http://ec2-3-84-138-66.compute-1.amazonaws.com"
+BASE_URL="[your_host_name]"
 
 export SHOPPING="$BASE_URL:7770/"
 export SHOPPING_ADMIN="$BASE_URL:7780/admin"
@@ -12,81 +12,37 @@ export MAP="$BASE_URL:3000"
 export HOMEPAGE="$BASE_URL:4399"
 
 cd ../..
-CURR_DIR=$PWD
 
-# cd ~
-# bash reset_webarena_host.sh
-# bash run_webarena_host.sh
-# sleep 180
-# cd $CURR_DIR
-# DEBUG=1 python main.py webarena \
-#     --agent reasoner \
-#     --output_dir evaluation/webarena/results/baseline-2 \
-#     --model gpt-4o \
-#     --dataset webarena \
-#     --config_name browsergym_webarena \
-#     --end_idx 2 \
-#     --shuffle \
-#     --seed 21 \
-#     --max_steps 15 
+# Note that after running a set of experiments with each agent, the sites 
+# must be reset before running the next one following the guide:
+# https://github.com/web-arena-x/webarena/blob/main/environment_docker/README.md#environment-reset
 
-# cd ~
-# bash reset_webarena_host.sh
-# bash run_webarena_host.sh
-# sleep 180
-# cd $CURR_DIR
-DEBUG=1 python main.py webarena \
+python main.py webarena \
     --agent reasoner \
-    --output_dir evaluation/webarena/results/wmp-2 \
+    --output_dir evaluation/webarena/results/baseline \
     --model gpt-4o \
     --dataset webarena \
-    --config_name browsergym_webarena_world_model \
-    --end_idx 2 \
+    --config_name browsergym_webarena \
+    --end_idx 100 \
     --shuffle \
-    --seed 21 \
     --max_steps 15 
 
-# cd ~
-# bash reset_webarena_host.sh
-# bash run_webarena_host.sh
-# sleep 180
-# cd $CURR_DIR
+# python main.py webarena \
+#     --agent reasoner \
+#     --output_dir evaluation/webarena/results/wmp \
+#     --model gpt-4o \
+#     --dataset webarena \
+#     --config_name browsergym_webarena_world_model \
+#     --end_idx 100 \
+#     --shuffle \
+#     --max_steps 15 
+
 # python main.py webarena \
 #     --agent openhands \
 #     --output_dir evaluation/webarena/browsingagent \
 #     --model gpt-4o \
 #     --dataset webarena \
 #     --config_name opendevin_webarena \
-#     --max_steps 15 
-
-# cd ~
-# bash reset_webarena_host.sh
-# bash run_webarena_host.sh
-# sleep 180
-# cd $CURR_DIR
-# DEBUG=1 python main.py webarena \
-#     --agent reasoner \
-#     --output_dir evaluation/webarena/results/baseline-100 \
-#     --model gpt-4o \
-#     --dataset webarena \
-#     --config_name browsergym_webarena \
 #     --end_idx 100 \
 #     --shuffle \
-#     --seed 21 \
-#     --max_steps 15 
-
-# cd ~
-# bash reset_webarena_host.sh
-# bash run_webarena_host.sh
-# sleep 180
-# cd $CURR_DIR
-# DEBUG=1 python main.py webarena \
-#     --agent reasoner \
-#     --output_dir evaluation/webarena/results/wmp-100 \
-#     --model gpt-4o \
-#     --dataset webarena \
-#     --config_name browsergym_webarena_world_model \
-#     --end_idx 100 \
-#     --shuffle \
-#     --seed 21 \
 #     --max_steps 15 
