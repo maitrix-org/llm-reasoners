@@ -5,6 +5,7 @@ import json
 import os
 import time
 from typing import NamedTuple
+import traceback
 
 import torch
 from datasets import Dataset, load_dataset
