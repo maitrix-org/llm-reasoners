@@ -57,7 +57,7 @@ python evaluation/flight/run.py [job_name]
 Note: Running evaluation for FlightQA involves calling `gpt-4o`, which may incur costs to you. So please run judiciously.
 
 ### WebArena
-Running WebArena requires setup following [this guide](https://github.com/web-arena-x/webarena/blob/main/environment_docker/README.md). Then the evaluation can be run with the [script](evaluation/webarena/run_inference.sh) provided.
+Running WebArena requires setup following [this guide](https://github.com/web-arena-x/webarena/blob/main/environment_docker/README.md#pre-installed-amazon-machine-image-recommended). Then the evaluation can be run with the [script](evaluation/webarena/run_inference.sh) provided.
 
 ## Installation
 
