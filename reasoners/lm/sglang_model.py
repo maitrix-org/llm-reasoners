@@ -20,6 +20,7 @@ class SGLangModel(LanguageModel):
         temperature=0.0,
         additional_prompt=None,
         is_instruct_model: bool = False,
+        url: Optional[str] = None,
     ):
         try:
             import sglang as sgl
@@ -30,13 +31,20 @@ class SGLangModel(LanguageModel):
         self.temperature = temperature
         self.additional_prompt = additional_prompt
         self.is_instruct_model = is_instruct_model
-        self.__init_client__()
+        self.url = url if url is not None else os.getenv("SGLANG_API_URL", None)
+        self.__init_client__(self.url)
 
-    def __init_client__(self):
+    def __init_client__(self, url):
+        
+        import sglang as sgl
+        from sglang.api import set_default_backend
+        from sglang import RuntimeEndpoint
+        
         self.client = OpenAI(
-            base_url=os.getenv("SGLANG_API_URL", None),
+            base_url=url + "/v1",
         )
-
+        set_default_backend(RuntimeEndpoint(url))
+        
     def generate(
         self,
         prompt: Optional[Union[str, list[str]]],
@@ -141,9 +149,9 @@ class SGLangModel(LanguageModel):
                 print(f"An Error Occured: {e}, sleeping for {i} seconds")
                 time.sleep(i)
 
-        # after 64 tries, still no luck
+        # after {retry} tries, still no luck
         raise RuntimeError(
-            "CompletionModel failed to generate output, even after 64 tries"
+            f"CompletionModel failed to generate output, even after {retry} tries"
         )
 
     def get_next_token_logits(
@@ -159,9 +167,6 @@ class SGLangModel(LanguageModel):
     def get_loglikelihood(self, prefix: str, contents: list[str], **kwargs) -> np.ndarray:
         
         import sglang as sgl
-        from sglang.api import set_default_backend
-        from sglang import RuntimeEndpoint
-        
         actions = []
         for c in contents:
             if c.startswith(prefix):
@@ -170,11 +175,6 @@ class SGLangModel(LanguageModel):
             else:
                 raise ValueError(f"'{prefix}' is not a prefix of '{c}'")
         
-        base_url=os.getenv("SGLANG_API_URL", None)
-        url = base_url.split("/", 3)[:3]
-        url = "/".join(url)
-        set_default_backend(RuntimeEndpoint(url))
-
         @sgl.function
         def helper(s):
             s += prefix + sgl.gen("logprob", choices=actions)

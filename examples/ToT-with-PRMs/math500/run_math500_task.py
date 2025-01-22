@@ -23,19 +23,14 @@ from search_config import MathConfig
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Math 500 Evaluation Script')
-    parser.add_argument('--model_provider', type=str, default='hf')
-    parser.add_argument('--base-model-path', type=str, default="meta-llama/Llama-3.1-8B",
-                      help='Path to the base LLM model')  # the path to huggingface model
-    parser.add_argument('--reward-model-path', type=str, required=True,
-                      help='Path to the reward model')
+    parser.add_argument('--reward-sglang-url', type=str, default='http://127.0.0.1:30002',
+                      help='SGLang API URL (default: http://127.0.0.1:30002/v1)')
     parser.add_argument('--prompt-path', type=str, required=True,
                       help='Path to prompts JSON file')
     parser.add_argument('--output-path', type=str, default='answers.json',
                       help='Path to save results (default: answers.json)')
-    parser.add_argument('--sglang-url', type=str, default='http://127.0.0.1:30001/v1',
+    parser.add_argument('--policy-sglang-url', type=str, default='http://127.0.0.1:30001',
                       help='SGLang API URL (default: http://127.0.0.1:30001/v1)')
-    parser.add_argument('--reward-model-device', type=str, default='cuda:0',
-                      help='Device to run reward model on (default: cuda:0)')
     parser.add_argument('--beam-size', type=int, default=2,
                       help='Beam size for search (default: 2)')
     parser.add_argument('--max-depth', type=int, default=40,
@@ -52,33 +47,19 @@ def setup_logging(log_file):
 
 def load_models(args):
     # Set environment variables
-    os.environ["SGLANG_API_URL"] = args.sglang_url
 
     # Initialize base model
-    
-    # if sglang-url is not provided, use the base model
-    
-    if args.model_provider == 'hf':
-        llm = HFModel(
-            model_pth=args.base_model_path,
-            tokenizer_pth=args.base_model_path,
-            device="cuda:0",
-        )
-    
-    elif args.model_provider == 'sglang':
-        llm = SGLangModel(
-            model="model",
-            is_instruct_model=True
-        )
-        
-    else:
-        raise ValueError(f"Invalid model provider: {args.model_provider}")
 
-    # Initialize reward model
-    reward_model = HFModel(
-        model_pth=args.reward_model_path,
-        tokenizer_pth=args.reward_model_path,
-        device=args.reward_model_device,
+    llm = SGLangModel(
+        model="",
+        is_instruct_model=True,
+        url=args.policy_sglang_url
+    )
+
+    reward_model = SGLangModel(
+        model="",
+        is_instruct_model=False,
+        url=args.reward_sglang_url
     )
 
     return llm, reward_model
