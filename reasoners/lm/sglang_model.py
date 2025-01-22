@@ -30,7 +30,6 @@ class SGLangModel(LanguageModel):
         self.temperature = temperature
         self.additional_prompt = additional_prompt
         self.is_instruct_model = is_instruct_model
-        self.tokenizer = AutoTokenizer.from_pretrained(model, lagacy=False, trust_remote_code=True)
         self.__init_client__()
 
     def __init_client__(self):
@@ -70,10 +69,8 @@ class SGLangModel(LanguageModel):
         temperature = self.temperature if temperature is None else temperature
         logprobs = 0 if logprobs is None else logprobs
         
-        if not do_sample or temperature == 0.0:
-            warnings.warn('temperature=0.0 is equivalent to greedy search, ')
-            do_sample = False
-            temperature = 1.0
+        if not do_sample:
+            temperature = 0.0
 
         if eos_token_id is not None:
             if isinstance(eos_token_id, str):
@@ -120,7 +117,7 @@ class SGLangModel(LanguageModel):
                         logprobs=logprobs,
                     )
                     return GenerateOutput(
-                        text=[choice.message.content for choice in response.choices],
+                        text=[choice.message.content + (choice.matched_stop if isinstance(choice.matched_stop, str) else "") for choice in response.choices],
                         log_prob=[token.logprob for token in response.choices[0].logprobs.content] if logprobs else None,
                     )
                 else:
@@ -136,7 +133,7 @@ class SGLangModel(LanguageModel):
                         **kwargs,
                     )
                     return GenerateOutput(
-                        text=[choice.text for choice in response.choices],
+                        text=[choice.text + (choice.matched_stop if isinstance(choice.matched_stop, str) else "") for choice in response.choices],
                         log_prob=[choice.logprobs.token_logprobs for choice in response.choices] if logprobs else None,
                     )
 

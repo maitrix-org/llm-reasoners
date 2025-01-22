@@ -13,9 +13,9 @@ Run the evaluation script with:
 
 ```bash
 python run_math500_task.py \
-    --reward-model-path /path/to/reward/model \
+    --reward-model-path peiyi9979/math-shepherd-mistral-7b-prm \
     --sglang-url http://127.0.0.1:30001/v1 \
-    --prompt-path /path/to/prompts.json \
+    --prompt-path prompts.json \
     --output-path answers.json \
     --beam-size 2 \
     --max-depth 40 \

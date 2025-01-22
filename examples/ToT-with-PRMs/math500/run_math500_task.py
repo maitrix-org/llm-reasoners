@@ -14,7 +14,7 @@ from tqdm.auto import tqdm
 
 from reasoners import WorldModel, LanguageModel, SearchConfig, State, Reasoner
 from reasoners.algorithm import BeamSearch, MCTS
-from reasoners.lm import HFModel, OpenAIModel
+from reasoners.lm import HFModel, SGLangModel
 from reasoners.visualization import visualize
 from qwen_math_parser import math_equal
 
@@ -23,8 +23,9 @@ from search_config import MathConfig
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Math 500 Evaluation Script')
-    # parser.add_argument('--base-model-path', type=str, required=True,
-    #                   help='Path to the base LLM model')
+    parser.add_argument('--model_provider', type=str, default='hf')
+    parser.add_argument('--base-model-path', type=str, default="meta-llama/Llama-3.1-8B",
+                      help='Path to the base LLM model')  # the path to huggingface model
     parser.add_argument('--reward-model-path', type=str, required=True,
                       help='Path to the reward model')
     parser.add_argument('--prompt-path', type=str, required=True,
@@ -51,15 +52,27 @@ def setup_logging(log_file):
 
 def load_models(args):
     # Set environment variables
-    os.environ["OPENAI_API_KEY"] = "dummy"
     os.environ["SGLANG_API_URL"] = args.sglang_url
 
     # Initialize base model
-    llm = OpenAIModel(
-        model="model",
-        backend="sglang",
-        is_instruct_model=True
-    )
+    
+    # if sglang-url is not provided, use the base model
+    
+    if args.model_provider == 'hf':
+        llm = HFModel(
+            model_pth=args.base_model_path,
+            tokenizer_pth=args.base_model_path,
+            device="cuda:0",
+        )
+    
+    elif args.model_provider == 'sglang':
+        llm = SGLangModel(
+            model="model",
+            is_instruct_model=True
+        )
+        
+    else:
+        raise ValueError(f"Invalid model provider: {args.model_provider}")
 
     # Initialize reward model
     reward_model = HFModel(
@@ -75,7 +88,7 @@ def setup_reasoner(llm, reward_model, prompt, args):
         base_model=llm,
         prm=reward_model,
         prompt=prompt,
-        num_actions=2,
+        num_actions=args.beam_size,
         temperature=args.temperature
     )
     
