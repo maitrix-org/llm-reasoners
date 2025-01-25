@@ -334,7 +334,7 @@ critic_prompt_template = """\
 
 # Task Success and Progress:
 Your task is to evaluate the performance of the agent. Given the agent's instruction, interaction history, the final \
-state of the webpage, and the agent’s responses to the user if any, your goal is to decide whether the agent’s execution \
+state of the webpage, and the agent's responses to the user if any, your goal is to decide whether the agent's execution \
 is successful or not. If the current state is a failure but it looks like the agent is on the right track towards \
 success, you should also output as such.
 
@@ -445,8 +445,10 @@ actor_prompt_template_with_memory_concise_instruction = """\
 
 # Action:
 Choose an API call that will carry out the intent when executed in the webpage. \
-Use only one action at a time. You must not enclose bid inputs in [brackets] but instead in 'single quotes'. \
-Interact only with elements in the current step observation. Your response \
+Use only one action at a time. You must not enclose bid inputs in [brackets] but instead in 'single quotes'. The bid is a number instead of a word. \
+Interact only with elements in the current step observation. \
+Don't send the user message if you met errors or missing information or if the \
+task can't be completed. Your response \
 will be executed as a Python function call, so ensure it adheres to the format \
 and argument data type specifications defined in the action space.
 If you are sending a message to the user, give very short answer in words, numerics, or the requested url \

@@ -15,6 +15,7 @@ class AgentInstructionEnvironmentIdentity(Identity):
         observation_space,
         action_space,
         user_instruction=None,
+        with_datetime=True,
     ):
         super(Identity).__init__()
         self.agent_name = agent_name
@@ -22,6 +23,7 @@ class AgentInstructionEnvironmentIdentity(Identity):
         self.user_instruction = user_instruction
         self.observation_space = observation_space
         self.action_space = action_space
+        self.with_datetime = with_datetime
 
     def reset(self):
         self.user_instruction = None
@@ -30,7 +32,11 @@ class AgentInstructionEnvironmentIdentity(Identity):
         self.user_instruction = user_instruction
 
     def get_value(self):
-        current_datetime = datetime.now().strftime('%a, %b %d, %Y %H:%M:%S')
+        if self.with_datetime:
+            current_datetime = datetime.now().strftime('%a, %b %d, %Y %H:%M:%S')
+            datetime_string = f'\n\n# Current Date and Time:\n{current_datetime}'
+        else:
+            datetime_string = ''
         
         return f"""\
 # Name:
@@ -46,8 +52,6 @@ class AgentInstructionEnvironmentIdentity(Identity):
 {self.action_space}
 
 # Instruction:
-{self.user_instruction}
-
-# Current Date and Time:
-{current_datetime}\
+{self.user_instruction}\
+{datetime_string}\
 """
