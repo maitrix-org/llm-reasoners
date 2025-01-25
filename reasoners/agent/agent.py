@@ -1,7 +1,7 @@
 from typing import Any
 from logging import Logger
 from .base import AgentModule, AgentVariable
-from .llm import LLM, OpenDevinParserLLM, OpenDevinParserMultiResponseLLM
+from .llm import LLM, FastWebParserLLM, FastWebParserMultiResponseLLM
 from .modules import (
     PolicyPlanner, ReasonerPlanner,
     PromptedActor, PromptedCritic, PromptedEncoder,
@@ -9,8 +9,8 @@ from .modules import (
 )
 from .variables import (
     AgentInstructionEnvironmentIdentity,
-    BrowserGymActionSpace, OpenDevinBrowserActionSpace, 
-    BrowserGymObservationSpace, OpenDevinBrowserObservationSpace,
+    BrowserGymActionSpace, FastWebBrowserActionSpace, 
+    BrowserGymObservationSpace, FastWebBrowserObservationSpace,
     StepKeyValueMemory, StepPromptedMemory
 )
 
@@ -24,22 +24,22 @@ from .prompts import (
 )
 
 from .configs import (browsergym_config, browsergym_world_model_config, 
-                      opendevin_config, opendevin_world_model_config, 
-                      opendevin_mini_config, opendevin_mini_world_model_config,
-                      opendevin_llama_config,
-                      opendevin_webarena_config, opendevin_webarena_world_model_config, 
+                      fast_web_config, fast_web_world_model_config, 
+                      fast_web_mini_config, fast_web_mini_world_model_config,
+                      fast_web_llama_config,
+                      fast_web_webarena_config, fast_web_webarena_world_model_config, 
                       browsergym_webarena_config, browsergym_webarena_world_model_config)
 
 CONFIG_LIBRARY = {
     'browsergym': browsergym_config,
     'browsergym_world_model': browsergym_world_model_config,
-    'opendevin': opendevin_config,
-    'opendevin_llama': opendevin_llama_config,
-    'opendevin_world_model': opendevin_world_model_config,
-    'opendevin_mini': opendevin_mini_config,
-    'opendevin_mini_world_model': opendevin_mini_world_model_config,
-    'opendevin_webarena': opendevin_webarena_config,
-    'opendevin_webarena_world_model': opendevin_webarena_world_model_config,
+    'fast_web': fast_web_config,
+    'fast_web_llama': fast_web_llama_config,
+    'fast_web_world_model': fast_web_world_model_config,
+    'fast_web_mini': fast_web_mini_config,
+    'fast_web_mini_world_model': fast_web_mini_world_model_config,
+    'fast_web_webarena': fast_web_webarena_config,
+    'fast_web_webarena_world_model': fast_web_webarena_world_model_config,
     'browsergym_webarena': browsergym_webarena_config,
     'browsergym_webarena_world_model': browsergym_webarena_world_model_config,
 }
@@ -74,14 +74,14 @@ class ReasonerAgent:
                 multiaction=False,
             )
             self.observation_space = BrowserGymObservationSpace(truncation=self.config['truncate_axtree'])
-        elif self.environment == 'opendevin':
-            self.action_space = OpenDevinBrowserActionSpace(
+        elif self.environment == 'fast_web':
+            self.action_space = FastWebBrowserActionSpace(
                 action_subsets=['chat', 'bid'],
                 use_nav=self.config['use_nav'],
                 strict=False,
                 multiaction=False,
             )
-            self.observation_space = OpenDevinBrowserObservationSpace(
+            self.observation_space = FastWebBrowserObservationSpace(
                 eval_mode=self.config['eval_mode'], 
                 truncation=self.config['truncate_axtree']
             )
@@ -98,7 +98,7 @@ class ReasonerAgent:
         )
         
         # Encoder
-        self.encoder_llm = OpenDevinParserLLM(llm, ['state'])
+        self.encoder_llm = FastWebParserLLM(llm, ['state'])
         encoder_prompt_template = encoder_prompt_template_dict[self.encoder_prompt_type]
         self.encoder = PromptedEncoder(
             self.identity, self.encoder_llm, prompt_template=encoder_prompt_template
@@ -106,7 +106,7 @@ class ReasonerAgent:
         
         # Memory
         if self.memory_type == 'step_prompted':
-            self.memory_update_llm = OpenDevinParserLLM(llm, ['memory_update'])
+            self.memory_update_llm = FastWebParserLLM(llm, ['memory_update'])
             memory_update_prompt_template = memory_update_prompt_template_dict[self.config['memory_prompt_type']]
             self.memory = StepPromptedMemory(self.identity, self.memory_update_llm, 
                                              prompt_template=memory_update_prompt_template, 
@@ -124,7 +124,7 @@ class ReasonerAgent:
             self.planner_search_depth = self.config['planner_search_depth']
             self.planner_critic_num_samples = self.config['planner_critic_num_samples']
             
-            self.policy_llm = OpenDevinParserMultiResponseLLM(
+            self.policy_llm = FastWebParserMultiResponseLLM(
                 llm, [self.policy_output_name], ['think']
             )
             policy_prompt_template = policy_prompt_template_dict[self.policy_prompt_type]
@@ -132,7 +132,7 @@ class ReasonerAgent:
                 self.identity, self.policy_llm, prompt_template=policy_prompt_template
             )
 
-            self.world_model_llm = OpenDevinParserLLM(
+            self.world_model_llm = FastWebParserLLM(
                 llm, ['next_state']
             )
             world_model_prompt_template = world_model_prompt_template_dict[self.world_model_prompt_type]
@@ -142,7 +142,7 @@ class ReasonerAgent:
                 prompt_template=world_model_prompt_template,
             )
 
-            self.critic_llm = OpenDevinParserMultiResponseLLM(
+            self.critic_llm = FastWebParserMultiResponseLLM(
                 llm, ['status', 'on_the_right_track'], ['think']
             )
             critic_prompt_template = critic_prompt_template_dict[self.critic_prompt_type]
@@ -162,7 +162,7 @@ class ReasonerAgent:
             self.policy_prompt_type = self.config['policy_prompt_type']
             policy_prompt_template = policy_prompt_template_dict[self.policy_prompt_type]
             
-            self.policy_llm = OpenDevinParserLLM(
+            self.policy_llm = FastWebParserLLM(
                 llm, [self.policy_output_name], ['think']
             )
             self.policy = PromptedPolicy(
@@ -172,7 +172,7 @@ class ReasonerAgent:
             self.planner = PolicyPlanner(self.policy)
 
         # Actor
-        self.actor_llm = OpenDevinParserLLM(llm, ['action'])
+        self.actor_llm = FastWebParserLLM(llm, ['action'])
         actor_prompt_template = actor_prompt_template_dict[self.actor_prompt_type]
         self.actor = PromptedActor(
             self.identity, self.actor_llm, prompt_template=actor_prompt_template

@@ -36,14 +36,14 @@ browsergym_world_model_config.update({
     'planner_critic_num_samples': 20,
 })
 
-opendevin_config = copy.copy(default_web_agent_config)
-opendevin_config.update({
-    'environment': 'opendevin',
+fast_web_config = copy.copy(default_web_agent_config)
+fast_web_config.update({
+    'environment': 'fast_web',
     'use_nav': True,
 })
 
-opendevin_world_model_config = copy.copy(opendevin_config)
-opendevin_world_model_config.update({
+fast_web_world_model_config = copy.copy(fast_web_config)
+fast_web_world_model_config.update({
     'planner_type': 'world_model',
     'world_model_prompt_type': 'with_update',
     'planner_search_num_actions': 5,
@@ -51,8 +51,8 @@ opendevin_world_model_config.update({
     'planner_critic_num_samples': 20,
 })
 
-opendevin_llama_config = copy.copy(opendevin_config)
-opendevin_llama_config.update({
+fast_web_llama_config = copy.copy(fast_web_config)
+fast_web_llama_config.update({
     'agent_description': 'An information and automation assistant who responds to \
 user instructions by browsing the internet. The assistant strives to answer each question \
 accurately, thoroughly, efficiently, and politely, and to be forthright when it is \
@@ -65,8 +65,8 @@ or stable websites like Google, Wikipedia, and Google Flights.',
     'memory_prompt_type': 'llama'
 })
 
-opendevin_mini_config = copy.copy(opendevin_config)
-opendevin_mini_config.update({
+fast_web_mini_config = copy.copy(fast_web_config)
+fast_web_mini_config.update({
     'agent_description': 'An information and automation assistant who responds to \
 user instructions by browsing the internet. The assistant strives to answer each question \
 accurately, thoroughly, efficiently, and politely, and to be forthright when it is \
@@ -82,8 +82,8 @@ After the instruction is successfully carried out, the assistant will message th
     'actor_prompt_type': 'with_memory_mini',
 })
 
-opendevin_mini_world_model_config = copy.copy(opendevin_mini_config)
-opendevin_mini_world_model_config.update({
+fast_web_mini_world_model_config = copy.copy(fast_web_mini_config)
+fast_web_mini_world_model_config.update({
     'planner_type': 'world_model',
     'world_model_prompt_type': 'with_update',
     'planner_search_num_actions': 5,
@@ -91,8 +91,8 @@ opendevin_mini_world_model_config.update({
     'planner_critic_num_samples': 20,
 })
 
-opendevin_webarena_config = copy.copy(opendevin_config)
-opendevin_webarena_config.update({
+fast_web_webarena_config = copy.copy(fast_web_config)
+fast_web_webarena_config.update({
     'agent_description': """An information and automation assistant that interacts with the browser \
 and responds to user instructions. The response follows the following rules: \
 1. When the intent is a question, and a complete answer to the question has been found, \
@@ -109,8 +109,8 @@ The assistant will end the task once it sends a message to the user.""",
     'with_datetime': False
 })
 
-opendevin_webarena_world_model_config = copy.copy(opendevin_webarena_config)
-opendevin_webarena_world_model_config.update({
+fast_web_webarena_world_model_config = copy.copy(fast_web_webarena_config)
+fast_web_webarena_world_model_config.update({
     'planner_type': 'world_model',
     'world_model_prompt_type': 'with_update',
     'planner_search_num_actions': 5,

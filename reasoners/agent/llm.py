@@ -10,7 +10,7 @@ from logging import Logger
 from .utils import ParseError, parse_html_tags_raise
 
 if TYPE_CHECKING: 
-    from opendevin.llm.llm import LLM as OpenDevinLLM
+    from fast_web.llm.llm import LLM as FastWebLLM
 
 class LLM:
     @abstractmethod
@@ -30,17 +30,17 @@ def parser(text, keys, optional_keys=()):
         return None, False, str(e)
     return ans_dict, True, ''
 
-class OpenDevinParserLLM(LLM):
+class FastWebParserLLM(LLM):
     def __init__(
         self,
-        opendevin_llm: 'OpenDevinLLM',
+        fast_web_llm: 'FastWebLLM',
         keys: Union[List[str], Tuple[str]] = (),
         optional_keys: Union[List[str], Tuple[str]] = (),
         logger: Logger = None,
         max_retries: int = 4,
     ):
         super().__init__()
-        self.opendevin_llm = opendevin_llm
+        self.fast_web_llm = fast_web_llm
         self.logger = logger
         self.keys = keys
         self.optional_keys = optional_keys
@@ -50,6 +50,9 @@ class OpenDevinParserLLM(LLM):
             self.parser = partial(parser, keys=keys, optional_keys=optional_keys)
         self.max_retries = max_retries
         self.cost_accumulator = 0
+        
+    def completion(self, *args, **kwargs): 
+        return self.fast_web_llm.completion(*args, **kwargs)
 
     def __call__(self, user_prompt, system_prompt=None, **kwargs):
         messages = []
@@ -94,7 +97,8 @@ class OpenDevinParserLLM(LLM):
         tries = 0
         rate_limit_total_delay = 0
         while tries < n_retries and rate_limit_total_delay < rate_limit_max_wait_time:
-            response = self.opendevin_llm.completion(
+            # response = self.fast_web_llm.completion(
+            response = self.completion(
                 messages=messages,
                 # messages=truncated_messages,  # added
                 **kwargs,
@@ -119,7 +123,7 @@ class OpenDevinParserLLM(LLM):
     def log_cost(self, response):
         # TODO: refactor to unified cost tracking
         try:
-            cur_cost = self.opendevin_llm.completion_cost(response)
+            cur_cost = self.fast_web_llm.completion_cost(response)
         except Exception:
             cur_cost = 0
         self.cost_accumulator += cur_cost
@@ -131,7 +135,7 @@ class OpenDevinParserLLM(LLM):
             )
             
     
-class OpenDevinParserMultiResponseLLM(OpenDevinParserLLM):
+class FastWebParserMultiResponseLLM(FastWebParserLLM):
     def __call__(self, user_prompt, system_prompt=None, **kwargs):
         messages = []
         if system_prompt:
@@ -172,7 +176,8 @@ class OpenDevinParserMultiResponseLLM(OpenDevinParserLLM):
         rate_limit_total_delay = 0
         while tries < n_retries and rate_limit_total_delay < rate_limit_max_wait_time:
             remaining_n = n - len(output_values)
-            response = self.opendevin_llm.completion(
+            # response = self.fast_web_llm.completion(
+            response = self.completion(
                 messages=messages,
                 # messages=truncated_messages,  # added
                 n=remaining_n,

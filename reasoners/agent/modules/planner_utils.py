@@ -3,8 +3,6 @@ import json
 
 from openai import OpenAI
 
-# from opendevin.core.logger import opendevin_logger as logger
-
 from reasoners import SearchConfig as ReasonersSearchConfig
 from reasoners import WorldModel as ReasonersWorldModel
 
@@ -276,7 +274,8 @@ class SearchConfigWrapper(ReasonersSearchConfig):
                 # )
                 # response = completion.choices[0].message.content
                 
-                cluster_llm = self.policy.llm.opendevin_llm
+                # cluster_llm = self.policy.llm.fast_web_llm
+                cluster_llm = self.policy.llm
         
                 response = cluster_llm.completion(
                     messages=messages,

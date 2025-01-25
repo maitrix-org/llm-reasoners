@@ -57,9 +57,9 @@ class BrowserGymActionSpace(ActionSpace):
             
         return action, step_info
 
-class OpenDevinBrowserActionSpace(BrowserGymActionSpace):
+class FastWebBrowserActionSpace(BrowserGymActionSpace):
     def parse_action(self, action, thought, **kwargs):
-        from opendevin.events.action import (
+        from fast_web.events.action import (
             AgentFinishAction,
             BrowseInteractiveAction,
             MessageAction,
@@ -80,7 +80,7 @@ class OpenDevinBrowserActionSpace(BrowserGymActionSpace):
                 args = tree.body[0].value.args  # type: ignore
                 msg_content = args[0].value
 
-        from opendevin.events.action import BrowseInteractiveAction
+        from fast_web.events.action import BrowseInteractiveAction
         return BrowseInteractiveAction(
             browser_actions=action_str,
             thought=thought,

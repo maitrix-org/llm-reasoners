@@ -1,14 +1,14 @@
-from .action_space import BrowserGymActionSpace, OpenDevinBrowserActionSpace
+from .action_space import BrowserGymActionSpace, FastWebBrowserActionSpace
 from .identity import AgentInstructionEnvironmentIdentity
 from .memory import StepKeyValueMemory, StepPromptedMemory
-from .observation_space import BrowserGymObservationSpace, OpenDevinBrowserObservationSpace
+from .observation_space import BrowserGymObservationSpace, FastWebBrowserObservationSpace
 
 __all__ = [
     'AgentInstructionEnvironmentIdentity',
     'BrowserGymObservationSpace',
     'BrowserGymActionSpace',
-    'OpenDevinBrowserActionSpace',
-    'OpenDevinBrowserObservationSpace',
+    'FastWebBrowserActionSpace',
+    'FastWebBrowserObservationSpace',
     'StepKeyValueMemory',
     'StepPromptedMemory',
 ]
