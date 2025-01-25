@@ -168,7 +168,7 @@ class OpenDevinBrowserObservationSpace(BrowserGymObservationSpace):
 
         # current_obs, return_action = self._parse_current_obs(last_obs)
         obs_info, return_action = self._parse_current_obs(last_obs)
-        obs_txt = obs_info['clean_axtree_txt']
+        obs_txt = obs_info.get('clean_axtree_txt')
         if return_action:
             obs_info.update({'return_action': return_action})
         # return current_obs, {'return_action': return_action}
@@ -288,7 +288,7 @@ class OpenDevinBrowserObservationSpace(BrowserGymObservationSpace):
 
         if error_prefix:
             self.error_accumulator += 1
-            if self.error_accumulator > 3:
+            if self.error_accumulator > 10:
                 return current_obs, MessageAction(
                     'Too many errors encountered. Task failed.'
                 )

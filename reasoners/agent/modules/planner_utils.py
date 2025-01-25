@@ -194,6 +194,7 @@ class SearchConfigWrapper(ReasonersSearchConfig):
                 'n': self.critic_n,
             },
         )
+        answers = llm_output['answers']
 
         """Assuming the following response format:
         Thoughts: <your thoughts and reasoning process>
@@ -202,11 +203,14 @@ class SearchConfigWrapper(ReasonersSearchConfig):
         """
         scores = []
         thoughts = []
-        for ans_dict in llm_output['answers']:
+        # for ans_dict in llm_output['answers']:
+        for ans_dict in answers:
+            # if self.logger:
+            #     self.logger.info(ans_dict)
             # print(ans_dict)
-            if ans_dict['status'] == 'success':
+            if ans_dict['status'].strip().strip('"').lower() == 'success':
                 score = 1
-            elif ans_dict['on_the_right_track'] == 'yes':
+            elif ans_dict['on_the_right_track'].strip().strip('"').lower() == 'yes':
                 score = 0.5
             else:
                 score = 0
@@ -230,8 +234,8 @@ class SearchConfigWrapper(ReasonersSearchConfig):
         return reward, {'scores': scores, 'thoughts': thoughts}
 
     def _cluster_actions(self, action2freqs):
-        client = OpenAI(base_url=self.llm_base_url,
-                        api_key=self.llm_api_key)
+        # client = OpenAI(base_url=self.llm_base_url,
+        #                 api_key=self.llm_api_key)
         action_candidate_dict = {
             i: action for i, action in enumerate(action2freqs.keys())
         }
@@ -259,11 +263,33 @@ class SearchConfigWrapper(ReasonersSearchConfig):
         num_retries = 5
         for i in range(num_retries):
             try:
-                completion = client.chat.completions.create(
-                    model='gpt-4o', messages=messages, response_format={'type': 'json_object'}
+                # completion = client.chat.completions.create(
+                #     model='gpt-4o', messages=messages, response_format={'type': 'json_object'}
+                # )
+                # response = completion.choices[0].message.content
+                
+                cluster_llm = self.policy.llm.opendevin_llm
+        
+                response = cluster_llm.completion(
+                    messages=messages,
+                    response_format={'type': 'json_object'}
                 )
-                response = completion.choices[0].message.content
-                clusters_dict = json.loads(response)
+                text = response['choices'][0]['message']['content'].strip()
+                
+                # if text.startswith('```json'):
+                #     text = text[text.find('{'):]  
+                    
+                # text = text.strip()
+                # if not text.endswith('}'):
+                #     text = text + '}' 
+                # if text.count('{') > text.count('}'):
+                #     text = text + '}' 
+                    
+                self.logger.info(text)
+                    
+                clusters_dict = json.loads(text)
+
+                # clusters_dict = json.loads(response)
                 break
             except Exception as e:
                 if i == num_retries - 1:
@@ -283,7 +309,10 @@ class SearchConfigWrapper(ReasonersSearchConfig):
             action = cluster_info[self.policy_output_name]
             cluster2freqs[action] = (0, '')
             for candidate_id in cluster_info['candidates']:
-                candidate = action_candidate_dict[int(candidate_id)]
+                # candidate = action_candidate_dict[int(candidate_id)]
+                candidate = action_candidate_dict.get(int(candidate_id))
+                if not candidate: # Skip if candidate is not found
+                    continue
                 candidate_freq, candidate_think = action2freqs.get(candidate, (0, ''))
 
                 cluster_freq, _ = cluster2freqs[action]

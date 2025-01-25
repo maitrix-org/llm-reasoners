@@ -138,6 +138,37 @@ Description of the action to perform next
 </intent>\
 """
 
+policy_prompt_template_no_memory_update_mini = """\
+{memory}
+
+# Current State:
+{state}
+
+# Intent:
+Describe the action the assistant should take next to carry out the user's \
+instruction. \
+If the user instruction is successfully carried out, message the user and summarize what has been accomplished. \
+Avoid using phrases such as "To accomplish the goal," "I will," "To \
+proceed.". Avoid ending with phrases like "to execute the search." \
+Describe one action at a time and avoid combining multiple steps. \
+Refrain from mentioning specific element IDs as they may change \
+during execution. Limit your response to one phrase and include any details \
+that help select the correct action. Be creative and propose novel \
+methods to achieve the goal. Avoid creating accounts without user \
+permission or providing personal information. Concrete example \
+would be "Go to the home page of Google Flights." and "Click on the 'Search' button."
+
+Wrap your response in the following format:
+
+<think>
+Your thoughts and reasoning process
+</think>
+
+<intent>
+Description of the action to perform next
+</intent>\
+"""
+
 policy_prompt_template_with_memory_update = """\
 {memory}
 
@@ -173,6 +204,7 @@ Description of the action to perform next
 
 policy_prompt_template_dict = {
     'no_update': policy_prompt_template_no_memory_update,
+    'no_update_mini': policy_prompt_template_no_memory_update_mini,
     'with_update': policy_prompt_template_with_memory_update
 }
 
@@ -321,6 +353,39 @@ Your thoughts and reasoning process
 </on_the_right_track>\
 """
 
+critic_prompt_template_mini = """\
+{memory}
+
+# Final State:
+{state}
+
+# Task Success and Progress:
+Your task is to evaluate the performance of the agent. Given the agent's instruction, interaction history, the final \
+state of the webpage, and the agent’s responses to the user if any, your goal is to decide whether the agent \
+is successful or not at carrying out the instructions. Be frank about the agent's progress and critical if you must. \
+If the current state is a failure but it looks like the agent is on the right track towards \
+success, you should also output as such.
+
+Wrap your response in the following format:
+
+<think>
+Your thoughts and reasoning process
+</think>
+
+<status>
+"success" or "failure"
+</status>
+
+<on_the_right_track>
+"yes" or "no"
+</on_the_right_track>\
+"""
+
+critic_prompt_template_dict = {
+    'default': critic_prompt_template,
+    'mini': critic_prompt_template_mini
+}
+
 actor_prompt_template_with_memory = """\
 {memory}
 
@@ -337,6 +402,29 @@ actor_prompt_template_with_memory = """\
 Choose an API call that will carry out the intent when executed in the webpage. \
 Use only one action at a time. You must not enclose bid inputs in [brackets] but instead in 'single quotes'. \
 Interact only with elements in the current step observation. Your response \
+will be executed as a Python function call, so ensure it adheres to the format \
+and argument data type specifications defined in the action space.
+
+Wrap your response in the tag <action> and </action>.\
+"""
+
+actor_prompt_template_with_memory_mini = """\
+{memory}
+
+# Observation:
+{observation}
+
+# Current State:
+{state}
+
+# Current Intent:
+{plan}
+
+# Action:
+Choose an API call that will carry out the intent when executed in the webpage. \
+Use only one action at a time. You must not enclose bid inputs in [brackets] but instead in 'single quotes'. \
+Interact only with elements in the current step observation. \
+When filling search boxes, fill into the corresponding combobox instead. Your response \
 will be executed as a Python function call, so ensure it adheres to the format \
 and argument data type specifications defined in the action space.
 
@@ -414,6 +502,7 @@ Wrap your response in the tag <action> and </action>.\
 
 actor_prompt_template_dict = {
     'with_memory': actor_prompt_template_with_memory,
+    'with_memory_mini': actor_prompt_template_with_memory_mini,
     'with_memory_concise_instruction': actor_prompt_template_with_memory,
     'no_memory': actor_prompt_template_no_memory,
     'with_memory_with_update': actor_prompt_template_with_memory_with_update

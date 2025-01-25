@@ -16,7 +16,7 @@ from .variables import (
 
 from .prompts import (
     actor_prompt_template_dict,
-    critic_prompt_template,
+    critic_prompt_template_dict,
     encoder_prompt_template_dict,
     memory_update_prompt_template_dict,
     policy_prompt_template_dict,
@@ -25,14 +25,18 @@ from .prompts import (
 
 from .configs import (browsergym_config, browsergym_world_model_config, 
                       opendevin_config, opendevin_world_model_config, 
+                      opendevin_mini_config, opendevin_mini_world_model_config,
+                      opendevin_llama_config,
                       webarena_config, webarena_world_model_config)
 
 CONFIG_LIBRARY = {
     'browsergym': browsergym_config,
     'browsergym_world_model': browsergym_world_model_config,
     'opendevin': opendevin_config,
-    'opendevin_llama': opendevin_config,
+    'opendevin_llama': opendevin_llama_config,
     'opendevin_world_model': opendevin_world_model_config,
+    'opendevin_mini': opendevin_mini_config,
+    'opendevin_mini_world_model': opendevin_mini_world_model_config,
     'webarena': webarena_config,
     'webarena_world_model': webarena_world_model_config,
 }
@@ -51,6 +55,7 @@ class ReasonerAgent:
         self.environment = self.config['environment']
         self.encoder_prompt_type = self.config['encoder_prompt_type']
         self.planner_type = self.config['planner_type']
+        self.critic_prompt_type = self.config['critic_prompt_type']
         self.actor_prompt_type = self.config['actor_prompt_type']
         self.memory_type = self.config['memory_type']
         
@@ -136,6 +141,7 @@ class ReasonerAgent:
             self.critic_llm = OpenDevinParserMultiResponseLLM(
                 llm, ['status', 'on_the_right_track'], ['think']
             )
+            critic_prompt_template = critic_prompt_template_dict[self.critic_prompt_type]
             self.critic = PromptedCritic(
                 self.identity, self.critic_llm, prompt_template=critic_prompt_template
             )

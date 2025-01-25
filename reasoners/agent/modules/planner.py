@@ -43,13 +43,13 @@ class ReasonerPlanner(Planner):
                                                           critic_n=critic_num_samples,
                                                           search_depth=search_depth,
                                                           llm_base_url=llm_base_url,
-                                                          llm_api_key=llm_api_key,
-                                                          return_if_single_first_action=True)
+                                                          llm_api_key=llm_api_key)
         # self.reasoner_search_algo = MCTS(output_trace_in_each_iter=True, disable_tqdm=False)
         self.reasoner_search_algo = DFS(max_per_state=search_num_actions,
                                         depth=search_depth,
                                         prior=False,
-                                        return_if_single_first_action=True)
+                                        return_if_single_first_action=True,
+                                        use_mp=True)
         self.reasoner = Reasoner(
             world_model=self.reasoner_world_model,
             search_config=self.reasoner_search_config,

@@ -13,6 +13,7 @@ end the task once it sends a message to the user.""",
     'planner_type': 'policy',
     'policy_prompt_type': 'no_update',
     'policy_output_name': 'intent',
+    'critic_prompt_type': 'default',
     'actor_prompt_type': 'with_memory',
     'module_error_message': 'send_msg_to_user("LLM output parsing error")'
 }
@@ -39,6 +40,15 @@ opendevin_config.update({
     'truncate_axtree': True,
 })
 
+opendevin_world_model_config = copy.copy(opendevin_config)
+opendevin_world_model_config.update({
+    'planner_type': 'world_model',
+    'world_model_prompt_type': 'with_update',
+    'planner_search_num_actions': 5,
+    'planner_search_depth': 1,
+    'planner_critic_num_samples': 20,
+})
+
 opendevin_llama_config = copy.copy(opendevin_config)
 opendevin_llama_config.update({
     'agent_description': 'An information and automation assistant who responds to \
@@ -51,14 +61,30 @@ or stable websites like Google, Wikipedia, and Google Flights.',
     'memory_prompt_type': 'llama'
 })
 
-opendevin_world_model_config = copy.copy(opendevin_config)
-opendevin_world_model_config.update({
+opendevin_mini_config = copy.copy(opendevin_config)
+opendevin_mini_config.update({
+    'agent_description': 'An information and automation assistant who responds to \
+user instructions by browsing the internet. The assistant strives to answer each question \
+accurately, thoroughly, efficiently, and politely, and to be forthright when it is \
+impossible to answer the question or carry out the instruction. The assistant will \
+end the task once it sends a message to the user. The assistant remembers that bids \
+are numbers in square brackets at the beginning of each line. The assistant will \
+focus on providing information for the user and avoid making purchases or bookings. \
+After the instruction is successfully carried out, the assistant will message the user to summarize what has been done.',
+    'policy_prompt_type': 'no_update_mini',
+    'critic_prompt_type': 'mini',
+    'actor_prompt_type': 'with_memory_mini',
+})
+
+opendevin_mini_world_model_config = copy.copy(opendevin_mini_config)
+opendevin_mini_world_model_config.update({
     'planner_type': 'world_model',
     'world_model_prompt_type': 'with_update',
     'planner_search_num_actions': 5,
     'planner_search_depth': 1,
     'planner_critic_num_samples': 20,
 })
+
 
 webarena_config = copy.copy(opendevin_config)
 webarena_config.update({
