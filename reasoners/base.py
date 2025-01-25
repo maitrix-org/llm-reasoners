@@ -1,6 +1,7 @@
 from typing import Generic, TypeVar, Union, NamedTuple, Protocol, Optional, runtime_checkable, Tuple
 from typing import Generic, TypeVar, Union, NamedTuple, Protocol, Optional, runtime_checkable
 from abc import ABC, abstractmethod
+import asyncio
 
 import numpy as np
 from transformers import StoppingCriteriaList
@@ -172,7 +173,6 @@ class SearchAlgorithm(ABC):
     @abstractmethod
     def __call__(self, world_model: WorldModel, search_config: SearchConfig, **kwargs) -> AlgorithmOutput: ...
 
-
 class Reasoner(ABC, Generic[State, Action, Example]):
     def __init__(self,
                  world_model: Dynamics[State, Action],
@@ -182,12 +182,18 @@ class Reasoner(ABC, Generic[State, Action, Example]):
         self.search_config = search_config
         self.search_algo = search_algo
 
-    def __call__(self, example: Optional[Example] = None, prompt = None, **kwargs) -> AlgorithmOutput[State]:
+    async def __call__(self, 
+                     example: Optional[Example] = None, 
+                     prompt: Optional[str] = None,
+                     **kwargs) -> AlgorithmOutput[State]:
         if isinstance(self.dynamics, WorldModel):
             if example is None:
                 raise ValueError("An example must be provided when using WorldModel")
             self.dynamics.update_example(example, prompt=prompt)
             self.search_config.update_example(example, prompt=prompt)
+        
+        if asyncio.iscoroutinefunction(self.search_algo.__call__):
+            return await self.search_algo(self.dynamics, self.search_config, **kwargs)
         return self.search_algo(self.dynamics, self.search_config, **kwargs)
 
 class Evaluator():

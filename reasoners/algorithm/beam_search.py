@@ -7,6 +7,9 @@ import warnings
 import random
 from copy import deepcopy
 import itertools
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 
 
 class BeamSearchNode:
@@ -322,3 +325,178 @@ class BeamSearch(SearchAlgorithm, Generic[State, Action]):
         )
 
         return result
+
+class AsyncBeamSearch(BeamSearch):
+    def __init__(
+        self,
+        max_workers: int = None,        # CPU-bound threads
+        beam_concurrency: int = 4,      # Parallel beam items
+        action_concurrency: int = 8,    # Parallel actions per item
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.max_workers = max_workers or (os.cpu_count() - 1)
+        self.beam_semaphore = asyncio.Semaphore(beam_concurrency)
+        self.action_semaphore = asyncio.Semaphore(action_concurrency)
+
+    async def __call__(self, world: WorldModel, config: SearchConfig):
+        BeamSearchNode.reset_id()
+        init_state = world.init_state()
+        root_node = BeamSearchNode(state=init_state, action=None, reward=0.0)
+        cur_beam = [(root_node, [], 0.0)]
+        terminal_beam = []
+        
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            loop = asyncio.get_running_loop()
+            
+            for depth in range(self.max_depth + 1):
+                cache_for_dedup = set()
+                cache_lock = asyncio.Lock()
+                
+                # Parallel process beam items
+                process_tasks = [
+                    self._process_beam_item(
+                        beam_item, world, config, depth,
+                        executor, loop, cache_for_dedup, cache_lock
+                    )
+                    for beam_item in cur_beam
+                ]
+                
+                results = await asyncio.gather(*process_tasks)
+                new_beam = []
+                
+                for item_terminals, item_candidates in results:
+                    terminal_beam.extend(item_terminals)
+                    new_beam.extend(item_candidates)
+                
+                # Sample next beam
+                cur_beam = self._sample(new_beam)
+                
+                if self.temperature_decay:
+                    self.temperature *= self.temperature_decay
+
+        return self._finalize_results(terminal_beam, root_node)
+
+    async def _process_beam_item(self, beam_item, world, config, depth,
+                               executor, loop, cache, cache_lock):
+        async with self.beam_semaphore:
+            node, reward_list, _ = beam_item[:3]
+            state = node.state
+            
+            # Early termination check
+            if self.early_terminate and await loop.run_in_executor(executor, world.is_terminal, state):
+                return [beam_item], []
+            
+            if depth == self.max_depth:
+                return [beam_item], []
+
+            # Get actions (parallelized)
+            actions = await loop.run_in_executor(executor, config.get_actions, state)
+            
+            # Action deduplication
+            if self.action_dedup:
+                async with cache_lock:
+                    actions = [a for a in actions if a not in cache]
+                    cache.update(actions)
+
+            # Parallel process actions
+            action_tasks = [
+                self._process_action(action, node, state, reward_list, world, config, executor, loop)
+                for action in actions
+            ]
+            
+            action_results = await asyncio.gather(*action_tasks)
+            terminals = []
+            candidates = []
+            
+            for result in action_results:
+                if not result:
+                    continue
+                    
+                new_node, new_reward_list, new_reward, probs = result
+                entry = (new_node, new_reward_list, new_reward, probs)
+                
+                if self.early_terminate and await loop.run_in_executor(executor, world.is_terminal, new_node.state):
+                    terminals.append(entry)
+                else:
+                    candidates.append(entry)
+                    
+            return terminals, candidates
+
+    async def _process_action(self, action, parent_node, state, reward_list,
+                            world, config, executor, loop):
+        async with self.action_semaphore:
+            try:
+                # Parallel execution of heavy computations
+                next_state, aux = await loop.run_in_executor(
+                    executor, partial(world.step, state, action)
+                )
+                
+                fast_reward, fast_aux = await loop.run_in_executor(
+                    executor, partial(config.fast_reward, state, action)
+                )
+                
+                reward_result = await loop.run_in_executor(
+                    executor, partial(config.reward, state, action, **aux, **fast_aux)
+                )
+                
+                if isinstance(reward_result, tuple):
+                    reward, reward_aux = reward_result
+                else:
+                    reward = reward_result
+                    reward_aux = {}
+
+                # Create new node
+                new_reward_list = reward_list + [reward]
+                new_reward = self.reward_aggregator(new_reward_list)
+                new_node = BeamSearchNode(
+                    state=next_state,
+                    action=action,
+                    reward=reward,
+                    parent=parent_node
+                )
+                
+                # Get probabilities if needed
+                acc_prob = reward_aux.get('acc_action_prob', 1.0)
+                cur_prob = reward_aux.get('cur_action_prob', 1.0)
+                
+                return new_node, new_reward_list, new_reward, (acc_prob, cur_prob)
+                
+            except Exception as e:
+                print(f"Error processing action: {e}")
+                return None
+    
+    def _finalize_results(self, terminal_beam, root_node):
+        # Sort terminal beam by cumulative reward
+        terminal_beam.sort(key=lambda x: x[2], reverse=True)  # x[2] is cum_reward
+
+        if self.return_beam:
+            return [
+                BeamSearchResult(
+                    terminal_node=item[0],
+                    terminal_state=item[0].state,
+                    cum_reward=item[2],
+                    trace=item[0].get_trace(),
+                    tree=root_node
+                ) for item in terminal_beam
+            ]
+        else:
+            if not terminal_beam:
+                # Return empty result if no solutions found
+                return BeamSearchResult(
+                    terminal_state=None,
+                    terminal_node=None,
+                    cum_reward=0,
+                    trace=[],
+                    tree=root_node
+                )
+            
+            # Extract best result
+            best_item = terminal_beam[0]
+            return BeamSearchResult(
+                terminal_state=best_item[0].state,
+                terminal_node=best_item[0],
+                cum_reward=best_item[2],
+                trace=best_item[0].get_trace(),
+                tree=root_node
+            )
