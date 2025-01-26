@@ -100,26 +100,55 @@ def eval_answer(ground_truth, predicted):
     predicted = predicted.replace(" ", "")
     return math_equal(ground_truth, predicted)
 
-def process_chunk(chunk_idx: int, chunk: list[dict], args: argparse.Namespace, prompt: dict):
-    answers_to_save = []
-    temp_file = f"{args.output_path}.tmp.{chunk_idx}"
+def process_chunk(chunk_idx: int, chunk: List[Dict[str, Any]], args: argparse.Namespace, prompt: Dict) -> Tuple[List[Dict], List[float]]:
+    """Process a chunk of examples with proper JSON formatting and error handling"""
+    temp_file = f"{args.output_path}.chunk_{chunk_idx}.json"
     chunk_start = time.time()
+    times = []
     
+    # Initialize JSON structure
+    initial_data = {
+        "metadata": {
+            "chunk_idx": chunk_idx,
+            "total_examples": len(chunk),
+            "chunk_start": chunk_start,
+            "chunk_duration": None,
+            "status": "processing"
+        },
+        "results": []
+    }
+    
+    if not os.path.exists(temp_file):
+        with open(temp_file, "w") as f:
+            json.dump(initial_data, f, indent=4)
+
     try:
+        # Model initialization
         llm, reward_model = load_models(args)
         reasoner = setup_reasoner(llm, reward_model, prompt, args)
+        
+        # Update status to running
+        _update_temp_file(temp_file, {"metadata.status": "running"})
+
     except Exception as e:
-        error_msg = f"Chunk {chunk_idx} initialization failed: {str(e)}\n{traceback.format_exc()}"
-        logger.error(error_msg)
-        with open(temp_file, "w") as f:
-            json.dump({"error": error_msg, "chunk_idx": chunk_idx}, f, indent=4)
+        error_entry = {
+            "metadata": {
+                "chunk_idx": chunk_idx,
+                "error": str(e),
+                "status": "failed",
+                "chunk_duration": time.time() - chunk_start,
+                "traceback": traceback.format_exc()
+            },
+            "results": []
+        }
+        _write_temp_file(temp_file, error_entry)
         return [], []
 
     for idx, example in enumerate(chunk):
         entry = {
             "problem_id": example.get("id", hash(example["problem"])),
             "problem": example["problem"],
-            "status": "pending",
+            "status": "processing",
             "start_time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
             "processing_time": None,
             "error": None,
@@ -159,105 +188,143 @@ def process_chunk(chunk_idx: int, chunk: list[dict], args: argparse.Namespace, p
 
         finally:
             # Atomic write with progress tracking
-            temp_write = f"{temp_file}.writing"
             try:
-                if os.path.exists(temp_file):
-                    with open(temp_file, "r") as f:
-                        existing = json.load(f)
-                else:
-                    existing = []
-                
-                existing.append(entry)
-                with open(temp_write, "w") as f:
-                    json.dump({
-                        "metadata": {
-                            "chunk_idx": chunk_idx,
-                            "total_examples": len(chunk),
-                            "chunk_start": chunk_start,
-                            "chunk_duration": time.time() - chunk_start
-                        },
-                        "results": existing
-                    }, f, indent=4)
-                
-                os.replace(temp_write, temp_file)
+                _append_to_temp_file(temp_file, entry)
+                times.append(entry["processing_time"])
             except Exception as e:
                 logger.error(f"Failed to write temp file: {str(e)}")
 
-    return answers_to_save, times
+    # Final chunk metadata update
+    _update_temp_file(temp_file, {
+        "metadata.status": "completed",
+        "metadata.chunk_duration": time.time() - chunk_start
+    })
+
+    return [entry], times
+
+def _append_to_temp_file(temp_file: str, entry: Dict):
+    """Atomically append an entry to the temp JSON file"""
+    temp_write = f"{temp_file}.tmp"
+    
+    try:
+        # Read existing data
+        with open(temp_file, "r") as f:
+            data = json.load(f)
+        
+        # Ensure proper structure
+        if "results" not in data:
+            data["results"] = []
+        
+        # Append new entry
+        data["results"].append(entry)
+        
+        # Write temporary file
+        with open(temp_write, "w") as f:
+            json.dump(data, f, indent=4)
+        
+        # Atomic replace
+        os.replace(temp_write, temp_file)
+    except json.JSONDecodeError:
+        logger.error(f"Corrupt temp file {temp_file}, resetting")
+        with open(temp_file, "w") as f:
+            json.dump({"results": [entry]}, f, indent=4)
+    except Exception as e:
+        if os.path.exists(temp_write):
+            os.remove(temp_write)
+        raise
+
+def _update_temp_file(temp_file: str, updates: Dict):
+    """Update specific fields in the temp JSON file"""
+    temp_write = f"{temp_file}.tmp"
+    
+    with open(temp_file, "r") as f:
+        data = json.load(f)
+    
+    # Apply updates using dot notation
+    for key, value in updates.items():
+        keys = key.split('.')
+        current = data
+        for k in keys[:-1]:
+            current = current.setdefault(k, {})
+        current[keys[-1]] = value
+    
+    with open(temp_write, "w") as f:
+        json.dump(data, f, indent=4)
+    
+    os.replace(temp_write, temp_file)
 
 def main():
+    """Main execution with proper chunk aggregation"""
     total_start = time.time()
-
     args = parse_args()
     setup_logging(args.log_file)
 
+    # Load prompts and dataset
     with open(args.prompt_path, "r") as f:
         prompt = json.load(f)
-
+    
     dataset = load_dataset("HuggingFaceH4/MATH-500", split="test")
     dataset_list = [ex for ex in dataset]
+    logger.info(f"Loaded dataset with {len(dataset_list)} examples")
 
+    # Create processing chunks
     num_processes = args.num_processes
     chunk_size = len(dataset_list) // num_processes
-    chunks = [dataset_list[i*chunk_size : (i+1)*chunk_size] for i in range(num_processes)]
+    chunks = [dataset_list[i*chunk_size : (i+1)*chunk_size] 
+              for i in range(num_processes)]
     
     # Distribute remainder examples
     remainder = len(dataset_list) % num_processes
     for i in range(remainder):
         chunks[i].append(dataset_list[num_processes * chunk_size + i])
 
-    logger.info(f"Starting processing with {num_processes} processes")
-
-    # Add progress tracking
-    total_examples = len(dataset_list)
-    logger.info(f"Total examples to process: {total_examples}")
-
+    # Process chunks in parallel
     chunks_with_indices = list(enumerate(chunks))
-
+    process_func = partial(process_chunk, args=args, prompt=prompt)
+    
     try:
         with multiprocessing.Pool(processes=num_processes) as pool:
-            process_func = partial(process_chunk, args=args, prompt=prompt)
             results = list(tqdm(
                 pool.starmap(process_func, chunks_with_indices),
                 total=len(chunks_with_indices),
                 desc="Processing chunks"
             ))
     finally:
-        total_duration = time.time() - total_start
-        
-        # Aggregate all results
+        # Aggregate results from all chunks
         final_output = {
             "metadata": {
-                "total_time": total_duration,
-                "average_time": total_duration / len(dataset_list) if dataset_list else 0,
+                "total_time": time.time() - total_start,
                 "start_time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(total_start)),
                 "end_time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
                 "args": vars(args),
+                "chunks_processed": 0,
                 "success_rate": None
             },
             "results": []
         }
 
-        # Load all temp files
-        success_count = 0
-        for i in range(num_processes):
-            temp_file = f"{args.output_path}.tmp.{i}"
-            if os.path.exists(temp_file):
-                try:
-                    with open(temp_file, "r") as f:
-                        data = json.load(f)
-                        if "results" in data:
-                            final_output["results"].extend(data["results"])
-                            success_count += len([r for r in data["results"] if r["status"] == "completed"])
-                        os.remove(temp_file)
-                except Exception as e:
-                    logger.error(f"Error loading {temp_file}: {str(e)}")
+        # Load and merge chunk files
+        chunk_files = [f for f in os.listdir() if f.startswith(f"{args.output_path}.chunk_")]
+        for chunk_file in chunk_files:
+            try:
+                with open(chunk_file, "r") as f:
+                    chunk_data = json.load(f)
+                    final_output["results"].extend(chunk_data.get("results", []))
+                    final_output["metadata"]["chunks_processed"] += 1
+                os.remove(chunk_file)
+            except Exception as e:
+                logger.error(f"Error processing {chunk_file}: {str(e)}")
 
         # Calculate statistics
         if final_output["results"]:
-            times = [r["processing_time"] for r in final_output["results"] if r["processing_time"] is not None]
+            processed = [r for r in final_output["results"] if r["status"] in ("completed", "failed")]
+            success = [r for r in final_output["results"] if r["status"] == "completed"]
+            times = [r["processing_time"] for r in processed if r["processing_time"] is not None]
+            
             final_output["metadata"].update({
-                "success_rate": success_count / len(final_output["results"]),
+                "total_examples": len(processed),
+                "success_count": len(success),
+                "success_rate": len(success) / len(processed),
                 "time_stats": {
                     "total": sum(times),
                     "average": sum(times) / len(times),
@@ -266,14 +333,16 @@ def main():
                 }
             })
 
+        # Write final output
         with open(args.output_path, "w") as f:
             json.dump(final_output, f, indent=4, sort_keys=True)
 
-        logger.info(f"\nFinal Statistics:\n"
-                    f"Total time: {final_output['metadata']['total_time']:.2f}s\n"
-                    f"Average time per problem: {final_output['metadata']['time_stats']['average']:.2f}s\n"
-                    f"Success rate: {final_output['metadata']['success_rate']:.1%}\n"
-                    f"Problems processed: {len(final_output['results'])}/{len(dataset_list)}")
+        # Print summary
+        logger.info("\nFinal Statistics:")
+        logger.info(f"Total time: {final_output['metadata']['total_time']:.2f}s")
+        logger.info(f"Processed examples: {final_output['metadata']['total_examples']}/{len(dataset_list)}")
+        logger.info(f"Success rate: {final_output['metadata']['success_rate']:.1%}")
+        logger.info(f"Average processing time: {final_output['metadata']['time_stats']['average']:.2f}s")
 
 if __name__ == "__main__":
     main()
