@@ -1,8 +1,6 @@
 import copy
 import json
 
-from openai import OpenAI
-
 from reasoners import SearchConfig as ReasonersSearchConfig
 from reasoners import WorldModel as ReasonersWorldModel
 
@@ -37,13 +35,10 @@ class WorldModelWrapper(ReasonersWorldModel):
 
         next_state = {
             'state': llm_output['next_state'],
-            # 'memory': copy.deepcopy(state['memory']),
             'memory': next_memory,
             'action_history': state['action_history'] + [action['action']],
         }
 
-        # next_state['memory'].update(state=state['state'], plan=action['action'])
-        # next_state['memory'].step()
         
         if self.logger:
             self.logger.info(f"Proposed Action: {action['action']}")
@@ -51,12 +46,6 @@ class WorldModelWrapper(ReasonersWorldModel):
                 memory_update = next_memory.history[-1]['memory_update']
                 self.logger.info(f"Memory Update: {memory_update}")
             self.logger.info(f"Next State: {next_state['state']}")
-        # else:
-        #     logger.info(f"Proposed Action: {action['action']}")
-        #     if 'memory_update' in next_memory.history[-1]:
-        #         memory_update = next_memory.history[-1]['memory_update']
-        #         logger.info(f"Memory Update: {memory_update}")
-        #     logger.info(f"Next State: {next_state['state']}")
 
         return next_state, {'next_state': next_state}
 
@@ -123,22 +112,15 @@ class SearchConfigWrapper(ReasonersSearchConfig):
             action = ans_dict[self.policy_output_name]
             freq, _ = action2freqs.get(action, (0, ''))
             action2freqs[action] = (freq + 1, ans_dict.get('think'))
-        # total_freq = sum([freq for freq, _ in action2freqs.values()])
 
         if self.logger:
-            # self.logger.info(f'Num Reward Samples: {len(thoughts)}')
             self.logger.info(f'Action2Freqs: {action2freqs}')
-        # else:
-        #     logger.info(f'Action2Freqs: {action2freqs}')
-        # logger.info(f"Action2Freqs: {action2freqs}")
 
         cluster2freqs = {}
         while len(cluster2freqs) == 0:
             cluster2freqs = self._cluster_actions(action2freqs)
             if self.logger:
                 self.logger.info(f'Cluster2Freqs: {cluster2freqs}')
-            # else:
-            #     logger.info(f'Cluster2Freqs: {cluster2freqs}')
 
         action_freq_thoughts = [
             (action, freq, think) for action, (freq, think) in cluster2freqs.items()
@@ -158,13 +140,6 @@ class SearchConfigWrapper(ReasonersSearchConfig):
                 self.logger.info(
                     f"Action: {a['action']}, Freq: {a['freq']}, Think: {a['think']}"
                 )
-        # else:
-        #     logger.info(f'Num Actions Limit: {self.policy_freq_top_k}')
-        #     logger.info('Action Options:')
-        #     for a in action_outputs:
-        #         logger.info(
-        #             f"Action: {a['action']}, Freq: {a['freq']}, Think: {a['think']}"
-        #         )
 
         return action_outputs
 
@@ -178,9 +153,6 @@ class SearchConfigWrapper(ReasonersSearchConfig):
             if self.logger:
                 self.logger.info(f'Current depth is {depth}, less than search depth {self.search_depth}')
                 self.logger.info(f'Reward: {reward}')
-            # else:
-            #     logger.info(f'Current depth is {depth}, less than search depth {self.search_depth}')
-            #     logger.info(f'Reward: {reward}')
             return reward, {}
         
         llm_output = self.critic(
@@ -201,11 +173,7 @@ class SearchConfigWrapper(ReasonersSearchConfig):
         """
         scores = []
         thoughts = []
-        # for ans_dict in llm_output['answers']:
         for ans_dict in answers:
-            # if self.logger:
-            #     self.logger.info(ans_dict)
-            # print(ans_dict)
             if ans_dict['status'].strip().strip('"').lower() == 'success':
                 score = 1
             elif ans_dict['on_the_right_track'].strip().strip('"').lower() == 'yes':
@@ -216,18 +184,11 @@ class SearchConfigWrapper(ReasonersSearchConfig):
             thoughts.append(ans_dict.get('think'))
         reward = sum(scores) / len(scores)
 
-        # logger.info(f"Score Examples: {scores[:5]}")
-        # logger.info(f"Thought Examples: {thoughts[:5]}")
         if self.logger:
             self.logger.info(f'Thought Example: {thoughts[0]}')
             self.logger.info(f'Num Reward Samples: {len(thoughts)}')
             self.logger.info(f'Reward: {reward}')
-        # else:
-        #     logger.info(f'Thought Example: {thoughts[0]}')
-        #     logger.info(f'Num Reward Samples: {len(thoughts)}')
-        #     logger.info(f'Reward: {reward}')
-            
-        # raise
+
 
         return reward, {'scores': scores, 'thoughts': thoughts}
 
@@ -240,8 +201,6 @@ class SearchConfigWrapper(ReasonersSearchConfig):
         return batched_rewards, batched_data
 
     def _cluster_actions(self, action2freqs):
-        # client = OpenAI(base_url=self.llm_base_url,
-        #                 api_key=self.llm_api_key)
         action_candidate_dict = {
             i: action for i, action in enumerate(action2freqs.keys())
         }
@@ -257,7 +216,6 @@ class SearchConfigWrapper(ReasonersSearchConfig):
             + '\n\n'
             + input_prompt
         )
-        # print(llm_prompt)
 
         # Run LLM for clustering
         system_prompt = 'You are an expert at clustering text.'
@@ -269,12 +227,6 @@ class SearchConfigWrapper(ReasonersSearchConfig):
         num_retries = 5
         for i in range(num_retries):
             try:
-                # completion = client.chat.completions.create(
-                #     model='gpt-4o', messages=messages, response_format={'type': 'json_object'}
-                # )
-                # response = completion.choices[0].message.content
-                
-                # cluster_llm = self.policy.llm.fast_web_llm
                 cluster_llm = self.policy.llm
         
                 response = cluster_llm.completion(
@@ -282,41 +234,22 @@ class SearchConfigWrapper(ReasonersSearchConfig):
                     response_format={'type': 'json_object'}
                 )
                 text = response['choices'][0]['message']['content'].strip()
-                
-                # if text.startswith('```json'):
-                #     text = text[text.find('{'):]  
-                    
-                # text = text.strip()
-                # if not text.endswith('}'):
-                #     text = text + '}' 
-                # if text.count('{') > text.count('}'):
-                #     text = text + '}' 
                     
                 self.logger.info(text)
                     
                 clusters_dict = json.loads(text)
-
-                # clusters_dict = json.loads(response)
                 break
             except Exception as e:
                 if i == num_retries - 1:
                     raise e
                 if self.logger:
                     self.logger.error(f'Error: {e}. Retrying...')
-                # else:
-                #     logger.error(f'Error: {e}. Retrying...')
-        # completion = client.chat.completions.create(
-        #     model='gpt-4o', messages=messages, response_format={'type': 'json_object'}
-        # )
-        # response = completion.choices[0].message.content
-        # clusters_dict = json.loads(response)
 
         cluster2freqs = {}
         for cluster_id, cluster_info in clusters_dict.items():
             action = cluster_info[self.policy_output_name]
             cluster2freqs[action] = (0, '')
             for candidate_id in cluster_info['candidates']:
-                # candidate = action_candidate_dict[int(candidate_id)]
                 candidate = action_candidate_dict.get(int(candidate_id))
                 if not candidate: # Skip if candidate is not found
                     continue
@@ -324,7 +257,6 @@ class SearchConfigWrapper(ReasonersSearchConfig):
 
                 cluster_freq, _ = cluster2freqs[action]
                 cluster2freqs[action] = (cluster_freq + candidate_freq, candidate_think)
-                # print(cluster2freqs)
         return cluster2freqs
 
     def _get_cluster_instruction_prompt(self):

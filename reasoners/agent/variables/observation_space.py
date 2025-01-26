@@ -69,8 +69,7 @@ class BrowserGymObservationSpace(ObservationSpace):
         error_prefix = ''
         self.goal = obs['goal']
         current_obs = {}
-        # print(self.obs.keys())
-        # print(self.obs['last_action_error'])
+        
         if obs['last_action_error']:
             # add error recovery prompt prefix
             error_prefix = f'IMPORTANT! Last action is incorrect:\n{obs["last_action"]}\n{obs["last_action_error"]}\nThink again with the current observation of the page.\n'
@@ -260,7 +259,6 @@ class FastWebBrowserObservationSpace(BrowserGymObservationSpace):
             # The browser output observation belongs to FastWeb
             if last_obs.error:
                 # add error recovery prompt prefix
-                # error_prefix = f'IMPORTANT! Last action is incorrect:\n{last_obs.last_browser_action}\nThink again with the current observation of the page.\n'
                 error_prefix += f'IMPORTANT! Last action is incorrect:\n{last_obs.last_browser_action}\n{last_obs.last_browser_action_error}\nThink again with the current observation of the page.\n'
             try:
                 cur_axtree_txt = flatten_axtree_to_str(
@@ -288,7 +286,7 @@ class FastWebBrowserObservationSpace(BrowserGymObservationSpace):
                     'Error when trying to process the accessibility tree: %s', e
                 )
                 cur_axtree_txt = 'Error when trying to process the accessibility tree. No observation is available.'
-                # return current_obs, MessageAction('Error encountered when browsing.')
+                return current_obs, MessageAction('Error encountered when browsing.')
 
         if error_prefix:
             self.error_accumulator += 1
@@ -336,7 +334,6 @@ class FastWebBrowserObservationSpace(BrowserGymObservationSpace):
         current_obs = {
             'clean_axtree_txt': obs_prompt,
             'raw_axtree_txt': cur_axtree_txt,
-            # 'axtree_txt': "AXSTART "+cur_axtree_txt+" AXEND",
             'error_prefix': error_prefix,
             'goal': self.goal,
         }

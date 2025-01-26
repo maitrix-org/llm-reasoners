@@ -97,10 +97,8 @@ class FastWebParserLLM(LLM):
         tries = 0
         rate_limit_total_delay = 0
         while tries < n_retries and rate_limit_total_delay < rate_limit_max_wait_time:
-            # response = self.fast_web_llm.completion(
             response = self.completion(
                 messages=messages,
-                # messages=truncated_messages,  # added
                 **kwargs,
             )
             answer = response['choices'][0]['message']['content'].strip()
@@ -176,19 +174,13 @@ class FastWebParserMultiResponseLLM(FastWebParserLLM):
         rate_limit_total_delay = 0
         while tries < n_retries and rate_limit_total_delay < rate_limit_max_wait_time:
             remaining_n = n - len(output_values)
-            # response = self.fast_web_llm.completion(
             response = self.completion(
                 messages=messages,
-                # messages=truncated_messages,  # added
                 n=remaining_n,
                 **kwargs,
             )
             answers = [c['message']['content'].strip() for c in response['choices']]
-            # answer = response['choices'][0]['message']['content'].strip()
-
-            # messages.append({'role': 'assistant', 'content': answer})
-
-            # value, valid, retry_message = parser(answer)
+            
             self.log_cost(response)
             outputs = [parser(answer) for answer in answers]
             invalid_answer = None
@@ -202,14 +194,10 @@ class FastWebParserMultiResponseLLM(FastWebParserLLM):
                 else:
                     invalid_answer = value
                     invalid_retry_message = retry_message
-            # if valid:
-            #     self.log_cost(response)
-            #     return value
 
             tries += 1
             msg = f'Query failed. Retrying {tries}/{n_retries}.\n[LLM]:\n{invalid_answer}\n[User]:\n{invalid_retry_message}'
             if self.logger: 
                 self.logger.info(msg)
-            # messages.append({'role': 'user', 'content': retry_message})
 
         raise ValueError(f'Could not parse a valid value after {n_retries} retries.')

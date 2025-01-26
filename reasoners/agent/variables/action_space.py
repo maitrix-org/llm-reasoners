@@ -8,6 +8,7 @@ class ActionSpace(AgentVariable):
     @abstractmethod
     def parse_action(self, action, *args, **kwargs): ...
 
+
 class BrowserGymActionSpace(ActionSpace): 
     def __init__(
         self,
@@ -56,6 +57,7 @@ class BrowserGymActionSpace(ActionSpace):
             step_info.update({'action': action})
             
         return action, step_info
+
 
 class FastWebBrowserActionSpace(BrowserGymActionSpace):
     def parse_action(self, action, thought, **kwargs):

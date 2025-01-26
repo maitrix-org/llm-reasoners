@@ -70,6 +70,5 @@ class ReasonerPlanner(Planner):
         while cur_node.depth > 1: # go to the first layer
             cur_node = cur_node.parent
         
-        # intent = result.terminal_state['action_history'][0]
         plan = cur_node.action['action']
         return {self.policy_output_name: plan}

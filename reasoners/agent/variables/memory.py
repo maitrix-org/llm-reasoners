@@ -67,7 +67,7 @@ class StepPromptedMemory(StepKeyValueMemory):
         
     def get_value(self):
         memory_lines = ['# History:']
-        # memory_lines = []
+
         if not self.history:
             memory_lines.append('Beginning of interaction.')
 

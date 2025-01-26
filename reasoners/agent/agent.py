@@ -26,22 +26,20 @@ from .prompts import (
 from .configs import (browsergym_config, browsergym_world_model_config, 
                       fast_web_config, fast_web_world_model_config, 
                       fast_web_mini_config, fast_web_mini_world_model_config,
-                      fast_web_llama_config,
                       fast_web_webarena_config, fast_web_webarena_world_model_config, 
                       browsergym_webarena_config, browsergym_webarena_world_model_config)
 
 CONFIG_LIBRARY = {
     'browsergym': browsergym_config,
     'browsergym_world_model': browsergym_world_model_config,
+    'browsergym_webarena': browsergym_webarena_config,
+    'browsergym_webarena_world_model': browsergym_webarena_world_model_config,
     'fast_web': fast_web_config,
-    'fast_web_llama': fast_web_llama_config,
     'fast_web_world_model': fast_web_world_model_config,
     'fast_web_mini': fast_web_mini_config,
     'fast_web_mini_world_model': fast_web_mini_world_model_config,
     'fast_web_webarena': fast_web_webarena_config,
     'fast_web_webarena_world_model': fast_web_webarena_world_model_config,
-    'browsergym_webarena': browsergym_webarena_config,
-    'browsergym_webarena_world_model': browsergym_webarena_world_model_config,
 }
 
 class ReasonerAgent:
@@ -56,10 +54,9 @@ class ReasonerAgent:
         self.logger = logger
         
         self.environment = self.config['environment']
-        self.encoder_prompt_type = self.config['encoder_prompt_type']
+        self.encoder_prompt_type = self.config.get('encoder_prompt_type', 'default')
         self.planner_type = self.config['planner_type']
-        self.critic_prompt_type = self.config['critic_prompt_type']
-        self.actor_prompt_type = self.config['actor_prompt_type']
+        self.actor_prompt_type = self.config.get('actor_prompt_type', 'default')
         self.memory_type = self.config['memory_type']
         
         self.policy_output_name = self.config['policy_output_name']
@@ -106,8 +103,11 @@ class ReasonerAgent:
         
         # Memory
         if self.memory_type == 'step_prompted':
+            self.memory_prompt_type = self.config.get('memory_prompt_type', 'default')
+            
             self.memory_update_llm = FastWebParserLLM(llm, ['memory_update'])
-            memory_update_prompt_template = memory_update_prompt_template_dict[self.config['memory_prompt_type']]
+            
+            memory_update_prompt_template = memory_update_prompt_template_dict[self.memory_prompt_type]
             self.memory = StepPromptedMemory(self.identity, self.memory_update_llm, 
                                              prompt_template=memory_update_prompt_template, 
                                              keys=[self.policy_output_name])
@@ -118,8 +118,9 @@ class ReasonerAgent:
         
         # Planner
         if self.planner_type == 'world_model':
-            self.policy_prompt_type = self.config['policy_prompt_type']
-            self.world_model_prompt_type = self.config['world_model_prompt_type']
+            self.policy_prompt_type = self.config.get('policy_prompt_type', 'default')
+            self.world_model_prompt_type = self.config.get('world_model_prompt_type', 'default')
+            self.critic_prompt_type = self.config.get('critic_prompt_type', 'default')
             self.planner_search_num_actions = self.config['planner_search_num_actions']
             self.planner_search_depth = self.config['planner_search_depth']
             self.planner_critic_num_samples = self.config['planner_critic_num_samples']
@@ -159,7 +160,7 @@ class ReasonerAgent:
                                               llm_api_key=llm.api_key)
             
         elif self.planner_type == 'policy':
-            self.policy_prompt_type = self.config['policy_prompt_type']
+            self.policy_prompt_type = self.config.get('policy_prompt_type', 'default')
             policy_prompt_template = policy_prompt_template_dict[self.policy_prompt_type]
             
             self.policy_llm = FastWebParserLLM(
@@ -218,7 +219,6 @@ class ReasonerAgent:
     def step(self, raw_obs):
         step_info = {}
         
-        # observation, info = self.observation_space.parse_observation(raw_obs)
         obs, obs_info = self.observation_space.parse_observation(raw_obs)
         self._maybe_log(f'*Observation*: {obs}')
         step_info.update({'obs': obs, 'obs_info': obs_info})
@@ -246,13 +246,13 @@ class ReasonerAgent:
         
         try:
             self.memory.update(**step_info)
+            step_info.update(self.memory.current_step)
+            if self.memory_type == 'step_prompted':
+                self._maybe_log(f"*Memory update*: {self.memory.current_step['memory_update']}")
+            self.memory.step()
         except KeyError as e: 
             print(e)
             return self._finish_with_module_error(step_info)
-        step_info.update(self.memory.current_step)
-        if self.memory_type == 'step_prompted':
-            self._maybe_log(f"*Memory update*: {self.memory.current_step['memory_update']}")
-        self.memory.step()
         
         self._log_total_accumulated_cost()
             
