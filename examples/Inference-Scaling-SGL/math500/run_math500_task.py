@@ -102,48 +102,92 @@ def eval_answer(ground_truth, predicted):
 
 def process_chunk(chunk_idx: int, chunk: list[dict], args: argparse.Namespace, prompt: dict):
     answers_to_save = []
-    times = []
+    temp_file = f"{args.output_path}.tmp.{chunk_idx}"
+    chunk_start = time.time()
     
     try:
         llm, reward_model = load_models(args)
         reasoner = setup_reasoner(llm, reward_model, prompt, args)
     except Exception as e:
-        logger.error(f"Chunk {chunk_idx} failed initialization: {str(e)}")
+        error_msg = f"Chunk {chunk_idx} initialization failed: {str(e)}\n{traceback.format_exc()}"
+        logger.error(error_msg)
+        with open(temp_file, "w") as f:
+            json.dump({"error": error_msg, "chunk_idx": chunk_idx}, f, indent=4)
         return [], []
 
-    temp_file = f"{args.output_path}.tmp.{chunk_idx}"
-    
-    for example in chunk:
+    for idx, example in enumerate(chunk):
+        entry = {
+            "problem_id": example.get("id", hash(example["problem"])),
+            "problem": example["problem"],
+            "status": "pending",
+            "start_time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            "processing_time": None,
+            "error": None,
+            "traceback": None
+        }
+        
         start_time = time.time()
         try:
+            # Processing logic
             problem = {"init": example["problem"]}
             trace = reasoner(problem)
             solution = trace.terminal_state.solution
             steps = trace.terminal_state.steps
 
-            is_correct = eval_answer(solution, example["answer"])
-            result = {
-                "problem": example["problem"],
+            entry.update({
+                "status": "completed",
                 "predicted_answer": solution,
-                "steps": steps,
-                "ground_truth_steps": example["solution"],
-                "ground_truth_answer": example["answer"],
-                "is_potentially_correct": is_correct,
-            }
-            answers_to_save.append(result)
-            
-            with open(temp_file, "w") as f:
-                json.dump(answers_to_save, f)
+                "predicted_steps": steps,
+                "ground_truth": {
+                    "steps": example["solution"].split("\n"),
+                    "answer": example["answer"]
+                },
+                "is_correct": eval_answer(solution, example["answer"]),
+                "processing_time": time.time() - start_time,
+                "end_time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+            })
 
         except Exception as e:
-            logger.error(f"Error processing example: {str(e)}")
-            logger.error(traceback.format_exc())
+            entry.update({
+                "status": "failed",
+                "error": str(e),
+                "traceback": traceback.format_exc(),
+                "processing_time": time.time() - start_time,
+                "end_time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+            })
+            logger.error(f"Chunk {chunk_idx} example {idx} failed: {str(e)}")
+
         finally:
-            times.append(time.time() - start_time)
-    
+            # Atomic write with progress tracking
+            temp_write = f"{temp_file}.writing"
+            try:
+                if os.path.exists(temp_file):
+                    with open(temp_file, "r") as f:
+                        existing = json.load(f)
+                else:
+                    existing = []
+                
+                existing.append(entry)
+                with open(temp_write, "w") as f:
+                    json.dump({
+                        "metadata": {
+                            "chunk_idx": chunk_idx,
+                            "total_examples": len(chunk),
+                            "chunk_start": chunk_start,
+                            "chunk_duration": time.time() - chunk_start
+                        },
+                        "results": existing
+                    }, f, indent=4)
+                
+                os.replace(temp_write, temp_file)
+            except Exception as e:
+                logger.error(f"Failed to write temp file: {str(e)}")
+
     return answers_to_save, times
 
 def main():
+    total_start = time.time()
+
     args = parse_args()
     setup_logging(args.log_file)
 
@@ -170,37 +214,66 @@ def main():
 
     chunks_with_indices = list(enumerate(chunks))
 
-    with multiprocessing.Pool(processes=num_processes) as pool:
-        process_func = partial(process_chunk, args=args, prompt=prompt)
-        results = list(tqdm(
-            pool.starmap(process_func, chunks_with_indices),
-            total=len(chunks_with_indices),
-            desc="Processing chunks"
-        ))
+    try:
+        with multiprocessing.Pool(processes=num_processes) as pool:
+            process_func = partial(process_chunk, args=args, prompt=prompt)
+            results = list(tqdm(
+                pool.starmap(process_func, chunks_with_indices),
+                total=len(chunks_with_indices),
+                desc="Processing chunks"
+            ))
+    finally:
+        total_duration = time.time() - total_start
+        
+        # Aggregate all results
+        final_output = {
+            "metadata": {
+                "total_time": total_duration,
+                "average_time": total_duration / len(dataset_list) if dataset_list else 0,
+                "start_time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(total_start)),
+                "end_time": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                "args": vars(args),
+                "success_rate": None
+            },
+            "results": []
+        }
 
-    # Aggregate all temporary files
-    all_answers = []
-    for i in range(num_processes):
-        temp_file = f"{args.output_path}.tmp.{i}"
-        if os.path.exists(temp_file):
-            try:
-                with open(temp_file, "r") as f:
-                    all_answers.extend(json.load(f))
-                os.remove(temp_file)
-            except Exception as e:
-                logger.error(f"Error loading temp file {temp_file}: {str(e)}")
+        # Load all temp files
+        success_count = 0
+        for i in range(num_processes):
+            temp_file = f"{args.output_path}.tmp.{i}"
+            if os.path.exists(temp_file):
+                try:
+                    with open(temp_file, "r") as f:
+                        data = json.load(f)
+                        if "results" in data:
+                            final_output["results"].extend(data["results"])
+                            success_count += len([r for r in data["results"] if r["status"] == "completed"])
+                        os.remove(temp_file)
+                except Exception as e:
+                    logger.error(f"Error loading {temp_file}: {str(e)}")
 
-    # Save final results
-    with open(args.output_path, "w") as f:
-        json.dump({"answers": all_answers}, f, indent=4)
+        # Calculate statistics
+        if final_output["results"]:
+            times = [r["processing_time"] for r in final_output["results"] if r["processing_time"] is not None]
+            final_output["metadata"].update({
+                "success_rate": success_count / len(final_output["results"]),
+                "time_stats": {
+                    "total": sum(times),
+                    "average": sum(times) / len(times),
+                    "min": min(times),
+                    "max": max(times)
+                }
+            })
 
-    avg_time = sum(all_times) / len(all_times)
-    logger.info(f"Average time per problem: {avg_time:.2f} seconds")
-    logger.info(f"Total time: {sum(all_times):.2f} seconds")
-    
-    correct = sum(1 for ans in all_answers if ans["is_potentially_correct"])
-    accuracy = correct / len(all_answers) if len(all_answers) > 0 else 0
-    logger.info(f"Accuracy: {accuracy:.2%} ({correct}/{len(all_answers)})")
+        with open(args.output_path, "w") as f:
+            json.dump(final_output, f, indent=4, sort_keys=True)
+
+        logger.info(f"\nFinal Statistics:\n"
+                    f"Total time: {final_output['metadata']['total_time']:.2f}s\n"
+                    f"Average time per problem: {final_output['metadata']['time_stats']['average']:.2f}s\n"
+                    f"Success rate: {final_output['metadata']['success_rate']:.1%}\n"
+                    f"Problems processed: {len(final_output['results'])}/{len(dataset_list)}")
 
 if __name__ == "__main__":
     main()
