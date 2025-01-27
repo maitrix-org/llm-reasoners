@@ -4,6 +4,8 @@ from .. import SearchAlgorithm, WorldModel, Reasoner, SearchConfig, State, Actio
 from typing import NamedTuple, List, Tuple
 import itertools
 from typing import Generic, Optional, NamedTuple, Callable, Hashable
+import copy
+import multiprocessing.dummy as mp_dummy
 
 
 class DFSNode:
@@ -62,7 +64,9 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
                  max_per_state: int = 3, 
                  depth: int = 10,
                  prior: bool = True,
-                 max_terminal_nodes: int = 10):
+                 max_terminal_nodes: int = 10,
+                 return_if_single_first_action: bool = False,
+                 use_mp: bool = False):
         self.max_per_state = max_per_state
         self.depth = depth # not used
         self.total_states = total_states
@@ -70,6 +74,8 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
         self.stat_cnt = 0
         self.prior = prior # use fast_reward as prior score
         self.max_terminal_nodes = max_terminal_nodes
+        self.return_if_single_first_action = return_if_single_first_action
+        self.use_mp = use_mp
 
     def _reset(self):
         self.terminals = []
@@ -104,6 +110,17 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
         if len(new_actions) == 0: 
             print('terminal return: no new action')
             return 
+        
+        # if only one action on the first layer, return
+        if self.return_if_single_first_action and len(new_actions) == 1 and cur_node.depth == 0:
+            print('terminal return: only one action no the first layer')
+            new_node = DFSNode(state=None, action=new_actions[0], parent=cur_node, 
+                               fast_reward=0, fast_reward_details=None, is_terminal=False)
+            new_node.cum_rewards = cur_node.cum_rewards + [new_node.reward]
+            cur_node.add_child(new_node)
+            self.terminals.append(new_node)
+            return
+        
         ## sort possible actions by score
         if self.prior:
             actions_with_prior = [(a, config.fast_reward(cur_state, a)) for a in new_actions]
@@ -112,25 +129,55 @@ class DFS(SearchAlgorithm, Generic[State, Action]):
             new_actions = [(a, (0, {})) for a in new_actions]
         # try each candidate
         cnt_per_state = 0
-        for action in new_actions:
-            action, (fast_reward, fast_reward_details) = action
-            new_state = world.step(cur_state, action)
-            if self.stat_cnt < self.total_states:
-                cnt_per_state += 1
-                if cnt_per_state > self.max_per_state: 
-                    print(f'reach max_per_state {self.max_per_state}: break')
-                    break
-                self.stat_cnt += 1
+        
+        # with mp_dummy.Pool(processes=n_actions) as pool:
+        #     # Use starmap to pass multiple arguments to the function
+        #     arguments = [
+        #         (
+        #             self.obs_history,
+        #             self.states + new_states,
+        #             self.strategies + new_actions,
+        #             self.explanations,
+        #             self.actions,
+        #             self.policy,
+        #         )
+        #     ] * n_actions
+        #     sampled_actions = pool.starmap(sample_action, arguments)
+        
+        if not self.use_mp:
+            for action in new_actions:
+                action, (fast_reward, fast_reward_details) = action
+                # new_state = world.step(cur_state, action)
+                if self.stat_cnt < self.total_states:
+                    cnt_per_state += 1
+                    if cnt_per_state > self.max_per_state: 
+                        print(f'reach max_per_state {self.max_per_state}: break')
+                        break
+                    self.stat_cnt += 1
 
-                new_state, aux = world.step(cur_state, action)
+                    new_state, aux = world.step(cur_state, action)
 
-                new_node = DFSNode(state=new_state, action=action, parent=cur_node, fast_reward=fast_reward, fast_reward_details=fast_reward_details, is_terminal=False)
-                new_node.reward, new_node.reward_details = config.reward(cur_state, action, **aux, **fast_reward_details)
-                new_node.cum_rewards = cur_node.cum_rewards + [new_node.reward]
+                    new_node = DFSNode(state=new_state, action=action, parent=cur_node, fast_reward=fast_reward, fast_reward_details=fast_reward_details, is_terminal=False)
+                    new_node.reward, new_node.reward_details = config.reward(cur_state, action, **aux, **fast_reward_details)
+                    new_node.cum_rewards = cur_node.cum_rewards + [new_node.reward]
 
-                cur_node.add_child(new_node)
-                self.dfs(world, config, new_node)
+                    cur_node.add_child(new_node)
+                    self.dfs(world, config, new_node)
+        else:
+            with mp_dummy.Pool(processes=self.max_per_state) as pool:
+                arguments = [(world, config, cur_node, action) for action in new_actions[:self.max_per_state]]
+                pool.starmap(self._dfs_mp, arguments)
         return
+    
+    def _dfs_mp(self, world, config, cur_node, action):
+        action, (fast_reward, fast_reward_details) = action
+        new_state, aux = world.step(cur_node.state, action)
+        new_node = DFSNode(state=new_state, action=action, parent=cur_node, fast_reward=fast_reward, fast_reward_details=fast_reward_details, is_terminal=False)
+        new_node.reward, new_node.reward_details = config.reward(cur_node.state, action, **aux, **fast_reward_details)
+        new_node.cum_rewards = cur_node.cum_rewards + [new_node.reward]
+        cur_node.add_child(new_node)
+        
+        self.dfs(world, config, new_node)
     
 
 class CW_DFS(SearchAlgorithm, Generic[State, Action]):

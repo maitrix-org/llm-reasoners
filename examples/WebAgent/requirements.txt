@@ -1,0 +1,6 @@
+litellm
+tenacity
+termcolor
+scipy
+browsergym==0.3.6.dev0
+gradio
