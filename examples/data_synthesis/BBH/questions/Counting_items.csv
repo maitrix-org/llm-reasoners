@@ -1,0 +1,100 @@
+Question,Answer
+"Question: I have 2 flutes, 1 trombone, 5 accordions. How many musical instruments do I have?",Answer: 8
+"Question: I have 3 trumpets, 4 pianos, 5 violins, 2 trombones, 5 clarinets, 1 accordion, 2 flutes. How many musical instruments do I have?",Answer: 22
+"Question: I have 1 flute, 2 trombones, 2 drums, 1 trumpet. How many musical instruments do I have?",Answer: 6
+"Question: I have 5 pianos, 4 trombones, 4 violins, 2 clarinets, 2 accordions, 1 flute, 5 trumpets. How many musical instruments do I have?",Answer: 23
+"Question: I have 5 violins, 4 clarinets, 3 trumpets, 5 trombones, 3 drums, 1 piano. How many musical instruments do I have?",Answer: 21
+"Question: I have 4 capsicums, 3 garlics, 3 cucumbers, 5 corn cobs, 3 onions. How many vegetables do I have?",Answer: 18
+"Question: I have 2 garlics, 4 mushrooms, 4 shallots, 4 carrots, 2 onions. How many vegetables do I have?",Answer: 16
+"Question: I have 4 onions, 4 cabbages, 4 zucchinis, 4 capsicums, 2 cucumbers. How many vegetables do I have?",Answer: 18
+"Question: I have 1 cabbage, 2 shallots, 5 garlics, 3 onions, 3 zucchinis, 2 carrots, 4 corn cobs, 5 capsicums, 1 cucumber. How many vegetables do I have?",Answer: 26
+"Question: I have 2 garlics, 2 onions, 5 cabbages, 5 zucchinis, 5 capsicums, 4 corn cobs, 4 cucumbers, 2 mushrooms, 3 carrots. How many vegetables do I have?",Answer: 32
+"Question: I have 3 pomegranates, 4 oranges, 2 papayas, 4 limes, 5 bananas, 3 pineapples. How many fruits do I have?",Answer: 21
+"Question: I have 1 pineapple, 2 pears, 5 bananas, 2 cantaloupes, 5 apricots, 4 kiwis, 1 orange, 4 papayas, 3 lemons, 2 grapes, 3 mangos. How many fruits do I have?",Answer: 32
+"Question: I have 3 watermelons, 1 apricot, 4 pomegranates, 3 bananas, 4 grapes, 5 apples, 3 plums, 3 pears, 1 lemon, 4 pineapples, 1 papaya, 5 mangos, 5 oranges, 1 kiwi, 3 limes. How many fruits do I have?",Answer: 46
+"Question: I have 5 grapes, 4 apples, 1 pear, 1 pineapple, 5 cantaloupes, 1 banana, 3 limes. How many fruits do I have?",Answer: 20
+"Question: I have 3 plums, 1 lime, 1 papaya, 3 apricots, 1 banana, 2 mangos, 2 watermelons, 5 pomegranates, 2 oranges, 1 cantaloupe, 3 apples, 1 grape, 1 pineapple. How many fruits do I have?",Answer: 26"Question: I have 3 index cards, 4 folders, 2 pens, 5 calculators, 2 whiteboards, 4 sticky notes, 3 binders, 5 erasers, 3 highlighters, 3 notebooks. How many fruits do I have?",Answer: 34
+"Question: I have 2 pencils, 2 staplers, 2 rulers, 5 highlighters, 1 whiteboard, 5 paper clips, 1 marker, 2 binders, 5 sticky notes, 1 index card, 4 chart papers, 5 calculators, 4 erasers, 1 pen, 3 folders, 2 file organizers, 4 notebooks. How many items do I have?",Answer: 49
+"Question: I have 4 whiteboards, 5 file organizers, 4 highlighters, 3 chart papers, 2 calculators, 2 paper clips, 4 pencils. How many items do I have?",Answer: 24
+"Question: I have 5 rulers, 3 paper clips, 1 pencil, 1 folder, 3 whiteboards, 3 sticky notes, 1 index card, 2 pens, 5 chart papers, 2 notebooks, 5 file organizers, 5 calculators. How many items do I have?",Answer: 36
+"Question: I have 2 folders, 3 pencils, 1 calculator, 3 chart papers, 3 index cards, 5 staplers, 1 notebook, 1 pen, 5 file organizers, 5 rulers, 4 erasers. How many items do I have?",Answer: 33
+"Question: I have 4 staplers, 5 markers, 5 pencils, 4 binders, 4 whiteboards. How many items do I have?",Answer: 22
+"Question: I have 2 helicopters, 5 trains, 5 tractors. How many vehicles do I have?",Answer: 12
+"Question: I have 5 trains, 1 van, 1 hovercraft, 1 helicopter, 1 motorcycle, 2 golf carts, 4 tractors, 5 boats. How many vehicles do I have?",Answer: 20
+"Question: I have 3 trucks, 4 submarines, 5 helicopters, 1 train, 5 bicycles, 2 boats, 5 vans. How many vehicles do I have?",Answer: 25
+"Question: I have 4 hovercrafts, 2 skateboards, 1 van, 5 tractors, 5 boats, 3 submarines, 2 golf carts, 3 cars, 1 scooter, 3 motorcycles, 1 helicopter, 3 airplanes, 1 ship, 5 trucks, 4 bicycles, 4 trains. How many vehicles do I have?",Answer: 47
+"Question: I have 2 boats, 2 trucks, 5 cars. How many vehicles do I have?",Answer: 9
+"Question: I have 4 ships, 5 helicopters, 3 airplanes. How many vehicles do I have?",Answer: 12
+"Question: I have 3 tractors, 5 trains, 1 van, 3 hovercrafts, 3 ships, 5 submarines, 2 trucks, 3 helicopters, 2 boats, 5 skateboards, 2 airplanes. How many vehicles do I have?",Answer: 34
+"Question: I have 2 airplanes, 2 trucks, 5 ships, 3 golf carts, 1 submarine, 4 scooters, 5 bicycles, 5 vans, 3 helicopters, 1 boat, 5 trains, 2 tractors. How many vehicles do I have?",Answer: 38
+"Question: I have 2 tractors, 5 helicopters, 2 vans, 4 airplanes, 5 bicycles, 5 hovercrafts, 1 submarine, 1 car, 5 trains, 5 ships, 1 scooter, 2 motorcycles, 5 skateboards, 4 trucks, 1 golf cart. How many vehicles do I have?",Answer: 48
+"Question: I have 3 skateboards, 2 trucks, 3 submarines, 4 vans, 2 cars, 3 motorcycles, 1 hovercraft, 4 golf carts, 3 boats, 4 airplanes, 1 scooter, 1 tractor, 5 trains, 3 ships, 3 bicycles. How many vehicles do I have?",Answer: 42
+"Question: I have 3 carrots, 5 cucumbers, 2 cabbages, 3 zucchinis. How many vegetables do I have?",Answer: 13
+"Question: I have 4 shallots, 2 capsicums, 4 cucumbers, 5 carrots, 2 zucchinis, 3 cabbages, 5 onions, 1 corn cob. How many vegetables do I have?",Answer: 26
+"Question: I have 2 corn cobs, 2 mushrooms, 3 shallots, 1 onion, 4 carrots, 4 zucchinis, 4 cucumbers, 3 cabbages, 1 garlic, 4 capsicums. How many vegetables do I have?",Answer: 28
+"Question: I have 2 carrots, 3 garlics, 5 shallots, 5 capsicums, 4 corn cobs, 2 zucchinis, 3 onions, 3 cabbages, 5 cucumbers. How many vegetables do I have?",Answer: 32
+"Question: I have 3 carrots, 2 onions, 1 cucumber, 3 cabbages, 5 mushrooms, 2 garlics, 2 shallots, 1 capsicum, 1 corn cob, 1 zucchini. How many vegetables do I have?",Answer: 21
+"Question: I have 2 pears, 2 apples, 2 oranges, 1 lime, 3 mangos, 2 plums, 5 apricots, 2 pomegranates, 1 pineapple, 2 cantaloupes, 1 lemon, 2 grapes, 4 bananas. How many fruits do I have?",Answer: 29
+"Question: I have 3 bananas, 3 oranges, 4 lemons, 3 kiwis, 3 apricots, 2 grapes, 3 mangos, 2 pears, 4 papayas. How many fruits do I have?",Answer: 27
+"Question: I have 1 banana, 3 pears, 2 grapes, 4 pomegranates, 4 apples, 3 pineapples, 3 plums. How many fruits do I have?",Answer: 20
+"Question: I have 5 apricots, 2 papayas, 5 mangos, 3 pears, 1 apple, 1 orange, 3 cantaloupes, 1 lime, 3 bananas, 2 pomegranates, 4 plums, 5 pineapples. How many fruits do I have?",Answer: 35
+"Question: I have 4 bananas, 4 apricots, 1 pomegranate, 1 plum, 5 grapes, 3 pears, 1 apple, 4 mangos, 3 lemons, 5 papayas, 2 watermelons, 2 limes, 1 pineapple, 5 kiwis, 5 oranges. How many fruits do I have?",Answer: 46
+"Question: I have 4 erasers, 4 file organizers, 1 folder, 3 markers, 1 pen, 1 ruler. How many items do I have?",Answer: 14
+"Question: I have 5 erasers, 5 markers, 3 whiteboards, 4 pencils, 2 folders, 2 calculators. How many items do I have?",Answer: 21
+"Question: I have 2 index cards, 4 pencils, 2 chart papers, 5 staplers, 5 rulers, 5 calculators, 1 pen, 2 markers, 4 whiteboards, 3 file organizers, 4 folders, 5 notebooks, 5 binders, 1 paper clip, 1 highlighter, 1 sticky note, 5 erasers. How many items do I have?",Answer: 55
+"Question: I have 3 highlighters, 1 index card, 3 staplers. How many items do I have?",Answer: 7
+"Question: I have 4 pencils, 5 notebooks, 1 calculator, 3 highlighters, 4 erasers, 2 rulers, 5 chart papers, 3 sticky notes, 4 index cards, 5 pens, 1 paper clip, 5 binders, 5 whiteboards, 3 markers, 4 file organizers. How many items do I have?",Answer: 54
+"Question: I have 2 zebras, 4 meerkats, 2 elephants, 3 lions, 2 tigers, 5 giraffes, 1 hyena, 3 koalas. How many wild animals do I have?",Answer: 22
+"Question: I have 2 elephants, 4 rabbits, 4 hyenas, 3 jaguars, 4 meerkats, 1 zebra, 1 giraffe, 3 pandas, 5 koalas. How many wild animals do I have?",Answer: 27
+"Question: I have 2 jaguars, 4 boars, 4 rabbits, 4 koalas, 1 tiger, 5 giraffes, 3 elephants, 4 hyenas, 3 pandas, 2 zebras, 5 lions. How many wild animals do I have?",Answer: 37
+"Question: I have 1 hyena, 2 pandas, 2 tigers, 1 elephant, 2 jaguars, 2 rabbits, 3 koalas, 1 boar. How many wild animals do I have?",Answer: 14
+"Question: I have 4 pandas, 5 rabbits, 4 giraffes, 4 tigers, 4 boars, 5 koalas, 1 meerkat, 3 lions, 2 elephants, 1 zebra, 5 jaguars. How many wild animals do I have?",Answer: 38
+"Question: I have 5 koalas, 1 panda, 2 elephants. How many wild animals do I have?",Answer: 8
+"Question: I have 4 jaguars, 4 koalas, 2 elephants, 1 meerkat, 5 rabbits, 4 giraffes, 5 boars, 2 zebras. How many wild animals do I have?",Answer: 27
+"Question: I have 4 jaguars, 4 boars, 3 lions, 1 rabbit, 1 panda, 5 hyenas, 3 meerkats, 5 elephants, 4 zebras, 5 tigers. How many wild animals do I have?",Answer: 35
+"Question: I have 2 meerkats, 5 boars, 4 jaguars, 1 hyena, 3 pandas, 4 zebras, 1 tiger, 2 giraffes, 1 lion, 5 rabbits, 3 elephants. How many wild animals do I have?",Answer: 31
+"Question: I have 3 rabbits, 2 elephants, 2 tigers, 3 lions, 3 zebras, 5 koalas, 1 hyena, 4 boars, 4 jaguars, 1 meerkat. How many wild animals do I have?",Answer: 28
+"Question: The library has 5 thriller books, 3 self-help guides, 3 encyclopedias, 3 historical books, 5 science-fiction books, 1 manga comic. How many books are there?",Answer: 20
+"Question: The library has 3 romance novels, 2 action books, 4 self-help guides, 3 thriller books, 5 historical books, 5 encyclopedias, 2 travel guides. How many books are there?",Answer: 24
+"Question: The library has 3 science-fiction books, 4 action books, 5 thriller books. How many books are there?",Answer: 12
+"Question: The library has 5 action books, 1 thriller book, 4 encyclopedias, 1 science-fiction book. How many books are there?",Answer: 11
+"Question: The library has 4 thriller books, 1 action book, 1 manga comic, 5 science-fiction books, 4 romance novels, 4 encyclopedias, 4 travel guides, 1 historical book. How many books are there?",Answer: 24
+"Question: The library has 2 travel guides, 2 encyclopedias, 3 non-fiction books, 1 manga comic, 2 romance novels. How many books are there?",Answer: 10
+"Question: The library has 4 romance novels, 5 encyclopedias, 3 manga comics, 5 self-help guides, 5 historical books, 2 science-fiction books, 5 non-fiction books, 1 travel guide. How many books are there?",Answer: 30
+"Question: The library has 1 self-help guide, 5 non-fiction books, 4 travel guides, 4 historical books, 3 science-fiction books, 1 manga comic, 1 romance novel, 2 encyclopedias, 4 thriller books, 4 action books. How many books are there?",Answer: 29
+"Question: The library has 1 romance novel, 5 manga comics, 3 thriller books, 2 historical books. How many books are there?",Answer: 11
+"Question: The library has 4 science-fiction books, 4 manga comics, 4 thriller books, 2 action books, 4 encyclopedias. How many books are there?",Answer: 18
+"Question: I have 3 snakes, 1 parrot, 5 cats, 5 porcupines, 3 hamsters, 5 ferrets, 4 llamas, 2 alpacas, 5 dogs, 2 frogs, 5 guinea pigs, 1 kitten, 4 turtles. How many animals do I have?",Answer: 45
+"Question: I have 3 alpacas, 1 turtle, 3 guinea pigs, 2 porcupines, 1 kitten, 2 hamsters, 3 dogs, 5 llamas, 3 snakes, 2 cats, 1 parrot, 5 frogs, 1 ferret. How many animals do I have?",Answer: 32
+"Question: I have 3 dogs, 4 parrots, 4 turtles, 3 guinea pigs, 1 porcupine, 2 alpacas, 4 hamsters, 1 cat. How many animals do I have?",Answer: 22
+"Question: I have 3 frogs, 1 parrot, 4 snakes, 5 porcupines, 2 cats, 2 hamsters, 3 guinea pigs, 3 dogs, 3 llamas, 2 alpacas. How many animals do I have?",Answer: 28
+"Question: I have 5 llamas, 2 dogs, 5 cats, 2 porcupines, 4 parrots, 2 turtles, 5 hamsters, 2 ferrets, 4 alpacas, 5 guinea pigs, 2 snakes, 2 frogs, 2 kittens. How many animals do I have?",Answer: 42
+"Question: I have 5 dogs, 4 porcupines, 3 hamsters, 4 ferrets, 3 alpacas, 5 turtles, 4 parrots, 5 snakes, 2 kittens, 2 cats, 4 guinea pigs, 2 llamas, 2 frogs. How many animals do I have?",Answer: 45
+"Question: I have 1 parrot, 5 llamas, 2 snakes. How many animals do I have?",Answer: 8
+"Question: I have 3 frogs, 3 turtles, 1 kitten, 4 porcupines, 1 cat. How many animals do I have?",Answer: 12
+"Question: I have 3 cats, 5 llamas, 1 porcupine, 1 turtle, 1 frog. How many animals do I have?",Answer: 11
+"Question: I have 3 guinea pigs, 3 alpacas, 3 kittens, 2 parrots, 2 cats, 5 hamsters. How many animals do I have?",Answer: 18
+"Question: I have 3 clams, 4 eels, 4 penguins, 2 oysters, 3 sea horses, 5 whales, 5 sharks, 5 sea urchins, 2 dolphins, 2 sting-rays, 3 squids, 1 lobster, 1 seal. How many wild creatures do I have?",Answer: 40
+"Question: I have 1 seal, 3 squids, 5 dolphins, 2 sharks, 4 sea urchins, 5 eels, 5 sting-rays, 2 clams. How many wild creatures do I have?",Answer: 27
+"Question: I have 2 sharks, 3 seals, 5 sting-rays, 4 penguins, 2 clams, 4 sea horses, 2 whales, 5 dolphins, 4 oysters. How many wild creatures do I have?",Answer: 31
+"Question: I have 3 sharks, 1 squid, 5 sea horses, 3 oysters, 1 sea urchin, 3 eels, 3 dolphins, 2 whales, 5 lobsters. How many wild creatures do I have?",Answer: 26
+"Question: I have 5 dolphins, 5 clams, 4 sea urchins, 1 eel, 3 sea horses, 1 oyster. How many wild creatures do I have?",Answer: 19
+"Question: I have 5 sea urchins, 3 lobsters, 1 sting-ray, 2 sea horses, 4 penguins, 4 sharks. How many wild creatures do I have?",Answer: 19
+"Question: I have 4 seals, 5 clams, 3 sea horses. How many wild creatures do I have?",Answer: 12
+"Question: I have 1 shark, 1 sting-ray, 2 squids, 5 clams, 1 seal, 2 dolphins, 3 oysters, 5 penguins, 4 sea horses, 1 eel, 1 sea urchin, 3 lobsters. How many wild creatures do I have?",Answer: 29
+"Question: I have 5 seals, 3 dolphins, 3 sea horses, 3 clams, 4 sharks, 4 sea urchins, 2 sting-rays, 1 eel, 5 penguins, 3 squids. How many wild creatures do I have?",Answer: 33
+"Question: I have 4 eels, 4 sting-rays, 5 penguins, 2 sea horses, 2 sea urchins. How many wild creatures do I have?",Answer: 17
+"Question: I have 1 ear cuff, 3 pendants, 3 cufflinks, 2 chains, 1 tiara, 5 watchs, 5 bangles, 3 bracelets. How many jewelry items do I have?",Answer: 23
+"Question: I have 4 cufflinks, 3 anklets, 2 chains, 3 ear cuffs, 5 bangles, 4 watchs. How many jewelry items do I have?",Answer: 21
+"Question: I have 4 charms, 4 anklets, 4 hairpins, 5 earrings, 5 broochs, 3 chains, 2 pendants, 4 cufflinks, 4 necklaces, 2 ear cuffs, 2 bangles, 3 bracelets, 2 rings. How many jewelry items do I have?",Answer: 44
+"Question: I have 5 hairpins, 5 rings, 3 ear cuffs, 1 chain. How many jewelry items do I have?",Answer: 14
+"Question: I have 1 charm, 2 chains, 3 bangles, 3 watchs, 2 earrings, 3 anklets, 3 ear cuffs, 5 pendants. How many jewelry items do I have?",Answer: 22
+"Question: I have 5 rings, 2 watchs, 2 necklaces, 3 anklets. How many jewelry items do I have?",Answer: 12
+"Question: I have 3 pendants, 4 bracelets, 5 ear cuffs, 1 earring. How many jewelry items do I have?",Answer: 13
+"Question: I have 2 watchs, 1 earring, 5 bracelets, 3 ear cuffs, 3 bangles, 2 necklaces, 4 anklets, 4 tiaras, 4 broochs, 5 cufflinks, 3 charms, 4 rings, 4 hairpins, 1 chain. How many jewelry items do I have?",Answer: 45
+"Question: I have 4 tiaras, 5 anklets, 2 earrings, 5 ear cuffs. How many jewelry items do I have?",Answer: 16
+"Question: I have 3 watchs, 3 broochs, 2 earrings, 5 necklaces, 3 bangles. How many jewelry items do I have?",Answer: 16
+"Question: I have 5 hamsters, 5 bracelets, 1 ring, 4 bangles, 1 cat, 3 snakes, 3 hairpins, 3 necklaces, 3 charms, 3 ear cuffs, 1 guinea pig. How many jewelry items do I have?",Answer: 22
+"Question: I have 1 bracelet, 4 rings, 2 necklaces, 1 charm, 5 ear cuffs, 4 dogs, 3 frogs, 1 chain, 4 snakes, 1 hairpin. How many jewelry items do I have?",Answer: 15
+"Question: I have 2 charms, 5 cats, 3 hamsters. How many jewelry items do I have?",Answer: 2
+"Question: I have 1 hairpin, 5 cats, 2 bangles, 5 necklaces, 2 earrings, 5 rings, 3 hamsters, 3 ear cuffs, 4 dogs, 3 charms. How many jewelry items do I have?",Answer: 21
