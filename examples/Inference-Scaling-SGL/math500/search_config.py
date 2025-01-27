@@ -66,37 +66,37 @@ class MathConfig(SearchConfig):
         return actions
 
     # Reward function for peiyi9979/math-shepherd-mistral-7b-prm
-    # def reward(
-    #     self,
-    #     state: MathState,
-    #     action: MathAction,
-    #     intuition: float = None
-    # ) -> float:
+    def reward(
+        self,
+        state: MathState,
+        action: MathAction,
+        intuition: float = None
+    ) -> float:
 
-    #     good_token = "+"
-    #     bad_token = "-"
-    #     step_tag = "ки"
+        good_token = "+"
+        bad_token = "-"
+        step_tag = "ки"
 
-    #     current_problem_state = "\n".join(
-    #         [f"Step {step.strip()} {step_tag}" for step in state.steps]
-    #     )
+        current_problem_state = "\n".join(
+            [f"Step {step.strip()} {step_tag}" for step in state.steps]
+        )
 
-    #     action_to_take, _, _ = MathModel.step_helper(state, action)
+        action_to_take, _, _ = MathModel.step_helper(state, action)
 
-    #     current_problem_state += (
-    #         f"\nStep {state.step_idx + 1} {action_to_take} {step_tag}"
-    #     )
+        current_problem_state += (
+            f"\nStep {state.step_idx + 1} {action_to_take} {step_tag}"
+        )
 
-    #     input_for_prm = f"{self.example['init']} {current_problem_state}"
-    #     intuition = np.exp(self.reward_model.get_loglikelihood(input_for_prm + " ", [input_for_prm + " " + good_token])[0])
-    #     # the probability of the good token and the bad token always sum to 1
-    #     # so we can just take the probability of the good token
+        input_for_prm = f"{self.example['init']} {current_problem_state}"
+        intuition = np.exp(self.reward_model.get_loglikelihood(input_for_prm + " ", [input_for_prm + " " + good_token])[0])
+        # the probability of the good token and the bad token always sum to 1
+        # so we can just take the probability of the good token
 
-    #     logger.debug(
-    #         f"Reward for step {state.step_idx} is: {intuition} where the potential step is: {action_to_take}"
-    #     )
+        logger.debug(
+            f"Reward for step {state.step_idx} is: {intuition} where the potential step is: {action_to_take}"
+        )
 
-    #     return intuition, {"intuition": intuition}
+        return intuition, {"intuition": intuition}
 
     # Reward function for RLHFlow/Llama3.1-8B-PRM-Deepseek-Data while using HF Model
     # def reward(
@@ -140,51 +140,51 @@ class MathConfig(SearchConfig):
     #     logger.debug(f"Reward for step {state.step_idx}: {intuition} | Step: {action_to_take}")
     #     return intuition, {"intuition": intuition}
 
-    def reward(
-        self,
-        state: MathState,
-        action: MathAction,
-        intuition: float = None
-    ) -> float:
-        problem_prompt = self.example['init']
-        existing_steps = state.steps
-        action_to_take, _, _ = MathModel.step_helper(state, action)
+    # def reward(
+    #     self,
+    #     state: MathState,
+    #     action: MathAction,
+    #     intuition: float = None
+    # ) -> float:
+    #     problem_prompt = self.example['init']
+    #     existing_steps = state.steps
+    #     action_to_take, _, _ = MathModel.step_helper(state, action)
         
-        # Build conversation history using the PRM's tokenizer
-        conversation = []
-        if existing_steps:
-            first_step = existing_steps[0]
-            conversation.append({"role": "user", "content": f"{problem_prompt} {first_step}"})
-            conversation.append({"role": "assistant", "content": "+"})
+    #     # Build conversation history using the PRM's tokenizer
+    #     conversation = []
+    #     if existing_steps:
+    #         first_step = existing_steps[0]
+    #         conversation.append({"role": "user", "content": f"{problem_prompt} {first_step}"})
+    #         conversation.append({"role": "assistant", "content": "+"})
             
-            for step in existing_steps[1:]:
-                conversation.append({"role": "user", "content": step})
-                conversation.append({"role": "assistant", "content": "+"})
+    #         for step in existing_steps[1:]:
+    #             conversation.append({"role": "user", "content": step})
+    #             conversation.append({"role": "assistant", "content": "+"})
         
-        new_content = action_to_take if existing_steps else f"{problem_prompt} {action_to_take}"
-        conversation.append({"role": "user", "content": new_content})
+    #     new_content = action_to_take if existing_steps else f"{problem_prompt} {action_to_take}"
+    #     conversation.append({"role": "user", "content": new_content})
         
-        # Generate formatted input string using PRM's chat template
-        input_ids = self.prm_tokenizer.apply_chat_template(
-            conversation,
-            add_generation_prompt=True
-        )
-        input_for_prm = self.prm_tokenizer.decode(input_ids, skip_special_tokens=False)
+    #     # Generate formatted input string using PRM's chat template
+    #     input_ids = self.prm_tokenizer.apply_chat_template(
+    #         conversation,
+    #         add_generation_prompt=True
+    #     )
+    #     input_for_prm = self.prm_tokenizer.decode(input_ids, skip_special_tokens=False)
 
-        # Get log probabilities for +/- using SGLang's API
-        prefix = input_for_prm.strip() + " "
-        good_content = prefix + "+"
-        bad_content = prefix + "-"
+    #     # Get log probabilities for +/- using SGLang's API
+    #     prefix = input_for_prm.strip() + " "
+    #     good_content = prefix + "+"
+    #     bad_content = prefix + "-"
         
-        # Get normalized log probabilities for both options
-        log_probs = self.reward_model.get_loglikelihood(
-            prefix=prefix,
-            contents=[good_content, bad_content]
-        )
+    #     # Get normalized log probabilities for both options
+    #     log_probs = self.reward_model.get_loglikelihood(
+    #         prefix=prefix,
+    #         contents=[good_content, bad_content]
+    #     )
         
-        # Calculate probability of '+' using softmax
-        log_prob_plus, log_prob_minus = log_probs
-        intuition = np.exp(log_prob_plus) / (np.exp(log_prob_plus) + np.exp(log_prob_minus))
+    #     # Calculate probability of '+' using softmax
+    #     log_prob_plus, log_prob_minus = log_probs
+    #     intuition = np.exp(log_prob_plus) / (np.exp(log_prob_plus) + np.exp(log_prob_minus))
         
-        logger.debug(f"Reward for step {state.step_idx}: {intuition} | Step: {action_to_take}")
-        return intuition, {"intuition": intuition}
+    #     logger.debug(f"Reward for step {state.step_idx}: {intuition} | Step: {action_to_take}")
+    #     return intuition, {"intuition": intuition}

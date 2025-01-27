@@ -3,7 +3,7 @@
 ## Preparation
 
 1. Set up the SGLang server with the policy LLM (e.g., [`meta-llama/Llama-3.1-8B`](https://huggingface.co/meta-llama/Llama-3.1-8B)). The script expects it to run at `http://127.0.0.1:30001` by default.
-2. Set up the SGLang server with the process reward LLM (e.g., [`RLHFlow/Llama3.1-8B-PRM-Deepseek-Data`](https://huggingface.co/RLHFlow/Llama3.1-8B-PRM-Deepseek-Data)). The script expects it to run at `http://127.0.0.1:30002` by default.
+2. Set up the SGLang server with the process reward LLM (e.g., [`peiyi9979/Math-Shepherd`](https://huggingface.co/datasets/peiyi9979/Math-Shepherd)). The script expects it to run at `http://127.0.0.1:30002` by default.
 
 
 ## Usage

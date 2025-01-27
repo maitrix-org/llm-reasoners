@@ -33,10 +33,9 @@ class MathModel(WorldModel):
         base_model: LanguageModel,
         prm: LanguageModel,
         prompt: dict,
-        max_steps: int = 6
     ) -> None:
         super().__init__()
-        self.max_steps = max_steps
+
         self.base_model = base_model
         self.reward_model = prm
         self.prompt = prompt
@@ -141,4 +140,4 @@ class MathModel(WorldModel):
         return state, {}
 
     def is_terminal(self, state: MathState) -> bool:
-        return state.step_idx >= self.max_steps or state.end
+        return state.end
