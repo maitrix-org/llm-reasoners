@@ -10,7 +10,7 @@ def get_stats(tag: str):
   success_stats = get_success_stats(tag)
   token_stats = get_token_stats(tag)
   time_stats = get_time_stats(tag)
-  iteration_stats = get_iteration_stats(tag)
+  iteration_stats = get_mcts_stats(tag)
   stats = list(chain(success_stats, token_stats, time_stats, iteration_stats))
   return stats
 
@@ -144,8 +144,8 @@ def get_time_stats(tag: str):
   return total_time, avg_time, task_time_df
 
 
-def get_iteration_stats(tag: str):
-  task_iteration_stats_rows = []
+def get_mcts_stats(tag: str):
+  task_mcts_stats_rows = []
   results_dir = "./results"
   exp_names = os.listdir(results_dir)
   for exp_name in exp_names:
@@ -161,18 +161,22 @@ def get_iteration_stats(tag: str):
             mcts_result = pickle.load(open(os.path.join(task_path, "result.pkl"), "rb"))
             if mcts_result.cum_reward >= 100: # task successfully completed
               completion_iteration = find_completion_iteration(mcts_result)
-              task_iteration_stats_rows.append([task_name, completion_iteration])
+              completion_depth = find_completion_depth(mcts_result)
+              max_depth = find_max_depth(mcts_result)
+              env_steps_taken = get_env_steps_taken(mcts_result)
+              task_mcts_stats_rows.append([task_name, completion_iteration, completion_depth, max_depth, env_steps_taken])
             else:
-              task_iteration_stats_rows.append([task_name, np.nan])
+              task_mcts_stats_rows.append([task_name, np.nan, np.nan])
           else:
-            task_iteration_stats_rows.append([task_name, np.nan])
+            task_mcts_stats_rows.append([task_name, np.nan, np.nan])
   
-  task_iteration_df = pd.DataFrame(task_iteration_stats_rows,
-                             columns=["task_name", "completion_iteration"])
-  task_iteration_df.set_index("task_name", inplace=True)
-  avg_completion_iteration = task_iteration_df["completion_iteration"].mean()
+  task_mcts_df = pd.DataFrame(task_mcts_stats_rows,
+                             columns=["task_name", "completion_iteration", "completion_depth", "max_depth", "env_steps_taken"])
+  task_mcts_df.set_index("task_name", inplace=True)
+  avg_completion_iteration = task_mcts_df["completion_iteration"].mean()
+  avg_completion_depth = task_mcts_df["completion_depth"].mean()
 
-  return avg_completion_iteration, task_iteration_df
+  return avg_completion_iteration, avg_completion_depth, task_mcts_df
 
 
 # assumes mcts_result passed in is for a task that has been completed successfully
@@ -192,3 +196,16 @@ def find_completion_iteration(mcts_result):
     if si:
       # print(f"task completed at iteration {idx}")
       return idx
+    
+def find_completion_depth(mcts_result):
+  return len(mcts_result.trace_in_each_iter[-1])
+
+def find_max_depth(mcts_result):
+  return len(max(mcts_result.trace_in_each_iter, key=lambda x: len(x)))
+
+def get_env_steps_taken(mcts_result):
+  completion_iteration = find_completion_iteration(mcts_result)
+  steps_taken = 0
+  for trace in mcts_result.trace_in_each_iter[:completion_iteration+1]:
+    steps_taken += len(trace)
+  return steps_taken

@@ -31,6 +31,7 @@ class SearchConfigBrowsergym(SearchConfig):
                  n_proposals: int = 5, proposal_temperature: float = 0.7,
                  evaluation_temperature: float = 0.25,
                  use_axtree: bool = True, use_html: bool = False, use_screenshot: bool = False,
+                 n_retry: int = 64,
                  task_dir: str = None) -> None:
         super().__init__()
         self.action_set = action_set
@@ -41,6 +42,7 @@ class SearchConfigBrowsergym(SearchConfig):
         self.use_axtree = use_axtree
         self.use_html = use_html
         self.use_screenshot = use_screenshot
+        self.n_retry = n_retry
         self.task_dir = task_dir
 
     def get_actions(self, state: StateGym) -> list[ActionGym]:
@@ -94,21 +96,28 @@ class SearchConfigBrowsergym(SearchConfig):
         - aux (dict): used to pass the self-evaluation to the search algorithm, which then passes it to the SearchConfig's reward (not fast_reward) function
         """
 
-        system_msgs, user_msgs, full_prompt_txt = build_evaluation_prompt(
-            state.current_obs, action, self.action_set, state.action_history,
-            self.use_axtree, self.use_html, self.use_screenshot
-        )
+        for i in range(self.n_retry):
+            try:
+                system_msgs, user_msgs, full_prompt_txt = build_evaluation_prompt(
+                    state.current_obs, action, self.action_set, state.action_history,
+                    self.use_axtree, self.use_html, self.use_screenshot
+                )
 
-        response = self.llm.generate(
-            full_prompt_txt, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
+                response = self.llm.generate(
+                    full_prompt_txt, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
 
-        evaluation = response.text[0]
 
-        json_string = re.search(r"\{.*\}", evaluation, re.DOTALL).group()
-        json_object = json.loads(json_string)
-        evaluation = json_object["score"] / 100
+                evaluation = response.text[0]
 
-        return evaluation, {"self_eval": evaluation}
+                json_string = re.search(r"\{.*\}", evaluation, re.DOTALL).group()
+                json_object = json.loads(json_string)
+                evaluation = json_object["score"] / 100
+
+                return evaluation, {"self_eval": evaluation}
+            except AttributeError as e:
+                with open(f"{self.task_dir}/time.txt", "a+") as f:
+                    f.write(f"retrying evaluation - parsing error\n")
+                
 
     def reward(self, state: StateGym, action: ActionGym, **kwargs) -> tuple[float, dict]:
         """
