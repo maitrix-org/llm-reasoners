@@ -59,9 +59,9 @@ class BrowserGymActionSpace(ActionSpace):
         return action, step_info
 
 
-class FastWebBrowserActionSpace(BrowserGymActionSpace):
+class EasyWebBrowserActionSpace(BrowserGymActionSpace):
     def parse_action(self, action, thought, **kwargs):
-        from fast_web.events.action import (
+        from easyweb.events.action import (
             AgentFinishAction,
             BrowseInteractiveAction,
             MessageAction,
@@ -82,7 +82,6 @@ class FastWebBrowserActionSpace(BrowserGymActionSpace):
                 args = tree.body[0].value.args  # type: ignore
                 msg_content = args[0].value
 
-        from fast_web.events.action import BrowseInteractiveAction
         return BrowseInteractiveAction(
             browser_actions=action_str,
             thought=thought,

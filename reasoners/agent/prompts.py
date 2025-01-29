@@ -183,7 +183,9 @@ critic_prompt_template_mini = """\
 # Task Success and Progress:
 Your task is to evaluate the performance of the agent. Given the agent's instruction, interaction history, the final \
 state of the webpage, and the agent’s responses to the user if any, your goal is to decide whether the agent \
-is successful or not at carrying out the instructions. Be frank about the agent's progress and critical if you must. \
+is successful or not at carrying out the instructions. \
+Success includes completion of intermediary tasks as well as fulfillment of the user's instructions \
+without significant errors, omissions, or unresolved issues. \
 If the current state is a failure but it looks like the agent is on the right track towards \
 success, you should also output as such.
 

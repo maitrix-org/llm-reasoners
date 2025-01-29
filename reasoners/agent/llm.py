@@ -10,7 +10,7 @@ from logging import Logger
 from .utils import ParseError, parse_html_tags_raise
 
 if TYPE_CHECKING: 
-    from fast_web.llm.llm import LLM as FastWebLLM
+    from easyweb.llm.llm import LLM as EasyWebLLM
 
 class LLM:
     @abstractmethod
@@ -30,17 +30,17 @@ def parser(text, keys, optional_keys=()):
         return None, False, str(e)
     return ans_dict, True, ''
 
-class FastWebParserLLM(LLM):
+class EasyWebParserLLM(LLM):
     def __init__(
         self,
-        fast_web_llm: 'FastWebLLM',
+        easyweb_llm: 'EasyWebLLM',
         keys: Union[List[str], Tuple[str]] = (),
         optional_keys: Union[List[str], Tuple[str]] = (),
         logger: Logger = None,
         max_retries: int = 4,
     ):
         super().__init__()
-        self.fast_web_llm = fast_web_llm
+        self.easyweb_llm = easyweb_llm
         self.logger = logger
         self.keys = keys
         self.optional_keys = optional_keys
@@ -52,7 +52,7 @@ class FastWebParserLLM(LLM):
         self.cost_accumulator = 0
         
     def completion(self, *args, **kwargs): 
-        return self.fast_web_llm.completion(*args, **kwargs)
+        return self.easyweb_llm.completion(*args, **kwargs)
 
     def __call__(self, user_prompt, system_prompt=None, **kwargs):
         messages = []
@@ -121,7 +121,7 @@ class FastWebParserLLM(LLM):
     def log_cost(self, response):
         # TODO: refactor to unified cost tracking
         try:
-            cur_cost = self.fast_web_llm.completion_cost(response)
+            cur_cost = self.easyweb_llm.completion_cost(response)
         except Exception:
             cur_cost = 0
         self.cost_accumulator += cur_cost
@@ -133,7 +133,7 @@ class FastWebParserLLM(LLM):
             )
             
     
-class FastWebParserMultiResponseLLM(FastWebParserLLM):
+class EasyWebParserMultiResponseLLM(EasyWebParserLLM):
     def __call__(self, user_prompt, system_prompt=None, **kwargs):
         messages = []
         if system_prompt:

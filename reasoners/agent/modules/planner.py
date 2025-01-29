@@ -27,17 +27,21 @@ class PolicyPlanner(Planner):
 
 class ReasonerPlanner(Planner):
     def __init__(self, policy: Policy, world_model: WorldModel, critic: Critic, 
-                 search_num_actions: int, search_depth: int, policy_output_name: str, critic_num_samples: int, 
+                 search_num_actions: int, search_depth: int, 
+                 policy_num_samples: int, policy_output_name: str, 
+                 critic_num_samples: int, 
                  llm_base_url: str, llm_api_key: str,
                  **kwargs):
         super().__init__()
         self.policy = policy
         self.world_model = world_model
         self.critic = critic
+        self.policy_num_samples = policy_num_samples
         self.policy_output_name = policy_output_name
 
         self.reasoner_world_model = WorldModelWrapper(world_model, action_name=self.policy_output_name)
         self.reasoner_search_config = SearchConfigWrapper(policy, critic, 
+                                                          policy_n=policy_num_samples,
                                                           policy_freq_top_k=search_num_actions,
                                                           policy_output_name=policy_output_name,
                                                           critic_n=critic_num_samples,
