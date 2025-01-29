@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 import time, random
 
 if TYPE_CHECKING:
-    from fast_web.controller.state.state import State as FastWebState
+    from easyweb.controller.state.state import State as EasyWebState
 
 
 class ObservationSpace(AgentVariable):
@@ -153,7 +153,7 @@ class BrowserGymObservationSpace(ObservationSpace):
         return obs_txt, obs_info
     
     
-class FastWebBrowserObservationSpace(BrowserGymObservationSpace):
+class EasyWebBrowserObservationSpace(BrowserGymObservationSpace):
     """An identity that describes the agent and the environment it is in."""
 
     def __init__(self, eval_mode, truncation=True):
@@ -162,9 +162,9 @@ class FastWebBrowserObservationSpace(BrowserGymObservationSpace):
         self.truncation = truncation
         self.reset()
 
-    def parse_observation(self, fast_web_state: "FastWebState") -> Tuple[Any, Dict]:
+    def parse_observation(self, easyweb_state: "EasyWebState") -> Tuple[Any, Dict]:
         last_obs, last_action, return_action = self._process_control_flow(
-            fast_web_state
+            easyweb_state
         )
         if return_action is not None:
             return None, {'return_action': return_action}
@@ -178,12 +178,12 @@ class FastWebBrowserObservationSpace(BrowserGymObservationSpace):
         return obs_txt, obs_info
 
     def _process_control_flow(self, env_state):
-        from fast_web.events.action import (
+        from easyweb.events.action import (
             AgentFinishAction,
             BrowseInteractiveAction,
             MessageAction,
         )
-        from fast_web.events.event import EventSource
+        from easyweb.events.event import EventSource
         
         goal = env_state.get_current_user_intent()
         if goal is None:
@@ -230,13 +230,13 @@ class FastWebBrowserObservationSpace(BrowserGymObservationSpace):
 
         # prev_action_str = '\n'.join(prev_actions)
         # if the final BrowserInteractiveAction exec BrowserGym's send_msg_to_user,
-        # we should also send a message back to the user in FastWeb and call it a day
+        # we should also send a message back to the user in EasyWeb and call it a day
         if (
             isinstance(last_action, BrowseInteractiveAction)
             and last_action.browsergym_send_msg_to_user
         ):
             # Here the browser interaction action from BrowserGym can also include a message to the user
-            # When we see this browsergym action we should use a MessageAction from FastWeb
+            # When we see this browsergym action we should use a MessageAction from EasyWeb
             return (
                 last_obs,
                 last_action,
@@ -247,16 +247,16 @@ class FastWebBrowserObservationSpace(BrowserGymObservationSpace):
 
     def _parse_current_obs(self, last_obs):
         from browsergym.utils.obs import flatten_axtree_to_str
-        from fast_web.events.observation import BrowserOutputObservation
-        from fast_web.core.logger import fast_web_logger as logger
-        from fast_web.events.action import MessageAction
+        from easyweb.events.observation import BrowserOutputObservation
+        from easyweb.core.logger import easyweb_logger as logger
+        from easyweb.events.action import MessageAction
         
         cur_axtree_txt = ''
         error_prefix = ''
         current_obs = {}
 
         if isinstance(last_obs, BrowserOutputObservation):
-            # The browser output observation belongs to FastWeb
+            # The browser output observation belongs to EasyWeb
             if last_obs.error:
                 # add error recovery prompt prefix
                 error_prefix += f'IMPORTANT! Last action is incorrect:\n{last_obs.last_browser_action}\n{last_obs.last_browser_action_error}\nThink again with the current observation of the page.\n'

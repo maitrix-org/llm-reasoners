@@ -5,9 +5,8 @@ default_web_agent_config = {
     'agent_description': """An information and automation assistant who responds to \
 user instructions by browsing the internet. The assistant strives to answer each question \
 accurately, thoroughly, efficiently, and politely, and to be forthright when it is \
-impossible to answer the question or carry out the instruction. \
-The assistant will default to using DuckDuckGo for search engine, and avoid Google and Bing for they are unavailable. \
-The assistant will end the task once it sends a message to the user.""",
+impossible to answer the question or carry out the instruction. The assistant will \
+end the task once it sends a message to the user.""",
     'memory_type': 'step_prompted',
     'planner_type': 'policy',
     'policy_output_name': 'intent',
@@ -27,6 +26,7 @@ browsergym_world_model_config.update({
     'planner_type': 'world_model',
     'planner_search_num_actions': 5,
     'planner_search_depth': 1,
+    'planner_policy_num_samples': 20,
     'planner_critic_num_samples': 20,
 })
 
@@ -54,50 +54,60 @@ browsergym_webarena_world_model_config.update({
     'planner_type': 'world_model',
     'planner_search_num_actions': 5,
     'planner_search_depth': 1,
+    'planner_policy_num_samples': 20,
     'planner_critic_num_samples': 20,
 })
 
-fast_web_config = copy.copy(default_web_agent_config)
-fast_web_config.update({
-    'environment': 'fast_web',
-    'use_nav': True,
-})
-
-fast_web_world_model_config = copy.copy(fast_web_config)
-fast_web_world_model_config.update({
-    'planner_type': 'world_model',
-    'planner_search_num_actions': 5,
-    'planner_search_depth': 1,
-    'planner_critic_num_samples': 20,
-})
-
-fast_web_mini_config = copy.copy(fast_web_config)
-fast_web_mini_config.update({
-    'agent_description': 'An information and automation assistant who responds to \
+easyweb_config = copy.copy(default_web_agent_config)
+easyweb_config.update({
+    'environment': 'easyweb',
+    'agent_description': """An information and automation assistant who responds to \
 user instructions by browsing the internet. The assistant strives to answer each question \
 accurately, thoroughly, efficiently, and politely, and to be forthright when it is \
 impossible to answer the question or carry out the instruction. \
+The assistant will default to using DuckDuckGo for search engine, \
+and avoid Google and Bing for they are unavailable. \
+The assistant will end the task once it sends a message to the user.""",
+    'use_nav': True,
+})
+
+easyweb_world_model_config = copy.copy(easyweb_config)
+easyweb_world_model_config.update({
+    'planner_type': 'world_model',
+    'planner_search_num_actions': 5,
+    'planner_search_depth': 1,
+    'planner_policy_num_samples': 20,
+    'planner_critic_num_samples': 20,
+})
+
+easyweb_mini_config = copy.copy(easyweb_config)
+easyweb_mini_config.update({
+    'agent_description': 'An information and automation assistant who responds to \
+user instructions by browsing the internet. The assistant strives to answer each question \
+accurately, thoroughly, efficiently, and politely, and to be forthright when it is \
+impossible to answer the question or carry out the instruction. The assistant will not attempt to solve CAPTCHAs. \
 The assistant will default to using DuckDuckGo for search engine, and avoid Google and Bing for they are unavailable. \
-The assistant will \
-end the task once it sends a message to the user. The assistant remembers that bids \
-are numbers in square brackets at the beginning of each line. The assistant will \
-focus on providing information for the user and avoid making purchases or bookings. \
+The assistant will end the task once it sends a message to the user. The assistant remembers that bids \
+are numbers in square brackets at the beginning of each line, and that it should click on an option to select it. \
+The assistant knows that if they are on DuckDuckGo\'s homepage, the actual search box is a combobox. \
+The assistant will focus on providing information for the user and avoid making purchases or bookings. \
 After the instruction is successfully carried out, the assistant will message the user to summarize what has been done.',
     'policy_prompt_type': 'mini',
     'critic_prompt_type': 'mini',
     'actor_prompt_type': 'mini',
 })
 
-fast_web_mini_world_model_config = copy.copy(fast_web_mini_config)
-fast_web_mini_world_model_config.update({
+easyweb_mini_world_model_config = copy.copy(easyweb_mini_config)
+easyweb_mini_world_model_config.update({
     'planner_type': 'world_model',
     'planner_search_num_actions': 5,
     'planner_search_depth': 1,
-    'planner_critic_num_samples': 20,
+    'planner_policy_num_samples': 10,
+    'planner_critic_num_samples': 10,
 })
 
-fast_web_webarena_config = copy.copy(fast_web_config)
-fast_web_webarena_config.update({
+easyweb_webarena_config = copy.copy(easyweb_config)
+easyweb_webarena_config.update({
     'agent_description': """An information and automation assistant that interacts with the browser \
 and responds to user instructions. The response follows the following rules: \
 1. When the intent is a question, and a complete answer to the question has been found, \
@@ -114,10 +124,11 @@ The assistant will end the task once it sends a message to the user.""",
     'with_datetime': False
 })
 
-fast_web_webarena_world_model_config = copy.copy(fast_web_webarena_config)
-fast_web_webarena_world_model_config.update({
+easyweb_webarena_world_model_config = copy.copy(easyweb_webarena_config)
+easyweb_webarena_world_model_config.update({
     'planner_type': 'world_model',
     'planner_search_num_actions': 5,
     'planner_search_depth': 1,
+    'planner_policy_num_samples': 20,
     'planner_critic_num_samples': 20,
 })

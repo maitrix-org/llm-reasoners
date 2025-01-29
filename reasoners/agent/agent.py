@@ -1,7 +1,7 @@
 from typing import Any
 from logging import Logger
 from .base import AgentModule, AgentVariable
-from .llm import LLM, FastWebParserLLM, FastWebParserMultiResponseLLM
+from .llm import LLM, EasyWebParserLLM, EasyWebParserMultiResponseLLM
 from .modules import (
     PolicyPlanner, ReasonerPlanner,
     PromptedActor, PromptedCritic, PromptedEncoder,
@@ -9,8 +9,8 @@ from .modules import (
 )
 from .variables import (
     AgentInstructionEnvironmentIdentity,
-    BrowserGymActionSpace, FastWebBrowserActionSpace, 
-    BrowserGymObservationSpace, FastWebBrowserObservationSpace,
+    BrowserGymActionSpace, EasyWebBrowserActionSpace, 
+    BrowserGymObservationSpace, EasyWebBrowserObservationSpace,
     StepKeyValueMemory, StepPromptedMemory
 )
 
@@ -24,9 +24,9 @@ from .prompts import (
 )
 
 from .configs import (browsergym_config, browsergym_world_model_config, 
-                      fast_web_config, fast_web_world_model_config, 
-                      fast_web_mini_config, fast_web_mini_world_model_config,
-                      fast_web_webarena_config, fast_web_webarena_world_model_config, 
+                      easyweb_config, easyweb_world_model_config, 
+                      easyweb_mini_config, easyweb_mini_world_model_config,
+                      easyweb_webarena_config, easyweb_webarena_world_model_config, 
                       browsergym_webarena_config, browsergym_webarena_world_model_config)
 
 CONFIG_LIBRARY = {
@@ -34,12 +34,12 @@ CONFIG_LIBRARY = {
     'browsergym_world_model': browsergym_world_model_config,
     'browsergym_webarena': browsergym_webarena_config,
     'browsergym_webarena_world_model': browsergym_webarena_world_model_config,
-    'fast_web': fast_web_config,
-    'fast_web_world_model': fast_web_world_model_config,
-    'fast_web_mini': fast_web_mini_config,
-    'fast_web_mini_world_model': fast_web_mini_world_model_config,
-    'fast_web_webarena': fast_web_webarena_config,
-    'fast_web_webarena_world_model': fast_web_webarena_world_model_config,
+    'easyweb': easyweb_config,
+    'easyweb_world_model': easyweb_world_model_config,
+    'easyweb_mini': easyweb_mini_config,
+    'easyweb_mini_world_model': easyweb_mini_world_model_config,
+    'easyweb_webarena': easyweb_webarena_config,
+    'easyweb_webarena_world_model': easyweb_webarena_world_model_config,
 }
 
 class ReasonerAgent:
@@ -71,14 +71,14 @@ class ReasonerAgent:
                 multiaction=False,
             )
             self.observation_space = BrowserGymObservationSpace(truncation=self.config['truncate_axtree'])
-        elif self.environment == 'fast_web':
-            self.action_space = FastWebBrowserActionSpace(
+        elif self.environment == 'easyweb':
+            self.action_space = EasyWebBrowserActionSpace(
                 action_subsets=['chat', 'bid'],
                 use_nav=self.config['use_nav'],
                 strict=False,
                 multiaction=False,
             )
-            self.observation_space = FastWebBrowserObservationSpace(
+            self.observation_space = EasyWebBrowserObservationSpace(
                 eval_mode=self.config['eval_mode'], 
                 truncation=self.config['truncate_axtree']
             )
@@ -95,7 +95,7 @@ class ReasonerAgent:
         )
         
         # Encoder
-        self.encoder_llm = FastWebParserLLM(llm, ['state'])
+        self.encoder_llm = EasyWebParserLLM(llm, ['state'])
         encoder_prompt_template = encoder_prompt_template_dict[self.encoder_prompt_type]
         self.encoder = PromptedEncoder(
             self.identity, self.encoder_llm, prompt_template=encoder_prompt_template
@@ -105,7 +105,7 @@ class ReasonerAgent:
         if self.memory_type == 'step_prompted':
             self.memory_prompt_type = self.config.get('memory_prompt_type', 'default')
             
-            self.memory_update_llm = FastWebParserLLM(llm, ['memory_update'])
+            self.memory_update_llm = EasyWebParserLLM(llm, ['memory_update'])
             
             memory_update_prompt_template = memory_update_prompt_template_dict[self.memory_prompt_type]
             self.memory = StepPromptedMemory(self.identity, self.memory_update_llm, 
@@ -121,11 +121,12 @@ class ReasonerAgent:
             self.policy_prompt_type = self.config.get('policy_prompt_type', 'default')
             self.world_model_prompt_type = self.config.get('world_model_prompt_type', 'default')
             self.critic_prompt_type = self.config.get('critic_prompt_type', 'default')
+            self.planner_policy_num_samples = self.config['planner_policy_num_samples']
             self.planner_search_num_actions = self.config['planner_search_num_actions']
             self.planner_search_depth = self.config['planner_search_depth']
             self.planner_critic_num_samples = self.config['planner_critic_num_samples']
             
-            self.policy_llm = FastWebParserMultiResponseLLM(
+            self.policy_llm = EasyWebParserMultiResponseLLM(
                 llm, [self.policy_output_name], ['think']
             )
             policy_prompt_template = policy_prompt_template_dict[self.policy_prompt_type]
@@ -133,7 +134,7 @@ class ReasonerAgent:
                 self.identity, self.policy_llm, prompt_template=policy_prompt_template
             )
 
-            self.world_model_llm = FastWebParserLLM(
+            self.world_model_llm = EasyWebParserLLM(
                 llm, ['next_state']
             )
             world_model_prompt_template = world_model_prompt_template_dict[self.world_model_prompt_type]
@@ -143,7 +144,7 @@ class ReasonerAgent:
                 prompt_template=world_model_prompt_template,
             )
 
-            self.critic_llm = FastWebParserMultiResponseLLM(
+            self.critic_llm = EasyWebParserMultiResponseLLM(
                 llm, ['status', 'on_the_right_track'], ['think']
             )
             critic_prompt_template = critic_prompt_template_dict[self.critic_prompt_type]
@@ -154,6 +155,7 @@ class ReasonerAgent:
             self.planner = ReasonerPlanner(self.policy, self.world_model, self.critic,
                                               search_num_actions=self.planner_search_num_actions,
                                               search_depth=self.planner_search_depth,
+                                              policy_num_samples=self.planner_policy_num_samples,
                                               policy_output_name=self.policy_output_name,
                                               critic_num_samples=self.planner_critic_num_samples,
                                               llm_base_url=llm.base_url,
@@ -163,7 +165,7 @@ class ReasonerAgent:
             self.policy_prompt_type = self.config.get('policy_prompt_type', 'default')
             policy_prompt_template = policy_prompt_template_dict[self.policy_prompt_type]
             
-            self.policy_llm = FastWebParserLLM(
+            self.policy_llm = EasyWebParserLLM(
                 llm, [self.policy_output_name], ['think']
             )
             self.policy = PromptedPolicy(
@@ -173,7 +175,7 @@ class ReasonerAgent:
             self.planner = PolicyPlanner(self.policy)
 
         # Actor
-        self.actor_llm = FastWebParserLLM(llm, ['action'])
+        self.actor_llm = EasyWebParserLLM(llm, ['action'])
         actor_prompt_template = actor_prompt_template_dict[self.actor_prompt_type]
         self.actor = PromptedActor(
             self.identity, self.actor_llm, prompt_template=actor_prompt_template
