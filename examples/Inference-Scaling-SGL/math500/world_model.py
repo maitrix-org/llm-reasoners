@@ -12,15 +12,12 @@ MathAction = str
 
 class MathState(NamedTuple):
     """The state of the Math problem.
-
-    See the docstring of MathModel for more details.
     """
 
     step_idx: int
     steps: list
-    problem_state: str
-    solution: str
     end: bool
+    solution: str
 
 
 class MathModel(WorldModel):
@@ -36,15 +33,12 @@ class MathModel(WorldModel):
         base_model: LanguageModel,
         prm: LanguageModel,
         prompt: dict,
-        max_steps: int = 6,
-        batch_size=2,
     ) -> None:
         super().__init__()
-        self.max_steps = max_steps
+
         self.base_model = base_model
         self.reward_model = prm
         self.prompt = prompt
-        self.batch_size = batch_size
         self.end = False
         self.question = None
 
@@ -53,9 +47,7 @@ class MathModel(WorldModel):
 
         :return: the initial state
         """
-        return MathState(
-            step_idx=0, steps=[], problem_state="", end=self.end, solution=""
-        )
+        return MathState(step_idx=0, steps=[], end=self.end, solution="")
 
     @staticmethod
     def step_helper(state: MathState, action_list: MathAction) -> MathAction:
@@ -102,27 +94,6 @@ class MathModel(WorldModel):
             > 0
         )
 
-        # if len(potential_actions) == 1 and future_actions_present:
-        #     action_to_take = potential_actions[0]
-        # else:
-        #     if "$\\boxed{" in action[-1]:
-        #         solution = action[-1].split("$\\boxed{")
-        #         solution = solution[-1].split("}$")
-        #         solution = solution[0]
-        #     else:
-        #         # We need to extract the solution from the last action.
-        #         # Assume that it will be in the final sentence.
-        #         # The solution sentence will end with "is [answer]." or "are [answer]."
-        #         solution = action[-1].split("is ")
-        #         if len(solution) == 1:
-        #             solution = action[-1].split("are ")
-        #         solution = solution[-1].split(".")
-        #         solution = solution[0]
-
-        #     action_to_take = action[-1]
-
-        #     is_terminal = True
-
         if ("$\\boxed{" in action[-1]) and not future_actions_present:
             solution = action[-1].split("$\\boxed{")
             solution = solution[-1].split("}$")
@@ -140,9 +111,9 @@ class MathModel(WorldModel):
     def step(self, state: MathState, action_list: MathAction) -> tuple[MathState, dict]:
         """Take a step in the world model.
 
-        :param state: the current state (see the docstring of MathModel)
-        :param action: the action to take
-        :return: the next state and additional information cached for reward calculation
+        state: the current state (see the docstring of MathModel)
+        action_list: the action to take
+        return: the next state and additional information cached for reward calculation
         """
         start = time.time()
         action_to_take, is_terminal, solution = MathModel.step_helper(
@@ -152,7 +123,6 @@ class MathModel(WorldModel):
         logger.info(f"Action to take at step {state.step_idx+1}:\n{action_to_take}")
 
         state = copy.deepcopy(state)
-        problem_state = state.problem_state
         steps = state.steps + [
             action_to_take
         ]
@@ -161,14 +131,13 @@ class MathModel(WorldModel):
         state = MathState(
             step_idx=state.step_idx + 1,
             steps=steps,
-            problem_state=problem_state,
             end=end,
             solution=solution,
         )
 
         logger.info(f"TIME: function step for Step {state.step_idx} took {time.time()-start} seconds")
 
-        return state, {"goal_reached": end}
+        return state, {}
 
     def is_terminal(self, state: MathState) -> bool:
-        return state.step_idx >= self.max_steps or state.end
+        return state.end
