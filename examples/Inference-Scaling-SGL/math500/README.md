@@ -1,19 +1,28 @@
 # Math-500 Evaluation
 
-## Preparation
+## Overview
+This repository contains code for evaluating language models on the [Math-500](https://github.com/hendrycks/math) dataset using SGLang. The evaluation uses two models:
+- A policy LLM for generating solutions
+- A process reward LLM for evaluating solutions
 
-1. Set up the SGLang server with the policy LLM (e.g., [`meta-llama/Llama-3.1-8B`](https://huggingface.co/meta-llama/Llama-3.1-8B)). The script expects it to run at `http://127.0.0.1:30001` by default.
-2. Set up the SGLang server with the process reward LLM (e.g., [`peiyi9979/Math-Shepherd`](https://huggingface.co/datasets/peiyi9979/Math-Shepherd)). The script expects it to run at `http://127.0.0.1:30002` by default.
-3. Install extra dependencies:
+## Setup
+
+### Prerequisites
+1. Install required dependencies:
 ```bash
 pip install latex2sympy2 loguru word2number sglang
 ```
 
+### Model Setup
+1. Start the policy LLM SGLang server (e.g., [`meta-llama/Llama-3.1-8B`](https://huggingface.co/meta-llama/Llama-3.1-8B))
+   - Default URL: `http://127.0.0.1:30001`
+
+2. Start the process reward LLM SGLang server (e.g., [`peiyi9979/Math-Shepherd`](https://huggingface.co/datasets/peiyi9979/Math-Shepherd))
+   - Default URL: `http://127.0.0.1:30002`
 
 ## Usage
 
-Run the evaluation script with:
-
+Run the evaluation with:
 ```bash
 python run_math500_task.py \
     --reward-sglang-url http://127.0.0.1:30002 \
@@ -25,13 +34,18 @@ python run_math500_task.py \
     --temperature 0.7
 ```
 
-### Command Line Arguments
+### Arguments
+| Argument | Description | Default |
+|----------|-------------|---------|
+| `--prompt-path` | Path to prompts JSON file | Required |
+| `--output-path` | Path to save results | `answers.json` |
+| `--policy-sglang-url` | URL of the policy model | Required |
+| `--reward-sglang-url` | URL of the reward model | Required |
+| `--beam-size` | Beam size for search | 2 |
+| `--max-depth` | Maximum search depth | 40 |
+| `--temperature` | Temperature for sampling | 0.7 |
+| `--log-file` | Path to log file | `output.log` |
 
-- `--prompt-path`: Path to prompts JSON file (required)
-- `--output-path`: Path to save results (default: `answers.json`)
-- `--policy-sglang-url`: Url of the policy model
-- `--reward-sglang-url`: Url of the reward model
-- `--beam-size`: Beam size for search (default: 2)
-- `--max-depth`: Maximum search depth (default: 40)
-- `--temperature`: Temperature for sampling (default: 0.7)
-- `--log-file`: Path to log file (default: `output.log`)
+## References
+- Prompt source: [search-and-learn](https://github.com/huggingface/search-and-learn)
+- Evaluation script: [qwen-2.5-math](https://github.com/QwenLM/Qwen2.5-Math)
