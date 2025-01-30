@@ -13,7 +13,6 @@ class MathConfig(SearchConfig):
         self,
         base_model: LanguageModel,
         prm: LanguageModel,
-        prm_tokenizer_path: str,
         prompt: dict,
         batch_size=8,
         num_actions=3,
@@ -22,16 +21,11 @@ class MathConfig(SearchConfig):
         super().__init__()
         self.base_model = base_model
         self.reward_model = prm
-        self.prm_tokenizer = AutoTokenizer.from_pretrained(prm_tokenizer_path)
         self.example = None
         self.prompt = prompt
         self.batch_size = batch_size
         self.num_actions = num_actions
         self.temperature = temperature
-        
-        # Precompute token IDs for '+' and '-'
-        self.plus_token_id = self.prm_tokenizer.encode('+', add_special_tokens=False)[-1]
-        self.minus_token_id = self.prm_tokenizer.encode('-', add_special_tokens=False)[-1]
 
     def get_actions(self, state: MathState) -> list[MathAction]:
         start_time = time.time()

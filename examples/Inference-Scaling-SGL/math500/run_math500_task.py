@@ -27,8 +27,6 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Math 500 Evaluation Script')
     parser.add_argument('--reward-sglang-url', type=str, default='http://127.0.0.1:30002',
                       help='SGLang API URL (default: http://127.0.0.1:30002/v1)')
-    parser.add_argument('--reward-model-path', type=str, required=True,
-                      help='Path to the reward model')
     parser.add_argument('--reward-model-device', type=str, default='cuda:0',
                       help='Device to run reward model on (default: cuda:0)')
     parser.add_argument('--prompt-path', type=str, required=True,
@@ -78,7 +76,6 @@ def setup_reasoner(llm, reward_model, prompt, args):
     config = MathConfig(
         base_model=llm,
         prm=reward_model,
-        prm_tokenizer_path=args.reward_model_path,
         prompt=prompt,
         num_actions=args.num_actions,
         temperature=args.temperature
@@ -141,7 +138,7 @@ def process_chunk(chunk_idx: int, chunk: List[Dict[str, Any]], args: argparse.Na
             },
             "results": []
         }
-        _write_temp_file(temp_file, error_entry)
+        logger.error(f"Chunk {chunk_idx} failed to initialize: {str(e)}\n{traceback.format_exc()}\n Error Entry: {error_entry}")
         return [], []
 
     for idx, example in enumerate(chunk):
