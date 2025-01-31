@@ -15,6 +15,8 @@ from utils.browser import get_serializable_obs, TimeoutException, timeout_handle
 from utils.datasets import get_dataset
 from utils.logger import get_agent_logger
 
+from litellm.exceptions import BadRequestError
+
 import gymnasium as gym
 
 DEBUG = int(os.environ.get('DEBUG', 0))
@@ -38,6 +40,7 @@ agent_dict = {
     'openhands': BrowsingAgent
 }
 
+retry_if_exception_type = (BadRequestError)
 
 def main(job_name, 
          model, 
@@ -156,7 +159,6 @@ def main(job_name,
                 'goal': goal,
                 'test_result': session_data['test_result']
             }) + '\n')
-        output_dir = os.path.join(output_dir, "visualize_logs")
         os.makedirs(output_dir, exist_ok=True)
 
     current_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
@@ -181,6 +183,7 @@ if __name__ == '__main__':
     parser.add_argument('job_name', type=str)
     parser.add_argument('--max_steps', type=int, default=30)
     parser.add_argument('--timeout', type=int, default=30)
+    parser.add_argument('--max_retry', type=int, default=0)
 
     # IO arguments
     parser.add_argument('--dataset', type=str, required=True)
@@ -203,45 +206,43 @@ if __name__ == '__main__':
     
     # Parse the arguments
     args = parser.parse_args()
-    
-    if args.dataset != 'webarena':
-        questions = get_dataset(args.dataset, args.data_root)
-        
-        for i in range(args.start_idx, min(args.end_idx, len(questions))):
-            instruction = questions[i]
-            job_name = args.job_name + f'_{i}'
-            if glob(os.path.join(args.output_dir, f'{job_name}_*.json')) == []:
-                main(job_name, 
-                    args.model,
-                    args.api_key,
-                    args.output_dir,
-                    args.agent,
-                    args.config_name,
-                    args.max_steps,
-                    args.timeout,
-                    goal=instruction)
-            else:
-                print(f"Existing log detected for {job_name}, skipping ...")
-    else:
-        import browsergym.webarena
-        env_ids = [
-            id for id in gym.envs.registry.keys() if id.startswith('browsergym/webarena')
-        ]
-        if args.shuffle:
-            import random
-            random.Random(args.seed).shuffle(env_ids)
-        env_ids = sorted(env_ids[args.start_idx:args.end_idx], key=lambda s: int(s.split('.')[-1]))
-        for env_id in env_ids:
+    main_args = {
+        'model': args.model,
+        'api_key': args.api_key,
+        'output_dir': args.output_dir,
+        'agent': args.agent,
+        'config_name': args.config_name,
+        'max_steps': args.max_steps,
+        'timeout': args.timeout,
+    }
+    goal_key = 'gym_env_name' if args.dataset == 'webarena' else 'goal'
+    questions = get_dataset(
+        args.dataset, 
+        args.data_root, 
+        args.shuffle, 
+        args.seed, 
+        args.start_idx,
+        args.end_idx
+    )
+    for i, question in enumerate(questions):
+        idx = i + args.start_idx
+        job_name = args.job_name + f'_{idx}'
+        if args.dataset == 'webarena':
             job_name = env_id.split('/')[-1]
-            if glob(os.path.join(args.output_dir, "visualize_logs", f'{job_name}_*.json')) == []:
-                main(job_name, 
-                    args.model,
-                    args.api_key,
-                    args.output_dir,
-                    args.agent,
-                    args.config_name,
-                    args.max_steps,
-                    args.timeout,
-                    gym_env_name=env_id)
+
+        if glob(os.path.join(args.output_dir, f'{job_name}_*.json')) == []:
+            for attempt in range(args.max_retry+1):
+                try:
+                    main(
+                        **{"job_name": job_name, goal_key: question},
+                        **main_args
+                    )
+                except retry_if_exception_type as e:
+                    print(f"Error encountered: {str(e)}")
+                    print(f"Task failed for {attempt} times, retrying ...")
+                else:
+                    break
             else:
-                print(f"Existing log detected for {job_name}, skipping ...")
+                raise RuntimeError("Max attempts reached, keep getting exceptions.")
+        else:
+            print(f"Existing log detected for {job_name}, skipping ...")
