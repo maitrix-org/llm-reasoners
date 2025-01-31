@@ -72,7 +72,7 @@ class FlightSearchEvaluator:
         
         observations = []
         for step in data['history']:
-            obs = step[-1]['observation']['clean_axtree_txt']
+            obs = step[-1]['obs_info']['clean_axtree_txt']
             observations.append(obs)
             
         last_action = data['history'][-1][-1]['action']
