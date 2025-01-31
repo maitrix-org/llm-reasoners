@@ -23,6 +23,7 @@ from .config import config
 from .metrics import Metrics
 from .logger import reasoners_logger as logger
 
+litellm.drop_params=True
 __all__ = ['LLM']
 
 message_separator = '\n\n----------\n\n'

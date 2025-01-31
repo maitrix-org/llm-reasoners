@@ -27,6 +27,9 @@ __WAIT_FOR_USER_MESSAGE = False
 
 model_info = {
     'gpt-4o': ('https://api.openai.com/v1/', 'openai'),
+    'o1': ('https://api.openai.com/v1/', 'openai'),
+    "deepseek-chat": ("https://api.deepseek.com", "deepseek")
+    'deepseek-reasoner': ("https://api.deepseek.com", "deepseek") 
     'Meta-Llama-3.1-70B-Instruct': ('http://localhost:8000/v1', 'openai')
 }
 
@@ -46,11 +49,24 @@ def main(job_name,
          timeout,
          goal=None,
          gym_env_name=None):
-    base_url, custom_llm_provider = model_info[model]
-    llm = LLM(model=model,
-              api_key=api_key,
-              base_url=base_url,
-              custom_llm_provider=custom_llm_provider)
+    if model in model_info:
+        base_url, custom_llm_provider = model_info[model]
+        llm = LLM(model=model,
+                api_key=api_key,
+                base_url=base_url,
+                custom_llm_provider=custom_llm_provider)
+    elif os.path.isfile(model):
+        with open(model) as f:
+            model_config = json.load(f)
+        llm = {}
+        for module, model_name in model_config.items():
+            base_url, custom_llm_provider = model_info[model_name]
+            llm[module] = LLM(model=model_name,
+                api_key=api_key,
+                base_url=base_url,
+                custom_llm_provider=custom_llm_provider)
+    else:
+        raise RuntimeError(f"Model {model} is neither supported nor a config file")
     timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')
     log_filename = f'{timestamp}.log'
     logger = get_agent_logger(log_filename)
