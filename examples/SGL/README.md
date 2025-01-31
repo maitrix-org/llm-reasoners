@@ -8,7 +8,7 @@ This directory contains code for running Blocksworld experiments using SGLang. T
 ## Setup
 
 1. Make sure you have SGLang server running at `http://127.0.0.1:30001`
-2. The code uses Llama-3.1-8B model by default. Make sure you have access to this model.
+2. The code uses Llama-3.1-8B model by default.
 
 ## Usage
 
