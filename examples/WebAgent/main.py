@@ -28,9 +28,9 @@ __WAIT_FOR_USER_MESSAGE = False
 model_info = {
     'gpt-4o': ('https://api.openai.com/v1/', 'openai'),
     'o1': ('https://api.openai.com/v1/', 'openai'),
-    "deepseek-chat": ("https://api.deepseek.com", "deepseek")
-    'deepseek-reasoner': ("https://api.deepseek.com", "deepseek") 
-    'Meta-Llama-3.1-70B-Instruct': ('http://localhost:8000/v1', 'openai')
+    "deepseek-chat": ("https://api.deepseek.com", "deepseek"),
+    'deepseek-reasoner': ("https://api.deepseek.com", "deepseek"),
+    'Meta-Llama-3.1-70B-Instruct': ('http://localhost:8000/v1', 'openai'),
 }
 
 agent_dict = {
