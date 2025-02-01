@@ -23,24 +23,7 @@ from .prompts import (
     world_model_prompt_template_dict,
 )
 
-from .configs import (browsergym_config, browsergym_world_model_config, 
-                      easyweb_config, easyweb_world_model_config, 
-                      easyweb_mini_config, easyweb_mini_world_model_config,
-                      easyweb_webarena_config, easyweb_webarena_world_model_config, 
-                      browsergym_webarena_config, browsergym_webarena_world_model_config)
-
-CONFIG_LIBRARY = {
-    'browsergym': browsergym_config,
-    'browsergym_world_model': browsergym_world_model_config,
-    'browsergym_webarena': browsergym_webarena_config,
-    'browsergym_webarena_world_model': browsergym_webarena_world_model_config,
-    'easyweb': easyweb_config,
-    'easyweb_world_model': easyweb_world_model_config,
-    'easyweb_mini': easyweb_mini_config,
-    'easyweb_mini_world_model': easyweb_mini_world_model_config,
-    'easyweb_webarena': easyweb_webarena_config,
-    'easyweb_webarena_world_model': easyweb_webarena_world_model_config,
-}
+from .configs import CONFIG_LIBRARY
 
 class ReasonerAgent:
     def __init__(self, 

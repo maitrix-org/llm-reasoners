@@ -1,5 +1,6 @@
 .sh
 .txt
+.gradio/
 
 # Playwright
 node_modules/
@@ -7,3 +8,4 @@ node_modules/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+

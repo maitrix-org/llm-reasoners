@@ -121,7 +121,7 @@ def main(job_name,
         try:
             # Wait for the result within the specified timeout
             obs, reward, terminated, truncated, info = env.step(action)
-            if agent.config['eval_mode']:
+            if agent.config.get('eval_mode', False):
                 rewards.append(reward)
         except TimeoutException:
             print(f"Environment step timed out after {timeout} seconds")
@@ -148,7 +148,7 @@ def main(job_name,
         'is_complete': is_complete,
         'error': error,
     }
-    if agent.config['eval_mode']:
+    if agent.config.get('eval_mode', False):
         if rewards == []:
             rewards = [0.0]
         session_data['rewards'] = rewards

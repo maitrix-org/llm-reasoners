@@ -90,6 +90,7 @@ class BrowsingAgent():
                  logger: Logger,
                  **kwargs):
         self.llm = llm
+        self.config = {}
         self.logger = logger
         
         action_subsets = ['chat', 'bid']
