@@ -140,7 +140,7 @@ class BrowsingAgent():
         }
         
         step = {
-            'observation': observation,
+            'obs_info': observation,
             'state': None,
             'intent': None,
             'action': None,

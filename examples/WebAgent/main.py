@@ -30,6 +30,7 @@ __WAIT_FOR_USER_MESSAGE = False
 model_info = {
     'gpt-4o': ('https://api.openai.com/v1/', 'openai'),
     'o1': ('https://api.openai.com/v1/', 'openai'),
+    'o3-mini': ('https://api.openai.com/v1/', 'openai'),
     "deepseek-chat": ("https://api.deepseek.com", "deepseek"),
     'deepseek-reasoner': ("https://api.deepseek.com", "deepseek"),
     'Meta-Llama-3.1-70B-Instruct': ('http://localhost:8000/v1', 'openai'),
@@ -159,7 +160,6 @@ def main(job_name,
                 'goal': goal,
                 'test_result': session_data['test_result']
             }) + '\n')
-        os.makedirs(output_dir, exist_ok=True)
 
     current_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     output_filename = job_name + '_' + current_datetime + '.json'
