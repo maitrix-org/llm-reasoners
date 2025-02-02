@@ -90,6 +90,7 @@ class BrowsingAgent():
                  logger: Logger,
                  **kwargs):
         self.llm = llm
+        self.config = {}
         self.logger = logger
         
         action_subsets = ['chat', 'bid']
@@ -139,7 +140,7 @@ class BrowsingAgent():
         }
         
         step = {
-            'observation': observation,
+            'obs_info': observation,
             'state': None,
             'intent': None,
             'action': None,

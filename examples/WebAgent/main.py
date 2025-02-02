@@ -15,6 +15,8 @@ from utils.browser import get_serializable_obs, TimeoutException, timeout_handle
 from utils.datasets import get_dataset
 from utils.logger import get_agent_logger
 
+from litellm.exceptions import BadRequestError
+
 import gymnasium as gym
 
 DEBUG = int(os.environ.get('DEBUG', 0))
@@ -27,7 +29,11 @@ __WAIT_FOR_USER_MESSAGE = False
 
 model_info = {
     'gpt-4o': ('https://api.openai.com/v1/', 'openai'),
-    'Meta-Llama-3.1-70B-Instruct': ('http://localhost:8000/v1', 'openai')
+    'o1': ('https://api.openai.com/v1/', 'openai'),
+    'o3-mini': ('https://api.openai.com/v1/', 'openai'),
+    "deepseek-chat": ("https://api.deepseek.com", "deepseek"),
+    'deepseek-reasoner': ("https://api.deepseek.com", "deepseek"),
+    'Meta-Llama-3.1-70B-Instruct': ('http://localhost:8000/v1', 'openai'),
 }
 
 agent_dict = {
@@ -35,6 +41,7 @@ agent_dict = {
     'openhands': BrowsingAgent
 }
 
+retry_if_exception_type = (BadRequestError)
 
 def main(job_name, 
          model, 
@@ -46,11 +53,24 @@ def main(job_name,
          timeout,
          goal=None,
          gym_env_name=None):
-    base_url, custom_llm_provider = model_info[model]
-    llm = LLM(model=model,
-              api_key=api_key,
-              base_url=base_url,
-              custom_llm_provider=custom_llm_provider)
+    if model in model_info:
+        base_url, custom_llm_provider = model_info[model]
+        llm = LLM(model=model,
+                api_key=api_key,
+                base_url=base_url,
+                custom_llm_provider=custom_llm_provider)
+    elif os.path.isfile(model):
+        with open(model) as f:
+            model_config = json.load(f)
+        llm = {}
+        for module, model_name in model_config.items():
+            base_url, custom_llm_provider = model_info[model_name]
+            llm[module] = LLM(model=model_name,
+                api_key=api_key,
+                base_url=base_url,
+                custom_llm_provider=custom_llm_provider)
+    else:
+        raise RuntimeError(f"Model {model} is neither supported nor a config file")
     timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')
     log_filename = f'{timestamp}.log'
     logger = get_agent_logger(log_filename)
@@ -102,7 +122,7 @@ def main(job_name,
         try:
             # Wait for the result within the specified timeout
             obs, reward, terminated, truncated, info = env.step(action)
-            if agent.config['eval_mode']:
+            if agent.config.get('eval_mode', False):
                 rewards.append(reward)
         except TimeoutException:
             print(f"Environment step timed out after {timeout} seconds")
@@ -129,7 +149,7 @@ def main(job_name,
         'is_complete': is_complete,
         'error': error,
     }
-    if agent.config['eval_mode']:
+    if agent.config.get('eval_mode', False):
         if rewards == []:
             rewards = [0.0]
         session_data['rewards'] = rewards
@@ -140,8 +160,6 @@ def main(job_name,
                 'goal': goal,
                 'test_result': session_data['test_result']
             }) + '\n')
-        output_dir = os.path.join(output_dir, "visualize_logs")
-        os.makedirs(output_dir, exist_ok=True)
 
     current_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     output_filename = job_name + '_' + current_datetime + '.json'
@@ -165,6 +183,7 @@ if __name__ == '__main__':
     parser.add_argument('job_name', type=str)
     parser.add_argument('--max_steps', type=int, default=30)
     parser.add_argument('--timeout', type=int, default=30)
+    parser.add_argument('--max_retry', type=int, default=0)
 
     # IO arguments
     parser.add_argument('--dataset', type=str, required=True)
@@ -187,45 +206,43 @@ if __name__ == '__main__':
     
     # Parse the arguments
     args = parser.parse_args()
-    
-    if args.dataset != 'webarena':
-        questions = get_dataset(args.dataset, args.data_root)
-        
-        for i in range(args.start_idx, min(args.end_idx, len(questions))):
-            instruction = questions[i]
-            job_name = args.job_name + f'_{i}'
-            if glob(os.path.join(args.output_dir, f'{job_name}_*.json')) == []:
-                main(job_name, 
-                    args.model,
-                    args.api_key,
-                    args.output_dir,
-                    args.agent,
-                    args.config_name,
-                    args.max_steps,
-                    args.timeout,
-                    goal=instruction)
-            else:
-                print(f"Existing log detected for {job_name}, skipping ...")
-    else:
-        import browsergym.webarena
-        env_ids = [
-            id for id in gym.envs.registry.keys() if id.startswith('browsergym/webarena')
-        ]
-        if args.shuffle:
-            import random
-            random.Random(args.seed).shuffle(env_ids)
-        env_ids = sorted(env_ids[args.start_idx:args.end_idx], key=lambda s: int(s.split('.')[-1]))
-        for env_id in env_ids:
+    main_args = {
+        'model': args.model,
+        'api_key': args.api_key,
+        'output_dir': args.output_dir,
+        'agent': args.agent,
+        'config_name': args.config_name,
+        'max_steps': args.max_steps,
+        'timeout': args.timeout,
+    }
+    goal_key = 'gym_env_name' if args.dataset == 'webarena' else 'goal'
+    questions = get_dataset(
+        args.dataset, 
+        args.data_root, 
+        args.shuffle, 
+        args.seed, 
+        args.start_idx,
+        args.end_idx
+    )
+    for i, question in enumerate(questions):
+        idx = i + args.start_idx
+        job_name = args.job_name + f'_{idx}'
+        if args.dataset == 'webarena':
             job_name = env_id.split('/')[-1]
-            if glob(os.path.join(args.output_dir, "visualize_logs", f'{job_name}_*.json')) == []:
-                main(job_name, 
-                    args.model,
-                    args.api_key,
-                    args.output_dir,
-                    args.agent,
-                    args.config_name,
-                    args.max_steps,
-                    args.timeout,
-                    gym_env_name=env_id)
+
+        if glob(os.path.join(args.output_dir, f'{job_name}_*.json')) == []:
+            for attempt in range(args.max_retry+1):
+                try:
+                    main(
+                        **{"job_name": job_name, goal_key: question},
+                        **main_args
+                    )
+                except retry_if_exception_type as e:
+                    print(f"Error encountered: {str(e)}")
+                    print(f"Task failed for {attempt} times, retrying ...")
+                else:
+                    break
             else:
-                print(f"Existing log detected for {job_name}, skipping ...")
+                raise RuntimeError("Max attempts reached, keep getting exceptions.")
+        else:
+            print(f"Existing log detected for {job_name}, skipping ...")

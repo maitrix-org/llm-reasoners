@@ -23,6 +23,7 @@ from .config import config
 from .metrics import Metrics
 from .logger import reasoners_logger as logger
 
+litellm.drop_params=True
 __all__ = ['LLM']
 
 message_separator = '\n\n----------\n\n'
@@ -154,17 +155,25 @@ class LLM:
                 # with thousands of unwanted tokens
                 self.max_output_tokens = 1024
 
-        self._completion = partial(
-            litellm_completion,
+        completion_params = dict(
             model=self.model_name,
             api_key=self.api_key,
             base_url=self.base_url,
             api_version=self.api_version,
             custom_llm_provider=custom_llm_provider,
-            max_tokens=self.max_output_tokens,
-            timeout=self.llm_timeout,
-            temperature=llm_temperature,
-            top_p=llm_top_p,
+            max_completion_tokens=self.max_output_tokens,
+            timeout=self.llm_timeout
+        )
+        # This is hard coded because litellm.get_supported_openai_params 
+        # is currently not functional correctly for these two models, 
+        # especially o3-mini. Might be updated in a later version.
+        if not ('o1' in self.model_name or 'o3-mini' in self.model_name):
+            completion_params["temperature"] = llm_temperature
+            completion_params["top_p"] = llm_top_p
+
+        self._completion = partial(
+            litellm_completion,
+            **completion_params
         )
 
         completion_unwrapped = self._completion

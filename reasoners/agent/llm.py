@@ -60,6 +60,15 @@ class EasyWebParserLLM(LLM):
             messages.append({'role': 'system', 'content': system_prompt})
         messages.append({'role': 'user', 'content': user_prompt})
 
+        # DEBUG
+        log_folder = os.environ.get('DEBUG_LOG_FOLDER', None)
+        log_file = ""
+        if log_folder and os.path.isdir(log_folder):
+            log_file = f'{log_folder}/{str(int(time.time()))}.log'
+            with open(log_file, 'w') as f:
+                for m in messages:
+                    f.write(f"{m['role']}\n\n{m['content']}\n\n\n")
+
         try:
             ans_dict = self._retry(
                 messages, self.parser, n_retries=self.max_retries, **kwargs
@@ -77,9 +86,8 @@ class EasyWebParserLLM(LLM):
         ans_dict['prompt'] = user_prompt
 
         # DEBUG
-        LOG_FOLDER = os.environ.get('DEBUG_LOG_FOLDER', None)
-        if LOG_FOLDER and os.path.isdir(LOG_FOLDER):
-            with open(f'{LOG_FOLDER}/{str(int(time.time()))}.log', 'w') as f:
+        if os.path.isfile(log_file):
+            with open(log_file, 'a') as f:
                 for m in messages:
                     f.write(f"{m['role']}\n\n{m['content']}\n\n\n")
 

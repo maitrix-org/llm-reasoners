@@ -3,6 +3,7 @@
 This is an example code for running the web agent implemented by LLM Reasoners. We also offer a baseline agent based on `BrowsingAgent` from [OpenHands](https://github.com/All-Hands-AI/OpenHands).
 
 ## Setup
+First install [playwright]("deepseek").
 
 Aside from installing `reasoners`, please also install the dependencies specific to this example using the command below:
 

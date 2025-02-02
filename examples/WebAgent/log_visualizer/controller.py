@@ -22,8 +22,8 @@ def load_history(log_selection):
             'url': step[0]['url'],
             'screenshot': screenshot,
             'observation': step[2]['obs_info']['clean_axtree_txt'],
-            'state': step[2]['state'],
-            'plan': step[2]['plan'],
+            'state': step[2].get('state', ""),
+            'plan': step[2].get('plan', ""),
             'action': step[2]['action'],
         }
         steps.append(step_data)

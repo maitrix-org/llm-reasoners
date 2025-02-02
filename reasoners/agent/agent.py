@@ -23,24 +23,7 @@ from .prompts import (
     world_model_prompt_template_dict,
 )
 
-from .configs import (browsergym_config, browsergym_world_model_config, 
-                      easyweb_config, easyweb_world_model_config, 
-                      easyweb_mini_config, easyweb_mini_world_model_config,
-                      easyweb_webarena_config, easyweb_webarena_world_model_config, 
-                      browsergym_webarena_config, browsergym_webarena_world_model_config)
-
-CONFIG_LIBRARY = {
-    'browsergym': browsergym_config,
-    'browsergym_world_model': browsergym_world_model_config,
-    'browsergym_webarena': browsergym_webarena_config,
-    'browsergym_webarena_world_model': browsergym_webarena_world_model_config,
-    'easyweb': easyweb_config,
-    'easyweb_world_model': easyweb_world_model_config,
-    'easyweb_mini': easyweb_mini_config,
-    'easyweb_mini_world_model': easyweb_mini_world_model_config,
-    'easyweb_webarena': easyweb_webarena_config,
-    'easyweb_webarena_world_model': easyweb_webarena_world_model_config,
-}
+from .configs import CONFIG_LIBRARY
 
 class ReasonerAgent:
     def __init__(self, 
@@ -48,7 +31,11 @@ class ReasonerAgent:
                  config_name: str,
                  logger: Logger = None,
                  **kwargs):
-        self.llm = llm
+        llm_dict = {}
+        default_llm = llm
+        if isinstance(llm, dict):
+            llm_dict = llm
+            default_llm = llm.get('default', None)
         self.config_name = config_name
         self.config = CONFIG_LIBRARY[config_name]
         self.logger = logger
@@ -95,7 +82,7 @@ class ReasonerAgent:
         )
         
         # Encoder
-        self.encoder_llm = EasyWebParserLLM(llm, ['state'])
+        self.encoder_llm = EasyWebParserLLM(llm_dict.get('encoder', default_llm), ['state'])
         encoder_prompt_template = encoder_prompt_template_dict[self.encoder_prompt_type]
         self.encoder = PromptedEncoder(
             self.identity, self.encoder_llm, prompt_template=encoder_prompt_template
@@ -105,7 +92,7 @@ class ReasonerAgent:
         if self.memory_type == 'step_prompted':
             self.memory_prompt_type = self.config.get('memory_prompt_type', 'default')
             
-            self.memory_update_llm = EasyWebParserLLM(llm, ['memory_update'])
+            self.memory_update_llm = EasyWebParserLLM(llm_dict.get('memory', default_llm), ['memory_update'])
             
             memory_update_prompt_template = memory_update_prompt_template_dict[self.memory_prompt_type]
             self.memory = StepPromptedMemory(self.identity, self.memory_update_llm, 
@@ -127,7 +114,7 @@ class ReasonerAgent:
             self.planner_critic_num_samples = self.config['planner_critic_num_samples']
             
             self.policy_llm = EasyWebParserMultiResponseLLM(
-                llm, [self.policy_output_name], ['think']
+                llm_dict.get('policy', default_llm), [self.policy_output_name], ['think']
             )
             policy_prompt_template = policy_prompt_template_dict[self.policy_prompt_type]
             self.policy = PromptedPolicy(
@@ -135,7 +122,7 @@ class ReasonerAgent:
             )
 
             self.world_model_llm = EasyWebParserLLM(
-                llm, ['next_state']
+                llm_dict.get('world_model', default_llm), ['next_state']
             )
             world_model_prompt_template = world_model_prompt_template_dict[self.world_model_prompt_type]
             self.world_model = PromptedWorldModel(
@@ -145,7 +132,7 @@ class ReasonerAgent:
             )
 
             self.critic_llm = EasyWebParserMultiResponseLLM(
-                llm, ['status', 'on_the_right_track'], ['think']
+                llm_dict.get('critic', default_llm), ['status', 'on_the_right_track'], ['think']
             )
             critic_prompt_template = critic_prompt_template_dict[self.critic_prompt_type]
             self.critic = PromptedCritic(
@@ -166,7 +153,7 @@ class ReasonerAgent:
             policy_prompt_template = policy_prompt_template_dict[self.policy_prompt_type]
             
             self.policy_llm = EasyWebParserLLM(
-                llm, [self.policy_output_name], ['think']
+                llm_dict.get('policy', default_llm), [self.policy_output_name], ['think']
             )
             self.policy = PromptedPolicy(
                 self.identity, self.policy_llm, prompt_template=policy_prompt_template
@@ -175,7 +162,7 @@ class ReasonerAgent:
             self.planner = PolicyPlanner(self.policy)
 
         # Actor
-        self.actor_llm = EasyWebParserLLM(llm, ['action'])
+        self.actor_llm = EasyWebParserLLM(llm_dict.get('actor', default_llm), ['action'])
         actor_prompt_template = actor_prompt_template_dict[self.actor_prompt_type]
         self.actor = PromptedActor(
             self.identity, self.actor_llm, prompt_template=actor_prompt_template

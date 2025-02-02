@@ -132,3 +132,16 @@ easyweb_webarena_world_model_config.update({
     'planner_policy_num_samples': 20,
     'planner_critic_num_samples': 20,
 })
+
+CONFIG_LIBRARY = {
+    'browsergym': browsergym_config,
+    'browsergym_world_model': browsergym_world_model_config,
+    'browsergym_webarena': browsergym_webarena_config,
+    'browsergym_webarena_world_model': browsergym_webarena_world_model_config,
+    'easyweb': easyweb_config,
+    'easyweb_world_model': easyweb_world_model_config,
+    'easyweb_mini': easyweb_mini_config,
+    'easyweb_mini_world_model': easyweb_mini_world_model_config,
+    'easyweb_webarena': easyweb_webarena_config,
+    'easyweb_webarena_world_model': easyweb_webarena_world_model_config,
+}
