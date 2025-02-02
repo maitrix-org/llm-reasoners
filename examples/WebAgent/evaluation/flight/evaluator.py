@@ -8,7 +8,7 @@ from datetime import datetime
 
 import sys
 current_directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(current_directory, '..', '..'))
+sys.path.append(os.path.join(current_directory, '..', '..', '..', '..'))
 from reasoners.agent.llm import parser
 
 # Get the directory of the current file
@@ -61,7 +61,8 @@ class FlightSearchEvaluator:
         data_datetime_prompt = data_datetime.strftime('%a, %b %d, %Y %H:%M:%S')
         
         if not data['history']:
-            return {'goal': goal, 
+            return {'instance': os.path.basename(browsing_data_path),
+                    'goal': goal, 
                     'constraints': constraints, 
                     'observations': [],
                     'message': None, 
@@ -72,7 +73,13 @@ class FlightSearchEvaluator:
         
         observations = []
         for step in data['history']:
-            obs = step[-1]['obs_info']['clean_axtree_txt']
+            if 'obs_info' in step[-1]:
+                observation = step[-1]['obs_info']
+            elif 'observation' in step[-1]:
+                observation = step[-1]['observation']
+            else:
+                raise RuntimeError("No observation info found.")
+            obs = observation['clean_axtree_txt']
             observations.append(obs)
             
         last_action = data['history'][-1][-1]['action']
@@ -121,7 +128,8 @@ class FlightSearchEvaluator:
             grounded = False
             relevant = False
         
-        return {'goal': goal, 
+        return {'instance': os.path.basename(browsing_data_path),
+                'goal': goal, 
                 'constraints': constraints, 
                 'observations': observations,
                 'message': message, 
