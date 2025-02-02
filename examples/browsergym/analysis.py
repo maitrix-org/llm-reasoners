@@ -159,14 +159,16 @@ def get_mcts_stats(tag: str):
           task_path = os.path.join(results_dir, exp_name, task_name)
           if os.path.exists(os.path.join(task_path, "result.pkl")):
             mcts_result = pickle.load(open(os.path.join(task_path, "result.pkl"), "rb"))
+            completion_iteration = np.nan
+            completion_depth = np.nan
             if mcts_result.cum_reward >= 100: # task successfully completed
               completion_iteration = find_completion_iteration(mcts_result)
               completion_depth = find_completion_depth(mcts_result)
-              max_depth = find_max_depth(mcts_result)
-              env_steps_taken = get_env_steps_taken(mcts_result)
-              task_mcts_stats_rows.append([task_name, completion_iteration, completion_depth, max_depth, env_steps_taken])
-            else:
-              task_mcts_stats_rows.append([task_name, np.nan, np.nan])
+            max_depth = find_max_depth(mcts_result)
+            env_steps_taken = get_env_steps_taken(mcts_result)
+            task_mcts_stats_rows.append([task_name, completion_iteration, completion_depth, max_depth, env_steps_taken])
+            # else:
+            #   task_mcts_stats_rows.append([task_name, np.nan, np.nan])
           else:
             task_mcts_stats_rows.append([task_name, np.nan, np.nan])
   

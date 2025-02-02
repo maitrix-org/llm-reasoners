@@ -106,7 +106,6 @@ class SearchConfigBrowsergym(SearchConfig):
                 response = self.llm.generate(
                     full_prompt_txt, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
 
-
                 evaluation = response.text[0]
 
                 json_string = re.search(r"\{.*\}", evaluation, re.DOTALL).group()
