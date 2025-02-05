@@ -57,7 +57,10 @@ class ReasonerAgent:
                 strict=False,
                 multiaction=False,
             )
-            self.observation_space = BrowserGymObservationSpace(truncation=self.config['truncate_axtree'])
+            self.observation_space = BrowserGymObservationSpace(
+                truncation=self.config['truncate_axtree'],
+                max_steps=self.config['max_steps']
+            )
         elif self.environment == 'easyweb':
             self.action_space = EasyWebBrowserActionSpace(
                 action_subsets=['chat', 'bid'],
@@ -67,7 +70,8 @@ class ReasonerAgent:
             )
             self.observation_space = EasyWebBrowserObservationSpace(
                 eval_mode=self.config['eval_mode'], 
-                truncation=self.config['truncate_axtree']
+                truncation=self.config['truncate_axtree'],
+                max_steps=self.config['max_steps']
             )
         else: 
             raise ValueError(f'Unsupported environment: {self.environment}')

@@ -14,6 +14,7 @@ end the task once it sends a message to the user.""",
     'with_datetime': True,
     'eval_mode': False,
     'truncate_axtree': True,
+    'max_steps': 30
 }
 
 browsergym_config = copy.copy(default_web_agent_config)
