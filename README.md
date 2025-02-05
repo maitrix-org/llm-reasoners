@@ -20,6 +20,7 @@
 Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Reasoning Algorithms, Visualization, LLM calling, and more!
 
 ## News
+- Jan. 31, 2025: LLM Reasoners has integrated [SGLang](https://github.com/sgl-project/sglang). Enjoy 100x speed-up with a one-line change! New applications like PRM-guided search for inference-time scaling are also available. See more details in this [post](https://x.com/MaitrixOrg/status/1885387184557199857).
 - Dec. 20, 2024: We now supported planning algorithms (MCTS, DFS/BFS, Beam Search) in web environments with [BrowserGym](https://github.com/ServiceNow/BrowserGym), check the [README](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/browsergym) to try out!
 - Nov. 13, 2024: We integrated [DRPO](https://aclanthology.org/2024.emnlp-main.1220/), a tuning-free alignment method published at EMNLP 2024 ([link](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/DRPO)).
 - Jul. 10, 2024: Our paper on [LLM Reasoners](https://arxiv.org/abs/2404.05221) is accepted to [COLM 2024](https://colmweb.org/index.html)!
