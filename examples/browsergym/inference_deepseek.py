@@ -84,7 +84,7 @@ def run_task(exp_name: str, task_name: str) -> bool:
 
     llm = DeepseekModel(
         model="deepseek-chat",
-        temperature=0.4,
+        temperature=0.25,
         task_dir=task_dir
     )
 

@@ -28,7 +28,7 @@ class SearchConfigBrowsergym(SearchConfig):
     def __init__(self,
                  action_set: HighLevelActionSet,
                  llm: LanguageModel,
-                 n_proposals: int = 5, proposal_temperature: float = 0.7,
+                 n_proposals: int = 1, proposal_temperature: float = 0.25,
                  evaluation_temperature: float = 0.25,
                  use_axtree: bool = True, use_html: bool = False, use_screenshot: bool = False,
                  n_retry: int = 64,
