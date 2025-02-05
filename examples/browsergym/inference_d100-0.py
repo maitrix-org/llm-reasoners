@@ -69,9 +69,8 @@ def run_task(exp_name: str, task_name: str) -> bool:
     env_args = EnvArgs(
         task_name=task_name,
         task_seed=42,
-        # max_steps=depth,
-        max_steps=1,
-        headless=False,
+        max_steps=depth,
+        headless=True,
         record_video=True,
     )
 
