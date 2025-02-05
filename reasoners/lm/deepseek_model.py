@@ -76,6 +76,8 @@ class DeepseekModel(LanguageModel):
                     time.sleep(60 / rate_limit_per_min)
 
                 messages = [{"role": "user", "content": prompt}]
+                # print(messages)
+                # print("SAnity check")
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,

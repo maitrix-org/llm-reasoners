@@ -123,6 +123,8 @@ I found the information requested by the user, I will send it to the chat.
         }
     )
 
+    # print(action_set.describe(with_long_description=False, with_examples=True))
+
     # append past actions (and last error message) if any
     if action_history:
         user_msgs.append(
