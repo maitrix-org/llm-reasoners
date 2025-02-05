@@ -95,6 +95,9 @@ class SearchConfigBrowsergym(SearchConfig):
         - evaluation (float): the evaluation of the state action pair
         - aux (dict): used to pass the self-evaluation to the search algorithm, which then passes it to the SearchConfig's reward (not fast_reward) function
         """
+        # no reason to make an llm call to choose between "1 choices"
+        if self.n_proposals == 1:
+            return 0.0, {"self_eval": 0.0}
 
         for i in range(self.n_retry):
             try:
@@ -108,7 +111,8 @@ class SearchConfigBrowsergym(SearchConfig):
 
                 evaluation = response.text[0]
 
-                json_string = re.search(r"\{.*\}", evaluation, re.DOTALL).group()
+                json_string = re.search(
+                    r"\{.*\}", evaluation, re.DOTALL).group()
                 json_object = json.loads(json_string)
                 evaluation = json_object["score"] / 100
 
@@ -116,7 +120,6 @@ class SearchConfigBrowsergym(SearchConfig):
             except AttributeError as e:
                 with open(f"{self.task_dir}/time.txt", "a+") as f:
                     f.write(f"retrying evaluation - parsing error\n")
-                
 
     def reward(self, state: StateGym, action: ActionGym, **kwargs) -> tuple[float, dict]:
         """
