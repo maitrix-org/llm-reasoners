@@ -65,7 +65,7 @@ git clone https://github.com/maitrix-org/llm-reasoners.git
 cd llm-reasoners
 pip install -e .
 # Install dependencies for ReasonerAgent
-cd examples/WebAgent
+cd examples/ReasonerAgent-Web
 pip install -r requirements.txt
 ```
 **Note**: If any issue arises while trying to install BrowserGym, please refer to the [official repo](https://github.com/ServiceNow/BrowserGym).
@@ -85,7 +85,7 @@ python main.py \
     --model [optional, 
              options: gpt-4o, o1, o3-mini, deepseek-chat, deepseek-reasoner; 
              default: gpt-4o] \
-    --api_key [optional, by default set to content in file llm-reasoners/examples/WebAgent/default_api_key.txt if exists, otherwise None] \
+    --api_key [optional, by default set to content in file llm-reasoners/examples/ReasonerAgent-Web/default_api_key.txt if exists, otherwise None] \
     --max_steps [optional, maximum steps the agent can take on a single task; default: 30] \
     --output_dir [optional, location to store browsing interaction data; default: ./browsing_data]
 ```
@@ -102,7 +102,7 @@ python main.py \
     --model [optional, 
              options: gpt-4o, o1, o3-mini, deepseek-chat, deepseek-reasoner; 
              default: gpt-4o] \
-    --api_key [optional, by default set to content in file 'llm-reasoners/examples/WebAgent/default_api_key.txt' if exists, otherwise None] \
+    --api_key [optional, by default set to content in file 'llm-reasoners/examples/ReasonerAgent-Web/default_api_key.txt' if exists, otherwise None] \
     --max_steps [optional, maximum steps the agent can take on a single task; default: 30] \
     --output_dir [optional, location to store browsing interaction data; default: ./browsing_data] \
     --start_idx [optional, index of the first example; default: 0] \
