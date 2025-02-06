@@ -91,14 +91,17 @@ class FlightSearchEvaluator:
         if final_action.startswith('send_msg_to_user'): 
             start_idx = len('send_msg_to_user(')
             end_idx = len(final_action) - len(')')
-            message = eval(final_action[start_idx:end_idx])
-            
-            if message == 'Error encountered when browsing.':
-                outcome = 'Webpage Parsing Error'
-            elif message == 'Too many errors encountered. Task failed.':
+            try:
+                message = eval(final_action[start_idx:end_idx])
+            except SyntaxError:
                 outcome = 'Action Error'
-            elif message == "Repetitive actions. Ending the task.":
-                outcome = 'Repetitive Actions'
+            else:
+                if message == 'Error encountered when browsing.':
+                    outcome = 'Webpage Parsing Error'
+                elif message == 'Too many errors encountered. Task failed.':
+                    outcome = 'Action Error'
+                elif message == "Repetitive actions. Ending the task.":
+                    outcome = 'Repetitive Actions'
         elif error:
             outcome = 'Browser Crashed'
         else: 
