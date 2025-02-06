@@ -32,8 +32,7 @@ model_info = {
     'o1': ('https://api.openai.com/v1/', 'openai'),
     'o3-mini': ('https://api.openai.com/v1/', 'openai'),
     "deepseek-chat": ("https://api.deepseek.com", "deepseek"),
-    'deepseek-reasoner': ("https://api.deepseek.com", "deepseek"),
-    'Meta-Llama-3.1-70B-Instruct': ('http://localhost:8000/v1', 'openai'),
+    'deepseek-reasoner': ("https://api.deepseek.com", "deepseek")
 }
 
 agent_dict = {
@@ -186,7 +185,8 @@ if __name__ == '__main__':
     parser.add_argument('--max_retry', type=int, default=0)
 
     # IO arguments
-    parser.add_argument('--dataset', type=str, required=True)
+    parser.add_argument('--query', type=str, default=None)
+    parser.add_argument('--dataset', type=str, default=None)
     parser.add_argument('--data_root', type=str, default='./data/')
     parser.add_argument('--start_idx', type=int, default=0)
     parser.add_argument('--end_idx', type=int, default=9999999)
@@ -206,6 +206,9 @@ if __name__ == '__main__':
     
     # Parse the arguments
     args = parser.parse_args()
+    assert args.dataset is not None or args.query is not None, "Please provide a dataset or a query."
+    assert args.api_key is not None, "Please provide an API key by either passing it as an argument or saving it in default_api_key.txt."
+
     main_args = {
         'model': args.model,
         'api_key': args.api_key,
@@ -215,34 +218,41 @@ if __name__ == '__main__':
         'max_steps': args.max_steps,
         'timeout': args.timeout,
     }
-    goal_key = 'gym_env_name' if args.dataset == 'webarena' else 'goal'
-    questions = get_dataset(
-        args.dataset, 
-        args.data_root, 
-        args.shuffle, 
-        args.seed, 
-        args.start_idx,
-        args.end_idx
-    )
-    for i, question in enumerate(questions):
-        idx = i + args.start_idx
-        job_name = args.job_name + f'_{idx}'
-        if args.dataset == 'webarena':
-            job_name = env_id.split('/')[-1]
 
-        if glob(os.path.join(args.output_dir, f'{job_name}_*.json')) == []:
-            for attempt in range(args.max_retry+1):
-                try:
-                    main(
-                        **{"job_name": job_name, goal_key: question},
-                        **main_args
-                    )
-                except retry_if_exception_type as e:
-                    print(f"Error encountered: {str(e)}")
-                    print(f"Task failed for {attempt} times, retrying ...")
+    if args.query is not None:
+        main(
+            **{"job_name": args.job_name, 'goal': args.query},
+            **main_args
+        )
+    else:
+        goal_key = 'gym_env_name' if args.dataset == 'webarena' else 'goal'
+        questions = get_dataset(
+            args.dataset, 
+            args.data_root, 
+            args.shuffle, 
+            args.seed, 
+            args.start_idx,
+            args.end_idx
+        )
+        for i, question in enumerate(questions):
+            idx = i + args.start_idx
+            job_name = args.job_name + f'_{idx}'
+            if args.dataset == 'webarena':
+                job_name = env_id.split('/')[-1]
+
+            if glob(os.path.join(args.output_dir, f'{job_name}_*.json')) == []:
+                for attempt in range(args.max_retry+1):
+                    try:
+                        main(
+                            **{"job_name": job_name, goal_key: question},
+                            **main_args
+                        )
+                    except retry_if_exception_type as e:
+                        print(f"Error encountered: {str(e)}")
+                        print(f"Task failed for {attempt} times, retrying ...")
+                    else:
+                        break
                 else:
-                    break
+                    raise RuntimeError("Max attempts reached, keep getting exceptions.")
             else:
-                raise RuntimeError("Max attempts reached, keep getting exceptions.")
-        else:
-            print(f"Existing log detected for {job_name}, skipping ...")
+                print(f"Existing log detected for {job_name}, skipping ...")
