@@ -38,7 +38,7 @@ class DeepseekModel(LanguageModel):
         elif self.backend == "openrouter":
             self.client = OpenAI(
                 base_url="https://openrouter.ai/api/v1",
-                base_url=os.getenv("OPENROUTER_API_KEY", None),
+                api_key=os.getenv("OPENROUTER_API_KEY", None),
             )
         else:
             raise ValueError(f"Invalid backend: {self.backend}")
