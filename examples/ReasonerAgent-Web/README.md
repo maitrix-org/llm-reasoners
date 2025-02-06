@@ -1,6 +1,6 @@
 # ReasonerAgent: A fully open source, ready-to-run agent that uses a web browser to answer your queries
 
-<div style="text-align: center;">
+<p align="center">
     <a href="https://reasoner-agent.maitrix.org" class="nav-link mt-1 mb-1 enabled"> 
     <i class="fa-solid fa-newspaper"></i>
     <span>Blog</span>
@@ -20,9 +20,8 @@
     <i class="fas fa-solid fa-at"></i>
     <span>Maitrix.org</span>
     </a> 
-    <br> <br>
-    <img src="img/logo.png" alt="ReasonerAgent Logo" width="256">
-</div>
+    <img src="img/logo.png" alt="ReasonerAgent Logo" width="400">
+</p>
 
 ReasonerAgent is an agent that answers user queries by operating a Chormium-based browser interface. By planning its actions with simulation-based reasoning using a world model, ReasonerAgent is capable of completing a range of web browsing tasks, such as complex website navigation, multi-hop, multi-website QA, and general web automation. Since it is built free of additional training, ReasonerAgent can be executed by simply providing an API key. It is a preliminary implementation showcasing our research, and limitations exist. We encourage the community to provide feedback for further refinement and improvement.
 
@@ -44,7 +43,7 @@ python main.py test_job --query "Who is the current president of USA?" --api_key
 ## 📖 Documentation
 ### Install
 1. Install [Playwright](https://playwright.dev/docs/intro#installing-playwright). You might need to first install [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
-2. Install the browser and dependencyes with Playwright. For example, on Ubuntu you can do `playwright install` followed by `npx playwright install-deps`. You can skip this step and follow the instructions when prompted later.
+2. Install the browser and dependencies with Playwright. For example, on Ubuntu you can do `playwright install` followed by `npx playwright install-deps`. Alternatively you can skip this step and follow the instructions when prompted later.
 3. Make sure to use Python 3.10 or later
 ```
 conda create -n reasoners python=3.10
@@ -63,7 +62,8 @@ pip install -r requirements.txt
 **Note**: If any issue arises while trying to install BrowserGym, please refer to the [official repo](https://github.com/ServiceNow/BrowserGym).
 
 ### Running Experiments
-Before starting, it is recommended that you enter your API key at `default_api_key.txt`.
+Before starting, it is recommended that you enter your API key at a file named `default_api_key.txt` under `examples/ReasonerAgent-Web/`.
+We recommend a minimum of 16GB RAM, as required by Playwright for proper system functionality.
 
 **Run with Single Query**
 ```
@@ -109,7 +109,7 @@ python main.py \
 ```
 
 **Notes:**
-* One way to speed up the inference is to open several terminals and run inference on separate slices of the data.
+* One way to speed up the dataset inference is to open several terminals and run inference on separate slices of the data.
 * The agent outputs will be stored under `browsing_data` and will be automatically loaded for evaluation.
 * Optionally, `--model` can be set to path to a config file for module-wise LLM specification. Example config files with which we ran our experiments are provided [here](configs/).
 * Running WebArena requires setup on an Amazon EC2 Instance following the [official guide](https://github.com/web-arena-x/webarena/blob/main/environment_docker/README.md#pre-installed-amazon-machine-image-recommended). Then the evaluation can be run with the example [script](evaluation/webarena/run_inference.sh) provided.
@@ -167,7 +167,9 @@ We also provided a frontend to visualize the interaction history for the experim
 python log_visualizer/main.py
 ```
 Then open the link in the command line output. You will be able to interact with an interface like this:
-![](img/log_visualizer-example.png)
+<p align="center">
+    <img src="img/log_visualizer-example.png" alt="Log Visualizer Example" width="512">
+</p>
 
 ## 🤝 How to Contribute
 This project is fully open-sourced. We encourage the community to contribute and share any invaluable feedbacks. Here are a few ways to reach us:
