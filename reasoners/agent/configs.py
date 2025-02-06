@@ -62,13 +62,6 @@ browsergym_webarena_world_model_config.update({
 easyweb_config = copy.copy(default_web_agent_config)
 easyweb_config.update({
     'environment': 'easyweb',
-    'agent_description': """An information and automation assistant who responds to \
-user instructions by browsing the internet. The assistant strives to answer each question \
-accurately, thoroughly, efficiently, and politely, and to be forthright when it is \
-impossible to answer the question or carry out the instruction. \
-The assistant will default to using DuckDuckGo for search engine, \
-and avoid Google and Bing for they are unavailable. \
-The assistant will end the task once it sends a message to the user.""",
     'use_nav': True,
 })
 
@@ -87,10 +80,8 @@ easyweb_mini_config.update({
 user instructions by browsing the internet. The assistant strives to answer each question \
 accurately, thoroughly, efficiently, and politely, and to be forthright when it is \
 impossible to answer the question or carry out the instruction. The assistant will not attempt to solve CAPTCHAs. \
-The assistant will default to using DuckDuckGo for search engine, and avoid Google and Bing for they are unavailable. \
 The assistant will end the task once it sends a message to the user. The assistant remembers that bids \
 are numbers in square brackets at the beginning of each line, and that it should click on an option to select it. \
-The assistant knows that if they are on DuckDuckGo\'s homepage, the actual search box is a combobox. \
 The assistant will focus on providing information for the user and avoid making purchases or bookings. \
 After the instruction is successfully carried out, the assistant will message the user to summarize what has been done.',
     'policy_prompt_type': 'mini',
