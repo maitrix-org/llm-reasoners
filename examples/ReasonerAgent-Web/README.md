@@ -162,7 +162,7 @@ python get_ttest.py \
 ```
 
 ### Visualize History Log
-Wea provided a frontend to visualize the interaction history for the experiments. Run it locally with the following command:
+We provided a frontend to visualize the interaction history for the experiments. Run it locally with the following command:
 ```
 python log_visualizer/main.py
 ```
