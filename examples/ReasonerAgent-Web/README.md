@@ -52,7 +52,7 @@ We provide three datasets for evaluating web agents as informational assistants:
 
 ## 📖 Documentation
 ### Install
-1. Make sure [Playwright](https://playwright.dev/docs/intro#installing-playwright) is installed. You might need to first install [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
+1. Install [Playwright](https://playwright.dev/docs/intro#installing-playwright). You might need to first install [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
 2. Make sure to use Python 3.10 or later
 ```
 conda create -n reasoners python=3.10
