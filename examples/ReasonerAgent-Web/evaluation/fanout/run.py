@@ -16,7 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('--browsing_data_dir', type=str, 
                         default=os.path.join(current_dir, '..', '..', 'browsing_data'))
     parser.add_argument('--groundtruth_path', type=str, 
-                        default=os.path.join(current_dir, '..', '..', 'task_data', 'fanout-final-dev.json'))
+                        default=os.path.join(current_dir, '..', '..', 'data', 'fanout-final-dev.json'))
     parser.add_argument('--start_idx', type=int, default=0)
     parser.add_argument('--end_idx', type=int, default=9999)
     

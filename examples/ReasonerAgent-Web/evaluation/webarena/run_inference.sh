@@ -19,7 +19,7 @@ cd ../..
 
 python main.py webarena \
     --agent reasoner \
-    --output_dir evaluation/webarena/results/baseline \
+    --output_dir evaluation/webarena/results/baseline-100 \
     --model gpt-4o \
     --dataset webarena \
     --config_name browsergym_webarena \
@@ -29,7 +29,7 @@ python main.py webarena \
 
 # python main.py webarena \
 #     --agent reasoner \
-#     --output_dir evaluation/webarena/results/wmp \
+#     --output_dir evaluation/webarena/results/wmp-100 \
 #     --model gpt-4o \
 #     --dataset webarena \
 #     --config_name browsergym_webarena_world_model \
@@ -39,7 +39,7 @@ python main.py webarena \
 
 # python main.py webarena \
 #     --agent openhands \
-#     --output_dir evaluation/webarena/browsingagent \
+#     --output_dir evaluation/webarena/browsingagent-100 \
 #     --model gpt-4o \
 #     --dataset webarena \
 #     --config_name opendevin_webarena \

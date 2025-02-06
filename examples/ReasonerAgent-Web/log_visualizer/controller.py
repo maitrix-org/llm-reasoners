@@ -18,10 +18,16 @@ def load_history(log_selection):
     for step in data['history']:
         image_data = base64.b64decode(step[0]['screenshot'])
         screenshot = Image.open(BytesIO(image_data))
+        if 'obs_info' in step[2]:
+            observation = step[2]['obs_info']
+        elif 'observation' in step[2]:
+            observation = step[2]['observation']
+        else:
+            raise RuntimeError("No observation info found.")
         step_data = {
             'url': step[0]['url'],
             'screenshot': screenshot,
-            'observation': step[2]['obs_info']['clean_axtree_txt'],
+            'observation': observation['clean_axtree_txt'],
             'state': step[2].get('state', ""),
             'plan': step[2].get('plan', ""),
             'action': step[2]['action'],

@@ -8,7 +8,7 @@ from PIL import Image
 current_dir = os.path.dirname(__file__) 
 
 with gr.Blocks() as demo:
-    title = gr.Markdown('# FastAgent Log Visualizer')
+    title = gr.Markdown('# ReasonerAgent-Web Log Visualizer')
     with gr.Row(equal_height=True):
         with gr.Column(scale=1):
             with gr.Group():
