@@ -8,7 +8,7 @@
     |
     <a href="https://easyweb.maitrix.org" class="nav-link mt-1 mb-1 enabled"> 
     <i class="fas fa-solid fa-rocket"></i>
-    <span>Demo</span>
+    <span>Research Preview</span>
     </a> 
     |
     <a href="https://discord.gg/b5NEhRbvJg" class="nav-link mt-1 mb-1 enabled">
