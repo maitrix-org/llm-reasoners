@@ -20,12 +20,13 @@ if __name__ == '__main__':
                         default=os.path.join(current_dir, '..', '..', 'data', 'flightqa_counterfactual.csv'))
     parser.add_argument('--start_idx', type=int, default=0)
     parser.add_argument('--end_idx', type=int, default=9999)
+    parser.add_argument('--verbose', '-v', action='store_true')
     
     args = parser.parse_args()
     
     evaluator = FlightSearchEvaluator(args.questions_path, args.start_idx, args.end_idx)
 
-    browsing_data_paths = glob(os.path.join(args.browsing_data_dir, args.job_name + '*.json'))
+    browsing_data_paths = sorted(glob(os.path.join(args.browsing_data_dir, args.job_name + '*.json')))
     
     records = []
     for browsing_data_path in browsing_data_paths:
@@ -47,6 +48,11 @@ if __name__ == '__main__':
     
     print(records_df[['correct', 'grounded', 'relevant']].mean())
     print(records_df.outcome.value_counts())
+
+    if args.verbose:
+        print(f"Correct instances: {list(records_df['instance'][records_df['correct']])}")
+        print(f"Grounded instances: {list(records_df['instance'][records_df['grounded']])}")
+        print(f"Relevant instances: {list(records_df['instance'][records_df['relevant']])}")
 
     output_dir = os.path.join(current_dir, 'results')
     os.makedirs(output_dir, exist_ok=True)
