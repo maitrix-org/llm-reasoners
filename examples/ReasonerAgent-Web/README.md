@@ -1,7 +1,6 @@
 # ReasonerAgent: A fully open source, ready-to-run agent that uses a web browser to answer your queries
 
 <div style="text-align: center;">
-    <img src="img/logo.png" alt="ReasonerAgent Logo" > <br>
     <a href="https://reasoner-agent.maitrix.org" class="nav-link mt-1 mb-1 enabled"> 
     <i class="fa-solid fa-newspaper"></i>
     <span>Blog</span>
@@ -21,8 +20,8 @@
     <i class="fas fa-solid fa-at"></i>
     <span>Maitrix.org</span>
     </a> 
-    <!-- <br> <br>
-    <img src="img/logo.png" alt="ReasonerAgent Logo" style="width:60%;" > -->
+    <br> 
+    <img src="img/logo.png" alt="ReasonerAgent Logo" style="width:60%;" >
 </div>
 
 ReasonerAgent is an agent that answers user queries by operating a Chormium-based browser interface. By planning its actions with simulation-based reasoning using a world model, ReasonerAgent is capable of completing a range of web browsing tasks, such as complex website navigation, multi-hop, multi-website QA, and general web automation. Since it is built free of additional training, ReasonerAgent can be executed by simply providing an API key. It is a preliminary implementation showcasing our research, and limitations exist. We encourage the community to provide feedback for further refinement and improvement.
