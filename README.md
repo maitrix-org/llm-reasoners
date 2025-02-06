@@ -8,7 +8,7 @@
   |
   <a href="https://www.llm-reasoners.net/blog">Blog</a>
   |
-  <a href="https://discord.gg/yenpnEfy">Discord</a>
+  <a href="https://discord.gg/QGCctBPu">Discord</a>
   |
   <a href="https://maitrix.org/">@Maitrix.org</a>
 </p>
