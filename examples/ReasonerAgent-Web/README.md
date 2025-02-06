@@ -8,7 +8,7 @@
     |
     <a href="https://easyweb.maitrix.org" class="nav-link mt-1 mb-1 enabled"> 
     <i class="fas fa-solid fa-rocket"></i>
-    <span>Research Preview</span>
+    <span>Research Preview (Demo)</span>
     </a> 
     |
     <a href="https://discord.gg/b5NEhRbvJg" class="nav-link mt-1 mb-1 enabled">
@@ -21,7 +21,7 @@
     <span>Maitrix.org</span>
     </a> 
     <br> <br>
-    <img src="img/logo.png" alt="ReasonerAgent Logo" >
+    <img src="img/logo.png" alt="ReasonerAgent Logo" width="256">
 </div>
 
 ReasonerAgent is an agent that answers user queries by operating a Chormium-based browser interface. By planning its actions with simulation-based reasoning using a world model, ReasonerAgent is capable of completing a range of web browsing tasks, such as complex website navigation, multi-hop, multi-website QA, and general web automation. Since it is built free of additional training, ReasonerAgent can be executed by simply providing an API key. It is a preliminary implementation showcasing our research, and limitations exist. We encourage the community to provide feedback for further refinement and improvement.
@@ -44,12 +44,13 @@ python main.py test_job --query "Who is the current president of USA?" --api_key
 ## 📖 Documentation
 ### Install
 1. Install [Playwright](https://playwright.dev/docs/intro#installing-playwright). You might need to first install [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
-2. Make sure to use Python 3.10 or later
+2. Install the browser and dependencyes with Playwright. For example, on Ubuntu you can do `playwright install` followed by `npx playwright install-deps`. You can skip this step and follow the instructions when prompted later.
+3. Make sure to use Python 3.10 or later
 ```
 conda create -n reasoners python=3.10
 conda activate reasoners
 ```
-3. Install from Github
+4. Install from Github
 ```
 # Locally install llm-reasoners
 git clone https://github.com/maitrix-org/llm-reasoners.git
