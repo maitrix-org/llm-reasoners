@@ -24,13 +24,13 @@
     <img src="img/logo.png" alt="ReasonerAgent Logo" style="width:60%;" > -->
 </div>
 
-ReasonerAgent is an agent that answers user queries by operating a Chormium-based browser interface. By planning its actions with simulation-based reasoning using a world model, ReasonerAgent is capable of precisely completing a range of web browsing tasks, such as complex website navigation, multi-hop, multi-website QA, and general web automation. While it is built free of additional training, ReasonerAgent can be executed by simply providing an API key. 
+ReasonerAgent is an agent that answers user queries by operating a Chormium-based browser interface. By planning its actions with simulation-based reasoning using a world model, ReasonerAgent is capable of precisely completing a range of web browsing tasks, such as complex website navigation, multi-hop, multi-website QA, and general web automation. Since it is built free of additional training, ReasonerAgent can be executed by simply providing an API key. 
 
 This example code runs the [agent](/reasoners/agent) implemented by LLM Reasoners in the open web environment. We also included a baseline agent based on `BrowsingAgent` from [OpenHands](https://github.com/All-Hands-AI/OpenHands).
 
-<div style="text-align: center;">
+<!-- <div style="text-align: center;">
     <iframe width="80%" height="315" src="https://www.youtube.com/embed/KUlf0hZuCXQ?si=z0T3M1SZYID_B3Pr" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-</div>
+</div> -->
 
 <!-- ## News 
 -  -->
