@@ -171,7 +171,9 @@ if __name__ == '__main__':
     default_api_key = None
     if os.path.exists(default_api_key_path):
         with open(default_api_key_path, 'r') as fr:
-            default_api_key = fr.read().strip()
+            key = fr.read().strip()
+            if key != '':
+                default_api_key = key
 
     # Create the parser
     parser = argparse.ArgumentParser(
