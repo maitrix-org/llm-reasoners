@@ -52,7 +52,7 @@ class BrowserGymActionSpace(ActionSpace):
             self.num_repeats = 0
             self.last_action = action
             
-        if self.num_repeats >= 3:
+        if self.num_repeats >= 5:
             action = 'send_msg_to_user("Repetitive actions. Ending the task.")'
             step_info.update({'action': action})
             
@@ -70,9 +70,19 @@ class EasyWebBrowserActionSpace(BrowserGymActionSpace):
             if isinstance(action, action_type):
                 return action
             
+        action_str = action
+        if not action_str.startswith('scroll') and action_str == self.last_action:
+            self.num_repeats += 1
+        else:
+            self.num_repeats = 0
+            self.last_action = action_str
+            
+        if self.num_repeats >= 5:
+            action_str = 'send_msg_to_user("Repetitive actions. Ending the task.")'
+            thought.update({'action': action_str})
+
         if isinstance(thought, dict): 
             thought = json.dumps(thought)
-        action_str = action
 
         # handle send message to user function call in BrowserGym
         msg_content = ''
@@ -81,7 +91,7 @@ class EasyWebBrowserActionSpace(BrowserGymActionSpace):
                 tree = ast.parse(sub_action)
                 args = tree.body[0].value.args  # type: ignore
                 msg_content = args[0].value
-
+                
         return BrowseInteractiveAction(
             browser_actions=action_str,
             thought=thought,

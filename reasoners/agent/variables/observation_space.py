@@ -52,19 +52,25 @@ Here is an abstract description of the information available in the webpage text
 """
 
 class BrowserGymObservationSpace(ObservationSpace):
-    def __init__(self, truncation=True):
+    def __init__(self, truncation=True, max_steps=30):
         super().__init__()
-        self.reset()
         self.truncation = truncation
+        self.max_steps = max_steps
+        self.reset()
         
     def reset(self):
         self.goal = None
         self.error_accumulator = 0
+        self.num_steps = 0
         
     def get_value(self):
         return browser_observation_space_description
         
     def parse_observation(self, obs):
+        self.num_steps += 1
+        if self.num_steps > self.max_steps:
+            return None, {'return_action': "send_msg_to_user('Maximum number of steps reached. Ending the task.')"}
+        
         scroll_position = obs['scroll_position']
         error_prefix = ''
         self.goal = obs['goal']
@@ -148,7 +154,6 @@ class BrowserGymObservationSpace(ObservationSpace):
         else:
             self.error_accumulator = 0
             
-
         # return current_obs, {}
         return obs_txt, obs_info
     
@@ -156,8 +161,8 @@ class BrowserGymObservationSpace(ObservationSpace):
 class EasyWebBrowserObservationSpace(BrowserGymObservationSpace):
     """An identity that describes the agent and the environment it is in."""
 
-    def __init__(self, eval_mode, truncation=True):
-        super().__init__()
+    def __init__(self, eval_mode, truncation=True, max_steps=30):
+        super().__init__(truncation=truncation, max_steps=max_steps)
         self.eval_mode = eval_mode
         self.truncation = truncation
         self.reset()
@@ -242,6 +247,17 @@ class EasyWebBrowserObservationSpace(BrowserGymObservationSpace):
                 last_action,
                 MessageAction(last_action.browsergym_send_msg_to_user),
             )
+            
+        self.num_steps += 1
+        if self.num_steps > self.max_steps:
+            return (
+                last_obs,
+                last_action,
+                BrowseInteractiveAction(
+                    browser_actions="send_msg_to_user('Maximum number of steps reached. Ending the task.')",
+                    browsergym_send_msg_to_user='Maximum number of steps reached. Ending the task.',
+                ),
+            )
 
         return last_obs, last_action, None
 
@@ -290,7 +306,7 @@ class EasyWebBrowserObservationSpace(BrowserGymObservationSpace):
 
         if error_prefix:
             self.error_accumulator += 1
-            if self.error_accumulator > 10:
+            if self.error_accumulator > 5:
                 return current_obs, MessageAction(
                     'Too many errors encountered. Task failed.'
                 )
