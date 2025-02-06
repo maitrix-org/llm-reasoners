@@ -1,22 +1,23 @@
 # ReasonerAgent: A fully open source, ready-to-run agent that uses a web browser to answer your queries
 
 <div style="text-align: center;">
+    <img src="img/logo.png" alt="ReasonerAgent Logo" > <br>
     <a href="https://reasoner-agent.maitrix.org" class="nav-link mt-1 mb-1 enabled"> 
     <i class="fa-solid fa-newspaper"></i>
     <span>Blog</span>
     </a>
     |
-    <a href="https://easyweb.maitrix.org" class="nav-link mt-1 mb-1 enabled" > 
+    <a href="https://easyweb.maitrix.org" class="nav-link mt-1 mb-1 enabled"> 
     <i class="fas fa-solid fa-rocket"></i>
     <span>Demo</span>
     </a> 
     |
-    <a href="https://discord.gg/b5NEhRbvJg" class="nav-link mt-1 mb-1 enabled" target="_blank">
+    <a href="https://discord.gg/b5NEhRbvJg" class="nav-link mt-1 mb-1 enabled">
     <i class="fas fa-brands fa-discord"></i>
     <span>Discord</span>
     </a>
     |
-    <a href="https://maitrix.org" class="nav-link mt-1 mb-1 enabled" target="_blank">
+    <a href="https://maitrix.org" class="nav-link mt-1 mb-1 enabled">
     <i class="fas fa-solid fa-at"></i>
     <span>Maitrix.org</span>
     </a> 
@@ -24,9 +25,10 @@
     <img src="img/logo.png" alt="ReasonerAgent Logo" style="width:60%;" > -->
 </div>
 
-ReasonerAgent is an agent that answers user queries by operating a Chormium-based browser interface. By planning its actions with simulation-based reasoning using a world model, ReasonerAgent is capable of precisely completing a range of web browsing tasks, such as complex website navigation, multi-hop, multi-website QA, and general web automation. Since it is built free of additional training, ReasonerAgent can be executed by simply providing an API key. 
+ReasonerAgent is an agent that answers user queries by operating a Chormium-based browser interface. By planning its actions with simulation-based reasoning using a world model, ReasonerAgent is capable of completing a range of web browsing tasks, such as complex website navigation, multi-hop, multi-website QA, and general web automation. Since it is built free of additional training, ReasonerAgent can be executed by simply providing an API key. It is a preliminary implementation showcasing our research, and limitations exist. We encourage the community to provide feedback for further refinement and improvement.
 
 This example code runs the [agent](/reasoners/agent) implemented by LLM Reasoners in the open web environment. We also included a baseline agent based on `BrowsingAgent` from [OpenHands](https://github.com/All-Hands-AI/OpenHands).
+
 
 <!-- <div style="text-align: center;">
     <iframe width="80%" height="315" src="https://www.youtube.com/embed/KUlf0hZuCXQ?si=z0T3M1SZYID_B3Pr" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -39,16 +41,6 @@ First, go through the [installation](#install) section. Then you can test run yo
 ```
 python main.py test_job --query "Who is the current president of USA?" --api_key "sk-123[Your OpenAI API key]"
 ```
-
-## 🤔 Why Choose ReasonerAgent?
-
-
-## 📊 Evaluation Results
-### Datasets
-We provide three datasets for evaluating web agents as informational assistants: 
-1. [FanOutQA](https://fanoutqa.com/index.html), which requires the agent to answer questions that require searching for and compiling information from multiple websites. We include their development set of 310 examples. 
-2. FlightQA, a dataset prepared by us to evaluate the ability of LLM agents in answering queries with varying number of constraints, specifically while searching for live flight tickets using the internet. To control for confounding variables like specific query content, we iteratively add to lists of constraints to form new questions. In total we have 120 examples consisted of 20 groups of questions ranging from 3 to 8 constraints.
-3. [WebArena](https://webarena.dev), which comprises benchmarking tasks on a few self-hosted websites, including information seeking, site navigation and content management. 
 
 ## 📖 Documentation
 ### Install
@@ -91,6 +83,10 @@ python main.py \
 ```
 
 **Run with an Evaluation Dataset**
+We provide three datasets for evaluating web agents as informational assistants: 
+1. [FanOutQA](https://fanoutqa.com/index.html), which requires the agent to answer questions that require searching for and compiling information from multiple websites. We include their development set of 310 examples. 
+2. FlightQA, a dataset prepared by us to evaluate the ability of LLM agents in answering queries with varying number of constraints, specifically while searching for live flight tickets using the internet. To control for confounding variables like specific query content, we iteratively add to lists of constraints to form new questions. In total we have 120 examples consisted of 20 groups of questions ranging from 3 to 8 constraints.
+3. [WebArena](https://webarena.dev), which comprises benchmarking tasks on a few self-hosted websites, including information seeking, site navigation and content management. 
 ```
 python main.py \
     [job_name] \
@@ -120,13 +116,9 @@ python main.py \
 ### Get Evaluation Results
 After experiments with evaluation datasets are done, follow the instructions below to get quantitative evaluation results.
 
-#### FanOutQA
-First, go to the evaluation directory
+**FanOutQA**
 ```
 cd evaluation/fanout
-```
-Then, run the evaluation script:
-```
 python run.py \
     [job_name] \
     --browsing_data_dir [optional, should be same as output_dir when running experiments;
@@ -137,13 +129,9 @@ python run.py \
     --end_idx [optional, used if only partially evaluating the results; default: 9999]
 ```
 
-#### FlightQA
-First, go to the evaluation directory
+**FlightQA**
 ```
 cd evaluation/flight
-```
-Then, run the evaluation script:
-```
 python run.py \
     [job_name] \
     --browsing_data_dir [optional, should be same as output_dir when running experiments;
@@ -153,10 +141,9 @@ python run.py \
     --start_idx [optional, used if only partially evaluating the results; default: 0] \
     --end_idx [optional, used if only partially evaluating the results; default: 9999]
 ```
-**Note**: Running evaluation for FlightQA involves calling `gpt-4o` with the API key at `default_api_key.txt`, which may incur costs to you. So please run judiciously.
+Note: Running evaluation for FlightQA involves calling `gpt-4o` with the API key at `default_api_key.txt`, which may incur costs to you. So please run judiciously.
 
-#### WebArena
-First, go to the evaluation directory
+**WebArena**
 ```
 cd evaluation/webarena
 ```
@@ -180,12 +167,6 @@ python log_visualizer/main.py
 ```
 Then open the link in the command line output. You will be able to interact with an interface like this:
 ![](img/log_visualizer-example.png)
-
-## 📋 License
-Distributed under the Apache License 2.0. See [LICENSE](/LICENSE) for more information.
-
-## 🙏 Acknowledgements
-We would like to thank Zhoujun Cheng, Yi Gu, Shibo Hao, and Xinyu Pi from MixLab; Han Guo, Nicholas Ho and Bowen Tan from SAILING Lab; Zora Wang from NeuLab; Sarah Cheah and Hector Ren from MBZUAI for their insightful comments and feedback. Mingkai Deng is supported by Samsung GRO Project “Efficient Designs for Generative and Agent LLM Development”. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the authors and do not necessarily reflect the views of Samsung.
 
 ## 🤝 How to Contribute
 This project is fully open-sourced. We encourage the community to contribute and share any invaluable feedbacks. Here are a few ways to reach us:
