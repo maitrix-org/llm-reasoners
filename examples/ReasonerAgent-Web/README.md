@@ -20,9 +20,9 @@
     <i class="fas fa-solid fa-at"></i>
     <span>Maitrix.org</span>
     </a> 
+    <br>
     <img src="img/logo.png" alt="ReasonerAgent Logo" width="400">
 </p>
-
 ReasonerAgent is an agent that answers user queries by operating a Chormium-based browser interface. By planning its actions with simulation-based reasoning using a world model, ReasonerAgent is capable of completing a range of web browsing tasks, such as complex website navigation, multi-hop, multi-website QA, and general web automation. Since it is built free of additional training, ReasonerAgent can be executed by simply providing an API key. It is a preliminary implementation showcasing our research, and limitations exist. We encourage the community to provide feedback for further refinement and improvement.
 
 This example code runs the [agent](/reasoners/agent) implemented by LLM Reasoners in the open web environment. We also included a baseline agent based on `BrowsingAgent` from [OpenHands](https://github.com/All-Hands-AI/OpenHands).
@@ -168,7 +168,7 @@ python log_visualizer/main.py
 ```
 Then open the link in the command line output. You will be able to interact with an interface like this:
 <p align="center">
-    <img src="img/log_visualizer-example.png" alt="Log Visualizer Example" width="512">
+    <img src="img/log_visualizer-example.png" alt="Log Visualizer Example" width="600">
 </p>
 
 ## 🤝 How to Contribute
