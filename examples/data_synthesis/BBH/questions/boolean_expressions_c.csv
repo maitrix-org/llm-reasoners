@@ -1,0 +1,101 @@
+Question,Answer
+Question: (not ((False or False)) or ((False or True) or (False or False))),Answer: True
+Question: (not (not (True)) and (not (True) or (False and False))),Answer: False
+Question: not ((not (True) or not (True))),Answer: True
+Question: (((True and False) or not (True)) and ((False and False) or (False or True))),Answer: False
+Question: (((True or False) and (True and True)) or not ((True or False))),Answer: True
+Question: not (not ((True and False))),Answer: False
+Question: ((not (False) or (False and False)) and (not (False) and (False and True))),Answer: False
+Question: (((False or True) and not (True)) or not ((True and True))),Answer: False
+Question: not (((True and False) or (False or True))),Answer: False
+Question: (((False and False) or (True and True)) and not ((False and False))),Answer: True
+Question: (((False and False) and (True and True)) or (not (False) and (False or False))),Answer: False
+Question: (((False or True) and (False or True)) and not ((False or True))),Answer: False
+Question: not (not ((False and False))),Answer: False
+Question: (((True and True) and not (True)) or ((True or True) or (True and True))),Answer: True
+Question: (((True or True) and (True and False)) or ((True and False) and (False and True))),Answer: False
+Question: ((not (True) or (False or False)) or not (not (False))),Answer: False
+Question: ((not (True) and (True or True)) or ((True or False) and not (False))),Answer: True
+Question: (((True and True) and (True and False)) or (not (True) or not (False))),Answer: True
+Question: (((False and True) and not (False)) and not ((False or False))),Answer: False
+Question: (not (not (False)) or ((True or False) or (True and True))),Answer: True
+Question: not ((not (True) or not (False))),Answer: False
+Question: (((True or True) and (True and True)) or (not (False) and (False and False))),Answer: True
+Question: not (not ((True or True))),Answer: True
+Question: (((True or True) and (True and False)) or ((True or False) and not (False))),Answer: True
+Question: (((False or False) and (True and True)) and ((False or False) and (True and True))),Answer: False
+Question: (not ((True or True)) or (not (False) or (False or False))),Answer: True
+Question: (not (not (False)) or ((True or True) or (False and False))),Answer: True
+Question: ((not (False) and (True or True)) and ((False and False) or not (False))),Answer: True
+Question: (((True and True) or (True or True)) and ((True or False) and (False or False))),Answer: False
+Question: (((False and True) or (True or False)) and ((False and True) or (True and True))),Answer: True
+Question: not (((False or True) and not (False))),Answer: False
+Question: (not ((False and True)) and (not (True) or not (False))),Answer: True
+Question: (((False and True) and (False or True)) and ((False and False) or (False and False))),Answer: False
+Question: (((False or False) or not (True)) and not ((True and True))),Answer: False
+Question: not ((not (True) or (True and True))),Answer: False
+Question: not (not ((False and False))),Answer: False
+Question: not (((False or False) or (True and True))),Answer: False
+Question: ((not (False) and (False or False)) or (not (True) and (False or True))),Answer: False
+Question: not (((False or True) and (False and True))),Answer: True
+Question: ((not (False) or not (False)) and ((False and False) and (False or False))),Answer: False
+Question: not (((True and True) and (True or True))),Answer: False
+Question: (not ((False and False)) and not ((False and True))),Answer: True
+Question: not (((True and True) or (True or False))),Answer: False
+Question: ((not (False) or (False or False)) and not ((True or False))),Answer: False
+Question: (((True or True) and (False and False)) and ((True and True) or not (False))),Answer: False
+Question: (not (not (True)) or ((True or False) and not (True))),Answer: True
+Question: (((True and True) or (False and False)) and ((False and True) and (False or False))),Answer: False
+Question: not (not ((False and True))),Answer: False
+Question: (((False and True) or (False or False)) or ((True or True) and (True or True))),Answer: True
+Question: (((True and False) or (False and False)) or ((True and True) and (True and True))),Answer: True
+Question: not (not ((True and False))),Answer: False
+Question: (not ((False or False)) and not (not (True))),Answer: True
+Question: (((False and True) or (True or True)) and (not (False) and (True and False))),Answer: False
+Question: not (((True or False) or (True and True))),Answer: False
+Question: ((not (False) or not (False)) and not ((False and False))),Answer: True
+Question: not (not ((True and False))),Answer: False
+Question: (not ((True or False)) or not ((False and True))),Answer: True
+Question: (((True or False) or (True and False)) or not (not (True))),Answer: True
+Question: (((True or True) or not (False)) or (not (False) and (False or True))),Answer: True
+Question: ((not (True) or (True or False)) or ((True or False) or not (True))),Answer: True
+Question: (((False and False) and (True and True)) and (not (False) or (False and False))),Answer: False
+Question: (((True and False) and (False or False)) and ((True or False) or not (True))),Answer: False
+Question: not (not ((False and False))),Answer: False
+Question: not (((False and False) and not (False))),Answer: True
+Question: (((True and True) and not (True)) or ((False or True) or (True or False))),Answer: True
+Question: (((False or True) or (False or False)) or ((False and True) and (True or False))),Answer: True
+Question: (not ((False or True)) and not ((False and True))),Answer: False
+Question: not ((not (False) or (False and False))),Answer: False
+Question: (((True and False) and not (True)) and ((True and True) and (False or True))),Answer: False
+Question: (((False or False) and not (True)) or not ((True and False))),Answer: True
+Question: ((not (True) and (True or False)) or ((True and True) or not (False))),Answer: True
+Question: ((not (False) and (False and False)) or ((True and False) and not (False))),Answer: False
+Question: not (((False and True) and not (False))),Answer: True
+Question: (((True or False) or (False and True)) and ((True and True) or (False or True))),Answer: True
+Question: (not ((False and False)) or ((True or True) or not (True))),Answer: True
+Question: (((False or False) or (False and False)) and not ((False and True))),Answer: False
+Question: not (not (not (False))),Answer: True
+Question: not (((False or True) or (False and True))),Answer: False
+Question: not (not ((True and True))),Answer: True
+Question: ((not (True) or not (True)) and not (not (True))),Answer: False
+Question: (not (not (False)) or ((False or True) or not (False))),Answer: True
+Question: ((not (False) or (False and True)) or ((True and False) or (False or True))),Answer: True
+Question: (((True and False) or (False and True)) or ((True and True) and (True and True))),Answer: True
+Question: not (((False and False) and (False or False))),Answer: True
+Question: not (((True and True) or (True and False))),Answer: False
+Question: ((not (True) and (True and False)) or (not (True) and (False and False))),Answer: False
+Question: ((not (True) and (False or False)) and ((True or True) or not (True))),Answer: False
+Question: (((False or False) and (True or False)) or ((True and True) or (True or True))),Answer: True
+Question: (not (not (False)) or ((False or False) and (False and True))),Answer: False
+Question: (((False or False) and (False or False)) and (not (False) or (True or False))),Answer: False
+Question: not (not ((False or True))),Answer: True
+Question: (((True or False) or (True and True)) or (not (True) or (True and False))),Answer: True
+Question: (((True and True) and (False and False)) and not (not (False))),Answer: False
+Question: not (not ((False or False))),Answer: False
+Question: (not (not (False)) and (not (True) and (True and False))),Answer: False
+Question: (((True and False) or (False or True)) or not ((False and False))),Answer: True
+Question: (not ((True or True)) or ((False and True) and (True and False))),Answer: False
+Question: (((True or True) or (True and True)) and ((False or True) or not (True))),Answer: True
+Question: (((False and True) and (True and False)) and not ((True and True))),Answer: False
+Question: ((not (True) and (True and False)) and ((True or True) and (True or False))),Answer: False
