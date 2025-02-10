@@ -84,6 +84,10 @@ def process_obs_for_viz(obs: dict[str, any], verbose: bool = False):
             obs["last_action"]
         )
 
+    # FIXME: the screenshot is too large to be uploaded to the visualizer server; uncomment this when the issue is fixed
+    # processed_obs["screenshot"] = compress_base64_image(processed_obs["screenshot"])
+    processed_obs["screenshot"] = str(processed_obs["screenshot"])[:50]
+
     if not verbose:
         return {
             "screenshot": processed_obs["screenshot"],

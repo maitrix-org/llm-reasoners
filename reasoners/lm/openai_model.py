@@ -6,9 +6,7 @@ import time
 
 from reasoners.base import LanguageModel, GenerateOutput
 from openai import OpenAI
-
 import pickle
-
 PROMPT_TEMPLATE_ANSWER = 'Your response need to be ended with "So the answer is"\n\n'
 PROMPT_TEMPLATE_CONTINUE = "Please continue to answer the last question, following the format of previous examples. Don't say any other words.\n\n"
 
@@ -63,7 +61,7 @@ class OpenAIModel(LanguageModel):
         max_tokens = self.max_tokens if max_tokens is None else max_tokens
         temperature = self.temperature if temperature is None else temperature
         logprobs = 0 if logprobs is None else logprobs
-
+        num_return_sequences = kwargs.pop("n", num_return_sequences)
         if isinstance(prompt, list):
             assert len(prompt) == 1  # @zj: why can't we pass a list of prompts?
             prompt = prompt[0]
@@ -103,6 +101,7 @@ class OpenAIModel(LanguageModel):
                         top_p=top_p,
                         n=num_return_sequences,
                         stop=stop,
+                        **kwargs,
                     )
 
                     # save response pickle object

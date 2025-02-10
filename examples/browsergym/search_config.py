@@ -33,6 +33,7 @@ class SearchConfigBrowsergym(SearchConfig):
                  use_axtree: bool = True, use_html: bool = False, use_screenshot: bool = False,
                  n_retry: int = 64,
                  task_dir: str = None) -> None:
+
         super().__init__()
         self.action_set = action_set
         self.llm = llm
@@ -44,6 +45,7 @@ class SearchConfigBrowsergym(SearchConfig):
         self.use_screenshot = use_screenshot
         self.n_retry = n_retry
         self.task_dir = task_dir
+
 
     def get_actions(self, state: StateGym) -> list[ActionGym]:
         """
@@ -71,6 +73,9 @@ class SearchConfigBrowsergym(SearchConfig):
 
         with open(f"{self.task_dir}/time.txt", "a+") as f:
             f.write(f"action proposal time: {end - start}\n")
+        response = self.llm.generate(
+            full_prompt_text, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
+        action_proposals = response.text
 
         clustered_actions = []
         action_codes = set()

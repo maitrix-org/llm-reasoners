@@ -26,6 +26,7 @@ class EnvironmentGym(Environment):
     Attributes:
     - env (gym.Env): the gym environment
     - env_seed (int): the seed for the gym environment
+    - max_steps (int): the maximum number of steps that can be taken until is_terminal cuts off the episode
     - obs_preprocessor (Optional[Callable[[dict], dict]]): optional function to process the observation returned from resetting/stepping the environment before it is stored into the state tuple
     - env_current_obs (dict): the current observation of the environment which is used to check if a passed in state is aligned with the environment's current state
     """
@@ -36,6 +37,7 @@ class EnvironmentGym(Environment):
         self.obs_preprocessor = obs_preprocessor
         self.env_current_obs: dict = None
         self.task_dir = task_dir
+
 
     def init_state(self) -> StateGym:
         obs, env_info = self.env.reset(
@@ -70,6 +72,7 @@ class EnvironmentGym(Environment):
         if self.obs_preprocessor is not None:
             obs = self.obs_preprocessor(obs)
         self.env_current_obs = obs
+
         end = time.time()
         print(f"env step time: {end - start}")
 

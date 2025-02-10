@@ -34,21 +34,25 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction, GSM8kExample]):
     Action: sub_question
     """
 
-    def __init__(self,
-                 base_model: LanguageModel,
-                 n_confidence=8,
-                 batch_size=2,
-                 temperature=0.8,
-                 top_k=50,
-                 top_p=0.95,
-                 early_stop_base=None,
-                 early_stop_threshold=1.) -> None:
+    def __init__(
+        self,
+        base_model: LanguageModel,
+        n_confidence=8,
+        batch_size=2,
+        temperature=0.8,
+        top_k=50,
+        top_p=0.95,
+        early_stop_base=None,
+        early_stop_threshold=1.0,
+    ) -> None:
         super().__init__()
         self.base_model = base_model
         self.batch_size = batch_size
         self.n_confidence = n_confidence
         self.temperature = temperature
-        self.early_stop_base = early_stop_base if early_stop_base is not None else n_confidence
+        self.early_stop_base = (
+            early_stop_base if early_stop_base is not None else n_confidence
+        )
         self.early_stop_threshold = early_stop_threshold
         self.prompt_examples = ""
         self.n_shots = 0
@@ -60,10 +64,10 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction, GSM8kExample]):
         assert prompt is not None
         self.prompt = prompt
         with io.StringIO() as f:
-            f.write(self.prompt['instruction'] + '\n\n')
-            for idx, example in enumerate(self.prompt['interactive_examples']):
-                f.write(example.format(idx=idx + 1) + '\n\n')
-            self.n_shots = len(self.prompt['interactive_examples'])
+            f.write(self.prompt["instruction"] + "\n\n")
+            for idx, example in enumerate(self.prompt["interactive_examples"]):
+                f.write(example.format(idx=idx + 1) + "\n\n")
+            self.n_shots = len(self.prompt["interactive_examples"])
             self.prompt_examples = f.getvalue()
 
     def init_state(self) -> list:
@@ -74,16 +78,44 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction, GSM8kExample]):
 
         with io.StringIO() as f:
             f.write(self.prompt_examples)
-            f.write(self.prompt["question_prefix"].format(idx=self.n_shots + 1, question=self.example) + "\n")
+            f.write(
+                self.prompt["question_prefix"].format(
+                    idx=self.n_shots + 1, question=self.example
+                )
+                + "\n"
+            )
             for idx, (q, a, _) in enumerate(state):
                 f.write(
-                    self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + q + "\n")
-                f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=idx + 1) + " " + a + "\n")
-            f.write(self.prompt["subquestion_prefix"].format(idx=self.n_shots + 1,
-                                                             sub_idx=len(state) + 1) + " " + action + "\n")
-            f.write(self.prompt["answer_prefix"].format(idx=self.n_shots + 1, sub_idx=len(state) + 1))
+                    self.prompt["subquestion_prefix"].format(
+                        idx=self.n_shots + 1, sub_idx=idx + 1
+                    )
+                    + " "
+                    + q
+                    + "\n"
+                )
+                f.write(
+                    self.prompt["answer_prefix"].format(
+                        idx=self.n_shots + 1, sub_idx=idx + 1
+                    )
+                    + " "
+                    + a
+                    + "\n"
+                )
+            f.write(
+                self.prompt["subquestion_prefix"].format(
+                    idx=self.n_shots + 1, sub_idx=len(state) + 1
+                )
+                + " "
+                + action
+                + "\n"
+            )
+            f.write(
+                self.prompt["answer_prefix"].format(
+                    idx=self.n_shots + 1, sub_idx=len(state) + 1
+                )
+            )
             model_input = f.getvalue()
-        
+
         answer_dict = defaultdict(list)  # map from answer to list of thoughts
         result = ""
         for start1 in range(0, self.n_confidence, self.early_stop_base):
@@ -93,42 +125,55 @@ class GSM8kWorldModel(WorldModel[GSM8kState, GSM8kAction, GSM8kExample]):
                 stop = min(start + self.batch_size, stop1)
                 num = stop - start
 
-                outputs = self.base_model.generate([model_input] * num,
-                                                   hide_input=True,
-                                                   do_sample=True,
-                                                   temperature=self.temperature,
-                                                   top_k=self.top_k,
-                                                   top_p=self.top_p,
-                                                   eos_token_id='\n').text
+                outputs = self.base_model.generate(
+                    [model_input] * num,
+                    hide_input=True,
+                    do_sample=True,
+                    temperature=self.temperature,
+                    top_k=self.top_k,
+                    top_p=self.top_p,
+                    eos_token_id="\n",
+                ).text
                 for output in outputs:
                     result = output.strip()
-                    answer = utils.retrieve_answer(result)               
+                    answer = utils.retrieve_answer(result)
                     answer_dict[answer].append(result)
 
             # Early stop if confidence is high enough
             if len(answer_dict) == 0:  # no answer yet
                 continue
-            sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
+            sorted_answer_dict = sorted(
+                answer_dict.items(), key=lambda p: len(p[1]), reverse=True
+            )
             max_len = len(sorted_answer_dict[0][1])
             if max_len / stop1 >= self.early_stop_threshold:
-                if len(sorted_answer_dict) >= 2 and max_len == len(sorted_answer_dict[1][1]):
+                if len(sorted_answer_dict) >= 2 and max_len == len(
+                    sorted_answer_dict[1][1]
+                ):
                     pass  # Tie with the second best answer
                 else:
                     break
 
         if len(answer_dict) == 0:
             print("Warning: no answer found")
-            confidence, answer = 0, result  # No reasonable answer found. Fall back to choose the last response
+            confidence, answer = (
+                0,
+                result,
+            )  # No reasonable answer found. Fall back to choose the last response
         else:
-            sorted_answer_dict = sorted(answer_dict.items(), key=lambda p: len(p[1]), reverse=True)
+            sorted_answer_dict = sorted(
+                answer_dict.items(), key=lambda p: len(p[1]), reverse=True
+            )
             max_answer = sorted_answer_dict[0]
             max_answer_output_list = max_answer[1]
             max_len = len(max_answer_output_list)
-            answer = max_answer_output_list[0]  # Here we simply choose the first appearance of the answer
+            answer = max_answer_output_list[
+                0
+            ]  # Here we simply choose the first appearance of the answer
             confidence = max_len / sum(len(v) for v in answer_dict.values())
 
         state.append(SubResult(action, answer, confidence))
-        aux = {'confidence': confidence}
+        aux = {"confidence": confidence}
         return state, aux
 
     def is_terminal(self, state: GSM8kState) -> bool:

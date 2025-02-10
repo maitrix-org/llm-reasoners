@@ -1,5 +1,22 @@
-from typing import Generic, TypeVar, Union, NamedTuple, Protocol, Optional, runtime_checkable, Tuple
-from typing import Generic, TypeVar, Union, NamedTuple, Protocol, Optional, runtime_checkable
+from typing import (
+    Generic,
+    TypeVar,
+    Union,
+    NamedTuple,
+    Protocol,
+    Optional,
+    runtime_checkable,
+    Tuple,
+)
+from typing import (
+    Generic,
+    TypeVar,
+    Union,
+    NamedTuple,
+    Protocol,
+    Optional,
+    runtime_checkable,
+)
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -14,10 +31,12 @@ from datetime import datetime
 import os, sys, pickle
 from tqdm import tqdm
 import torch
+
 State = TypeVar("State")
 Action = TypeVar("Action")
 Example = TypeVar("Example")
 Trace = tuple[list[State], list[Action]]
+
 
 def create_directory_if_not_exists(directory):
     if not os.path.exists(directory):
@@ -33,20 +52,22 @@ class GenerateOutput(NamedTuple):
 
 class LanguageModel(ABC):
     @abstractmethod
-    def generate(self,
-                 inputs: list[str],
-                 max_length: Optional[int] = None,
-                 max_new_tokens: Optional[int] = None,
-                 do_sample: bool = False,
-                 temperature: float = 1.0,
-                 top_k: int = 50,
-                 top_p: float = 1.0,
-                 num_return_sequences: int = 1,
-                 eos_token_id: Union[None, str, int, list[str, int]] = None,
-                 hide_input: bool = True,
-                 output_log_probs: bool = False,
-                 stopping_criteria: Optional[StoppingCriteriaList] = None,
-                 **kwargs) -> GenerateOutput:
+    def generate(
+        self,
+        inputs: list[str],
+        max_length: Optional[int] = None,
+        max_new_tokens: Optional[int] = None,
+        do_sample: bool = False,
+        temperature: float = 1.0,
+        top_k: int = 50,
+        top_p: float = 1.0,
+        num_return_sequences: int = 1,
+        eos_token_id: Union[None, str, int, list[str, int]] = None,
+        hide_input: bool = True,
+        output_log_probs: bool = False,
+        stopping_criteria: Optional[StoppingCriteriaList] = None,
+        **kwargs,
+    ) -> GenerateOutput:
         """Generate text from a list of prompts.
 
         :param inputs: List of prompts.
@@ -66,12 +87,14 @@ class LanguageModel(ABC):
         ...
 
     @abstractmethod
-    def get_next_token_logits(self,
-                              prompt: Union[str, list[str]],
-                              candidates: Union[list[str], list[list[str]]],
-                              postprocess: Optional[str] = None,
-                              **kwargs) -> list[np.ndarray]:
-        """ TODO: doc
+    def get_next_token_logits(
+        self,
+        prompt: Union[str, list[str]],
+        candidates: Union[list[str], list[list[str]]],
+        postprocess: Optional[str] = None,
+        **kwargs,
+    ) -> list[np.ndarray]:
+        """TODO: doc
 
         :param prompt:
         :param candidates:
@@ -81,10 +104,9 @@ class LanguageModel(ABC):
         ...
 
     @abstractmethod
-    def get_loglikelihood(self,
-                          prefix: str,
-                          contents: list[str],
-                          **kwargs) -> np.ndarray:
+    def get_loglikelihood(
+        self, prefix: str, contents: list[str], **kwargs
+    ) -> np.ndarray:
         """Get the log likelihood of the contents given the prefix.
 
         :param prefix: The prefix to be excluded from the log likelihood.
@@ -99,7 +121,7 @@ class Dynamics(ABC, Generic[State, Action]):
 
     @abstractmethod
     def step(self, state: State, action: Action) -> Union[State, Tuple[State, dict]]:
-        """ Returns the next state and optionally an auxiliary data dict
+        """Returns the next state and optionally an auxiliary data dict
 
         :param state: The current state
         :param action: The action to take
@@ -110,18 +132,21 @@ class Dynamics(ABC, Generic[State, Action]):
     @abstractmethod
     def is_terminal(self, state: State) -> bool: ...
 
+
 class WorldModel(Dynamics, Generic[State, Action, Example]):
     def __init__(self) -> None:
         self.example = None
         self.prompt = None
 
-    def update_example(self, example: Example, prompt = None) -> None:        
+
+    def update_example(self, example: Example, prompt=None) -> None:
         if prompt is not None:
             self.prompt = prompt
         self.example = example
 
+
 class DefaultWorldModel(WorldModel):
-    # A default implementation of WorldModel that only 
+    # A default implementation of WorldModel that only
     # saves the action sequence as the state
 
     def __init__(self, base_model) -> None:
@@ -142,6 +167,11 @@ class Environment(Dynamics, Generic[State, Action]):
     def __init__(self) -> None:
         self.env = None
 
+class Environment(Dynamics, Generic[State, Action]):
+    def __init__(self) -> None:
+        self.env = None
+
+
 class SearchConfig(ABC, Generic[State, Action, Example]):
     def __init__(self) -> None:
         self.example = None
@@ -156,7 +186,7 @@ class SearchConfig(ABC, Generic[State, Action, Example]):
     @abstractmethod
     def reward(self, state, action, **kwargs) -> tuple[float, dict]: ...
 
-    def update_example(self, example: Example, prompt = None) -> None:
+    def update_example(self, example: Example, prompt=None) -> None:
         if prompt is not None:
             self.prompt = prompt
         self.example = example
@@ -172,19 +202,25 @@ class SearchAlgorithm(ABC):
     def __init__(self, **kwargs): ...
 
     @abstractmethod
-    def __call__(self, world_model: WorldModel, search_config: SearchConfig, **kwargs) -> AlgorithmOutput: ...
+    def __call__(
+        self, world_model: WorldModel, search_config: SearchConfig, **kwargs
+    ) -> AlgorithmOutput: ...
 
 
 class Reasoner(ABC, Generic[State, Action, Example]):
-    def __init__(self,
-                 world_model: Dynamics[State, Action],
-                 search_config: SearchConfig[State, Action, Example],
-                 search_algo: SearchAlgorithm) -> None:
-        self.dynamics = world_model
+    def __init__(
+        self,
+        dynamics: Dynamics[State, Action],
+        search_config: SearchConfig[State, Action, Example],
+        search_algo: SearchAlgorithm,
+    ) -> None:
+        self.dynamics = dynamics
         self.search_config = search_config
         self.search_algo = search_algo
 
-    def __call__(self, example: Optional[Example] = None, prompt = None, **kwargs) -> AlgorithmOutput[State]:
+    def __call__(
+        self, example: Optional[Example] = None, prompt=None, **kwargs
+    ) -> AlgorithmOutput[State]:
         if isinstance(self.dynamics, WorldModel):
             if example is None:
                 raise ValueError("An example must be provided when using WorldModel")
@@ -192,24 +228,18 @@ class Reasoner(ABC, Generic[State, Action, Example]):
             self.search_config.update_example(example, prompt=prompt)
         return self.search_algo(self.dynamics, self.search_config, **kwargs)
 
-class Evaluator():
+class Evaluator:
     @abstractmethod
     def __init__(self) -> None:
         pass
 
     @abstractmethod
-    def sample_prompt(self,
-                      shuffle_prompt,
-                      num_shot,
-                      sample_prompt_type):
+    def sample_prompt(self, shuffle_prompt, num_shot, sample_prompt_type):
         pass
-    
-    def evaluate(self,
-                 reasoner,
-                 shuffle_prompt=True,
-                 num_shot=4,
-                 resume=0,
-                 log_dir=None):
+
+    def evaluate(
+        self, reasoner, shuffle_prompt=True, num_shot=4, resume=0, log_dir=None
+    ):
 
         self.dataset = list(self.full_dataset)[resume:]
         try:
@@ -217,59 +247,69 @@ class Evaluator():
         except:
             algo_name = "unknown"
 
-        
         if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
             if log_dir is None:
-                log_dir = f'logs/{self._dataset_name}_'\
-                        f'{algo_name}/'\
-                        f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
+                log_dir = (
+                    f"logs/{self._dataset_name}_"
+                    f"{algo_name}/"
+                    f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
+                )
             os.makedirs(log_dir, exist_ok=resume > 0)
-            os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
-        
-            with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
+            os.makedirs(os.path.join(log_dir, "algo_output"), exist_ok=True)
+
+            with open(os.path.join(log_dir, "args.txt"), "w") as f:
                 print(sys.argv, file=f)
 
         correct_count = 0
 
-        disable_tqdm = self.disable_tqdm or \
-            (torch.distributed.is_initialized() and torch.distributed.get_rank() != 0)
-        for i, example in enumerate(tqdm(self.dataset,
-                                            total=resume + len(self.dataset),
-                                            initial=resume,
-                                            desc=self._dataset_name,
-                                            disable=self.disable_tqdm)):
-            
-            algo_output = reasoner(self.input_processor(example),
-                                    prompt=self.sample_prompt(
-                                        shuffle_prompt=shuffle_prompt,
-                                        num_shot=num_shot))
-            
+        disable_tqdm = self.disable_tqdm or (
+            torch.distributed.is_initialized() and torch.distributed.get_rank() != 0
+        )
+        for i, example in enumerate(
+            tqdm(
+                self.dataset,
+                total=resume + len(self.dataset),
+                initial=resume,
+                desc=self._dataset_name,
+                disable=self.disable_tqdm,
+            )
+        ):
+
+            algo_output = reasoner(
+                self.input_processor(example),
+                prompt=self.sample_prompt(
+                    shuffle_prompt=shuffle_prompt, num_shot=num_shot
+                ),
+            )
+
             output = self.output_extractor(algo_output)
             answer = self.answer_extractor(example)
             correct = self.eval_output(answer, output)
             correct_count += correct
             accuracy = correct_count / (i + 1)
-            log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=};'\
-                        f'{accuracy=:.3f} ({correct_count}/{i + 1})'
+            log_str = (
+                f"Case #{resume + i + 1}: {correct=}, {output=}, {answer=};"
+                f"{accuracy=:.3f} ({correct_count}/{i + 1})"
+            )
             tqdm.write(log_str)
 
-            if (not self.disable_log) and \
-                (not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0):
-                with open(os.path.join(log_dir, 'result.log'), 'a') as f:
+            if (not self.disable_log) and (
+                not torch.distributed.is_initialized()
+                or torch.distributed.get_rank() == 0
+            ):
+                with open(os.path.join(log_dir, "result.log"), "a") as f:
                     print(log_str, file=f)
-            
-                with open(os.path.join(log_dir, 'algo_output', f'{resume + i + 1}.pkl'), 'wb')  as f:
+
+                with open(
+                    os.path.join(log_dir, "algo_output", f"{resume + i + 1}.pkl"), "wb"
+                ) as f:
                     pickle.dump(algo_output, f)
-        
+
         return accuracy
 
-    def evaluate_sc(self,
-                 reasoner,
-                 shuffle_prompt=True,
-                 num_shot=4,
-                 resume=0,
-                 n_sc = 10,
-                 log_dir=None):
+    def evaluate_sc(
+        self, reasoner, shuffle_prompt=True, num_shot=4, resume=0, n_sc=10, log_dir=None
+    ):
 
         self.dataset = list(self.full_dataset)[resume:]
         try:
@@ -277,66 +317,83 @@ class Evaluator():
         except:
             algo_name = "unknown"
 
-        
         if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
             if log_dir is None:
-                log_dir = f'logs/{self._dataset_name}_'\
-                        f'{algo_name}/'\
-                        f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
+                log_dir = (
+                    f"logs/{self._dataset_name}_"
+                    f"{algo_name}/"
+                    f'{datetime.now().strftime("%m%d%Y-%H%M%S")}'
+                )
             os.makedirs(log_dir, exist_ok=resume > 0)
-            os.makedirs(os.path.join(log_dir, 'algo_output'), exist_ok=True)
-        
-            with open(os.path.join(log_dir, 'args.txt'), 'w') as f:
+            os.makedirs(os.path.join(log_dir, "algo_output"), exist_ok=True)
+
+            with open(os.path.join(log_dir, "args.txt"), "w") as f:
                 print(sys.argv, file=f)
 
         correct_count = 0
 
-        disable_tqdm = self.disable_tqdm or \
-            (torch.distributed.is_initialized() and torch.distributed.get_rank() != 0)
-        for i, example in enumerate(tqdm(self.dataset,
-                                            total=resume + len(self.dataset),
-                                            initial=resume,
-                                            desc=self._dataset_name,
-                                            disable=self.disable_tqdm)):
-            
+        disable_tqdm = self.disable_tqdm or (
+            torch.distributed.is_initialized() and torch.distributed.get_rank() != 0
+        )
+        for i, example in enumerate(
+            tqdm(
+                self.dataset,
+                total=resume + len(self.dataset),
+                initial=resume,
+                desc=self._dataset_name,
+                disable=self.disable_tqdm,
+            )
+        ):
+
             prompt = self.sample_prompt(
-                            shuffle_prompt=shuffle_prompt,
-                            num_shot=num_shot)
+                shuffle_prompt=shuffle_prompt, num_shot=num_shot
+            )
             output_list = []
             save_list = []
             for j in range(n_sc):
-                algo_output = reasoner(self.input_processor(example),
-                                    prompt=prompt)
+                algo_output = reasoner(self.input_processor(example), prompt=prompt)
                 terminal_state = algo_output.terminal_state
                 path = ""
                 for k in range(len(terminal_state)):
-                    path += terminal_state[k].sub_question + " " + terminal_state[k].sub_answer + " "
+                    path += (
+                        terminal_state[k].sub_question
+                        + " "
+                        + terminal_state[k].sub_answer
+                        + " "
+                    )
                 save_list.append(path)
                 output = self.output_extractor(algo_output)
                 output_list.append(output)
                 answer = self.answer_extractor(example)
             from collections import Counter
+
             output = Counter(output_list).most_common(1)[0][0]
             correct = self.eval_output(answer, output)
             correct_count += correct
             accuracy = correct_count / (i + 1)
-            log_str = f'Case #{resume + i + 1}: {correct=}, {output=}, {answer=};'\
-                        f'{accuracy=:.3f} ({correct_count}/{i + 1})'
+            log_str = (
+                f"Case #{resume + i + 1}: {correct=}, {output=}, {answer=};"
+                f"{accuracy=:.3f} ({correct_count}/{i + 1})"
+            )
             tqdm.write(log_str)
 
-            if (not self.disable_log) and \
-                (not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0):
-                with open(os.path.join(log_dir, 'result.log'), 'a') as f:
+            if (not self.disable_log) and (
+                not torch.distributed.is_initialized()
+                or torch.distributed.get_rank() == 0
+            ):
+                with open(os.path.join(log_dir, "result.log"), "a") as f:
                     print(log_str, file=f)
-                with open(os.path.join(log_dir, 'algo_output.txt'),'a') as f1:
+                with open(os.path.join(log_dir, "algo_output.txt"), "a") as f1:
                     print(save_list, file=f1)
-        
+
         return accuracy
+
     @abstractmethod
     def eval_output(self, answer, output):
         pass
 
-class Tool():
+
+class Tool:
     def __init__(self, func, name, description):
         self.func = func
         self.name = name

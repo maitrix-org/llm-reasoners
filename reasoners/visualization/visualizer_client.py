@@ -75,8 +75,6 @@ class VisualizerClient:
         if response.status_code != 200:
             print(
                 f"POST Upload Complete failed with status code: {response.status_code}, message: {response.text}"
-            )
-            return None
 
         return self.TreeLogReceipt(**response.json())
 
@@ -109,6 +107,3 @@ def visualize(
     client = VisualizerClient()
     upload_url = client.get_upload_url()
     receipt = client.post_log(tree_log, upload_url)
-
-    if receipt is not None:
-        present_visualizer(receipt)

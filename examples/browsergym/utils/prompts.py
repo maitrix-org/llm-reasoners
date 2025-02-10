@@ -123,8 +123,6 @@ I found the information requested by the user, I will send it to the chat.
         }
     )
 
-    # print(action_set.describe(with_long_description=False, with_examples=True))
-
     # append past actions (and last error message) if any
     if action_history:
         user_msgs.append(
@@ -241,6 +239,7 @@ def build_evaluation_prompt(
             "type": "text",
             "text": """\
 # Instructions
+
 
 Review the current state of the page along with a proposed action and determine how promising it is towards completing the goal. Provide a score between 0 and 100 along with your reasoning in a json object like so:
 {
