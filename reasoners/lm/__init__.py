@@ -7,3 +7,4 @@ from .openai_model import OpenAIModel
 from .exllama_model import ExLlamaModel
 from .gemini_model import BardCompletionModel
 from .anthropic_model import ClaudeModel
+from .deepseek_model import DeepseekModel

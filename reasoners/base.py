@@ -46,6 +46,8 @@ def create_directory_if_not_exists(directory):
 class GenerateOutput(NamedTuple):
     text: list[str]
     log_prob: Optional[list[np.ndarray]] = None
+    prompt_tokens: Optional[int] = None
+    completion_tokens: Optional[int] = None
 
 
 class LanguageModel(ABC):
@@ -112,7 +114,6 @@ class LanguageModel(ABC):
         """
         ...
 
-
 class Dynamics(ABC, Generic[State, Action]):
 
     @abstractmethod
@@ -136,6 +137,7 @@ class WorldModel(Dynamics, Generic[State, Action, Example]):
     def __init__(self) -> None:
         self.example = None
         self.prompt = None
+
 
     def update_example(self, example: Example, prompt=None) -> None:
         if prompt is not None:
@@ -161,6 +163,9 @@ class DefaultWorldModel(WorldModel):
         # By default the state is never terminal
         return False
 
+class Environment(Dynamics, Generic[State, Action]):
+    def __init__(self) -> None:
+        self.env = None
 
 class Environment(Dynamics, Generic[State, Action]):
     def __init__(self) -> None:
@@ -222,7 +227,6 @@ class Reasoner(ABC, Generic[State, Action, Example]):
             self.dynamics.update_example(example, prompt=prompt)
             self.search_config.update_example(example, prompt=prompt)
         return self.search_algo(self.dynamics, self.search_config, **kwargs)
-
 
 class Evaluator:
     @abstractmethod

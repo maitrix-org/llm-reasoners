@@ -1,7 +1,7 @@
 import gymnasium as gym
 from typing import NamedTuple, Optional, Callable, Any
 from reasoners import Environment
-
+import time
 
 ActionGym = Any
 
@@ -31,12 +31,13 @@ class EnvironmentGym(Environment):
     - env_current_obs (dict): the current observation of the environment which is used to check if a passed in state is aligned with the environment's current state
     """
 
-    def __init__(self, env: gym.Env, env_seed: int = 42, max_steps=20, obs_preprocessor: Optional[Callable[[dict], dict]] = None):
+    def __init__(self, env: gym.Env, env_seed: int = 42, obs_preprocessor: Optional[Callable[[dict], dict]] = None, task_dir: str = None):
         self.env = env
         self.env_seed = env_seed
         self.obs_preprocessor = obs_preprocessor
-        self.max_steps = max_steps
         self.env_current_obs: dict = None
+        self.task_dir = task_dir
+
 
     def init_state(self) -> StateGym:
         obs, env_info = self.env.reset(
@@ -65,11 +66,18 @@ class EnvironmentGym(Environment):
             for action in state.action_history:
                 self.env.step(action)
 
+        start = time.time()
         obs, reward, terminated, truncated, step_info = self.env.step(
             action)
         if self.obs_preprocessor is not None:
             obs = self.obs_preprocessor(obs)
         self.env_current_obs = obs
+
+        end = time.time()
+        print(f"env step time: {end - start}")
+
+        with open(f"{self.task_dir}/time.txt", "a+") as f:
+            f.write(f"env step time: {end - start}\n")
 
         next_state = StateGym(step_idx=state.step_idx + 1,
                               last_obs=state.current_obs, current_obs=obs,
@@ -80,4 +88,4 @@ class EnvironmentGym(Environment):
         return next_state, {"env_reward": reward}
 
     def is_terminal(self, state: StateGym) -> bool:
-        return state.terminated or state.truncated or state.step_idx >= self.max_steps
+        return state.terminated or state.truncated

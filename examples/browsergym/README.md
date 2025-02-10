@@ -2,6 +2,10 @@
 
 This is an example of using LLM-Reasoners to perform Monte Carlo Tree Search (MCTS) and other planning methods (e.g. Greedy/Beam Search/DFS, etc.) on the [BrowserGym](https://github.com/ServiceNow/BrowserGym) environment. LLMs as agent policies are strong baselines, while the absolute performance on agent tasks are still far from human level. The inference-time planning (1) improves the policy's accuracy and (2) can be scaled up smoothly.
 
+## NOTE TO TA (Zimo Wang)
+
+A past commit of this branch has been merged into the main repository at [llm-reasoners](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/browsergym). The updates here contain some minor modifications and are primarily for running experiments to identify potential bottlenecks. 
+
 ## Code Overview
 
 BrowserGym offers an OpenAI gym-like interface for web environments, supporting benchmarks like Miniwob++, Webarena, and more. It simplifies web agent creation/testing by providing preloaded gym environments with task information and reward systems.
@@ -14,6 +18,8 @@ LLM-Reasoners enhance this setup with tree search algorithms, using LLMs to gene
 - `gym_env.py`: Implements `EnvironmentGym`, wrapping the BrowserGym environment. `EnvironmentGym` functions like a `WorldModel`, using the environment for state transitions. Tree search requires careful backtracking, achieved by storing and replaying action histories, though this method is generic and applicable to any OpenAI gym-like environment.
 - `search_config.py`: Defines `SearchConfigBrowsergym` for node generation/evaluation and reward calculation. This is the core of the tree search.
 - `visualize.py`: Visualizes the search tree with saved search results in `.pickle` files.
+
+There are inference scripts under the openai/ directory which are used to gather and log experimental data. There is an analysis script `analysis.py` which parses and formats all of the information so that such that it can be tidied up into a single dataframe. The jupyter notebooks contain visualizations and analyses of said experimental data. 
 
 ## Setup
 

@@ -6,7 +6,7 @@ import time
 
 from reasoners.base import LanguageModel, GenerateOutput
 from openai import OpenAI
-
+import pickle
 PROMPT_TEMPLATE_ANSWER = 'Your response need to be ended with "So the answer is"\n\n'
 PROMPT_TEMPLATE_CONTINUE = "Please continue to answer the last question, following the format of previous examples. Don't say any other words.\n\n"
 
@@ -20,6 +20,7 @@ class OpenAIModel(LanguageModel):
         additional_prompt=None,
         backend: Literal["openai", "sglang"] = "openai",
         is_instruct_model: bool = False,
+        task_dir: str = None
     ):
         self.model = model
         self.max_tokens = max_tokens
@@ -27,6 +28,7 @@ class OpenAIModel(LanguageModel):
         self.backend = backend
         self.additional_prompt = additional_prompt
         self.is_instruct_model = is_instruct_model
+        self.task_dir = task_dir
         self.__init_client__()
 
     def __init_client__(self):
@@ -101,9 +103,20 @@ class OpenAIModel(LanguageModel):
                         stop=stop,
                         **kwargs,
                     )
+
+                    # save response pickle object
+                    utc_timestamp = int(time.time())
+                    with open(
+                        os.path.join(self.task_dir, f"{utc_timestamp}.pkl"), "wb"
+                    ) as f:
+                        pickle.dump(response, f)
+
+
                     return GenerateOutput(
                         text=[choice.message.content for choice in response.choices],
                         log_prob=None,
+                        # prompt_tokens=response.usage.prompt_tokens,
+                        # completion_tokens=response.usage.completion_tokens,
                     )
                 else:
                     response = self.client.chat.completions.create(

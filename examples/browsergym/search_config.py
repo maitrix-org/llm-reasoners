@@ -6,6 +6,7 @@ from utils.prompts import build_propose_prompt, build_evaluation_prompt
 from utils.misc import check_validity_of_action_proposal
 
 from gym_env import ActionGym, StateGym
+import time
 
 
 class SearchConfigBrowsergym(SearchConfig):
@@ -27,9 +28,12 @@ class SearchConfigBrowsergym(SearchConfig):
     def __init__(self,
                  action_set: HighLevelActionSet,
                  llm: LanguageModel,
-                 n_proposals: int = 5, proposal_temperature: float = 0.7,
+                 n_proposals: int = 1, proposal_temperature: float = 0.25,
                  evaluation_temperature: float = 0.25,
-                 use_axtree: bool = True, use_html: bool = False, use_screenshot: bool = False) -> None:
+                 use_axtree: bool = True, use_html: bool = False, use_screenshot: bool = False,
+                 n_retry: int = 64,
+                 task_dir: str = None) -> None:
+
         super().__init__()
         self.action_set = action_set
         self.llm = llm
@@ -39,6 +43,9 @@ class SearchConfigBrowsergym(SearchConfig):
         self.use_axtree = use_axtree
         self.use_html = use_html
         self.use_screenshot = use_screenshot
+        self.n_retry = n_retry
+        self.task_dir = task_dir
+
 
     def get_actions(self, state: StateGym) -> list[ActionGym]:
         """
@@ -57,6 +64,15 @@ class SearchConfigBrowsergym(SearchConfig):
             self.use_axtree, self.use_html, self.use_screenshot
         )
 
+        start = time.time()
+        response = self.llm.generate(
+            full_prompt_text, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
+        action_proposals = response.text
+        end = time.time()
+        print(f"action proposal time: {end - start}")
+
+        with open(f"{self.task_dir}/time.txt", "a+") as f:
+            f.write(f"action proposal time: {end - start}\n")
         response = self.llm.generate(
             full_prompt_text, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
         action_proposals = response.text
@@ -84,22 +100,31 @@ class SearchConfigBrowsergym(SearchConfig):
         - evaluation (float): the evaluation of the state action pair
         - aux (dict): used to pass the self-evaluation to the search algorithm, which then passes it to the SearchConfig's reward (not fast_reward) function
         """
+        # no reason to make an llm call to choose between "1 choices"
+        if self.n_proposals == 1:
+            return 0.0, {"self_eval": 0.0}
 
-        system_msgs, user_msgs, full_prompt_txt = build_evaluation_prompt(
-            state.current_obs, action, self.action_set, state.action_history,
-            self.use_axtree, self.use_html, self.use_screenshot
-        )
+        for i in range(self.n_retry):
+            try:
+                system_msgs, user_msgs, full_prompt_txt = build_evaluation_prompt(
+                    state.current_obs, action, self.action_set, state.action_history,
+                    self.use_axtree, self.use_html, self.use_screenshot
+                )
 
-        response = self.llm.generate(
-            full_prompt_txt, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
+                response = self.llm.generate(
+                    full_prompt_txt, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
 
-        evaluation = response.text[0]
+                evaluation = response.text[0]
 
-        json_string = re.search(r"\{.*\}", evaluation, re.DOTALL).group()
-        json_object = json.loads(json_string)
-        evaluation = json_object["score"] / 10
+                json_string = re.search(
+                    r"\{.*\}", evaluation, re.DOTALL).group()
+                json_object = json.loads(json_string)
+                evaluation = json_object["score"] / 100
 
-        return evaluation, {"self_eval": evaluation}
+                return evaluation, {"self_eval": evaluation}
+            except AttributeError as e:
+                with open(f"{self.task_dir}/time.txt", "a+") as f:
+                    f.write(f"retrying evaluation - parsing error\n")
 
     def reward(self, state: StateGym, action: ActionGym, **kwargs) -> tuple[float, dict]:
         """
