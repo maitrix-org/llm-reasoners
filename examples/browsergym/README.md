@@ -15,6 +15,8 @@ LLM-Reasoners enhance this setup with tree search algorithms, using LLMs to gene
 - `search_config.py`: Defines `SearchConfigBrowsergym` for node generation/evaluation and reward calculation. This is the core of the tree search.
 - `visualize.py`: Visualizes the search tree with saved search results in `.pickle` files.
 
+There are inference scripts under the openai/ directory which are used to gather and log experimental data. There is an analysis script `analysis.py` which parses and formats all of the information so that it can be tidied up into a single dataframe. 
+
 ## Setup
 
 ### Setup BrowserGym

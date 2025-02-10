@@ -22,7 +22,7 @@ dataset/
 sas_plan
 build/
 examples/MATH
-*.ipynb
+# *.ipynb
 examples/AQuA_rap/test.ipynb
 temp_plan
 temp_problem
