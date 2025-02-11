@@ -35,28 +35,35 @@ Given any reasoning problem, simply define the reward function and an optional w
 
 - Oct. 23, 2023: Reasoning-via-Planning is accepted to EMNLP 2023! Check our [paper](https://arxiv.org/abs/2305.14992) with updated results and discussion!
 
-- Aug. 21, 2023: A batch of quantized Llama-2 models has arrived! BitsandBytes with huggingface API, GPT-Q with exllama are available. **Now you can try [llama-2-70B with 2 x 24G GPUs](https://github.com/Ber666/llm-reasoners/tree/main/reasoners/lm#exllama).**
-
-- Aug. 10, 2023: Llama-2 is supported! You can run [examples](https://github.com/Ber666/llm-reasoners/tree/main/examples) with Llama-2 now.
-
 ## Why Choose LLM Reasoners?
 
-- **Cutting-Edge Reasoning Algorithms**: We offer the most up-to-date search algorithms for reasoning with LLMs, such as:
-  - [Reasoning-via-Planning, MCTS](examples/RAP) ([Hao et al., 2023](https://arxiv.org/abs/2305.14992))
-  - [StructChem](examples/StructChem) ([Ouyang et al., 2023](https://arxiv.org/abs/2311.09656))
-  - [Chain-of-thoughts](examples/CoT) ([Wei et al., 202](https://arxiv.org/abs/2201.11903))
-  - [Least-to-most prompting](examples/Least-to-most) ([Zhou et al., 2022](https://arxiv.org/abs/2205.10625))
-  - [Tree-of-Thoughts, BFS](examples/ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
-  - [Tree-of-Thoughts, DFS](examples/ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
-  - [Self-Eval Guided Decoding, Beam Search](examples/Self-Eval) ([Xie et al., 2023](https://arxiv.org/abs/2305.00633))
-  - [Grace Decoding](examples/Grace) ([Khalifa et al., 2023](https://arxiv.org/abs/2305.14934))
-  - [Eurus](examples/Eurus) ([Yuan et al., 2024](https://arxiv.org/abs/2404.02078))
-  - [PromptAgent](examples/PromptAgent) ([Wang et al., 2023](https://arxiv.org/abs/2310.16427))
-  - [DRPO](examples/DRPO) ([Singla et al., 2024](https://aclanthology.org/2024.emnlp-main.1220/))
+## Cutting-Edge Reasoning Algorithms
+
+We offer the most up-to-date search algorithms for reasoning with LLMs, such as:
+
+- [Reasoner Agent](example/ReasonerAgent-Web) ([Deng et al., 2025](https://reasoner-agent.maitrix.org/))
+- [Inference-time Scaling with PRM](examples/Inference-Scaling-SGL/math500) ([Snell et al., 2024](https://arxiv.org/abs/2408.03314))
+- [Reasoning-via-Planning, MCTS](examples/RAP) ([Hao et al., 2023](https://arxiv.org/abs/2305.14992))
+- [Tree-of-Thoughts, BFS](examples/ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
+
+<details>
+  <summary>(Show more supported algorithms)</summary>
+
+- [StructChem](examples/StructChem) ([Ouyang et al., 2023](https://arxiv.org/abs/2311.09656))
+- [Chain-of-thoughts](examples/CoT) ([Wei et al., 2022](https://arxiv.org/abs/2201.11903))
+- [Least-to-most prompting](examples/Least-to-most) ([Zhou et al., 2022](https://arxiv.org/abs/2205.10625))
+- [Tree-of-Thoughts, DFS](examples/ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
+- [Self-Eval Guided Decoding, Beam Search](examples/Self-Eval) ([Xie et al., 2023](https://arxiv.org/abs/2305.00633))
+- [Grace Decoding](examples/Grace) ([Khalifa et al., 2023](https://arxiv.org/abs/2305.14934))
+- [Eurus](examples/Eurus) ([Yuan et al., 2024](https://arxiv.org/abs/2404.02078))
+- [PromptAgent](examples/PromptAgent) ([Wang et al., 2023](https://arxiv.org/abs/2310.16427))
+- [DRPO](examples/DRPO) ([Singla et al., 2024](https://aclanthology.org/2024.emnlp-main.1220/))
+
+</details>
+
 - **Intuitive Visualization and Interpretation**: Our library provides a [visualization tool](https://www.llm-reasoners.net/) to aid users in comprehending the reasoning process. Even for complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand the process with **one line of python code**. See an exmaple in the tutorial [notebook](demo.ipynb).
  
-- **Compatibility with popular LLM libraries**: Our framework is compatible with popular LLM frameworks, e.g. `Huggingface transformers`, `OpenAI`/`Google`/`Anthropic` API, etc. Specifically, we have integrated LLaMA-1/2/3 with the option of using `fairscale` ([1,2](https://github.com/facebookresearch/llama), [3](https://github.com/meta-llama/llama3)), [LLaMA.cpp](https://github.com/ggerganov/llama.cpp), [Exllama](https://github.com/Ber666/llm-reasoners/tree/main/reasoners/lm#exllama) or `huggingface` for different needs, e.g., fastest inference speed, minimal hardware requirements, etc.
-
+- **Efficient Reasoning**: Our library optimizes the performance of advanced reasoning techniques by integrating [SGLang](https://github.com/sgl-project/sglang), a high-performance LLM inference framework, featuring structured generation and tree-structured reasoning (Check out the [thread](https://x.com/MaitrixOrg/status/1885387184557199857) and [example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/Inference-Scaling-SGL/math500)). We also support other LLM backends like `huggingface transformers`, `OpenAI API`, `Exllama`, `fairscale`, `llama.cpp`, etc.
 
 ## Experiment Results
 
