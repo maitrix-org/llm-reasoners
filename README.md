@@ -23,7 +23,13 @@ Given any reasoning problem, simply define the reward function and an optional w
 - Feb. 6, 2025: Thrilled to introduce **ReasonerAgent** - A fully open source, ready-to-run agent that does research 🧐 in a web browser and answers your queries. Check out this [thread](https://x.com/MaitrixOrg/status/1887584291087098063), and explore the [code](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/ReasonerAgent-Web) here! 
 - Jan. 31, 2025: LLM Reasoners has integrated [SGLang](https://github.com/sgl-project/sglang). Enjoy 100x speed-up with a one-line change! New applications like PRM-guided search for inference-time scaling are also available. See more details in this [post](https://x.com/MaitrixOrg/status/1885387184557199857).
 - Dec. 20, 2024: We now supported planning algorithms (MCTS, DFS/BFS, Beam Search) in web environments with [BrowserGym](https://github.com/ServiceNow/BrowserGym), check the [README](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/browsergym) to try out!
+
+<details>
+
+<summary>(Show more news)</summary>
+
 - Nov. 13, 2024: We integrated [DRPO](https://aclanthology.org/2024.emnlp-main.1220/), a tuning-free alignment method published at EMNLP 2024 ([link](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/DRPO)).
+  
 - Jul. 10, 2024: Our paper on [LLM Reasoners](https://arxiv.org/abs/2404.05221) is accepted to [COLM 2024](https://colmweb.org/index.html)!
 - Jun. 24, 2024: [PromptAgent](https://arxiv.org/abs/2310.16427) is in LLM Reasoners! Let it help you write down a super detailed prompt for your task ([here](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/PromptAgent)).
 - May. 14, 2024: Check out [Eurus](https://arxiv.org/abs/2404.02078), a suit of LLMs optimized for reasoning. With LLM Reasoners, Eurus-RM can easily boost Llama-8B from 0.49 to 0.73 📈 on GSM8k ([code](examples/Eurus)).
@@ -34,60 +40,68 @@ Given any reasoning problem, simply define the reward function and an optional w
 - Oct. 25, 2023: A [video tutorial](https://www.youtube.com/watch?v=5QfOxtiw_ZU) on the visualizer of LLM Reasoners are available.
 
 - Oct. 23, 2023: Reasoning-via-Planning is accepted to EMNLP 2023! Check our [paper](https://arxiv.org/abs/2305.14992) with updated results and discussion!
+</details>
 
 ## Why Choose LLM Reasoners?
 
-## Cutting-Edge Reasoning Algorithms
-
-We offer the most up-to-date search algorithms for reasoning with LLMs, such as:
-
-- [Reasoner Agent](example/ReasonerAgent-Web) ([Deng et al., 2025](https://reasoner-agent.maitrix.org/))
-- [Inference-time Scaling with PRM](examples/Inference-Scaling-SGL/math500) ([Snell et al., 2024](https://arxiv.org/abs/2408.03314))
-- [Reasoning-via-Planning, MCTS](examples/RAP) ([Hao et al., 2023](https://arxiv.org/abs/2305.14992))
-- [Tree-of-Thoughts, BFS](examples/ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
-
-<details>
-  <summary>(Show more supported algorithms)</summary>
-
-- [StructChem](examples/StructChem) ([Ouyang et al., 2023](https://arxiv.org/abs/2311.09656))
-- [Chain-of-thoughts](examples/CoT) ([Wei et al., 2022](https://arxiv.org/abs/2201.11903))
-- [Least-to-most prompting](examples/Least-to-most) ([Zhou et al., 2022](https://arxiv.org/abs/2205.10625))
-- [Tree-of-Thoughts, DFS](examples/ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
-- [Self-Eval Guided Decoding, Beam Search](examples/Self-Eval) ([Xie et al., 2023](https://arxiv.org/abs/2305.00633))
-- [Grace Decoding](examples/Grace) ([Khalifa et al., 2023](https://arxiv.org/abs/2305.14934))
-- [Eurus](examples/Eurus) ([Yuan et al., 2024](https://arxiv.org/abs/2404.02078))
-- [PromptAgent](examples/PromptAgent) ([Wang et al., 2023](https://arxiv.org/abs/2310.16427))
-- [DRPO](examples/DRPO) ([Singla et al., 2024](https://aclanthology.org/2024.emnlp-main.1220/))
-
-</details>
+- Cutting-Edge Reasoning Algorithms
+  
+  We offer the most up-to-date search algorithms for reasoning with LLMs, such as:
+  
+  - [Reasoner Agent](example/ReasonerAgent-Web) ([Deng et al., 2025](https://reasoner-agent.maitrix.org/))
+  - [Inference-time Scaling with PRM](examples/Inference-Scaling-SGL/math500) ([Snell et al., 2024](https://arxiv.org/abs/2408.03314))
+  - [Reasoning-via-Planning, MCTS](examples/RAP) ([Hao et al., 2023](https://arxiv.org/abs/2305.14992))
+  - [Tree-of-Thoughts, BFS](examples/ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
+  
+  <details>
+    <summary>(Show more supported algorithms)</summary>
+  
+  - [StructChem](examples/StructChem) ([Ouyang et al., 2023](https://arxiv.org/abs/2311.09656))
+  - [Chain-of-thoughts](examples/CoT) ([Wei et al., 2022](https://arxiv.org/abs/2201.11903))
+  - [Least-to-most prompting](examples/Least-to-most) ([Zhou et al., 2022](https://arxiv.org/abs/2205.10625))
+  - [Tree-of-Thoughts, DFS](examples/ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
+  - [Self-Eval Guided Decoding, Beam Search](examples/Self-Eval) ([Xie et al., 2023](https://arxiv.org/abs/2305.00633))
+  - [Grace Decoding](examples/Grace) ([Khalifa et al., 2023](https://arxiv.org/abs/2305.14934))
+  - [Eurus](examples/Eurus) ([Yuan et al., 2024](https://arxiv.org/abs/2404.02078))
+  - [PromptAgent](examples/PromptAgent) ([Wang et al., 2023](https://arxiv.org/abs/2310.16427))
+  - [DRPO](examples/DRPO) ([Singla et al., 2024](https://aclanthology.org/2024.emnlp-main.1220/))
+  
+  </details>
 
 - **Intuitive Visualization and Interpretation**: Our library provides a [visualization tool](https://www.llm-reasoners.net/) to aid users in comprehending the reasoning process. Even for complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand the process with **one line of python code**. See an exmaple in the tutorial [notebook](demo.ipynb).
  
-- **Efficient Reasoning**: Our library optimizes the performance of advanced reasoning techniques by integrating [SGLang](https://github.com/sgl-project/sglang), a high-performance LLM inference framework, featuring structured generation and tree-structured reasoning (Check out the [thread](https://x.com/MaitrixOrg/status/1885387184557199857) and [example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/Inference-Scaling-SGL/math500)). We also support other LLM backends like `huggingface transformers`, `OpenAI API`, `Exllama`, `fairscale`, `llama.cpp`, etc.
+- **Efficient Reasoning with LLM**: Our library optimizes the performance of advanced reasoning techniques by integrating [SGLang](https://github.com/sgl-project/sglang), a high-performance LLM inference framework, featuring structured generation (Check out this [thread](https://x.com/MaitrixOrg/status/1885387184557199857) and [example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/Inference-Scaling-SGL/math500)). We also support other LLM backends like `huggingface transformers`, `OpenAI API`, `Exllama`, `fairscale`, `llama.cpp`, etc.
 
-## Experiment Results
+- **Rigorous Implementation and Reproducibility**: We prioritize precision and reliability in our implementations, ensuring that our algorithms are not just theoretical concepts but practically usable tools. All methods implemented in LLM Reasoners are carefully engineered to be faithful to their original formulations and performance. It powers our [analysis](https://arxiv.org/abs/2404.05221) of reasoning algorithms published in COLM2024.
 
-- LLM Reasoners is applied to analyze the reasoning abilities of LLMs and the performance of multiple reasoning algorithms. See the comprehensive experiment results in the [AutoRace Leaderboard](https://www.llm-reasoners.net/leaderboard), and more analysis in the [blog](https://www.llm-reasoners.net/blog) and [paper](https://arxiv.org/abs/2404.05221).
+- <details>
+  
+  <summary> (Examples of Reproducibility) </summary>
+  
+  - LLM Reasoners has been tested to successfully reproduce the performance of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633) and [GRACE Decoding](https://arxiv.org/abs/2305.14934) with their official implementation. We list the results reported in their paper / reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
+  
+  <div align="center">
+      
+  |Method|Base LLM|GSM8k|
+  |--|--|--|
+  |[Guided Decoding](https://arxiv.org/abs/2305.00633)<sup>†</sup>|CodeX (PAL)|0.80|-|-|-|-|-|
+  |Guided Decoding|CodeX (PAL)|[0.83\*](examples/guided_gsm8k)|-|-|-|-|-|
+  
+  |Method|Base LLM|Game of 24|
+  |--|--|--|
+  |[Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)<sup>†</sup>|GPT-3.5-turbo|0.22|
+  |Tree-of-Thoughts|GPT-3.5-turbo|[0.22](examples/tot_game24)|
+  
+  |Method|Base LLM|GSM8k|
+  |--|--|--|
+  |[GRACE Decoding](https://arxiv.org/abs/2305.14934)<sup>†</sup>|Flan-T5-Large (Fine-tuned)|0.34|-|-|-|-|-|
+  |GRACE Decoding| Flan-T5-Large (Fine-tuned)|[0.33\*](examples/grace_gsm8k)|-|-|-|-|-|
+  </div>
+  
+  </details>
 
-- It has been tested to successfully reproduce the performance of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633) and [GRACE Decoding](https://arxiv.org/abs/2305.14934) with their official implementation. We list the results reported in their paper / reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
 
-<div align="center">
-    
-|Method|Base LLM|GSM8k|
-|--|--|--|
-|[Guided Decoding](https://arxiv.org/abs/2305.00633)<sup>†</sup>|CodeX (PAL)|0.80|-|-|-|-|-|
-|Guided Decoding|CodeX (PAL)|[0.83\*](examples/guided_gsm8k)|-|-|-|-|-|
 
-|Method|Base LLM|Game of 24|
-|--|--|--|
-|[Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)<sup>†</sup>|GPT-3.5-turbo|0.22|
-|Tree-of-Thoughts|GPT-3.5-turbo|[0.22](examples/tot_game24)|
-
-|Method|Base LLM|GSM8k|
-|--|--|--|
-|[GRACE Decoding](https://arxiv.org/abs/2305.14934)<sup>†</sup>|Flan-T5-Large (Fine-tuned)|0.34|-|-|-|-|-|
-|GRACE Decoding| Flan-T5-Large (Fine-tuned)|[0.33\*](examples/grace_gsm8k)|-|-|-|-|-|
-</div>
 
 ## Background of LLM Reasoning
 
