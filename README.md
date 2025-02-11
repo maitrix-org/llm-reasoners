@@ -74,31 +74,31 @@ Given any reasoning problem, simply define the reward function and an optional w
 
 - **Rigorous Implementation and Reproducibility**: We prioritize precision and reliability in our implementations, ensuring that our algorithms are not just theoretical concepts but practically usable tools. All methods implemented in LLM Reasoners are carefully engineered to be faithful to their original formulations and performance. It powers our [analysis](https://arxiv.org/abs/2404.05221) of reasoning algorithms published in COLM2024.
 
-- <details>
-  
-  <summary> (Examples of Reproducibility) </summary>
-  
-  - LLM Reasoners has been tested to successfully reproduce the performance of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633) and [GRACE Decoding](https://arxiv.org/abs/2305.14934) with their official implementation. We list the results reported in their paper / reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
-  
-  <div align="center">
-      
-  |Method|Base LLM|GSM8k|
-  |--|--|--|
-  |[Guided Decoding](https://arxiv.org/abs/2305.00633)<sup>†</sup>|CodeX (PAL)|0.80|-|-|-|-|-|
-  |Guided Decoding|CodeX (PAL)|[0.83\*](examples/guided_gsm8k)|-|-|-|-|-|
-  
-  |Method|Base LLM|Game of 24|
-  |--|--|--|
-  |[Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)<sup>†</sup>|GPT-3.5-turbo|0.22|
-  |Tree-of-Thoughts|GPT-3.5-turbo|[0.22](examples/tot_game24)|
-  
-  |Method|Base LLM|GSM8k|
-  |--|--|--|
-  |[GRACE Decoding](https://arxiv.org/abs/2305.14934)<sup>†</sup>|Flan-T5-Large (Fine-tuned)|0.34|-|-|-|-|-|
-  |GRACE Decoding| Flan-T5-Large (Fine-tuned)|[0.33\*](examples/grace_gsm8k)|-|-|-|-|-|
-  </div>
-  
-  </details>
+    <details>
+    
+    <summary> (Examples of Reproducibility) </summary>
+    
+    - LLM Reasoners has been tested to successfully reproduce the performance of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601), [Guided Decoding](https://arxiv.org/abs/2305.00633) and [GRACE Decoding](https://arxiv.org/abs/2305.14934) with their official implementation. We list the results reported in their paper / reproduced from their official repositories for reference (†). Some results are on the subsets of the first 100 examples (*).
+    
+    <div align="center">
+        
+    |Method|Base LLM|GSM8k|
+    |--|--|--|
+    |[Guided Decoding](https://arxiv.org/abs/2305.00633)<sup>†</sup>|CodeX (PAL)|0.80|-|-|-|-|-|
+    |Guided Decoding|CodeX (PAL)|[0.83\*](examples/guided_gsm8k)|-|-|-|-|-|
+    
+    |Method|Base LLM|Game of 24|
+    |--|--|--|
+    |[Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)<sup>†</sup>|GPT-3.5-turbo|0.22|
+    |Tree-of-Thoughts|GPT-3.5-turbo|[0.22](examples/tot_game24)|
+    
+    |Method|Base LLM|GSM8k|
+    |--|--|--|
+    |[GRACE Decoding](https://arxiv.org/abs/2305.14934)<sup>†</sup>|Flan-T5-Large (Fine-tuned)|0.34|-|-|-|-|-|
+    |GRACE Decoding| Flan-T5-Large (Fine-tuned)|[0.33\*](examples/grace_gsm8k)|-|-|-|-|-|
+    </div>
+    
+    </details>
 
 
 
