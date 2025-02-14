@@ -15,38 +15,12 @@
 
 ---
 
-**LLM Reasoners** is a library to enable LLMs to conduct complex reasoning, with advanced reasoning algorithms. It approaches multi-step reasoning as planning and searches for the optimal reasoning chain, which achieves the best balance of exploration vs exploitation with the idea of "World Model" and "Reward".
+**LLM Reasoners** is a library designed to enhance LLMs' ability to perform complex reasoning using advanced algorithms. It provides:
 
-Given any reasoning problem, simply define the reward function and an optional world model (explained below), and let LLM reasoners take care of the rest, including Reasoning Algorithms, Visualization, LLM calling, and more!
 
-## News
-- Feb. 6, 2025: Thrilled to introduce **ReasonerAgent** - A fully open source, ready-to-run agent that does research 🧐 in a web browser and answers your queries. Check out this [thread](https://x.com/MaitrixOrg/status/1887584291087098063), and explore the [code](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/ReasonerAgent-Web) here! 
-- Jan. 31, 2025: LLM Reasoners has integrated [SGLang](https://github.com/sgl-project/sglang). Enjoy 100x speed-up with a one-line change! New applications like PRM-guided search for inference-time scaling are also available. See more details in this [post](https://x.com/MaitrixOrg/status/1885387184557199857).
-- Dec. 20, 2024: We now supported planning algorithms (MCTS, DFS/BFS, Beam Search) in web environments with [BrowserGym](https://github.com/ServiceNow/BrowserGym), check the [README](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/browsergym) to try out!
-
-<details>
-
-<summary>(Show more news)</summary>
-
-- Nov. 13, 2024: We integrated [DRPO](https://aclanthology.org/2024.emnlp-main.1220/), a tuning-free alignment method published at EMNLP 2024 ([link](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/DRPO)).
+- **Cutting-Edge Reasoning Algorithms**
   
-- Jul. 10, 2024: Our paper on [LLM Reasoners](https://arxiv.org/abs/2404.05221) is accepted to [COLM 2024](https://colmweb.org/index.html)!
-- Jun. 24, 2024: [PromptAgent](https://arxiv.org/abs/2310.16427) is in LLM Reasoners! Let it help you write down a super detailed prompt for your task ([here](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/PromptAgent)).
-- May. 14, 2024: Check out [Eurus](https://arxiv.org/abs/2404.02078), a suit of LLMs optimized for reasoning. With LLM Reasoners, Eurus-RM can easily boost Llama-8B from 0.49 to 0.73 📈 on GSM8k ([code](examples/Eurus)).
-- May. 2, 2024: We have integrated our first reasoning method for scientific reasoning, [StructChem](https://arxiv.org/abs/2311.09656)! Check it out [here](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/StructChem).
-- Apr. 22, 2024: We integrated [Llama-3](https://github.com/meta-llama/llama3), with additional useful APIs (e.g., customizing EOS tokens, calculating likelihood)
-- **Apr. 8, 2024: Our new [paper](assets/Reasoners.pdf) introducing LLM Reasoners is available!**
-- Mar. 29, 2024: [Grace Decoding](https://arxiv.org/abs/2305.14934) has been incoporated!
-- Oct. 25, 2023: A [video tutorial](https://www.youtube.com/watch?v=5QfOxtiw_ZU) on the visualizer of LLM Reasoners are available.
-
-- Oct. 23, 2023: Reasoning-via-Planning is accepted to EMNLP 2023! Check our [paper](https://arxiv.org/abs/2305.14992) with updated results and discussion!
-</details>
-
-## Why Choose LLM Reasoners?
-
-- Cutting-Edge Reasoning Algorithms
-  
-  We offer the most up-to-date search algorithms for reasoning with LLMs, such as:
+  The library offer the most up-to-date search algorithms for reasoning with LLMs, such as:
   
   - [Reasoner Agent](example/ReasonerAgent-Web) ([Deng et al., 2025](https://reasoner-agent.maitrix.org/))
   - [Inference-time Scaling with PRM](examples/Inference-Scaling-SGL/math500) ([Snell et al., 2024](https://arxiv.org/abs/2408.03314))
@@ -100,53 +74,36 @@ Given any reasoning problem, simply define the reward function and an optional w
     
     </details>
 
+## News
+- Feb. 6, 2025: Thrilled to introduce **ReasonerAgent** - A fully open source, ready-to-run agent that does research 🧐 in a web browser and answers your queries. Check out this [thread](https://x.com/MaitrixOrg/status/1887584291087098063), and explore the [code](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/ReasonerAgent-Web) here! 
+- Jan. 31, 2025: LLM Reasoners has integrated [SGLang](https://github.com/sgl-project/sglang). Enjoy 100x speed-up with a one-line change! New applications like PRM-guided search for inference-time scaling are also available. See more details in this [post](https://x.com/MaitrixOrg/status/1885387184557199857).
+- Dec. 20, 2024: We now supported planning algorithms (MCTS, DFS/BFS, Beam Search) in web environments with [BrowserGym](https://github.com/ServiceNow/BrowserGym), check the [README](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/browsergym) to try out!
 
+<details>
 
+<summary>(Show more news)</summary>
 
-## Background of LLM Reasoning
+- Nov. 13, 2024: We integrated [DRPO](https://aclanthology.org/2024.emnlp-main.1220/), a tuning-free alignment method published at EMNLP 2024 ([link](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/DRPO)).
+  
+- Jul. 10, 2024: Our paper on [LLM Reasoners](https://arxiv.org/abs/2404.05221) is accepted to [COLM 2024](https://colmweb.org/index.html)!
+- Jun. 24, 2024: [PromptAgent](https://arxiv.org/abs/2310.16427) is in LLM Reasoners! Let it help you write down a super detailed prompt for your task ([here](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/PromptAgent)).
+- May. 14, 2024: Check out [Eurus](https://arxiv.org/abs/2404.02078), a suit of LLMs optimized for reasoning. With LLM Reasoners, Eurus-RM can easily boost Llama-8B from 0.49 to 0.73 📈 on GSM8k ([code](examples/Eurus)).
+- May. 2, 2024: We have integrated our first reasoning method for scientific reasoning, [StructChem](https://arxiv.org/abs/2311.09656)! Check it out [here](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/StructChem).
+- Apr. 22, 2024: We integrated [Llama-3](https://github.com/meta-llama/llama3), with additional useful APIs (e.g., customizing EOS tokens, calculating likelihood)
+- **Apr. 8, 2024: Our new [paper](assets/Reasoners.pdf) introducing LLM Reasoners is available!**
+- Mar. 29, 2024: [Grace Decoding](https://arxiv.org/abs/2305.14934) has been incoporated!
+- Oct. 25, 2023: A [video tutorial](https://www.youtube.com/watch?v=5QfOxtiw_ZU) on the visualizer of LLM Reasoners are available.
 
-Consider the following problem:
+- Oct. 23, 2023: Reasoning-via-Planning is accepted to EMNLP 2023! Check our [paper](https://arxiv.org/abs/2305.14992) with updated results and discussion!
+</details>
 
-![Alt text](assets/goal.png)
-
-Let's start with a naive method for LLM reasoning: Prompted with a few examples of problem-solving step by step, an LLM can generate a chain of thoughts (or a sequence of actions) to solve a new problem. For the problem above, the prompt inputted to the LLM and the expected output (in bold) is shown below:
-
-
-<pre>
-I am playing with a set of blocks where I need to arrange the blocks into stacks.
-
-<i>(Example problems and solutions * 4)</i>
-
-[STATEMENT] 
-As initial conditions I have that, the red block is clear, the blue block is clear, the orange block is clear, the hand is empty, the red block is on the yellow block, the yellow block is on the table, the blue block is on the table and the orange block is on the table. My goal is to have that the orange block is on top of the blue block and the yellow block on top of the orange block.
-
-[PLAN]
-<b>pick up the orange block</b>
-<b>stack the orange block on top of the blue block</b>
-<b>unstack the red block from on top of the yellow block</b>
-<b>put the red block on the table</b>
-<b>pick up the yellow block</b>
-<b>stack the yellow block on top of the orange block</b>
-</pre>
-
-Regarding each reasoning step as an action, we have $a_1=$"*pick up the orange block*", $a_2=$"*stack the orange block on top of the blue block*", and so on. At each time step, the next action is sampled from the LLM conditioned on the previous actions. This simple method is often referred to as [Chain-of-thoughts](https://proceedings.neurips.cc/paper_files/paper/2022/hash/9d5609613524ecf4f15af0f7b31abca4-Abstract-Conference.html) reasoning. Unfortunately, it doesn't always work for complex reasoning problems. For [Blocksworld dataset](https://arxiv.org/abs/2305.15771) where the problem above comes from, even the strongest GPT-4 model can only reach the success rate of ~30%.
-
-LLM Reasoners formulate **reasoning as planning** ([RAP](https://arxiv.org/abs/2305.14992)). Different from Chain-of-thoughts reasoning which autoregressively samples the next action, our goal is to **efficiently search in the reasoning space for the optimal reasoning chain**. To achieve this, two components need to be defined: a world model and a reward function.
-
-- **World model** defines the state transition, formally $P(s_{i+1} | s_i, a_i)$. A default world model regards the partial solution as the state and simply appends a new action/thought to the state as the state transition (the same formulation of [Tree-of-Thoughts](https://arxiv.org/abs/2305.10601)). However, you’ll have the option to design a better world model which predicts and keeps track of a more meaningful state (e.g., environment status, intermediate variable values, etc. Check [RAP](https://arxiv.org/abs/2305.14992) for more examples), thus enhancing the reasoning. For the example shown above, we can naturally define the state as the condition of blocks (e.g., the red block is on the yellow block...), and a world model is to predict the condition of blocks after every potential action.
-
-- **Reward function** provides a criterion to evaluate a reasoning step. Ideally, a reasoning chain with a higher accumulated reward should be more likely to be correct. For the example shown above, we can reward actions based on the increased number of accomplished subgoals they lead to. Besides, the likelihood of LLMs generating the action can also be used as a reward, to give the search a good prior.
-
-
-After we have the world model and reward function, it's time to apply an algorithm to search for the optimal reasoning trace. Here, we show the process of Monte-Carlo Tree Search with a gif:
-
-![MCTS Animation](assets/mcts_animation.gif)
 
 ## Introduction of the library
 
-The three key components in a reasoning algorithm, *reward function*, *world model*, and *search algorithm* in the formulation (top), correspond to three classes in the library, <tt>SearchConfig</tt>, <tt>WorldModel</tt> and <tt>SearchAlgorithm</tt> respectively. Besides, there are <tt>LLM APIs</tt> to power other modules, <tt>Benchmark</tt>, and <tt>Visualization</tt> to evaluate or debug the reasoning algorithm (middle). To implement a reasoning algorithm for a certain domain (a <tt>Reasoner</tt> object), a user may inherit the <tt>SearchConfig</tt> and <tt>WorldModel</tt> class, and import a pre-implemented <tt>SearchAlgorithm</tt>. We also show a concrete example of solving Blocksworld with RAP using LLM Reasoners (bottom).
-
 ![Library Structure](assets/figure2_reasoners_v5.png)
+
+We abstract an LLM reasoning algorithm into three key components, *reward function*, *world model*, and *search algorithm* (see the formulation in our [paper](https://arxiv.org/abs/2404.05221)), corresponding to three classes in the library, <tt>SearchConfig</tt>, <tt>WorldModel</tt> and <tt>SearchAlgorithm</tt> respectively. Besides, there are <tt>LLM APIs</tt> to power other modules, <tt>Benchmark</tt>, and <tt>Visualization</tt> to evaluate or debug the reasoning algorithm (middle). To implement a reasoning algorithm for a certain domain (a <tt>Reasoner</tt> object), a user may inherit the <tt>SearchConfig</tt> and <tt>WorldModel</tt> class, and import a pre-implemented <tt>SearchAlgorithm</tt>. We also show a concrete example of solving Blocksworld with RAP using LLM Reasoners (bottom).
+
 
 ## Quick Tour
 Let's go through the code of reasoning over Blocksworld problems. Note that the code is simplified for demonstration (check [here](demo.ipynb) for a runnable notebook).
