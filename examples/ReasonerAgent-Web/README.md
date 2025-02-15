@@ -65,7 +65,7 @@ pip install -r requirements.txt
 Before starting, it is recommended that you enter your API key at a file named `default_api_key.txt` under `examples/ReasonerAgent-Web/`.
 We recommend a minimum of 16GB RAM, as required by Playwright for proper system functionality.
 
-**Run with Single Query**
+#### Run with Single Query
 ```
 python main.py \
     [job_name] \
@@ -75,19 +75,18 @@ python main.py \
                    options: browsergym, browsergym_world_model, opendevin, opendevin_llama, opendevin_world_model, opendevin_webarena, opendevin_webarena_world_model, browsergym_webarena, browsergym_webarena_world_model;
                    default: browsergym] \
     --model [optional, 
-             options: gpt-4o, o1, o3-mini, deepseek-chat, deepseek-reasoner; 
+             options: gpt-4o, o1, o3-mini, deepseek-chat, deepseek-reasoner, or path to model config file; 
              default: gpt-4o] \
     --api_key [optional, by default set to content in file llm-reasoners/examples/ReasonerAgent-Web/default_api_key.txt if exists, otherwise None] \
     --max_steps [optional, maximum steps the agent can take on a single task; default: 30] \
     --output_dir [optional, location to store browsing interaction data; default: ./browsing_data]
 ```
 
-**Run with an Evaluation Dataset**
-
+#### Run with an Evaluation Dataset
 We provide three datasets for evaluating web agents as informational assistants: 
 1. [FanOutQA](https://fanoutqa.com/index.html), which requires the agent to answer questions that require searching for and compiling information from multiple websites. We include their development set of 310 examples. 
 2. FlightQA, a dataset prepared by us to evaluate the ability of LLM agents in answering queries with varying number of constraints, specifically while searching for live flight tickets using the internet. To control for confounding variables like specific query content, we iteratively add to lists of constraints to form new questions. In total we have 120 examples consisted of 20 groups of questions ranging from 3 to 8 constraints.
-3. [WebArena](https://webarena.dev), which comprises benchmarking tasks on a few self-hosted websites, including information seeking, site navigation and content management. 
+3. [WebArena](https://webarena.dev), which comprises benchmarking tasks on a few self-hosted websites, including information seeking, site navigation and content management. Running WebArena requires setup on an Amazon EC2 Instance following the [official guide](https://github.com/web-arena-x/webarena/blob/main/environment_docker/README.md#pre-installed-amazon-machine-image-recommended). Then the evaluation can be run with the example [script](evaluation/webarena/run_inference.sh) provided.
 ```
 python main.py \
     [job_name] \
@@ -97,7 +96,7 @@ python main.py \
                    options: browsergym, browsergym_world_model, opendevin, opendevin_llama, opendevin_world_model, opendevin_webarena, opendevin_webarena_world_model, browsergym_webarena, browsergym_webarena_world_model
                    default: browsergym] \
     --model [optional, 
-             options: gpt-4o, o1, o3-mini, deepseek-chat, deepseek-reasoner; 
+             options: gpt-4o, o1, o3-mini, deepseek-chat, deepseek-reasoner, or path to model config file; 
              default: gpt-4o] \
     --api_key [optional, by default set to content in file 'llm-reasoners/examples/ReasonerAgent-Web/default_api_key.txt' if exists, otherwise None] \
     --max_steps [optional, maximum steps the agent can take on a single task; default: 30] \
@@ -108,11 +107,16 @@ python main.py \
     --seed [optional, used as seed when --shuffle is set; default: 42] 
 ```
 
-**Notes:**
+Notes:
 * One way to speed up the dataset inference is to open several terminals and run inference on separate slices of the data.
-* The agent outputs will be stored under `browsing_data` and will be automatically loaded for evaluation.
+* The agent outputs will by default be stored under `browsing_data` and will be automatically loaded for evaluation.
 * Optionally, `--model` can be set to path to a config file for module-wise LLM specification. Example config files with which we ran our experiments are provided [here](configs/).
-* Running WebArena requires setup on an Amazon EC2 Instance following the [official guide](https://github.com/web-arena-x/webarena/blob/main/environment_docker/README.md#pre-installed-amazon-machine-image-recommended). Then the evaluation can be run with the example [script](evaluation/webarena/run_inference.sh) provided.
+
+#### 💡 Run with Reasoning LLMs
+If you would like to run with LLMs specialized for reasoning tasks (e.g. DeepSeek-r1, o1, o3-mini), we recommend only use it for difficult parts like planning (i.e. policy module) for better running speed. For other parts like reading the webpage and writing to memory, we still recommend regular LLMs like gpt-4o. To do this, you can specify LLM selection by modules using the model config file (example [here](configs/)) and pass the path to `--model`. Also, since currently the system only take a single API key for simplicity, we recommend choosing models that could be used under the same API key. 
+
+#### Run with Alternative / Locally Deployed Models
+We currently use [LiteLLM](https://docs.litellm.ai/docs/) to handle the LLM calls. If you want to use a model that is currently not supported by us or that is locally deployed (e.g. with [VLLM](https://blog.vllm.ai/2023/06/20/vllm.html), [HuggingFace](https://docs.litellm.ai/docs/providers/huggingface) or [Ollama](https://docs.litellm.ai/docs/providers/ollama)), just add the base_url as well as provider to the list [here](https://github.com/maitrix-org/llm-reasoners/blob/fe50137538d997fa6b9dc61a2afb37489784729e/examples/ReasonerAgent-Web/main.py#L30). 
 
 ### Get Evaluation Results
 After experiments with evaluation datasets are done, follow the instructions below to get quantitative evaluation results.
