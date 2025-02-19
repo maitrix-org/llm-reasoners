@@ -33,6 +33,28 @@ def get_user_messages_for_current_state(
     user_msgs = []
     # goal_object is directly presented as a list of openai-style messages
     user_msgs.extend(obs["goal_object"])
+    
+    # append action space description
+    user_msgs.append(
+        {
+            "type": "text",
+            "text": f"""\
+# Action Space
+
+{action_set.describe(with_long_description=False, with_examples=True)}
+
+Here are examples of actions with chain-of-thought reasoning:
+
+I now need to click on the Submit button to send the form. I will use the click action on the button, which has bid 12.
+```click("12")```
+
+I found the information requested by the user, I will send it to the chat.
+```send_msg_to_user("The price for a 15\\" laptop is 1499 USD.")```
+
+""",
+        }
+    )
+    
     # append url of all open tabs
     user_msgs.append(
         {
@@ -102,26 +124,8 @@ URL: {page_url}
             }
         )
 
-    # append action space description
-    user_msgs.append(
-        {
-            "type": "text",
-            "text": f"""\
-# Action Space
 
-{action_set.describe(with_long_description=False, with_examples=True)}
-
-Here are examples of actions with chain-of-thought reasoning:
-
-I now need to click on the Submit button to send the form. I will use the click action on the button, which has bid 12.
-```click("12")```
-
-I found the information requested by the user, I will send it to the chat.
-```send_msg_to_user("The price for a 15\\" laptop is 1499 USD.")```
-
-""",
-        }
-    )
+    # print({action_set.describe(with_long_description=False, with_examples=True)})
 
     # append past actions (and last error message) if any
     if action_history:
