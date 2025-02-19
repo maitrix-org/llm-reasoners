@@ -15,7 +15,8 @@ class OpenAIModel(LanguageModel):
     def __init__(
         self,
         model: str,
-        max_tokens: int = 8192,
+        # max_tokens: int = 8192,
+        max_tokens: int = 2048,
         temperature=0.0,
         additional_prompt=None,
         backend: Literal["openai", "sglang"] = "openai",
