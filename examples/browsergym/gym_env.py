@@ -79,6 +79,8 @@ class EnvironmentGym(Environment):
         - aux (dict): used to pass the environment's reward to the search algorithm, which then passes it to the SearchConfig's reward function
         """
 
+        self.log("\nstep()")
+
         if self.env_current_obs != state.current_obs:
             self.align_env(state)
 
