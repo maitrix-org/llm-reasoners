@@ -283,7 +283,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action, Example]):
             fast_reward, fast_reward_details = self.search_config.fast_reward(
                 node.state, proposal)
             self.log(f"{function_calls}\n - (count={count}, fast_reward={fast_reward}, total={count + fast_reward})")
-            return proposal, fast_reward + count, fast_reward_details
+            return proposal, (fast_reward + count) / 10, fast_reward_details
 
         self.log("\nstarting evaluation")
         start = time.time()
