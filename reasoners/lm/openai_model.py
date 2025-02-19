@@ -15,7 +15,7 @@ class OpenAIModel(LanguageModel):
     def __init__(
         self,
         model: str,
-        max_tokens: int = 2048,
+        max_tokens: int = 8192,
         temperature=0.0,
         additional_prompt=None,
         backend: Literal["openai", "sglang"] = "openai",
@@ -31,6 +31,11 @@ class OpenAIModel(LanguageModel):
         self.task_dir = task_dir
         self.__init_client__()
 
+    def log(self, text: str):
+        print(text)
+        with open(f"{self.task_dir}/log.txt", "a+") as f:
+            f.write(f"{text}\n")
+
     def __init_client__(self):
         if self.backend == "openai":
             self.client = OpenAI(
@@ -38,7 +43,9 @@ class OpenAIModel(LanguageModel):
             )
         elif self.backend == "sglang":
             self.client = OpenAI(
-                base_url=os.getenv("SGLANG_API_URL", None),
+                # base_url=os.getenv("SGLANG_API_URL", None),
+                base_url="http://127.0.0.1:30000/v1",
+                api_key="None"
             )
         else:
             raise ValueError(f"Invalid backend: {self.backend}")
@@ -57,83 +64,38 @@ class OpenAIModel(LanguageModel):
         retry=64,
         **kwargs,
     ) -> GenerateOutput:
-
-        max_tokens = self.max_tokens if max_tokens is None else max_tokens
-        temperature = self.temperature if temperature is None else temperature
-        logprobs = 0 if logprobs is None else logprobs
-        num_return_sequences = kwargs.pop("n", num_return_sequences)
-        if isinstance(prompt, list):
-            assert len(prompt) == 1  # @zj: why can't we pass a list of prompts?
-            prompt = prompt[0]
-        if additional_prompt is None and self.additional_prompt is not None:
-            additional_prompt = self.additional_prompt
-        elif additional_prompt is not None and self.additional_prompt is not None:
-            print("Warning: additional_prompt set in constructor is overridden.")
-        if additional_prompt == "ANSWER":
-            prompt = PROMPT_TEMPLATE_ANSWER + prompt
-        elif additional_prompt == "CONTINUE":
-            prompt = PROMPT_TEMPLATE_CONTINUE + prompt
-
-        is_instruct_model = self.is_instruct_model
-        if not is_instruct_model:
-            # Recheck if the model is an instruct model with model name
-            model_name = self.model.lower()
-            if (
-                ("gpt-3.5" in model_name)
-                or ("gpt-4" in model_name)
-                or ("instruct" in model_name)
-            ):
-                is_instruct_model = True
-
+        self.log("llm_generate()")
         for i in range(1, retry + 1):
             try:
                 # sleep several seconds to avoid rate limit
                 if rate_limit_per_min is not None:
                     time.sleep(60 / rate_limit_per_min)
-                ### GPT 3.5 and higher use a different API
-                if is_instruct_model:
-                    messages = [{"role": "user", "content": prompt}]
-                    response = self.client.chat.completions.create(
-                        model=self.model,
-                        messages=messages,
-                        max_tokens=max_tokens,
-                        temperature=temperature,
-                        top_p=top_p,
-                        n=num_return_sequences,
-                        stop=stop,
-                        **kwargs,
-                    )
 
-                    # save response pickle object
-                    utc_timestamp = int(time.time())
-                    with open(
-                        os.path.join(self.task_dir, f"{utc_timestamp}.pkl"), "wb"
-                    ) as f:
-                        pickle.dump(response, f)
+                messages = [{"role": "user", "content": prompt}, {"role": "assistant", "content": "<think>\n"}]
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    max_tokens=max_tokens,
+                    temperature=temperature,
+                    top_p=top_p,
+                    n=num_return_sequences,
+                    stop=stop,
+                    **kwargs,
+                )
+
+                utc_timestamp = int(time.time())
+                # save prompt
+                with open(os.path.join(self.task_dir, f"{utc_timestamp}.txt"), "w+") as f:
+                    f.write(prompt)
+                # save response pickle object
+                with open(os.path.join(self.task_dir, f"{utc_timestamp}.pkl"), "wb") as f:
+                    pickle.dump(response, f)
 
 
-                    return GenerateOutput(
-                        text=[choice.message.content for choice in response.choices],
-                        log_prob=None,
-                        # prompt_tokens=response.usage.prompt_tokens,
-                        # completion_tokens=response.usage.completion_tokens,
-                    )
-                else:
-                    response = self.client.chat.completions.create(
-                        model=self.model,
-                        prompt=prompt,
-                        max_tokens=max_tokens,
-                        temperature=temperature,
-                        top_p=top_p,
-                        n=num_return_sequences,
-                        stop=stop,
-                        logprobs=0,
-                        **kwargs,
-                    )
-                    return GenerateOutput(
-                        text=[choice["text"] for choice in response.choices],
-                        log_prob=[choice["logprobs"] for choice in response["choices"]],
-                    )
+                return GenerateOutput(
+                    text=[choice.message.content for choice in response.choices],
+                    log_prob=None,
+                )
 
             except Exception as e:
                 print(f"An Error Occured: {e}, sleeping for {i} seconds")
