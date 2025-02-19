@@ -105,7 +105,7 @@ class SearchConfigBrowsergym(SearchConfig):
             else:
                 sorted_action_info = dict(sorted(action_info.items(), key=lambda item: item[1][2], reverse=True))
                 for k, v in sorted_action_info.items():
-                    print(f" - {v[2]}: {v[0]}")
+                    self.log(f" - {v[2]}: {v[0]}")
                 return sorted_action_info
 
     def fast_reward(self, state: StateGym, action: ActionGym) -> tuple[float, dict]:
