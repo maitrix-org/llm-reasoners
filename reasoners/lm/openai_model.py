@@ -103,7 +103,7 @@ class OpenAIModel(LanguageModel):
                 )
 
             except Exception as e:
-                print(f"An Error Occured: {e}, sleeping for {i} seconds")
+                self.log(f"An Error Occured: {e}, sleeping for {i} seconds")
                 time.sleep(i)
 
         # after 64 tries, still no luck
