@@ -39,7 +39,13 @@ class EnvironmentGym(Environment):
         self.task_dir = task_dir
 
 
+    def log(self, text: str):
+        print(text)
+        with open(f"{self.task_dir}/log.txt", "a+") as f:
+            f.write(f"{text}\n")
+
     def init_state(self) -> StateGym:
+        self.log("\ninit_state()")
         obs, env_info = self.env.reset(
             seed=self.env_seed)
         if self.obs_preprocessor is not None:
@@ -47,6 +53,18 @@ class EnvironmentGym(Environment):
         self.env_current_obs = obs
 
         return StateGym(step_idx=0, last_obs={}, current_obs=obs, action_history=[], reward=0, terminated=False, truncated=False)
+
+    def align_env(self, state: StateGym):
+        """
+        Resets the environment and replays the action history to align an environment with the state.
+        """
+        start = time.time()
+        self.env.reset(seed=self.env_seed)
+        for action in state.action_history:
+            self.env.step(action)
+        end = time.time()
+        self.log(f"align env time: {end - start}")
+
 
     def step(self, state: StateGym, action: ActionGym) -> tuple[StateGym, dict]:
         """
@@ -62,22 +80,18 @@ class EnvironmentGym(Environment):
         """
 
         if self.env_current_obs != state.current_obs:
-            self.env.reset(seed=self.env_seed)
-            for action in state.action_history:
-                self.env.step(action)
+            self.align_env(state)
 
+
+        # TODO - add in code to time out the env
         start = time.time()
         obs, reward, terminated, truncated, step_info = self.env.step(
             action)
         if self.obs_preprocessor is not None:
             obs = self.obs_preprocessor(obs)
         self.env_current_obs = obs
-
         end = time.time()
-        print(f"env step time: {end - start}")
-
-        with open(f"{self.task_dir}/time.txt", "a+") as f:
-            f.write(f"env step time: {end - start}\n")
+        self.log(f"env step time: {end - start}")
 
         next_state = StateGym(step_idx=state.step_idx + 1,
                               last_obs=state.current_obs, current_obs=obs,
