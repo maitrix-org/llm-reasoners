@@ -46,6 +46,10 @@ class SearchConfigBrowsergym(SearchConfig):
         self.n_retry = n_retry
         self.task_dir = task_dir
 
+    def log(self, text: str):
+        print(text)
+        with open(f"{self.task_dir}/log.txt", "a+") as f:
+            f.write(f"{text}\n")
 
     def get_actions(self, state: StateGym) -> list[ActionGym]:
         """
@@ -58,35 +62,38 @@ class SearchConfigBrowsergym(SearchConfig):
         - clustered_actions (list[ActionGym]): a list of unique action proposals
         """
 
-        system_msgs, user_msgs, full_prompt_text = build_propose_prompt(
-            state.current_obs,
-            self.action_set, state.action_history,
-            self.use_axtree, self.use_html, self.use_screenshot
-        )
+        self.log("\nget_actions()")
 
-        start = time.time()
-        response = self.llm.generate(
-            full_prompt_text, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
-        action_proposals = response.text
-        end = time.time()
-        print(f"action proposal time: {end - start}")
+        while True:
+            system_msgs, user_msgs, full_prompt_text = build_propose_prompt(
+                state.current_obs,
+                self.action_set, state.action_history,
+                self.use_axtree, self.use_html, self.use_screenshot
+            )
 
-        with open(f"{self.task_dir}/time.txt", "a+") as f:
-            f.write(f"action proposal time: {end - start}\n")
-        response = self.llm.generate(
-            full_prompt_text, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
-        action_proposals = response.text
+            start = time.time()
+            response = self.llm.generate(
+                full_prompt_text, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
+            action_proposals = response.text
+            end = time.time()
+            
+            self.log(f"action proposal time: {end - start}")
 
-        clustered_actions = []
-        action_codes = set()
-        for action_proposal in action_proposals:
-            if check_validity_of_action_proposal(action_proposal):
-                action_code = self.action_set.to_python_code(action_proposal)
-                if action_code not in action_codes:
-                    action_codes.add(action_code)
-                    clustered_actions.append(action_proposal)
+            clustered_actions = []
+            action_codes = set()
+            for action_proposal in action_proposals:
+                if check_validity_of_action_proposal(action_proposal):
+                    action_code = self.action_set.to_python_code(action_proposal)
+                    if action_code not in action_codes:
+                        action_codes.add(action_code)
+                        clustered_actions.append(action_proposal)
+            
+            self.log(f"num unique actions: {len(clustered_actions)}")
+            if len(clustered_actions) == 0:
+                self.log("no valid action proposals - trying again")
+                continue
 
-        return clustered_actions
+            return clustered_actions
 
     def fast_reward(self, state: StateGym, action: ActionGym) -> tuple[float, dict]:
         """
@@ -116,15 +123,22 @@ class SearchConfigBrowsergym(SearchConfig):
 
                 evaluation = response.text[0]
 
-                json_string = re.search(
-                    r"\{.*\}", evaluation, re.DOTALL).group()
+                # now using a different llm
+                # reasoning traces likely include curly brackets
+                # makes more sense to do a lazy match as opposed to a greedy match
+                # json_string = re.search(
+                #     r"\{.*\}", evaluation, re.DOTALL).group()
+                matches = re.findall(r"\{.*?\}", evaluation, re.DOTALL)
+                json_string = matches[-1]
+
                 json_object = json.loads(json_string)
                 evaluation = json_object["score"] / 100
 
                 return evaluation, {"self_eval": evaluation}
-            except AttributeError as e:
-                with open(f"{self.task_dir}/time.txt", "a+") as f:
-                    f.write(f"retrying evaluation - parsing error\n")
+            except Exception as e:
+                self.log("retrying evaluation - parsing error")
+
+        return 0.0, {"self_eval": 0.0}
 
     def reward(self, state: StateGym, action: ActionGym, **kwargs) -> tuple[float, dict]:
         """
