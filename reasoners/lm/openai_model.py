@@ -85,8 +85,12 @@ class OpenAIModel(LanguageModel):
 
                 utc_timestamp = int(time.time())
                 # save prompt
-                with open(os.path.join(self.task_dir, f"{utc_timestamp}.txt"), "w+") as f:
+                with open(os.path.join(self.task_dir, f"{utc_timestamp}-prompt.txt"), "w+") as f:
                     f.write(prompt)
+                # save responses
+                for idx, choice in enumerate(response.choices):
+                    with open(os.path.join(self.task_dir, f"{utc_timestamp}-response-{idx+1}.txt"), "w+") as f:
+                        f.write(choice.message.content)
                 # save response pickle object
                 with open(os.path.join(self.task_dir, f"{utc_timestamp}.pkl"), "wb") as f:
                     pickle.dump(response, f)
