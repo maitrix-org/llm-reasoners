@@ -40,7 +40,7 @@ class ProsQAEvaluator(Evaluator):
         self.output_extractor = output_extractor
         self.answer_extractor = answer_extractor #lambda x: x["answer"]
         self.input_processor = lambda x: x["question"] + "\n\nPlease output your conclusion like 'Answer: XXX is a YYY.'"
-        self.full_dataset = load_ProsQA('examples/LongCoT_Search/ProsQA/data/prosqa_test.json')
+        self.full_dataset = load_ProsQA('data/prosqa_test.json')
         self._dataset_name = 'prosQA'
         self.disable_log = disable_log
         self.disable_tqdm = disable_tqdm
