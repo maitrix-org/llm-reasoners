@@ -52,11 +52,11 @@ def run_exp(exp_name: str, task_names: str):
             else:
                 print(f"working on {task_name}")
                 try:
-                    signal.alarm(60) # if it runs for more than an hour, call it a failure
+                    signal.alarm(60 * 60) # if it runs for more than an hour, call it a failure
                     success = run_task(exp_name, task_name)
                     f.write(f"{task_name} {success}\n")
                 except Exception as e:
-                    f.write(f"{task_name} ERROR\n")
+                    f.write(f"{task_name} ERROR - {type(e).__name__}\n")
                     f.write(traceback.format_exc())
                 finally:
                     signal.alarm(0)
@@ -137,4 +137,3 @@ def run_task(exp_name: str, task_name: str) -> bool:
 # print(tasks)
 print(tasks)
 run_exp(name, tasks)
-# 
