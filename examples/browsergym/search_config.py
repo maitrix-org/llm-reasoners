@@ -52,7 +52,7 @@ class SearchConfigBrowsergym(SearchConfig):
         current_time = datetime.now()
         formatted_time = current_time.strftime("[%Y%m%d] - %H:%M.%S")
         if text.startswith("\n"):
-            text = f"{formatted_time}\n{text}"
+            text = f"\n{formatted_time}\n{text.replace("\n", "")}"
         print(text)
         with open(f"{self.task_dir}/log.txt", "a+") as f:
             f.write(f"{text}\n")
