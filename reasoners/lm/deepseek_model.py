@@ -57,7 +57,7 @@ class DeepseekModel(LanguageModel):
         retry=64,
         **kwargs,
     ) -> GenerateOutput:
-
+    
         max_tokens = self.max_tokens if max_tokens is None else max_tokens
         temperature = self.temperature if temperature is None else temperature
         logprobs = 0 if logprobs is None else logprobs
