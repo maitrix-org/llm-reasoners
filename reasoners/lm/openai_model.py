@@ -1,5 +1,4 @@
 import os
-import openai
 import numpy as np
 from typing import Optional, Union, Literal
 import time
@@ -7,8 +6,6 @@ import time
 from reasoners.base import LanguageModel, GenerateOutput
 from openai import OpenAI
 import pickle
-PROMPT_TEMPLATE_ANSWER = 'Your response need to be ended with "So the answer is"\n\n'
-PROMPT_TEMPLATE_CONTINUE = "Please continue to answer the last question, following the format of previous examples. Don't say any other words.\n\n"
 
 
 class OpenAIModel(LanguageModel):
@@ -44,7 +41,6 @@ class OpenAIModel(LanguageModel):
             )
         elif self.backend == "sglang":
             self.client = OpenAI(
-                # base_url=os.getenv("SGLANG_API_URL", None),
                 base_url="http://127.0.0.1:30000/v1",
                 api_key="None"
             )
@@ -59,9 +55,7 @@ class OpenAIModel(LanguageModel):
         num_return_sequences: int = 1,
         rate_limit_per_min: Optional[int] = 20,
         stop: Optional[str] = None,
-        logprobs: Optional[int] = None,
         temperature=None,
-        additional_prompt=None,
         retry=64,
         **kwargs,
     ) -> GenerateOutput:
@@ -73,6 +67,9 @@ class OpenAIModel(LanguageModel):
                     time.sleep(60 / rate_limit_per_min)
 
                 messages = [{"role": "user", "content": prompt}, {"role": "assistant", "content": "<think>\n"}]
+                if "deepseek-r1" in self.model.lower():
+                    messages.append({"role": "assistant", "content": "<think>\n"})
+
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
