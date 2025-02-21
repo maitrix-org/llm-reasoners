@@ -75,6 +75,8 @@
     </details>
 
 ## News
+- Feb. 21, 2025: We have integrated Deepseek R1 ([example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/LongCoT_Search/ProsQA)). Also check out our analysis of the search patterns of R1 ([thread](https://x.com/MaitrixOrg/status/1893017035753574799)). 
+
 - Feb. 6, 2025: Thrilled to introduce **ReasonerAgent** - A fully open source, ready-to-run agent that does research 🧐 in a web browser and answers your queries. Check out this [thread](https://x.com/MaitrixOrg/status/1887584291087098063), and explore the [code](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/ReasonerAgent-Web) here! 
 - Jan. 31, 2025: LLM Reasoners has integrated [SGLang](https://github.com/sgl-project/sglang). Enjoy 100x speed-up with a one-line change! New applications like PRM-guided search for inference-time scaling are also available. See more details in this [post](https://x.com/MaitrixOrg/status/1885387184557199857).
 - Dec. 20, 2024: We now supported planning algorithms (MCTS, DFS/BFS, Beam Search) in web environments with [BrowserGym](https://github.com/ServiceNow/BrowserGym), check the [README](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/browsergym) to try out!
@@ -91,7 +93,7 @@
 - May. 2, 2024: We have integrated our first reasoning method for scientific reasoning, [StructChem](https://arxiv.org/abs/2311.09656)! Check it out [here](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/StructChem).
 - Apr. 22, 2024: We integrated [Llama-3](https://github.com/meta-llama/llama3), with additional useful APIs (e.g., customizing EOS tokens, calculating likelihood)
 - **Apr. 8, 2024: Our new [paper](assets/Reasoners.pdf) introducing LLM Reasoners is available!**
-- Mar. 29, 2024: [Grace Decoding](https://arxiv.org/abs/2305.14934) has been incoporated!
+- Mar. 29, 2024: [Grace Decoding](https://arxiv.org/abs/2305.14934) has been incorporated!
 - Oct. 25, 2023: A [video tutorial](https://www.youtube.com/watch?v=5QfOxtiw_ZU) on the visualizer of LLM Reasoners are available.
 
 - Oct. 23, 2023: Reasoning-via-Planning is accepted to EMNLP 2023! Check our [paper](https://arxiv.org/abs/2305.14992) with updated results and discussion!
