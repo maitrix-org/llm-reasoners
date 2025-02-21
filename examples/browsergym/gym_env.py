@@ -43,10 +43,11 @@ class EnvironmentGym(Environment):
     def log(self, text: str):
         current_time = datetime.now()
         formatted_time = current_time.strftime("[%Y%m%d] - %H:%M.%S")
-        timestamped_text = f"{formatted_time}\n{text}"
-        print(timestamped_text)
+        if text.startswith("\n"):
+            text = f"{formatted_time}\n{text}"
+        print(text)
         with open(f"{self.task_dir}/log.txt", "a+") as f:
-            f.write(f"{timestamped_text}\n")
+            f.write(f"{text}\n")
 
     def init_state(self) -> StateGym:
         self.log("\ninit_state()")
