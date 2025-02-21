@@ -2,6 +2,7 @@ import gymnasium as gym
 from typing import NamedTuple, Optional, Callable, Any
 from reasoners import Environment
 import time
+from datetime import datetime
 
 ActionGym = Any
 
@@ -40,9 +41,12 @@ class EnvironmentGym(Environment):
 
 
     def log(self, text: str):
-        print(text)
+        current_time = datetime.now()
+        formatted_time = current_time.strftime("[%Y%m%d] - %H:%M.%S")
+        timestamped_text = f"{formatted_time}\n{text}"
+        print(timestamped_text)
         with open(f"{self.task_dir}/log.txt", "a+") as f:
-            f.write(f"{text}\n")
+            f.write(f"{timestamped_text}\n")
 
     def init_state(self) -> StateGym:
         self.log("\ninit_state()")
@@ -85,7 +89,7 @@ class EnvironmentGym(Environment):
             self.align_env(state)
 
 
-        # TODO - add in code to time out the env
+        # TODO - add in code to handle time outs
         start = time.time()
         obs, reward, terminated, truncated, step_info = self.env.step(
             action)
