@@ -1,8 +1,8 @@
-num_dockers=$1
-
+start_port="$1"
+num_dockers="$2"
 for i in $(seq 1 "$num_dockers")
 do 
-    printf -v padded_i "%02d" "$i"
-    docker stop forum_$padded_i
-    docker remove forum_$padded_i
+    ((current_port=start_port + i))
+    docker stop forum_$current_port
+    docker remove forum_$current_port
 done
