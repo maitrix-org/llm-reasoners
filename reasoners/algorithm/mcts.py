@@ -208,7 +208,7 @@ class MCTS(SearchAlgorithm, Generic[State, Action, Example]):
         current_time = datetime.now()
         formatted_time = current_time.strftime("[%Y%m%d] - %H:%M.%S")
         if text.startswith("\n"):
-            text = f"\n{formatted_time}\n{text.replace("\n", "")}"
+            text = f"\n{formatted_time}\n{text.lstrip()}"
         print(text)
         with open(f"{self.task_dir}/log.txt", "a+") as f:
             f.write(f"{text}\n")
