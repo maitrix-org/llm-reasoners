@@ -13,20 +13,11 @@ class OpenAIModel(LanguageModel):
     def __init__(
         self,
         model: str,
-        # max_tokens: int = 8192,
-        max_tokens: int = 2048,
-        temperature=0.0,
-        additional_prompt=None,
         backend: Literal["openai", "sglang"] = "openai",
-        is_instruct_model: bool = False,
         task_dir: str = None
     ):
         self.model = model
-        self.max_tokens = max_tokens
-        self.temperature = temperature
         self.backend = backend
-        self.additional_prompt = additional_prompt
-        self.is_instruct_model = is_instruct_model
         self.task_dir = task_dir
         self.__init_client__()
 
@@ -55,22 +46,15 @@ class OpenAIModel(LanguageModel):
     def generate(
         self,
         prompt: Optional[Union[str, list[str]]],
-        max_tokens: int = None, # oh max tokens isn't being toggled on properly
-        top_p: float = 1.0,
+        max_tokens: int = None,
+        temperature: float = 0.6,
         num_return_sequences: int = 1,
-        rate_limit_per_min: Optional[int] = 20,
-        stop: Optional[str] = None,
-        temperature=None,
-        retry=64,
+        n_retry=4,
         **kwargs,
     ) -> GenerateOutput:
         self.log("llm_generate()")
-        for i in range(1, retry + 1):
+        for i in range(1, n_retry + 1):
             try:
-                # sleep several seconds to avoid rate limit
-                if rate_limit_per_min is not None:
-                    time.sleep(60 / rate_limit_per_min)
-
                 messages = [{"role": "user", "content": prompt}]
                 if "deepseek-r1" in self.model.lower():
                     messages.append({"role": "assistant", "content": "<think>\n"})
@@ -80,9 +64,7 @@ class OpenAIModel(LanguageModel):
                     messages=messages,
                     max_tokens=max_tokens,
                     temperature=temperature,
-                    top_p=top_p,
                     n=num_return_sequences,
-                    stop=stop,
                     **kwargs,
                 )
 
@@ -111,7 +93,7 @@ class OpenAIModel(LanguageModel):
 
         # after 64 tries, still no luck
         raise RuntimeError(
-            "GPTCompletionModel failed to generate output, even after 64 tries"
+            f"GPTCompletionModel failed to generate output, even after {n_retry} tries"
         )
 
     def get_next_token_logits(
@@ -128,16 +110,3 @@ class OpenAIModel(LanguageModel):
         self, prompt: Union[str, list[str]], **kwargs
     ) -> list[np.ndarray]:
         raise NotImplementedError("GPTCompletionModel does not support get_log_prob")
-
-
-if __name__ == "__main__":
-    model = OpenAIModel(model="gpt-3.5-turbo")
-    print("-------OpenAI client-------")
-    print(model.generate(["How to go to Shanghai from Beijing?"]))
-    print("-------SGLang client-------")
-    model = OpenAIModel(
-        model="meta-llama/Llama-3.1-8B-Instruct",
-        backend="sglang",
-        is_instruct_model=True,
-    )
-    print(model.generate(["How to go to Shanghai from Beijing?"]))
