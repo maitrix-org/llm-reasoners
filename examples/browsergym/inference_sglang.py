@@ -52,7 +52,7 @@ def run_exp(exp_name: str, task_names: str):
             else:
                 print(f"working on {task_name}")
                 try:
-                    signal.alarm(60 * 60) # if it runs for more than an hour, call it a failure
+                    signal.alarm(60 * 180) # if it runs for more than three hours, call it a failure
                     success = run_task(exp_name, task_name)
                     f.write(f"{task_name} {success}\n")
                 except Exception as e:
@@ -60,6 +60,8 @@ def run_exp(exp_name: str, task_names: str):
                     f.write(traceback.format_exc())
                 finally:
                     signal.alarm(0)
+                    print("sleeping for 3 seconds before starting next task")
+                    time.sleep(3) # perhaps inducing a cd here will remove the no running event loop errors? 
 
 
 def run_task(exp_name: str, task_name: str) -> bool:
@@ -122,19 +124,22 @@ def run_task(exp_name: str, task_name: str) -> bool:
 
     reasoner = Reasoner(world_model, search_config, algorithm)
 
-    plan_result = reasoner()
+    try:
+        plan_result = reasoner()
 
-    with open(f"{task_dir}/result.pkl", "wb") as f:
-        pickle.dump(plan_result, f)
+        with open(f"{task_dir}/result.pkl", "wb") as f:
+            pickle.dump(plan_result, f)
 
-    env.close()
+        env.close()
 
-    end = time.time()
+        end = time.time()
 
-    with open(f"{task_dir}/time.txt", "a+") as f:
-        f.write(f"total time taken: {end - start}\n")
+        with open(f"{task_dir}/time.txt", "a+") as f:
+            f.write(f"total time taken: {end - start}\n")
 
-    return plan_result.terminal_state and plan_result.terminal_state.reward == 1.0
+        return plan_result.terminal_state and plan_result.terminal_state.reward == 1.0
+    except:
+        env.close()
 
 # print(tasks)
 print(tasks)
