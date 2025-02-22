@@ -101,8 +101,11 @@ def run_task(exp_name: str, task_name: str) -> bool:
     # greedy search
     search_config = SearchConfigBrowsergym(
         action_set=browser_action_set,
-        n_proposals=int(args.n_proposals),
         llm=llm,
+        n_proposals=int(args.n_proposals), 
+        proposal_n_retry=4, evaluation_n_retry=4,
+        proposal_temperature=0.6, proposal_max_tokens=8192,
+        evaluation_temperature=0.6, evaluation_max_tokens=8192,
         use_axtree=True,
         use_html=False,
         use_screenshot=False,
