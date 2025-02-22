@@ -92,7 +92,6 @@ def run_task(exp_name: str, task_name: str) -> bool:
     llm = OpenAIModel(
         backend="sglang",
         model="DeepSeek-R1-Distill-Qwen-32B",
-        temperature=0.6,
         task_dir=task_dir
     )
 

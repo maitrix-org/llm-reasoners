@@ -12,12 +12,12 @@ from datetime import datetime
 class OpenAIModel(LanguageModel):
     def __init__(
         self,
+        backend: Literal["openai", "sglang"],
         model: str,
-        backend: Literal["openai", "sglang"] = "openai",
-        task_dir: str = None
+        task_dir: str
     ):
-        self.model = model
         self.backend = backend
+        self.model = model
         self.task_dir = task_dir
         self.__init_client__()
 
@@ -46,9 +46,9 @@ class OpenAIModel(LanguageModel):
     def generate(
         self,
         prompt: Optional[Union[str, list[str]]],
-        max_tokens: int = 8196,
-        temperature: float = 0.6,
         num_return_sequences: int = 1,
+        temperature: float = 0.6,
+        max_new_tokens: int = 8196,
         n_retry=4,
         **kwargs,
     ) -> GenerateOutput:
@@ -62,7 +62,7 @@ class OpenAIModel(LanguageModel):
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
-                    max_tokens=max_tokens,
+                    max_tokens=max_new_tokens,
                     temperature=temperature,
                     n=num_return_sequences,
                     **kwargs,
