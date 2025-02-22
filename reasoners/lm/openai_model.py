@@ -55,7 +55,7 @@ class OpenAIModel(LanguageModel):
     def generate(
         self,
         prompt: Optional[Union[str, list[str]]],
-        max_tokens: int = None,
+        max_tokens: int = None, # oh max tokens isn't being toggled on properly
         top_p: float = 1.0,
         num_return_sequences: int = 1,
         rate_limit_per_min: Optional[int] = 20,
@@ -71,7 +71,7 @@ class OpenAIModel(LanguageModel):
                 if rate_limit_per_min is not None:
                     time.sleep(60 / rate_limit_per_min)
 
-                messages = [{"role": "user", "content": prompt}, {"role": "assistant", "content": "<think>\n"}]
+                messages = [{"role": "user", "content": prompt}]
                 if "deepseek-r1" in self.model.lower():
                     messages.append({"role": "assistant", "content": "<think>\n"})
 
@@ -89,7 +89,8 @@ class OpenAIModel(LanguageModel):
                 utc_timestamp = int(time.time())
                 # save prompt
                 with open(os.path.join(self.task_dir, f"{utc_timestamp}-prompt.txt"), "w+") as f:
-                    f.write(prompt)
+                    for message in messages:
+                        f.write(message["content"])
                 # save responses
                 for idx, choice in enumerate(response.choices):
                     with open(os.path.join(self.task_dir, f"{utc_timestamp}-response-{idx+1}.txt"), "w+") as f:
