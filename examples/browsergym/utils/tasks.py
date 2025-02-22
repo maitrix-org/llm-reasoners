@@ -1,9 +1,10 @@
 import math
 import sys
 import argparse
+import os
 # import numpy as np
 
-tasks = [
+wa_reddit_tasks = [
 "webarena.27",
 "webarena.28",
 "webarena.29",
@@ -112,12 +113,33 @@ tasks = [
 "webarena.735"
 ]
 
-def get_tasks_for_portion(total_portions: int, portion: int):
+
+def get_tag_prev_exps_count(results_dir: str, tag: str) -> int:
+  items = os.listdir(results_dir)
+  exp_names = list(sorted(filter(lambda name: tag in name, items)))
+  return len(exp_names)
+
+def filter_out_completed_tasks(results_dir: str, tag: str, tasks: list[str] = wa_reddit_tasks):
+  items = os.listdir(results_dir)
+  exp_names = list(sorted(filter(lambda name: tag in name, items)))
+
+  combined_status = ""
+  for exp_name in exp_names:
+    exp_path = os.path.join(results_dir, exp_name)
+    status = open(os.path.join(exp_path, "status.txt")).read()
+    combined_status += status + "\n"
+
+  filtered_tasks = []
+  for task in tasks:
+    if f"{task} True" not in combined_status and f"{task} False" not in combined_status:
+      filtered_tasks.append(task)
+  return filtered_tasks
+
+def get_tasks_subset_for_portion(total_portions: int, portion: int, tasks: list[str] = wa_reddit_tasks):
   portion_size = math.ceil(len(tasks) / total_portions)
   start_idx = (portion-1) * portion_size
   end_idx = start_idx + portion_size
   return tasks[start_idx:end_idx]
-
 
 # parser = argparse.ArgumentParser()
 # parser.add_argument("--total-portions")

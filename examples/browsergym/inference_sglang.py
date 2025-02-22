@@ -21,6 +21,7 @@ signal.signal(signal.SIGALRM, timeout_handler)
 
 import argparse
 parser = argparse.ArgumentParser()
+parser.add_argument("--results-dir")
 parser.add_argument("--total-portions")
 parser.add_argument("--portion-idx")
 parser.add_argument("--mcts-iterations")
@@ -28,10 +29,15 @@ parser.add_argument("--mcts-depth")
 parser.add_argument("--n-proposals")
 args = parser.parse_args()
 
-from utils.tasks import get_tasks_for_portion
-tasks = get_tasks_for_portion(int(args.total_portions), int(args.portion_idx))
-name=f"d{args.mcts_depth}-{args.portion_idx}"
-results_dir = "/data/samuel/results"
+from utils.tasks import get_tag_prev_exps_count, filter_out_completed_tasks, get_tasks_subset_for_portion
+
+results_dir = args.results_dir
+tag=f"d{args.mcts_depth}"
+tag_prev_exps_count = get_tag_prev_exps_count(results_dir, tag)
+filtered_tasks = filter_out_completed_tasks(results_dir, tag)
+tasks_subset = get_tasks_subset_for_portion(int(args.total_portions), int(args.portion_idx), tasks=filtered_tasks)
+
+exp_name=f"d{args.mcts_depth}-{tag_prev_exps_count + int(args.portion_idx)}"
 
 def run_exp(exp_name: str, task_names: str):
     exp_dir = f"{results_dir}/{exp_name}"
@@ -142,5 +148,7 @@ def run_task(exp_name: str, task_name: str) -> bool:
         env.close()
 
 # print(tasks)
-print(tasks)
-run_exp(name, tasks)
+print(exp_name)
+print(len(tasks_subset))
+print(tasks_subset)
+# run_exp(exp_name, tasks_subset)
