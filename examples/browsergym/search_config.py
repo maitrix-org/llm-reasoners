@@ -30,22 +30,29 @@ class SearchConfigBrowsergym(SearchConfig):
     def __init__(self,
                  action_set: HighLevelActionSet,
                  llm: LanguageModel,
-                 n_proposals: int = 1, proposal_temperature: float = 0.25,
-                 evaluation_temperature: float = 0.25,
+                 n_proposals: int = 10, 
+                 proposal_n_retry: int = 4, evaluation_n_retry: int = 4,
+                 proposal_temperature: float = 0.25, proposal_max_tokens: int = 8192,
+                 evaluation_temperature: float = 0.25, evaluation_max_tokens: int = 8192,
                  use_axtree: bool = True, use_html: bool = False, use_screenshot: bool = False,
-                 n_retry: int = 64,
                  task_dir: str = None) -> None:
 
         super().__init__()
         self.action_set = action_set
+
         self.llm = llm
         self.n_proposals = n_proposals
+        self.proposal_n_retry = proposal_n_retry
+        self.evaluation_n_retry = evaluation_n_retry
+        
         self.proposal_temperature = proposal_temperature
+        self.proposal_max_tokens = proposal_max_tokens
         self.evlaution_temperature = evaluation_temperature
+        self.evaluation_max_tokens = evaluation_max_tokens
+
         self.use_axtree = use_axtree
         self.use_html = use_html
         self.use_screenshot = use_screenshot
-        self.n_retry = n_retry
         self.task_dir = task_dir
 
     def log(self, text: str):
@@ -70,7 +77,7 @@ class SearchConfigBrowsergym(SearchConfig):
 
         self.log("\nget_actions()")
 
-        while True:
+        for i in range(self.proposal_n_retry):
             system_msgs, user_msgs, full_prompt_text = build_propose_prompt(
                 state.current_obs,
                 self.action_set, state.action_history,
@@ -79,7 +86,8 @@ class SearchConfigBrowsergym(SearchConfig):
 
             start = time.time()
             response = self.llm.generate(
-                full_prompt_text, num_return_sequences=self.n_proposals, temperature=self.proposal_temperature)
+                full_prompt_text, num_return_sequences=self.n_proposals, 
+                temperature=self.proposal_temperature, max_new_tokens=self.proposal_max_tokens)
             contents = response.text
             end = time.time()
             
@@ -113,6 +121,8 @@ class SearchConfigBrowsergym(SearchConfig):
                     self.log(f" - {v[2]}: {v[0]}")
                 return sorted_action_info
 
+        raise Exception("Action Proposal Failed - no valid action proposals")
+
     def fast_reward(self, state: StateGym, action: ActionGym) -> tuple[float, dict]:
         """
         Generate an evaluation of a state action pair before using the action to step the environment. This process is entirely dependent on the LLM providing an accurate evaluation. The LLM provides a score from 0 to 10, which is then divided by 10 to keep the reward between 0 and 1 (important for UCT calculation in MCTS).
@@ -129,7 +139,7 @@ class SearchConfigBrowsergym(SearchConfig):
         if self.n_proposals == 1:
             return 0.0, {"self_eval": 0.0}
 
-        for i in range(self.n_retry):
+        for i in range(self.evaluation_n_retry):
             try:
                 system_msgs, user_msgs, full_prompt_txt = build_evaluation_prompt(
                     state.current_obs, action, self.action_set, state.action_history,
@@ -137,7 +147,7 @@ class SearchConfigBrowsergym(SearchConfig):
                 )
 
                 response = self.llm.generate(
-                    full_prompt_txt, num_return_sequences=1, temperature=self.proposal_temperature)
+                    full_prompt_txt, num_return_sequences=1, temperature=self.evlaution_temperature, max_new_tokens=self.evaluation_max_tokens)
 
                 evaluation = response.text[0]
 
