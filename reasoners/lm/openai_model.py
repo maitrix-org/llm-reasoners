@@ -46,7 +46,7 @@ class OpenAIModel(LanguageModel):
     def generate(
         self,
         prompt: Optional[Union[str, list[str]]],
-        max_tokens: int = None,
+        max_tokens: int = 8196,
         temperature: float = 0.6,
         num_return_sequences: int = 1,
         n_retry=4,
