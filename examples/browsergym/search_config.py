@@ -96,8 +96,10 @@ class SearchConfigBrowsergym(SearchConfig):
             # action_code -> (function_calls, proposal, count)
             action_info = dict()
             for content in contents:
-                thinking = content[:content.find("</think>") + len("</think>")]
-                proposal = content[content.find("</think>") + len("</think>"):]
+                proposal = content
+                if "</think>" in content:
+                    thinking = content[:content.find("</think>") + len("</think>")]
+                    proposal = content[content.find("</think>") + len("</think>"):]
                 if check_validity_of_action_proposal(proposal):
                     action_code = self.action_set.to_python_code(proposal)
                     function_calls = highlevel_action_parser.search_string(proposal)
