@@ -1,7 +1,7 @@
 import numpy as np
 
 import reasoners.benchmark.bw_utils as utils
-from world_model import BWState, BWAction
+
 from reasoners import SearchConfig, LanguageModel
 
 class BWConfig(SearchConfig):
@@ -21,11 +21,11 @@ class BWConfig(SearchConfig):
         self.goal_reward_default = goal_reward_default
         self.goal_reached_reward = goal_reached_reward
 
-    def get_actions(self, state: BWState) -> list[BWAction]:
+    def get_actions(self, state) -> list:
         blocks_state = state.blocks_state
         return utils.generate_all_actions(blocks_state)
 
-    def fast_reward(self, state: BWState, action: BWAction) -> tuple[float, dict]:
+    def fast_reward(self, state, action) -> tuple[float, dict]:
         if state.buffered_action == "":
             # if no action buffered
             current_blocks_state = state.blocks_state
@@ -59,7 +59,7 @@ class BWConfig(SearchConfig):
             goal_reward = goal_reached[1]
         return (intuition + self_eval) * self.reward_alpha + goal_reward * (1 - self.reward_alpha)
 
-    def reward(self, state: BWState, action: BWAction,
+    def reward(self, state, action,
                intuition: float = None,
                self_eval: float = None,
                goal_reached: tuple[bool, float] = None) -> float:

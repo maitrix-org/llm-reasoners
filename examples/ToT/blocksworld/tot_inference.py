@@ -235,7 +235,11 @@ if __name__ == '__main__':
         elif base_lm == 'llama3':
             from reasoners.lm import Llama3Model
             llama_model = Llama3Model(model_dir, llama_size, max_batch_size=batch_size)
+        elif base_lm == 'hf':
+            from reasoners.lm import HFModel
+            llama_model = HFModel(model_dir, model_dir)
         else:
+            import torch
             from reasoners.lm import ExLlamaModel  # Maybe other transformer models also support
             device = torch.device("cuda:0")
             llama_model = ExLlamaModel(model_dir, 
@@ -262,8 +266,11 @@ if __name__ == '__main__':
 
 
 '''
-
-
+Command lines for using hf_model on llama-3.1-8B:
+    export CUDA_VISIBLE_DEVICES=0
+    export llama_path="meta-llama/Llama-3.1-8B"
+    export llama_size="8B"
+    export base_lm="hf"
 
 CUDA_VISIBLE_DEVICES=2,3 python examples/tot/blocksworld/tot_inference.py --data_path 'examples/tot/blocksworld/data/split_v1/split_v1_step_2_data.json' --mem_map "[16,22]" --depth_limit 2 --model_dir $LLAMA2_CKPTS --prompt_path examples/tot/blocksworld/prompts/pool_prompt_v1.json --log_dir logs/bfs_v1_step2_f --beam_size 10 --temperature 0.8 --reward_aggregator mean | tee debug_bfs.log
 

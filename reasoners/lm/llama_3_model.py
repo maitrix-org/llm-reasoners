@@ -54,6 +54,8 @@ class Llama3Model(LanguageModel):
             This method initializes the distributed process group, sets the device to CUDA,
             and loads the pre-trained model and tokenizer.
         """
+        
+        from llama3.model import ModelArgs, Transformer
         if not torch.distributed.is_initialized():
             torch.distributed.init_process_group("nccl")
         if not model_parallel_is_initialized():
@@ -80,7 +82,7 @@ class Llama3Model(LanguageModel):
         checkpoint = torch.load(ckpt_path, map_location="cpu")
         with open(Path(ckpt_dir) / "params.json", "r") as f:
             params = json.loads(f.read())
-
+            
         model_args: ModelArgs = ModelArgs(
             max_seq_len=max_seq_len,
             max_batch_size=max_batch_size,

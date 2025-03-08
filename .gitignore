@@ -1,3 +1,4 @@
+*.sh
 .idea/
 notebooks/
 __pycache__/
@@ -16,7 +17,7 @@ gpt-plan-benchmark/
 .DS_Store
 .vscode/
 dataset/
-/*.json
+*.json
 /data_to_check/
 *.jsonl
 sas_plan

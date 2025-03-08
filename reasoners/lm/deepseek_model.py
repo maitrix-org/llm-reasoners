@@ -7,11 +7,14 @@ import time
 from reasoners.base import LanguageModel, GenerateOutput
 from openai import OpenAI
 
+
 import pickle
 
 PROMPT_TEMPLATE_ANSWER = 'Your response need to be ended with "So the answer is"\n\n'
 PROMPT_TEMPLATE_CONTINUE = "Please continue to answer the last question, following the format of previous examples. Don't say any other words.\n\n"
 
+# basically the exact same api as OpenAIModel
+# copy pasted and removed sections that don't apply
 
 class DeepseekModel(LanguageModel):
     def __init__(
@@ -22,6 +25,7 @@ class DeepseekModel(LanguageModel):
         additional_prompt=None,
         is_instruct_model: bool = False,
         task_dir: str = None
+        backend: Literal["deepseek", "openrouter"] = "deepseek",
     ):
         self.model = model
         self.max_tokens = max_tokens
@@ -37,6 +41,20 @@ class DeepseekModel(LanguageModel):
             api_key=os.getenv("DEEPSEEK_API_KEY", None),
         )
 
+    def __init_client__(self):
+        if self.backend == "deepseek":
+            self.client = OpenAI(
+                base_url="https://api.deepseek.com",
+                api_key=os.getenv("DEEPSEEK_API_KEY", None),
+            )
+        elif self.backend == "openrouter":
+            self.client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=os.getenv("OPENROUTER_API_KEY", None),
+            )
+        else:
+            raise ValueError(f"Invalid backend: {self.backend}")
+
     def generate(
         self,
         prompt: Optional[Union[str, list[str]]],
@@ -51,7 +69,6 @@ class DeepseekModel(LanguageModel):
         retry=64,
         **kwargs,
     ) -> GenerateOutput:
-
         max_tokens = self.max_tokens if max_tokens is None else max_tokens
         temperature = self.temperature if temperature is None else temperature
         logprobs = 0 if logprobs is None else logprobs
@@ -76,8 +93,6 @@ class DeepseekModel(LanguageModel):
                     time.sleep(60 / rate_limit_per_min)
 
                 messages = [{"role": "user", "content": prompt}]
-                # print(messages)
-                # print("SAnity check")
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=messages,
@@ -94,6 +109,7 @@ class DeepseekModel(LanguageModel):
                     self.task_dir, f"{utc_timestamp}.pkl")
                 with open(response_path, "wb") as f:
                     pickle.dump(response, f)
+                )
 
                 return GenerateOutput(
                     text=[choice.message.content for choice in response.choices],

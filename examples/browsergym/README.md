@@ -1,6 +1,6 @@
-# Web Agent Planning
+# Tree Search in Web
 
-This is an example of using LLM-Reasoners to perform Monte Carlo Tree Search (MCTS) and other planning methods (e.g. Greedy/Beam Search/DFS, etc.) on the [BrowserGym](https://github.com/ServiceNow/BrowserGym) environment. LLMs as agent policies are strong baselines, while the absolute performance on agent tasks are still far from human level. The inference-time planning (1) improves the policy's accuracy and (2) can be scaled up smoothly.
+This is an example of using LLM-Reasoners to perform Monte Carlo Tree Search (MCTS) and other planning methods (e.g. Greedy/Beam Search/DFS, etc.) on the [BrowserGym](https://github.com/ServiceNow/BrowserGym) environment. LLMs as agent policies are strong baselines, while the absolute performance on agent tasks is still far from human level. The inference-time planning (1) improves the action prediction capability and (2) can be scaled up.
 
 ## NOTE TO TA (Zimo Wang)
 
@@ -12,9 +12,9 @@ BrowserGym offers an OpenAI gym-like interface for web environments, supporting 
 
 LLM-Reasoners enhance this setup with tree search algorithms, using LLMs to generate and evaluate actions. Besides LLM evaluations, the environment provides reward signals for node expansion.
 
-- `inference_mcts.py`: Performs tree search on the environment w. MCTS. Currently it is a _open-loop_ planner, meaning it doesn't use a world model to predict the next state; instead, it directly interacts with the environment.
-- `inference_dfs.py`: Performs tree search on the environment w. DFS.
-- `inference_beam.py`: Performs tree search on the environment w. Beam Search.
+- `inference_mcts.py`: Performs a tree search on the environment with MCTS. Currently, it directly interacts with the environment for planning. We are working on replacing it with a world model.
+- `inference_dfs.py`: Performs a tree search on the environment w. DFS.
+- `inference_beam.py`: Performs a tree search on the environment w. Beam Search.
 - `gym_env.py`: Implements `EnvironmentGym`, wrapping the BrowserGym environment. `EnvironmentGym` functions like a `WorldModel`, using the environment for state transitions. Tree search requires careful backtracking, achieved by storing and replaying action histories, though this method is generic and applicable to any OpenAI gym-like environment.
 - `search_config.py`: Defines `SearchConfigBrowsergym` for node generation/evaluation and reward calculation. This is the core of the tree search.
 - `visualize.py`: Visualizes the search tree with saved search results in `.pickle` files.
@@ -94,9 +94,14 @@ When you finish, you can test the shopping instance by running
 curl $VWA_SHOPPING
 ```
 
+**3. Other environments you want**
+
+Feel free to try other supported environments by following the [BrowserGym](https://github.com/ServiceNow/BrowserGym) setup. 
+
+
 ### Misc Setup
 
-Set up your LLM API keys and setup nltk
+Set up your LLM API keys and set nltk
 
 ```bash
 # Take OpenAI as an example. Feel free to use other LLMs.
@@ -132,7 +137,7 @@ The search takes a few minutes to complete mainly consisting of the three follow
 2. Environment interaction
 3. Tree search expansion
 
-For example, the default params above will take about 10 minutes to complete.
+For example, the default parameters above will take about 10 minutes to complete one, depending on the task. Also, pay attention to the API cost if you are using advanced LLM APIs like gpt4o.
 
 For DFS and Beam Search, you can run the respective files:
 
