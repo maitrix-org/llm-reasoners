@@ -6,21 +6,21 @@ import os
 import pickle
 from itertools import chain
 
-def get_stats(tag: str):
-  success_stats = get_success_stats(tag)
-  token_stats = get_token_stats(tag)
-  time_stats = get_time_stats(tag)
-  iteration_stats = get_mcts_stats(tag)
+def get_stats(tag: str, results_dir: str):
+  success_stats = get_success_stats(tag, results_dir)
+  token_stats = get_token_stats(tag, results_dir)
+  time_stats = get_time_stats(tag, results_dir)
+  iteration_stats = get_mcts_stats(tag, results_dir)
+  # stats = list(chain(success_stats, token_stats, time_stats))
   stats = list(chain(success_stats, token_stats, time_stats, iteration_stats))
   return stats
 
 
-def get_success_stats(tag: str):
+def get_success_stats(tag: str, results_dir: str):
   successes = 0
   failures = 0
   errors = 0
 
-  results_dir = "./results"
   exp_names = os.listdir(results_dir)
   for exp_name in exp_names:
     if tag in exp_name:
@@ -42,9 +42,8 @@ def get_success_stats(tag: str):
   return [int(tag[1:]), successes, failures, errors]
 
 
-def get_token_stats(tag: str):
+def get_token_stats(tag: str, results_dir: str):
   task_token_stats_rows = []
-  results_dir = "./results"
   exp_names = os.listdir(results_dir)
   for exp_name in exp_names:
     if tag in exp_name:
@@ -69,7 +68,10 @@ def get_token_stats(tag: str):
               response = pickle.load(open(pickle_path, "rb"))
               calls_made += 1
               prompt_tokens += response.usage.prompt_tokens
-              cached_prompt_tokens += response.usage.prompt_tokens_details.cached_tokens
+              try:
+                cached_prompt_tokens += response.usage.prompt_tokens_details.cached_tokens
+              except: # api might not support cached tokens
+                pass
               completion_tokens += response.usage.completion_tokens
 
           task_token_stats_rows.append(
@@ -93,6 +95,9 @@ def get_token_stats(tag: str):
 
   total_usd = task_token_df["usd_cost"].sum()
   avg_usd = task_token_df["usd_cost"].mean()
+  avg_tokens = task_token_df["total_tokens"].mean()
+  avg_prompt = task_token_df["prompt_tokens"].mean()
+  avg_completion = task_token_df["completion_tokens"].mean()
 
   task_token_summary_stats = task_token_df.describe()
   totals = task_token_df.sum(axis=0)
@@ -100,12 +105,11 @@ def get_token_stats(tag: str):
   task_token_summary_stats = pd.concat([task_token_summary_stats, totals.to_frame().T])
   task_token_summary_stats
 
-  return total_usd, avg_usd, task_token_df
+  return total_usd, avg_usd, avg_tokens, avg_prompt, avg_completion, task_token_df
 
 
-def get_time_stats(tag: str):
+def get_time_stats(tag: str, results_dir: str):
   task_time_stats_rows = []
-  results_dir = "./results"
   exp_names = os.listdir(results_dir)
   for exp_name in exp_names:
     if tag in exp_name:
@@ -122,7 +126,7 @@ def get_time_stats(tag: str):
           total_time_taken = 0
 
           task_path = os.path.join(results_dir, exp_name, task_name)
-          with open(os.path.join(task_path, "time.txt")) as f:
+          with open(os.path.join(task_path, "log.txt")) as f:
             for line in f.readlines():
 
               if line.startswith("action proposal time"):
@@ -134,19 +138,30 @@ def get_time_stats(tag: str):
               elif line.startswith("total time taken"):
                 total_time_taken = float(line.strip().split(": ")[1])
           
+          try:
+            with open(os.path.join(task_path, "time.txt")) as f:
+              for line in f.readlines():
+                if line.startswith("total time taken"):
+                  total_time_taken = float(line.strip().split(": ")[1])
+          except:
+            pass
+
+          
           task_time_stats_rows.append([task_name, total_time_taken, total_proposal_time, total_evaluation_time, total_envstep_time])
   task_time_df = pd.DataFrame(task_time_stats_rows,
                              columns=["task_name", "total_time_taken", "total_proposal_time", "total_evaluation_time", "total_envstep_time"])
   
   total_time = task_time_df["total_time_taken"].sum()
   avg_time = task_time_df["total_time_taken"].mean()
+  avg_prop_time = task_time_df["total_proposal_time"].mean()
+  avg_eval_time = task_time_df["total_evaluation_time"].mean()
+  avg_step_time = task_time_df["total_envstep_time"].mean()
 
-  return total_time, avg_time, task_time_df
+  return total_time, avg_time, avg_prop_time, avg_eval_time, avg_step_time, task_time_df
 
 
-def get_mcts_stats(tag: str):
+def get_mcts_stats(tag: str, results_dir: str):
   task_mcts_stats_rows = []
-  results_dir = "./results"
   exp_names = os.listdir(results_dir)
   for exp_name in exp_names:
     if tag in exp_name:
@@ -164,9 +179,13 @@ def get_mcts_stats(tag: str):
             if mcts_result.cum_reward >= 100: # task successfully completed
               completion_iteration = find_completion_iteration(mcts_result)
               completion_depth = find_completion_depth(mcts_result)
-            max_depth = find_max_depth(mcts_result)
-            env_steps_taken = get_env_steps_taken(mcts_result)
-            task_mcts_stats_rows.append([task_name, completion_iteration, completion_depth, max_depth, env_steps_taken])
+            # print("testing", mcts_result.trace)
+            try:
+              max_depth = find_max_depth(mcts_result)
+              env_steps_taken = get_env_steps_taken(mcts_result)
+              task_mcts_stats_rows.append([task_name, completion_iteration, completion_depth, max_depth, env_steps_taken])
+            except:
+              task_mcts_stats_rows.append([task_name, np.nan, np.nan])
             # else:
             #   task_mcts_stats_rows.append([task_name, np.nan, np.nan])
           else:
@@ -203,6 +222,7 @@ def find_completion_depth(mcts_result):
   return len(mcts_result.trace_in_each_iter[-1])
 
 def find_max_depth(mcts_result):
+  # print(mcts_result.trace_in_each_iter)
   return len(max(mcts_result.trace_in_each_iter, key=lambda x: len(x)))
 
 def get_env_steps_taken(mcts_result):
@@ -211,3 +231,5 @@ def get_env_steps_taken(mcts_result):
   for trace in mcts_result.trace_in_each_iter[:completion_iteration+1]:
     steps_taken += len(trace)
   return steps_taken
+
+# get_stats("d5", "/data/samuel/results-r132bfp8")

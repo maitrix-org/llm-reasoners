@@ -24,6 +24,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--results-dir")
 parser.add_argument("--total-portions")
 parser.add_argument("--portion-idx")
+parser.add_argument("--tag-skip-count")
+
+parser.add_argument("--model")
+parser.add_argument("--backend")
 parser.add_argument("--mcts-iterations")
 parser.add_argument("--mcts-depth")
 parser.add_argument("--n-proposals")
@@ -32,14 +36,18 @@ args = parser.parse_args()
 from utils.tasks import get_tag_prev_exps_count, filter_out_completed_tasks, get_tasks_subset_for_portion
 
 results_dir = args.results_dir
+
+if not os.path.exists(results_dir):
+    os.makedirs(results_dir)
+
 tag=f"d{args.mcts_depth}"
-tag_prev_exps_count = get_tag_prev_exps_count(results_dir, tag)
 filtered_tasks = filter_out_completed_tasks(results_dir, tag)
 tasks_subset = get_tasks_subset_for_portion(int(args.total_portions), int(args.portion_idx), tasks=filtered_tasks)
 
-exp_name=f"d{args.mcts_depth}-{tag_prev_exps_count + int(args.portion_idx)}"
+exp_name=f"d{args.mcts_depth}-{int(args.tag_skip_count) + int(args.portion_idx)}"
 
 def run_exp(exp_name: str, task_names: str):
+
     exp_dir = f"{results_dir}/{exp_name}"
     exp_dir_abspath = os.path.abspath(exp_dir)
     if not os.path.exists(exp_dir_abspath):
@@ -59,6 +67,7 @@ def run_exp(exp_name: str, task_names: str):
                 print(f"working on {task_name}")
                 try:
                     signal.alarm(60 * 180) # if it runs for more than three hours, call it a failure
+                    # sometimes doesn't go off if the thread is blocked during something like step()
                     success = run_task(exp_name, task_name)
                     f.write(f"{task_name} {success}\n")
                 except Exception as e:
@@ -98,8 +107,10 @@ def run_task(exp_name: str, task_name: str) -> bool:
     )
 
     llm = OpenAIModel(
-        backend="sglang",
-        model="DeepSeek-R1-Distill-Qwen-32B",
+        backend=args.backend,
+        model=args.model,
+        # model="DeepSeek-R1-Distill-Qwen-32B",
+        # model="Qwen2.5-32B-Instruct",
         task_dir=task_dir
     )
 
@@ -124,7 +135,7 @@ def run_task(exp_name: str, task_name: str) -> bool:
         w_exp=10**0.5,
         uct_with_fast_reward=True,
         disable_tqdm=False,
-        output_trace_in_each_iter=False,
+        output_trace_in_each_iter=True,
         task_dir=task_dir
     )
 
@@ -144,11 +155,12 @@ def run_task(exp_name: str, task_name: str) -> bool:
             f.write(f"total time taken: {end - start}\n")
 
         return plan_result.terminal_state and plan_result.terminal_state.reward == 1.0
-    except:
+    except Exception as e:
         env.close()
+        raise e
 
 # print(tasks)
 print(exp_name)
 print(len(tasks_subset))
 print(tasks_subset)
-# run_exp(exp_name, tasks_subset)
+run_exp(exp_name, tasks_subset)
