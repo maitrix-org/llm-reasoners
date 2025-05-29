@@ -1,0 +1,11 @@
+#!/bin/bash
+# FILENAME:  jobfile.sub
+#SBATCH --nodes=1 
+#SBATCH --time=4:00:00
+#SBATCH --job-name gen_graph_dataset
+#SBATCH --gpus-per-node=1
+module load conda
+source ~/.bashrc
+conda activate llm_env
+module list
+python logic.py --num_samples 10000 --output_file graph_dataset.json
