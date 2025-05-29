@@ -19,13 +19,13 @@ from reward_score.utils import _deserialise_extra, _decompress_str
 def _default_compute_score(data_source, solution_str, ground_truth, extra_info=None):
     compressed = True
     reward_metric = None
-    # if type(ground_truth) is dict:
-    #     ground_truth = _deserialise_extra(_decompress_str(ground_truth["compressed"]))["ground_truth"]
+    if type(ground_truth) is dict:
+        ground_truth = _deserialise_extra(_decompress_str(ground_truth["compressed"]))["ground_truth"]
 
-    # if type(extra_info) is dict:
-    #     extra_info = _deserialise_extra(_decompress_str(extra_info["compressed"]))
-    #     reward_metric = extra_info.get("reward_metric", None)
-    #     compressed = False
+    if type(extra_info) is dict:
+        extra_info = _deserialise_extra(_decompress_str(extra_info))
+        reward_metric = extra_info.get("reward_metric", None)
+        compressed = False
 
     # math
     if data_source.startswith("math"):
