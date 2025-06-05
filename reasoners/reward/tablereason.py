@@ -1,5 +1,5 @@
-from verl.utils.reward_score.prime_math.grader import math_equal
-from verl.utils.reward_score import math
+from reasoners.reward.prime_math.grader import math_equal
+from reasoners.reward import math
 import re
 
 

@@ -8,7 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import numpy as np
 
-from reward_score.coder1.utils import _ERROR_MSG_PREFIX
+from reasoners.reward.coder1.utils import _ERROR_MSG_PREFIX
 
 _MAX_CHAR_DISPLAY = 2048
 
@@ -16,27 +16,27 @@ _MAX_CHAR_DISPLAY = 2048
 CODER1_EXEC = os.environ.get("CODER1_EXEC", "unsafe_local")
 
 if CODER1_EXEC == "docker":
-    from .docker_exec import code_exec_docker
+    from reasoners.reward.coder1.docker_exec import code_exec_docker
 
     code_exec = code_exec_docker
 elif CODER1_EXEC == "firejail":
-    from .firejail_exec import code_exec_firejail
+    from reasoners.reward.coder1.firejail_exec import code_exec_firejail
 
     code_exec = code_exec_firejail
 elif CODER1_EXEC == "ces":
-    from .ces_exec import remote_code_exec_ces
+    from reasoners.reward.coder1.ces_exec import remote_code_exec_ces
 
     code_exec = remote_code_exec_ces
 elif CODER1_EXEC == "kira":
-    from .kira_exec import remote_code_exec_kira
+    from reasoners.reward.coder1.kira_exec import remote_code_exec_kira
 
     code_exec = remote_code_exec_kira
 elif CODER1_EXEC == "bwrap":
-    from .bwrap_exec import code_exec_bwrap
+    from reasoners.reward.coder1.bwrap_exec import code_exec_bwrap
 
     code_exec = code_exec_bwrap
 elif CODER1_EXEC == "unsafe_local":
-    from .unsafe_local_exec import code_exec_local
+    from reasoners.reward.coder1.unsafe_local_exec import code_exec_local
 
     code_exec = code_exec_local
 else:

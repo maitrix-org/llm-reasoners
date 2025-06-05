@@ -19,8 +19,8 @@ from typing import Optional, Dict, List, Tuple, Any, Union
 from tqdm import tqdm
 
 # Local imports
-from verl.utils.reward_score import _default_compute_score
-from model_filtering.utils import console, json_default
+from reasoners.reward import _default_compute_score
+from reasoners.tools.model_filtering.utils import console, json_default
 
 # --------------------------------------------------------------------------- #
 # Globals set once per worker via Pool.initializer                            #

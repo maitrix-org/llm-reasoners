@@ -1,5 +1,5 @@
 import re
-from verl.utils.reward_score.cruxeval.utils import check_correctness
+from reasoners.reward.cruxeval.utils import check_correctness
 
 
 def compute_score(data_source: str,

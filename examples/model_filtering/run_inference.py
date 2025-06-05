@@ -11,8 +11,8 @@ from vllm.utils import get_open_port
 from datetime import datetime
 from rich.panel import Panel
 
-from model_filtering.utils import console
-from model_filtering.pipeline import DifficultyFilterPipeline
+from reasoners.tools.model_filtering.utils import console
+from reasoners.tools.model_filtering.pipeline import DifficultyFilterPipeline
 from datasets import Dataset
 
 # --------------------------------------------------------------------------- #

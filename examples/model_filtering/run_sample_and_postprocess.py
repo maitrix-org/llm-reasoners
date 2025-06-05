@@ -4,9 +4,8 @@ import datasets
 import json
 import transformers
 import numpy as np
-from verl.utils.data_process.utils import save_dataset
-from verl.utils.data_process.filter import LengthFilter
-
+from reasoners.tools.model_filtering.filter import LengthFilter
+from reasoners.tools.model_filtering.utils import save_dataset
 
 GLOBAL_SEED = 42
 np.random.seed(GLOBAL_SEED)
@@ -123,9 +122,9 @@ def sample_dataset(dataset, target_sample_size) -> datasets.Dataset:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_data_dir", type=str, default="/mnt/weka/home/zhuojun.cheng/leo/Reasoning360/data/train_filtered")
+    parser.add_argument("--input_data_dir", type=str, required=True)
     parser.add_argument("--input_data_names", type=str, nargs="+")
-    parser.add_argument("--output_data_dir", type=str, default="/mnt/weka/home/zhuojun.cheng/leo/Reasoning360/data/train_guru15k")
+    parser.add_argument("--output_data_dir", type=str, required=True)
     parser.add_argument("--target_sample_size", type=int, required=True)
     parser.add_argument("--domain", type=str, default="math", choices=["math", "codegen", "simulation", "logic", "table", "stem"])
     parser.add_argument("--max_prompt_tokens", type=int, default=None)
