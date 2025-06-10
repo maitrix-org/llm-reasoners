@@ -22,7 +22,7 @@
   
   The library offer the most up-to-date search algorithms for reasoning with LLMs, such as:
   
-  - [Reasoner Agent](example/ReasonerAgent-Web) ([Deng et al., 2025](https://reasoner-agent.maitrix.org/))
+  - [Reasoner Agent](examples/ReasonerAgent-Web) ([Deng et al., 2025](https://reasoner-agent.maitrix.org/))
   - [Inference-time Scaling with PRM](examples/Inference-Scaling-SGL/math500) ([Snell et al., 2024](https://arxiv.org/abs/2408.03314))
   - [Reasoning-via-Planning, MCTS](examples/RAP) ([Hao et al., 2023](https://arxiv.org/abs/2305.14992))
   - [Tree-of-Thoughts, BFS](examples/ToT) ([Yao et al., 2023](https://arxiv.org/abs/2305.10601))
