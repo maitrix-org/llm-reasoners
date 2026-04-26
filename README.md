@@ -42,7 +42,7 @@
   
   </details>
 
-- **Intuitive Visualization and Interpretation**: Our library provides a [visualization tool](https://www.llm-reasoners.net/) to aid users in comprehending the reasoning process. Even for complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand the process with **one line of python code**. See an exmaple in the tutorial [notebook](demo.ipynb).
+- **Intuitive Visualization and Interpretation**: Our library provides a [visualization tool](https://www.llm-reasoners.net/) to aid users in comprehending the reasoning process. Even for complex reasoning algorithms like Monte-Carlo Tree Search, users can easily diagnose and understand the process with **one line of python code**. See an example in the tutorial [notebook](demo.ipynb).
  
 - **Efficient Reasoning with LLM**: Our library optimizes the performance of advanced reasoning techniques by integrating [SGLang](https://github.com/sgl-project/sglang), a high-performance LLM inference framework, featuring structured generation (Check out this [thread](https://x.com/MaitrixOrg/status/1885387184557199857) and [example](https://github.com/maitrix-org/llm-reasoners/tree/main/examples/Inference-Scaling-SGL/math500)). We also support other LLM backends like `huggingface transformers`, `OpenAI API`, `Exllama`, `fairscale`, `llama.cpp`, etc.
 
